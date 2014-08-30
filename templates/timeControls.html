@@ -1,0 +1,32 @@
+<form class="graph-time-controls form">
+	<div class="form-group">
+		<label>From</label>
+		<input class="form-control range-start" type="text" placeholder="Start" 
+			data-bind="value: startRange,
+					   attr: {disabled: !isCustomSelected()}">
+	</div>
+
+	<div class="form-group">
+		<label>To</label>
+		<input class="form-control range-end" type="text" placeholder="End"
+			data-bind="value: endRange,
+		               attr: {disabled: !isCustomSelected()}">
+	</div>
+
+	<div class="btn-group" data-bind="foreach: timeOptions">
+		<button class="btn btn-sm btn-default" 
+			data-bind="text: display,
+					   click: $parent.selectTime.bind($parent, $data, false),
+					   css: {'active': $parent.selectedTime() == $data}">
+		</button>
+	</div>
+
+	<div style="margin-top: 1em" data-bind="visible: !isCustomSelected()">
+		<button type="button" class="btn btn-sm btn-default" 
+			data-bind="css: {active: autoRefresh}, 
+					   click: autoRefreshToggle">
+			<i class="icon-refresh"></i>
+		</button>
+		<i>Auto Refresh <!-- ko text: refreshCountdown, if: autoRefresh --><!-- /ko --></i>
+	</div>
+</form>

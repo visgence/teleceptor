@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+
+
+{% block additional_scripts %}
+	<script src="lib/history/jquery.history.js"></script>
+	<script src="lib/moment/js/moment.min.js"></script>
+	<script src="lib/bootstrap/js/bootstrap-datetimepicker.min.js"></script>
+	<script src="lib/flot/jquery.flot.min.js"></script>
+	<script src="lib/flot/jquery.flot.time.min.js"></script>
+	<script src="lib/flot/jquery.flot.crosshair.min.js"></script>
+	<script src="lib/flot/jquery.flot.selection.min.js"></script>
+	<script src="lib/flot/jquery.flot.resize.min.js"></script>
+	<script src="js/custom-bindings.js"></script>
+	<script src="js/extenders.js"></script>
+	<script src="js/graphWidget.js"></script>
+	<script src="js/graph.js"></script>
+	<script src="js/timeControls.js"></script>
+	<script src="js/sensor.js"></script>
+	<script src="js/index.js"></script>
+	<script src="js/urlHelpers.js"></script>
+
+	<script>
+		$(function() {
+			var pageData = {
+				'activeSensor': {{activeSensorJSON}},
+				'datastream': {{datastreamJSON}},
+			};
+
+			{% if start %} pageData["start"] = {{start}} {% endif %}
+			{% if end %} pageData["end"] = {{end}} {% endif %}
+			{% if startZoom %} pageData["startZoom"] = {{startZoom}} {% endif %}
+			{% if endZoom %} pageData["endZoom"] = {{endZoom}} {% endif %}
+			{% if time %} pageData["time"] = "{{time}}" {% endif %}
+
+			var index = new SensorsIndex(pageData);
+			ko.applyBindings(index, $("#Sensors-index").get(0));
+		})
+	</script>
+{% endblock additional_scripts %}
+
+		
+{% block additional_styles %}
+	<link rel="stylesheet" href="css/sensors.css">
+	<link rel="stylesheet" href="css/graphWidget.css">
+	<link rel="stylesheet" href="css/sensor.css">
+{% endblock additional_styles %}
+
+
+{% block content %}
+	
+	<div class="container-fluid page-host" id="sensors-index">
+		<div class="row">
+			<div class="col-md-3 left-col">
+
+					<div class="panel panel-default">
+						<div class="panel-heading">
+							<h3 class="panel-title">Time Controls</h3>
+						</div>
+
+						<div class="panel-body" data-bind="with: timeControls">
+							{% include 'timeControls.html' %}
+						</div>
+
+					</div>
+
+					<div class="panel panel-default sensors-panel">
+						<div class="panel-heading">
+							<h3 class="panel-title">Sensors</h3>
+						</div>
+						
+						<div class="list-group sensor-list">
+
+							{% for sensor in sensorsList %}
+								{% if activeSensor and sensor.uuid == activeSensor.uuid %}
+    							<a class="list-group-item sensor active">
+    							{% else %}
+    							<a class="list-group-item sensor" data-sensorid="{{sensor.uuid}}">
+    							{% endif %}
+    								{{sensor.name}}
+    							</a>
+							{% endfor %}
+						</div>
+
+					</div><!-- end sensors-panel -->
+			</div><!-- end left-col -->
+
+			<div class="col-md-9 right-col" data-bind="if: activeSensor">
+				<div class="panel panel-default">
+
+						<div class="panel-heading">
+							<h3 class="panel-title">
+                        		<!-- ko text: activeSensor().name() --><!-- /ko -->
+								<img src="img/spinner.gif" style="height: 17px;" 
+									data-bind="visible: isLoading">
+							</h3>
+						</div>
+						
+						<div class="panel-body" data-bind="with: graph">
+							{% include 'graph.html' %}
+						</div>
+				</div>
+				
+				{% if activeSensor %}	
+				<div class="panel panel-default">
+					<div class= "panel-heading">
+						<h3 class="panel-title">Sensor Information</h3>
+					</div>
+						
+					<div class="panel-body">
+						{% include 'sensor.html' %}
+					</div>
+
+				</div>
+				{% endif %}
+
+			</div><!-- end right-col -->
+		</div><!-- end row-fluid -->
+	</div>
+{% endblock content %}

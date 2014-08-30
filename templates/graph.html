@@ -1,0 +1,34 @@
+<div id="graph-container">
+
+	<!-- ko if: datastream -->
+	<div class="control-btns clearfix">
+		<div class="pull-right">
+			<button class="btn btn-sm btn-default" data-bind="click: resetZoom, visible: isZoomed">
+				Reset
+			</button>
+		</div>
+
+	</div>
+	<!-- /ko -->
+
+	<!-- ko ifnot: datastream -->
+	<div class="alert alert-info">
+		Looks like sensor doesn't have a Datastream yet.
+	</div>
+	<!-- /ko -->
+
+	<div id="graph-widget" data-bind="with: graphWidget">
+		<div id="graph" style="height: 300px;"></div>
+		<div id="graph-overview" style="height: 75px;"></div>
+
+		<div id="graph-tooltip" class="custom-tooltip" style="display: none;">
+			<span class="custom-tooltip-inner"></span>
+		</div>
+
+	    <!-- ko if: noData -->
+	    <div class="alert alert-info">
+	        No data for that range.
+	    </div>
+	    <!-- /ko -->
+	</div>
+</div>

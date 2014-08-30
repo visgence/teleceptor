@@ -1,0 +1,111 @@
+#! /usr/bin/env python
+"""
+(c) 2014 Visgence, Inc.
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>
+"""
+
+
+
+import runpy
+import sys, os
+import argparse
+
+from sqlalchemy import create_engine
+import teleceptor
+from  teleceptor import models
+from  teleceptor import testFixtures
+
+def runserver():
+    servercmd = os.path.join(teleceptor.__path__[0],'server.py')
+    print servercmd
+    runpy.run_path(servercmd)
+
+def btcmote():
+    btcmotecmd = os.path.join(teleceptor.__path__[0],'softSensors','BitcoinSensor','BTCMote.py')
+    print btcmotecmd
+    runpy.run_path(btcmotecmd,None,'__main__')
+
+def poller():
+    pollercmd = os.path.join(teleceptor.__path__[0],'basestation','poller.py')
+    print pollercmd
+    runpy.run_path(pollercmd,None,'__main__')
+
+def tcpPoller():
+    tcppollercmd = os.path.join(teleceptor.__path__[0],'basestation','tcpPoller.py')
+    print tcppollercmd
+    runpy.run_path(tcppollercmd,None,'__main__')
+
+
+
+def displayVersion():
+    print "teleceptor Version: " + teleceptor.__version__
+
+def rebuild():
+
+    print 'This command will wipe your database and start fresh.  Are you sure you want to continue?'
+    user_resp = None
+    user_resp = raw_input('(Y/n) ')
+    while user_resp not in ['Y', 'n']:
+        print 'Did not understand your response.  Please enter \'Y\' or \'n\'.'
+        print 'This command will wipe your database and start fresh.  Are you sure you want to continue?'
+        user_resp = raw_input('(Y/n) ')
+
+    if user_resp == 'n':
+        sys.exit(0)
+
+    assert user_resp == 'Y', 'Something Bad Happened!'
+
+    print "Deleting base_station.db..."
+    try:
+        os.remove(teleceptor.DBFILE)
+        print teleceptor.DBFILE + " deleted."
+    except OSError:
+        print('base_station.db does not exist.  Creating new db.')
+
+    print "Runing setup."
+    setup()
+
+def setup():
+
+    print "Creating new base_station.db file..."
+    open(teleceptor.DBFILE, 'a').close()
+    print teleceptor.DBFILE + " created."
+
+    db = create_engine('sqlite:///' + teleceptor.DBFILE)
+
+    print "Initializing database tables..."
+    models.Base.metadata.create_all(db)
+
+    print "Loading fixtures..."
+    testFixtures.main()
+
+if __name__ == "__main__":
+    cmds = {
+         'runserver': runserver
+        ,'rebuild': rebuild
+        ,'setup': setup
+        ,'btcmote': btcmote
+        ,'poller': poller
+        ,'tcppoller': tcpPoller
+        ,'version': displayVersion
+    }
+
+    args = sys.argv
+    if len(args) > 1 and args[1].lower() in cmds:
+        cmds[args[1].lower()]()
+        print "Done!"
+
+    else:
+        print "Please enter a valid command"

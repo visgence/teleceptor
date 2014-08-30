@@ -1,0 +1,86 @@
+
+<ul id="sensor-tabs" class="nav nav-tabs" role="tablist" style="margin-bottom:1em;">
+	<li class="tab active" data-tab="sensor-config"><a href="#">Configuration</a></li>
+	<li class="tab" data-tab="sensor-metadata"><a href="#">Metadata</a></li>
+</ul>
+
+<div id="sensor-config" data-bind="with: activeSensor">
+
+	<!-- ko if: updateError -->
+	<div class="alert alert-danger" data-bind="text: updateError"></div>
+	<!-- /ko -->
+	
+	<form class = "form-horizontal" role="form">
+		<div class = "form-group" data-bind="css: {'has-error': name.hasError}">
+
+			<label class="col-md-2 control-label">Name</label>
+			<div class="col-md-4">
+				<!-- ko ifnot: editing -->
+				<p class="form-control-static" data-bind="text: name()"></p>
+				<!-- /ko -->
+				<!-- ko if: editing -->
+				<input class="form-control" data-bind="value: name">
+				<p class="text-danger" data-bind="text: name.validationMessage, if: name.hasError"></p>
+				<!-- /ko -->
+			</div>
+		</div>
+		<div class = "form-group">
+			<label class="col-md-2 control-label">Description</label>
+			<div class="col-md-4">
+				<!-- ko ifnot: editing -->
+				<p class="form-control-static" data-bind="text: description()"></p>
+				<!-- /ko -->
+				<!-- ko if: editing -->
+				<input class="form-control" data-bind="value: description">
+				<!-- /ko -->
+			</div>
+		</div>
+		<div class = "form-group">
+			<label class="col-md-2 control-label">Units</label>
+			<div class="col-md-4">
+				<!-- ko ifnot: editing -->
+				<p class="form-control-static" data-bind="text: units()"></p>
+				<!-- /ko -->
+				<!-- ko if: editing -->
+				<input class="form-control" data-bind="value: units">
+				<!-- /ko -->
+			</div>
+		</div>
+		<div class = "form-group">
+			<label class="col-md-2 control-label">Calibration</label>
+			<div class="col-md-4">
+				<!-- ko ifnot: editing -->
+				<p class="form-control-static" data-bind="text: coefficients()"></p>
+				<!-- /ko -->
+				<!-- ko if: editing -->
+				<input class="form-control" data-bind="value: coefficients">
+				<!-- /ko -->
+			</div>
+		</div>
+
+		<div class = "form-group">
+			<div class="col-md-6 col-md-offset-2">
+				<!-- ko ifnot: editing -->
+				<button type="button" class="btn btn-primary btn-sm" data-bind="click: beginEditing">
+					<span class="glyphicon glyphicon-pencil"></span> Edit
+				</button>
+				<!-- /ko -->
+
+				<!-- ko if: editing -->
+				<button type="button" class="btn btn-primary btn-sm" data-bind="click: update">
+					<span class="glyphicon glyphicon-ok"></span> Save
+				</button>
+				<button type="button" class="btn btn-default btn-sm" data-bind="click: cancelEditing">
+					<span class="glyphicon glyphicon-remove"></span> Cancel
+				</button>
+
+				<!-- /ko -->
+			</div>
+		</div>
+	</form>
+</div>
+							
+<div id="sensor-metadata" class="hidden" data-bind="with: activeSensor">
+	<ul data-bind="metadata: meta_data"></ul>
+</div>
+
