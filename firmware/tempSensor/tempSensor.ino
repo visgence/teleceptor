@@ -27,7 +27,7 @@ char** jsonFilter = (char *[]){"LED1",NULL};
 int inputPins[1] = {13};
 boolean pinState[1] = {true};
 
-static const char jsonData[] = "{\"model\": \"001-TEMP0001\",\"description\": \"Temperature Sensor A\", \"in\": [{\"timestamp\": 1404436932.2,\"name\": \"LED1\" ,\"units\": \"T/F\", \"description\": \"status\", \"sensor_type\": \"bool\"}], \"uuid\": \"TEMP1234\", \"out\": [{\"name\": \"TEMP1\", \"description\": \"Temperature Sensor\",\"units\":\"Degrees F\",\"model\":\"LM335\",\"sensor_type\":\"float\", \"scale\": [0.1, 0], \"timestamp\" : 1404436932.2}]}";
+static const char jsonData[] = "{\"model\": \"001-TEMP0001\",\"description\": \"Temperature Sensor A\", \"in\": [{\"timestamp\": 1404436932.2,\"name\": \"LED1\" ,\"units\": \"T/F\", \"description\": \"status\", \"sensor_type\": \"bool\"}], \"uuid\": \"TEMP1234\", \"out\": [{\"name\": \"TEMP1\", \"description\": \"Temperature Sensor\",\"units\":\"Degrees F\",\"model\":\"LM335\",\"sensor_type\":\"float\", \"scale\": [0.18, 32], \"timestamp\" : 1404436932.2}]}";
 
 
 aJsonStream serial_stream(&Serial);

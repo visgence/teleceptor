@@ -84,6 +84,8 @@ class mote(serial.Serial):
         """
         logging.debug("Calling serial.Serial...")
         super(serial.Serial,self).__init__(deviceName,timeout=3,baudrate=baudRate)
+        #wait 5 seconds to allow mote time to boot
+        time.sleep(5)
         logging.debug("Finished creating serial object as self")
         logging.info("Created mote %s with timeout %s seconds and %s baudrate", deviceName, str(timeout), str(baudRate))
 
