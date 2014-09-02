@@ -19,6 +19,7 @@
 #Getting Started (Ubuntu and Raspberry Pi)
 ##Dependencies
 ```
+jinja2
 sqlalchemy
 whisper
 pip
