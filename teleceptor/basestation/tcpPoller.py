@@ -28,7 +28,7 @@ import subprocess
 import re
 import time
 #Local Imports
-from teleceptor.basestation import wiflysensor
+from teleceptor.basestation import tcpSensor
 
 
 def tcpDevices(previousDevices,devices):
@@ -40,7 +40,7 @@ def tcpDevices(previousDevices,devices):
                 host,port = dev.split(":")
 		port = int(port)
                 print dev
-                p = multiprocessing.Process(target=wiflysensor.main,name=dev,args=(host,port,10))
+                p = multiprocessing.Process(target=tcpSensor.main,name=dev,args=(host,port,10))
                 p.start()
                 print "Made process"
 
