@@ -63,6 +63,8 @@ if os.path.isabs(conf['LOG']):
 else:
     LOG = os.path.join(DATAPATH,conf['LOG'])
 
+#Whisper Archives
+WHISPER_ARCHIVES = conf["WHISPER_ARCHIVES"]
 
 #SAVE DATA TO SQL DB
 SQLDATA = conf["SQLDATA"]

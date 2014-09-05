@@ -20,12 +20,12 @@ from time import time
 
 PATH = os.path.abspath(os.path.dirname(__file__))
 from teleceptor import WHISPER_DATA
+from teleceptor import WHISPER_ARCHIVES
 #Create this if not already in existence
 #WHISPER_DATA = PATH + "/whisperData/"
 
 def createDs(uuid):
-    testArchives = ["60:1440", "15m:14d", "6h:1y"]
-    archives = [whisper.parseRetentionDef(retentionDef) for retentionDef in testArchives]
+    archives = [whisper.parseRetentionDef(retentionDef) for retentionDef in WHISPER_ARCHIVES]
     dataFile = os.path.join(WHISPER_DATA,str(uuid) + ".wsp")
     try:
         os.makedirs(WHISPER_DATA)

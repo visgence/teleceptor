@@ -1,6 +1,7 @@
 {
     "DBFILE": "database/base_station.db",
     "WHISPER_DATA": "whisperData",
+    "WHISPER_ARCHIVES": ["60:1440", "15m:14d", "6h:1y"],
     "SQLDATA": true,
     "SQLREADTIME": 7200,
     "PORT": 8000,
