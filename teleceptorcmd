@@ -80,6 +80,8 @@ def rebuild():
 def setup():
 
     print "Creating new base_station.db file..."
+    if not os.path.exists(os.path.dirname(teleceptor.DBFILE)):
+        os.makedirs(os.path.dirname(teleceptor.DBFILE))
     open(teleceptor.DBFILE, 'a').close()
     print teleceptor.DBFILE + " created."
 

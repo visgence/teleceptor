@@ -16,20 +16,62 @@
 """
 
 import os
+import platform
+import json
 from .version import __version__
 PATH = os.path.abspath(os.path.join(os.path.dirname(__file__),'..'))
-#Data FIles
-DBFILE = os.path.abspath(os.path.join(PATH,'database','base_station.db'))
-WHISPER_DATA =  os.path.abspath(os.path.join(PATH,'whisperData'))
+
+#Path to WEBROOT and Template are part of application
 WEBROOT = os.path.abspath(os.path.join(PATH,'webroot'))
 TEMPLATES = os.path.abspath(os.path.join(PATH,'templates'))
-LOG = os.path.abspath(os.path.join(PATH,'sitemontior.log'))
+
+#Set config path based on system
+if platform.system() == 'Windows':
+    DATAPATH = os.path.join(os.getenv("APPDATA"),"teleceptor")
+else:
+    DATAPATH = os.path.join(os.getenv("HOME"),".config","teleceptor")
+
+#Check if we have a config relative to library
+if os.path.exists(os.path.join(PATH,'config.json')):
+    conf = json.load(open(os.path.join(PATH,'config.json')))
+    DATAPATH = PATH
+
+#If not check if we have a user config
+elif os.path.exists(os.path.join(DATAPATH,'config.json')):
+    conf = json.load(open(os.path.join(DATAPATH,'config.json')))
+
+#Use defaults.json
+else:
+    conf = json.load(open(os.path.join(PATH,'defaults.json')))
+    DATAPATH = PATH
+
+#Set SQL DB File
+if os.path.isabs(conf['DBFILE']):
+    DBFILE = conf['DBFILE']
+else:
+    DBFILE = os.path.join(DATAPATH,conf['DBFILE'])
+
+#Set Whisper Data folder
+if os.path.isabs(conf['WHISPER_DATA']):
+    WHISPER_DATA = conf['WHISPER_DATA']
+else:
+    WHISPER_DATA = os.path.join(DATAPATH,conf['WHISPER_DATA'])
+
+#Set Logfile
+if os.path.isabs(conf['LOG']):
+    LOG = conf['LOG']
+else:
+    LOG = os.path.join(DATAPATH,conf['LOG'])
+
 
 #SAVE DATA TO SQL DB
-SQLDATA = True
+SQLDATA = conf["SQLDATA"]
 
 #Read from SQL database if time delta is less than SQLREADTIME
-SQLREADTIME = 7200
+SQLREADTIME = conf["SQLREADTIME"]
 
 #Server Port
-PORT = 8000
+PORT = conf["PORT"]
+
+#TCP Poller Hosts
+TCP_POLLER_HOSTS = conf["TCP_POLLER_HOSTS"]

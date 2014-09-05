@@ -1,0 +1,9 @@
+{
+    "DBFILE": "database/base_station.db",
+    "WHISPER_DATA": "whisperData",
+    "SQLDATA": true,
+    "SQLREADTIME": 7200,
+    "PORT": 8000,
+    "LOG": "teleceptor.log",
+    "TCP_POLLER_HOSTS": []
+}

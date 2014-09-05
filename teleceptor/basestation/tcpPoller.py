@@ -51,7 +51,7 @@ def tcpDevices(previousDevices,devices):
 if __name__ == "__main__":
 	#print finddevices()
 
-        deviceList =["192.168.11.245:2000"]
+        deviceList =["192.168.55.47:2000","192.168.55.98:2000"]
 	foundDevices = []
 
 	while(1):
