@@ -28,6 +28,7 @@ import subprocess
 import re
 import time
 #Local Imports
+from teleceptor import TCP_POLLER_HOSTS
 from teleceptor.basestation import tcpSensor
 
 
@@ -51,7 +52,7 @@ def tcpDevices(previousDevices,devices):
 if __name__ == "__main__":
 	#print finddevices()
 
-        deviceList =["192.168.55.47:2000","192.168.55.98:2000"]
+        deviceList = TCP_POLLER_HOSTS
 	foundDevices = []
 
 	while(1):
