@@ -35,7 +35,7 @@ setup(
     name='teleceptor',
     scripts = ["teleceptorcmd"],
     version=__version__,
-    install_requires = ['sqlalchemy','cherrypy','requests','whisper','pySerial'],
+    install_requires = ['sqlalchemy','cherrypy','requests','whisper','pySerial','jinja2'],
     zip_safe=False,
     platforms='any',
     url='http://github.com/teleceptor/',
