@@ -68,15 +68,16 @@
 							<h3 class="panel-title">Sensors</h3>
 						</div>
 
-						<div class="list-group sensor-list">
+						<div class="list-group sensor-list" data-bind="with: activeSensor">
 
 							{% for sensor in sensorsList %}
 								{% if activeSensor and sensor.uuid == activeSensor.uuid %}
-    							<a class="list-group-item sensor active">
+    							<a class="list-group-item sensor active" data-bind="text: name">
     							{% else %}
     							<a class="list-group-item sensor" data-sensorid="{{sensor.uuid}}">
+                                {{sensor.name}}
     							{% endif %}
-    								{{sensor.name}}
+    								
     							</a>
 							{% endfor %}
 						</div>
