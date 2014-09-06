@@ -210,7 +210,7 @@ $(document).ready(function(){
             this.meta_data(vars.meta_data);
         if (vars.hasOwnProperty('sensor_IOtype'))
             this.isInput(vars.sensor_IOtype);
-        if (vars.hasOwnProperty('last_value'))
+        if (vars.hasOwnProperty('last_value') && vars.last_value != "")
             this.command_value(JSON.parse(vars.last_value));
     };
 
