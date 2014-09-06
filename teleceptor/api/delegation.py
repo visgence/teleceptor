@@ -217,6 +217,10 @@ class Delegation:
                 except NoResultFound:
                     #no sensor, so make one and try to find a datastream for it to claim (using the user+name combo)
                     sensor['uuid'] = sensorUuid
+                    if sensor.get('in') is not None:
+                        sensor['sensor_IOtype'] = True
+                    else:
+                        sensor['sensor_IOtype'] = False
                     timestamp = sensor['timestamp']
                     del sensor['timestamp']
                     newSensor = Sensor(**sensor)

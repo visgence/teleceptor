@@ -178,6 +178,8 @@ class Sensor(Base):
     """
     uuid : str
         Unique identifier of this sensor.
+    sensor_IOtype : bool
+        True indicates that the sensor takes input.  False indicates that the sensor is only for output.
     sensor_type : str
         Indicates the type of sensor.  Used in conjunction with message to check that the message is valid for this type of sensor.
     name : str
@@ -200,6 +202,7 @@ class Sensor(Base):
     __tablename__ = "sensor"
 
     uuid = Column(Text, primary_key=True)
+    sensor_IOtype = Column(Boolean)
     sensor_type = Column(Text,default="")
     name = Column(Text)
     units = Column(String(32))
