@@ -67,7 +67,7 @@ class Root(object):
             "sensorsList": sensorsList,
             "activeSensor": activeSensor,
             "activeSensorJSON": json.dumps(activeSensor),
-            "datastreamJSON": json.dumps(datastream)
+            "datastreamJSON": json.dumps(datastream),
         }
         returnData.update(**kwargs);
 

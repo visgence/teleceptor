@@ -93,16 +93,19 @@
 
 		<div class = "form-group form-group-sm" >
 			<label class="col-md-2 control-label" data-bind="text: name"></label>
+
+			<!-- ko ifnot: isInput -->
+			<p class="form-control-static" > Output Sensor</p>
+			<!-- /ko -->
+			<!-- ko if: isInput -->
 			<div class = "col-md-1" style="height: 30px">
 				<input class="form-control" type="checkbox" data-bind="bootstrapSwitchOn: command_value">
 			</div>
+			<!-- /ko -->
 
 		</div>
-
-
-
-
 	</form>
+	<!-- /ko -->
 
 	</div>
 </div>

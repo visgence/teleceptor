@@ -217,7 +217,7 @@ class Delegation:
                 except NoResultFound:
                     #no sensor, so make one and try to find a datastream for it to claim (using the user+name combo)
                     sensor['uuid'] = sensorUuid
-                    if sensor.get('in') is not None:
+                    if sensor in mote['info']['in']:
                         sensor['sensor_IOtype'] = True
                     else:
                         sensor['sensor_IOtype'] = False
@@ -251,9 +251,13 @@ class Delegation:
 
             print foundds
 
-            for reading in mote['readings']:
-                reading[0] = foundds[reading[0]]
-                print reading
+            with sessionScope() as s:
+                for reading in mote['readings']:
+                    sensorUuid = mote['info']['uuid']+reading[0]
+                    sensor = s.query(Sensor).filter_by(uuid=sensorUuid).one()
+                    sensor.last_value = reading[1]
+                    reading[0] = foundds[reading[0]]
+                    print reading
 
             with sessionScope() as s:
                 SensorReadings.insertReadings(s, mote['readings'])

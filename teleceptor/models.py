@@ -204,6 +204,7 @@ class Sensor(Base):
     uuid = Column(Text, primary_key=True)
     sensor_IOtype = Column(Boolean)
     sensor_type = Column(Text,default="")
+    last_value = Column(Text,default="")
     name = Column(Text)
     units = Column(String(32))
     model = Column(Text)
@@ -224,6 +225,8 @@ class Sensor(Base):
             ,'description': self.description
             ,'name': self.name
             ,'model': self.model
+            ,'last_value': self.last_value
+            ,'sensor_IOtype': self.sensor_IOtype
             ,'meta_data': self.meta_data
         }
 

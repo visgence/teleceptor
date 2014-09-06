@@ -232,6 +232,7 @@ $(function($) {
         this.isLoading(true);
         var promise = $.get(url).then(function(resp) {
             __this.isLoading(false);
+            //activeSensor().command_value(resp.readings[resp.readings.length -1]);
             return scaleData(resp.readings, coefficients);
         });
 
