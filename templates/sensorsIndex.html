@@ -38,7 +38,7 @@
 	</script>
 {% endblock additional_scripts %}
 
-		
+
 {% block additional_styles %}
 	<link rel="stylesheet" href="css/sensors.css">
 	<link rel="stylesheet" href="css/graphWidget.css">
@@ -47,7 +47,7 @@
 
 
 {% block content %}
-	
+
 	<div class="container-fluid page-host" id="sensors-index">
 		<div class="row">
 			<div class="col-md-3 left-col">
@@ -67,7 +67,7 @@
 						<div class="panel-heading">
 							<h3 class="panel-title">Sensors</h3>
 						</div>
-						
+
 						<div class="list-group sensor-list">
 
 							{% for sensor in sensorsList %}
@@ -90,22 +90,22 @@
 						<div class="panel-heading">
 							<h3 class="panel-title">
                         		<!-- ko text: activeSensor().name() --><!-- /ko -->
-								<img src="img/spinner.gif" style="height: 17px;" 
+								<img src="img/spinner.gif" style="height: 17px;"
 									data-bind="visible: isLoading">
 							</h3>
 						</div>
-						
+
 						<div class="panel-body" data-bind="with: graph">
 							{% include 'graph.html' %}
 						</div>
 				</div>
-				
-				{% if activeSensor %}	
+
+				{% if activeSensor %}
 				<div class="panel panel-default">
 					<div class= "panel-heading">
 						<h3 class="panel-title">Sensor Information</h3>
 					</div>
-						
+
 					<div class="panel-body">
 						{% include 'sensor.html' %}
 					</div>

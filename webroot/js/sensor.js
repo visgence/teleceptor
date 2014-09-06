@@ -15,6 +15,15 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
+
+$(document).ready(function(){
+
+    $("form :checkbox").bootstrapSwitch();
+
+});
+
+
+
     Sensor = function(vars) {
         var __this = this;
         var __datacache = {};
@@ -31,6 +40,16 @@
         this.coefficients = ko.observable(); //used to buffer between this.last_calibration.coefficients and view's JSON
 
         this.editing = ko.observable(false);
+
+        this.command_value = ko.observable(true); //value to command this sensor to.
+        this.command_value.subscribe(function (newValue) {
+            console.log("Updating command");
+            console.log(newValue);
+
+        });
+        $('form :checkbox').on('switchChange.bootstrapSwitch',function(event,state){
+            command_value(state);
+        });
 
         this.setCache = function() {
             __datacache = this.toDict();
@@ -127,6 +146,11 @@
         }).then(updateSuccessCb.bind(this),updateFailCb.bind(this));
 
     };
+
+    Sensor.prototype.updateCommand = function() {
+        console.log("Updating command");
+        console.log(this.command_value);
+    }
 
     Sensor.prototype.validate = function() {
         var noError = true;

@@ -2,6 +2,7 @@
 <ul id="sensor-tabs" class="nav nav-tabs" role="tablist" style="margin-bottom:1em;">
 	<li class="tab active" data-tab="sensor-config"><a href="#">Configuration</a></li>
 	<li class="tab" data-tab="sensor-metadata"><a href="#">Metadata</a></li>
+	<li class="tab" data-tab="sensor-command"><a href="#">Command</a></li>
 </ul>
 
 <div id="sensor-config" data-bind="with: activeSensor">
@@ -9,7 +10,7 @@
 	<!-- ko if: updateError -->
 	<div class="alert alert-danger" data-bind="text: updateError"></div>
 	<!-- /ko -->
-	
+
 	<form class = "form-horizontal" role="form">
 		<div class = "form-group" data-bind="css: {'has-error': name.hasError}">
 
@@ -79,8 +80,30 @@
 		</div>
 	</form>
 </div>
-							
+
 <div id="sensor-metadata" class="hidden" data-bind="with: activeSensor">
 	<ul data-bind="metadata: meta_data"></ul>
+</div>
+
+<div id="sensor-command" class="hidden" data-bind="with: activeSensor">
+	<!-- ko if: updateError -->
+	<div class="alert alert-danger" data-bind="text: updateError"></div>
+	<!-- /ko -->
+	<form class = "form-horizontal" role="form">
+
+		<div class = "form-group form-group-sm" >
+			<label class="col-md-2 control-label" data-bind="text: name"></label>
+			<div class = "col-md-1" style="height: 30px">
+				<input class="form-control" type="checkbox" data-bind="checked: command_value">
+			</div>
+
+		</div>
+
+
+
+
+	</form>
+
+	</div>
 </div>
 

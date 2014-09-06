@@ -15,6 +15,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
+
 $(function($) {
 	"use strict";
 
@@ -22,6 +23,7 @@ $(function($) {
         var __this = this;
 
         this.activeSensor = ko.observable();
+        this.sensors = ko.observableArray();
         this.timeControls = ko.observable();
         this.graph = ko.observable();
         this.msg = ko.observable();
