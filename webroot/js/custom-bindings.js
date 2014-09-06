@@ -20,6 +20,28 @@
     };
 
     /**
+     * Knockout binding handler for bootstrapSwitch indicating the status
+     * of the switch (on/off): https://github.com/nostalgiaz/bootstrap-switch
+     */
+    ko.bindingHandlers.bootstrapSwitchOn = {
+        init: function (element, valueAccessor, allBindingsAccessor, viewModel) {
+            $elem = $(element);
+            $(element).bootstrapSwitch();
+            $(element).bootstrapSwitch('state', ko.utils.unwrapObservable(valueAccessor())); // Set intial state
+            $(element).on('switchChange.bootstrapSwitch', function (event, state) {
+                valueAccessor()(state);
+            });
+        },
+        update: function (element, valueAccessor, allBindingsAccessor, viewModel) {
+            var vStatus = $(element).bootstrapSwitch('state');
+            var vmStatus = ko.utils.unwrapObservable(valueAccessor());
+            if (vStatus != vmStatus) {
+                $(element).bootstrapSwitch('state', vmStatus);
+            }
+        }
+    };
+
+    /**
         Takes a plain object of metadata, key/value pairs, lists, objects, and contructs html lists to display the data.
 
         Meant to be bound to a ul.  Otherwise take each key/value pair in the first level of the object and put them into a list.

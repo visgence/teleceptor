@@ -47,9 +47,6 @@ $(document).ready(function(){
             console.log(newValue);
 
         });
-        $('form :checkbox').on('switchChange.bootstrapSwitch',function(event,state){
-            command_value(state);
-        });
 
         this.setCache = function() {
             __datacache = this.toDict();
