@@ -19,6 +19,8 @@
 $(function($) {
 	"use strict";
 
+    $("form :checkbox").bootstrapSwitch();
+
 	function SensorsIndex(vars) {
         var __this = this;
 

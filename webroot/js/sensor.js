@@ -16,13 +16,6 @@
 */
 
 
-$(document).ready(function(){
-
-    $("form :checkbox").bootstrapSwitch();
-
-});
-
-
 
     Sensor = function(vars) {
         var __this = this;
@@ -44,14 +37,15 @@ $(document).ready(function(){
 
         this.command_value = ko.observable(true); //value to command this sensor to.
 
+        __that = this;
         this.command_value.subscribe(function (newValue) {
             //post new value to commands api
             payload = {
-                "message": this.command_value()
+                "message": __that.command_value()
                ,"duration": 60000
             };
-            var id = this.uuid();
-            if (!id || !this.validate())
+            var id = __that.uuid();
+            if (!id || !__that.validate())
                 return $.Deferred().reject().promise();
             return $.ajax({
                url: "/api/messages/"+id+"/",
@@ -60,11 +54,11 @@ $(document).ready(function(){
                dataType: "json",
                contentType: "application/json",
                processData: false
-            }).then(updateSuccessCb.bind(this),updateFailCb.bind(this));
+            }).then(updateSuccessCb.bind(__that),updateFailCb.bind(__that));
             console.log("Updating command");
             console.log(newValue);
 
-        }, this);
+        });
 
         this.setCache = function() {
             __datacache = this.toDict();
