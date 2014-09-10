@@ -70,5 +70,18 @@ class Root(object):
         return t.render(returnData)
 
     index.exposed = True
-    
+
+
+    @require()
+    def generateJson(self,**kwargs):
+        t = env.get_template("generateJson.html")
+        sysdata = api.SysData()
+        sysdata_dict = json.loads(sysdata.GET())
+
+        cherrypy.response.headers['Content-Type'] = 'text/html'
+        return t.render({"sysdata":sysdata_dict})
+        
+    generateJson.exposed = True
+        
+        
     

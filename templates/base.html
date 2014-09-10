@@ -49,11 +49,11 @@
 
 				<div class="collapse navbar-collapse" id="teleceptor-nav">
 					<ul class="navbar-nav nav">
-						<li class="active">
-							<a href="">Sensors</a>
+						<li {{ sensor_active }}>
+							<a href="/">Sensors</a>
 						</li>
-						<li class="">
-							<a href="settings/">Settings</a>
+						<li {{ generate_json_active }}>
+							<a href="/generateJson">Generate Json</a>
 						</li>
 					</ul>
 					<div class="navbar-form navbar-right">
