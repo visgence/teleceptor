@@ -54,7 +54,7 @@
                dataType: "json",
                contentType: "application/json",
                processData: false
-            }).then(updateSuccessCb.bind(__that),updateFailCb.bind(__that));
+            }).then(updateSuccessCb.bind(this),updateFailCb.bind(this));
             console.log("Updating command");
             console.log(newValue);
 
