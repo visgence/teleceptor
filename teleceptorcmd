@@ -19,7 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 
 import runpy
-import sys, os
+import sys, os,glob
 import argparse
 
 from sqlalchemy import create_engine
@@ -73,6 +73,15 @@ def rebuild():
         print teleceptor.DBFILE + " deleted."
     except OSError:
         print('base_station.db does not exist.  Creating new db.')
+        
+    print "Deleting whisper files"
+    for g in glob.glob(os.path.join(teleceptor.WHISPER_DATA,"*.wsp")):
+        try:
+            os.remove(g)
+            print g + " deleted."
+        except:
+            print "Could not delete " + g
+            
 
     print "Runing setup."
     setup()
@@ -89,7 +98,10 @@ def setup():
 
     print "Initializing database tables..."
     models.Base.metadata.create_all(db)
+    
+    print "Run teleceptorcmd loadfixtures for example data"
 
+def loadfixtures():
     print "Loading fixtures..."
     testFixtures.main()
 
@@ -101,6 +113,7 @@ if __name__ == "__main__":
         ,'btcmote': btcmote
         ,'poller': poller
         ,'tcppoller': tcpPoller
+        ,'loadfixtures': loadfixtures
         ,'version': displayVersion
     }
 
