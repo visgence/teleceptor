@@ -37,15 +37,44 @@
 
         this.command_value = ko.observable(true); //value to command this sensor to.
 
-        __that = this;
+        this.updateSuccessCb = function(resp) {
+            __this.rebuild(resp.sensor);
+            //__this.setCache();
+            __this.editing(false);
+            __this.updateError(null);
+        };
+
+        this.updateFailCb = function(resp,a) {
+            var errorMsg = "";
+            var errorResp = {};
+            console.log(resp);
+            console.log(a);
+
+            try{
+                errorResp = JSON.parse(resp.responseText);
+            }
+            catch(e){
+                errorMsg = "Sorry, something unexpected occurred.";
+            }
+
+
+            if (errorResp.hasOwnProperty('error'))
+                errorMsg = errorResp.error;
+            else
+                errorMsg = "Sorry, something unexpected occurred.";
+
+
+            this.updateError(errorMsg);
+        };
+
         this.command_value.subscribe(function (newValue) {
             //post new value to commands api
             payload = {
-                "message": __that.command_value()
+                "message": __this.command_value()
                ,"duration": 60000
             };
-            var id = __that.uuid();
-            if (!id || !__that.validate())
+            var id = __this.uuid();
+            if (!id || !__this.validate())
                 return $.Deferred().reject().promise();
             return $.ajax({
                url: "/api/messages/"+id+"/",
@@ -54,7 +83,7 @@
                dataType: "json",
                contentType: "application/json",
                processData: false
-            }).then(updateSuccessCb.bind(this),updateFailCb.bind(this));
+            }).then(__this.updateSuccessCb.bind(__this),__this.updateFailCb.bind(__this));
             console.log("Updating command");
             console.log(newValue);
 
@@ -100,36 +129,8 @@
         }.bind(this);
 
         init(vars);
-    };
-
-    var updateSuccessCb = function(resp) {
-        this.rebuild(resp.sensor);
-        this.setCache();
-        this.editing(false);
-        this.updateError(null);
-    };
-
-    var updateFailCb = function(resp,a) {
-        var errorMsg = "";
-        var errorResp = {};
-        console.log(resp);
-        console.log(a);
-
-        try{
-            errorResp = JSON.parse(resp.responseText);
-        }
-        catch(e){
-            errorMsg = "Sorry, something unexpected occurred.";
-        }
-
-
-        if (errorResp.hasOwnProperty('error'))
-            errorMsg = errorResp.error;
-        else
-            errorMsg = "Sorry, something unexpected occurred.";
-
-
-        this.updateError(errorMsg);
+    
+    
     };
     Sensor.prototype.update = function() {
         console.log("In update");
