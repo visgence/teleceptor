@@ -129,11 +129,9 @@ $(function($) {
 
 
             if (newTime.hasOwnProperty('start')) {
-                route['start'] = newTime['start'];
                 newRange['start'] = newTime['start'];
             }
             if (newTime.hasOwnProperty('end')) {
-                route['end'] = newTime['end'];
                 newRange['end'] = newTime['end'];
             }
             if (newTime.hasOwnProperty('time'))
