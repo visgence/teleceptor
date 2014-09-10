@@ -56,11 +56,11 @@ def rebuild():
 
     print 'This command will wipe your database and start fresh.  Are you sure you want to continue?'
     user_resp = None
-    user_resp = raw_input('(Y/n) ')
+    user_resp = raw_input('(Y/n) ').rstrip()
     while user_resp not in ['Y', 'n']:
         print 'Did not understand your response.  Please enter \'Y\' or \'n\'.'
         print 'This command will wipe your database and start fresh.  Are you sure you want to continue?'
-        user_resp = raw_input('(Y/n) ')
+        user_resp = raw_input('(Y/n) ').rstrip()
 
     if user_resp == 'n':
         sys.exit(0)
