@@ -21,7 +21,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 import runpy
 import sys, os,glob
 import argparse
-
+import shutil
+import platform
 from sqlalchemy import create_engine
 import teleceptor
 from  teleceptor import models
@@ -47,7 +48,26 @@ def tcpPoller():
     print tcppollercmd
     runpy.run_path(tcppollercmd,None,'__main__')
 
-
+def copyConfig():
+    if platform.system() == 'Windows':
+        appdata = os.path.join(os.getenv("APPDATA"),"teleceptor")
+    else:
+        appdata = os.path.join(os.getenv("HOME"),".config","teleceptor")
+    
+    #Check if file exists
+    if os.path.exists(os.path.join(appdata,'config.json')):
+        print "Config Exists at: " + str(os.path.join(appdata,'config.json'))
+        return
+    
+    if not os.path.exists(appdata):
+        os.makedirs(appdata)
+    
+    fromfile = os.path.join(teleceptor.PATH,"defaults.json")
+    tofile = os.path.join(appdata,"config.json")
+    shutil.copy2(fromfile,tofile)
+    
+    print "Config installed at:" + str(tofile)
+    
 
 def displayVersion():
     print "teleceptor Version: " + teleceptor.__version__
@@ -108,6 +128,7 @@ def loadfixtures():
 if __name__ == "__main__":
     cmds = {
          'runserver': [runserver,"Start the server"]
+        ,'copyconfig': [copyConfig,"Copy default config to home"]
         ,'rebuild': [rebuild,"Rebuild the database and datafiles"]
         ,'setup': [setup,"Build the database"]
         ,'btcmote': [btcmote,"Example sensor that collects BTC informaiotn"]
