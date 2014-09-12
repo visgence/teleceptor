@@ -50,7 +50,9 @@ $(function($) {
                 __this.activeSensor(new Sensor(vars.activeSensor));
 
             initTimeControls(vars);
+            
 
+            
             //TODO: Get params from url for graph init
             vars["sensor"] = vars["activeSensor"];
 			initGraph(vars);
@@ -62,7 +64,7 @@ $(function($) {
                 var sensorId = $(e.currentTarget).data("sensorid");
                 if (sensorId)
                     $.fn.updateRoute({"sensor_id": sensorId}, true);
-            })
+            });
 		}
 
         function switchSensorTab(e) {
@@ -137,7 +139,7 @@ $(function($) {
                 newRange['end'] = newTime['end'];
             }
             if (newTime.hasOwnProperty('time'))
-                route['time'] = newTime['time']
+                route['time'] = newTime['time'];
 
             //Let graph know of new range so it can fetch new data.
             if (!$.isEmptyObject(newRange))

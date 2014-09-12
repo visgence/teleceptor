@@ -160,6 +160,13 @@
             setupPickers($(".graph-time-controls"));
             __this.timeRange.subscribe(timeRangeHandler);
 
+             //On page load set the Default Time  
+            if (vars.hasOwnProperty('time')) {
+                __this.selectTime(vars['time']);
+            }
+            else{ 
+                __this.selectTime("24-hour");
+            }
 
             //Throttle the amount computed pops off subscribers sense it's evaluating two observables.
             //IMPORTANT!! This has to be done here. Otherwise the throttle stalls when values are being set
