@@ -19,9 +19,8 @@
 
 #include <SoftwareSerial.h>
 
-
 #define LED 13
-char** jsonFilter = (char *[]){"LED1",NULL};
+char * jsonFilter[] = {"LED1"};
 int inputPins[1] = {13};
 boolean pinState[1] = {true};
 

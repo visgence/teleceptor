@@ -16,6 +16,7 @@
 */
 
 #include <aJSON.h>
+#define FS(x) (__FlashStringHelper*)(x)
 
 char serialRead;
 char channel;
@@ -23,12 +24,12 @@ char value;
 int sensorValue = 0;
 //We only care about inputs 1
 //All other JSON name/value pairs will be ignored to save memory
-char** jsonFilter = (char *[]){"LED1",NULL};
+char * jsonFilter[] = {"LED1"};
 int inputPins[1] = {13};
 boolean pinState[1] = {true};
 
-static const char jsonData[] = "{\"model\": \"001-TEMP0001\",\"description\": \"Temperature Sensor A\", \"in\": [{\"timestamp\": 1404436932.2,\"name\": \"LED1\" ,\"units\": \"T/F\", \"description\": \"status\", \"sensor_type\": \"bool\"}], \"uuid\": \"TEMP1234\", \"out\": [{\"name\": \"TEMP1\", \"description\": \"Temperature Sensor\",\"units\":\"Degrees F\",\"model\":\"LM335\",\"sensor_type\":\"float\", \"scale\": [0.18, 32], \"timestamp\" : 1404436932.2}]}";
-
+//Use Flash memory to save Ram
+const char jsonData[] PROGMEM = "{\"model\": \"001-TEMP0001\",\"description\": \"Temperature Sensor A\", \"in\": [{\"timestamp\": 1404436932.2,\"name\": \"LED1\" ,\"units\": \"T/F\", \"description\": \"status\", \"sensor_type\": \"bool\"}], \"uuid\": \"TEMP1234\", \"out\": [{\"name\": \"TEMP1\", \"description\": \"Temperature Sensor\",\"units\":\"Degrees F\",\"model\":\"LM335\",\"sensor_type\":\"float\", \"scale\": [0.18, 32], \"timestamp\" : 1404436932.2}]}";
 
 aJsonStream serial_stream(&Serial);
 
@@ -90,7 +91,7 @@ void loop() {
        }
 
        if(serialRead == '%'){
-            Serial.println(jsonData);
+            Serial.println(FS(jsonData));
 
             Serial.print("[[");
 
@@ -105,3 +106,6 @@ void loop() {
        }
      }
 }
+
+
+

@@ -29,11 +29,11 @@ char value;
 int sensorValue = 0;
 //We only care about inputs 1, 2, 3, and 4
 //All other JSON name/value pairs will be ignored to save memory
-char** jsonFilter = (char *[]){"in1","in2","in3","in4",NULL};
+char * jsonFilter[] = {"in1","in2","in3","in4"};
 int inputPins[4] = {4, 6, 5, 7};
 boolean pinState[4] = {true, true, true, true};
 
-static const char jsonData[] = "{\"model\": \"001-RELAY0001\",\"description\": \"4 Channel Relay Board\", \"in\": [{\"timestamp\": 1404436932.2,\"name\": \"in1\" ,\"units\": \"T\F\", \"description\": \"status\", \"sensor_type\": \"bool\"}, {\"timestamp\": 1404436932.2,\"name\": \"in2\" ,\"units\": \"T\F\", \"description\": \"status\", \"sensor_type\": \"bool\"}, {\"timestamp\": 1404436932.2,\"name\": \"in3\" ,\"units\": \"T\F\", \"description\": \"status\", \"sensor_type\": \"bool\"}, {\"timestamp\": 1404436932.2,\"name\": \"in4\" ,\"units\": \"T\F\", \"description\": \"status\", \"sensor_type\": \"bool\"}], \"uuid\": \"RELAY1234\", \"out\": []}";
+static const char jsonData[] = "{\"model\": \"001-RELAY0001\",\"description\": \"4 Channel Relay Board\", \"in\": [{\"timestamp\": 1404436932.2,\"name\": \"in1\" ,\"units\": \"T/F\", \"description\": \"status\", \"sensor_type\": \"bool\"}, {\"timestamp\": 1404436932.2,\"name\": \"in2\" ,\"units\": \"T/F\", \"description\": \"status\", \"sensor_type\": \"bool\"}, {\"timestamp\": 1404436932.2,\"name\": \"in3\" ,\"units\": \"T/F\", \"description\": \"status\", \"sensor_type\": \"bool\"}, {\"timestamp\": 1404436932.2,\"name\": \"in4\" ,\"units\": \"T/F\", \"description\": \"status\", \"sensor_type\": \"bool\"}], \"uuid\": \"RELAY1234\", \"out\": []}";
 
 
 aJsonStream serial_stream(&Serial);
