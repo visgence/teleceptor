@@ -21,7 +21,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 import runpy
 import sys, os,glob
 import argparse
-
+import shutil
+import platform
 from sqlalchemy import create_engine
 import teleceptor
 from  teleceptor import models
@@ -47,7 +48,26 @@ def tcpPoller():
     print tcppollercmd
     runpy.run_path(tcppollercmd,None,'__main__')
 
-
+def copyConfig():
+    if platform.system() == 'Windows':
+        appdata = os.path.join(os.getenv("APPDATA"),"teleceptor")
+    else:
+        appdata = os.path.join(os.getenv("HOME"),".config","teleceptor")
+    
+    #Check if file exists
+    if os.path.exists(os.path.join(appdata,'config.json')):
+        print "Config Exists at: " + str(os.path.join(appdata,'config.json'))
+        return
+    
+    if not os.path.exists(appdata):
+        os.makedirs(appdata)
+    
+    fromfile = os.path.join(teleceptor.PATH,"defaults.json")
+    tofile = os.path.join(appdata,"config.json")
+    shutil.copy2(fromfile,tofile)
+    
+    print "Config installed at:" + str(tofile)
+    
 
 def displayVersion():
     print "teleceptor Version: " + teleceptor.__version__
@@ -107,20 +127,26 @@ def loadfixtures():
 
 if __name__ == "__main__":
     cmds = {
-         'runserver': runserver
-        ,'rebuild': rebuild
-        ,'setup': setup
-        ,'btcmote': btcmote
-        ,'poller': poller
-        ,'tcppoller': tcpPoller
-        ,'loadfixtures': loadfixtures
-        ,'version': displayVersion
+         'runserver': [runserver,"Start the server"]
+        ,'copyconfig': [copyConfig,"Copy default config to home"]
+        ,'rebuild': [rebuild,"Rebuild the database and datafiles"]
+        ,'setup': [setup,"Build the database"]
+        ,'btcmote': [btcmote,"Example sensor that collects BTC informaiotn"]
+        ,'poller': [poller,"Serial poller"]
+        ,'tcppoller': [tcpPoller,"TCP poller (Hosts are added in config.json)"]
+        ,'loadfixtures': [loadfixtures,"Load test database data"]
+        ,'version': [displayVersion,"Display version"]
     }
 
     args = sys.argv
     if len(args) > 1 and args[1].lower() in cmds:
-        cmds[args[1].lower()]()
+        cmds[args[1].lower()][0]()
         print "Done!"
 
     else:
         print "Please enter a valid command"
+        print "Commands Are:"
+        for c in sorted(cmds):
+            print "    %s : %s" % (c,cmds[c][1])
+        
+        

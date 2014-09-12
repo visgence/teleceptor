@@ -11,7 +11,24 @@
 	<div class="alert alert-danger" data-bind="text: updateError"></div>
 	<!-- /ko -->
 
+
+
 	<form class = "form-horizontal" role="form">
+
+        <div class="form-group">
+            <label class="col-md-2 control-label">UUID</label>
+            <div class="col-md-4">
+                <p class="form-control-static" data-bind="text: uuid()"></p>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="col-md-2 control-label">Model</label>
+            <div class="col-md-4">
+                <p class="form-control-static" data-bind="text: model()"></p>
+            </div>
+        </div>
+
 		<div class = "form-group" data-bind="css: {'has-error': name.hasError}">
 
 			<label class="col-md-2 control-label">Name</label>

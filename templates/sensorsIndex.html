@@ -71,11 +71,11 @@
 
 							{% for sensor in sensorsList %}
 								{% if activeSensor and sensor.uuid == activeSensor.uuid %}
-    							<a class="list-group-item sensor active" data-bind="text: name">
+    							<a class="list-group-item sensor active">
     							{% else %}
     							<a class="list-group-item sensor" data-sensorid="{{sensor.uuid}}">
-                                {{sensor.name}}
     							{% endif %}
+                                <span>{{sensor.name}} </span><span class="small" style="color: #888888"> {{sensor.uuid}}</span>
     								
     							</a>
 							{% endfor %}
