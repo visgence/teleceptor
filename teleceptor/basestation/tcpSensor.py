@@ -107,7 +107,7 @@ def main(host="192.168.55.12",port=2000,queryRate=60):
         payload = {"info":info, "readings":readings}
         #add to each sensor
         for sensor in payload['info']['in'] + payload['info']['out']:
-            sensor.update({'meta_data':{'uptime' : uptime, 'pid' : pid, 'host' : host}})
+            sensor.update({'meta_data':{'uptime' : uptime, 'pid' : pid, 'host' : host,'port':port}})
 
         payloads.append(payload)
 
