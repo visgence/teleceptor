@@ -39,10 +39,10 @@ setup(
     install_requires = ['sqlalchemy','cherrypy','requests','whisper','pySerial','jinja2'],
     zip_safe=False,
     platforms='any',
-    url='http://github.com/teleceptor/',
+    url='https://github.com/visgence/teleceptor/tarball/' + __version__,
     license='GPL3',
     author='Visgnece Inc.',
-    author_email='sales@visgence.com',
+    author_email='info@visgence.com',
     include_package_data=True,
     data_files = datafiles,
     packages=find_packages())
