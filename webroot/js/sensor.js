@@ -30,6 +30,7 @@
         this.last_calibration = ko.observable();
         this.meta_data        = ko.observable();
         this.isInput = ko.observable();
+        this.temp_command_value = ko.observable();
 
         this.coefficients = ko.observable(); //used to buffer between this.last_calibration.coefficients and view's JSON
 
@@ -66,6 +67,10 @@
 
             this.updateError(errorMsg);
         };
+
+        this.sendCommand = function(){
+            this.command_value = this.temp_command_value;
+        }
 
         this.command_value.subscribe(function (newValue) {
             //post new value to commands api
@@ -129,8 +134,8 @@
         }.bind(this);
 
         init(vars);
-    
-    
+
+
     };
     Sensor.prototype.update = function() {
         console.log("In update");
