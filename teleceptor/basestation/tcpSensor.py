@@ -24,7 +24,7 @@ import socket
 from requests import ConnectionError
 import os
 import logging
-
+logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s',level=logging.INFO)
 #local imports
 import teleceptor
 
@@ -44,6 +44,7 @@ def updateValues(device,newValues={}):
         device.write('@') #TODO: Check if this is correct code.
         device.flush()
         device.write(json.dumps(newValues))
+        device.flush()
     #get values from sensor
     return getReadings(device)
 
