@@ -25,9 +25,16 @@ exec(open(os.path.join('teleceptor','version.py')).read())
 
 datadir = os.path.join('webroot')
 datafiles = [(d, [os.path.join(d, f) for f in files]) for d,folders,files in os.walk(datadir)]
+
+templatesdir = os.path.join('templates')
+for t in [(d, [os.path.join(d, f) for f in files]) for d,folders,files in os.walk(templatesdir)]:
+    datafiles.append(t)
+
 datafiles.append(('whisperData',[os.path.join('whisperData','blank.txt')]))
 datafiles.append(('database',[os.path.join('database','blank.txt')]))
 datafiles.append(('defaults.json'))
+datafiles.append(('server_startup'))
+datafiles.append(('basestation_startup'))
 
 #for d in datafiles:
 #    print d

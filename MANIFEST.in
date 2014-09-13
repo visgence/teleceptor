@@ -1,0 +1,10 @@
+recursive-include teleceptor *
+recursive-include templates *
+recursive-include webroot *
+recursive-include database *
+recursive-include whisperData *
+include teleceptorcmd
+include basestation_startup
+include server_startup
+include *.md
+include defaults.json
