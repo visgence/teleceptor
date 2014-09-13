@@ -16,7 +16,6 @@
 */
 
 
-
     Sensor = function(vars) {
         var __this = this;
         var __datacache = {};
@@ -30,13 +29,15 @@
         this.last_calibration = ko.observable();
         this.meta_data        = ko.observable();
         this.isInput = ko.observable();
-        this.temp_command_value = ko.observable();
+        this.temp_command_value = ko.observable()
 
         this.coefficients = ko.observable(); //used to buffer between this.last_calibration.coefficients and view's JSON
 
         this.editing = ko.observable(false);
 
         this.command_value = ko.observable(true); //value to command this sensor to.
+
+
 
         this.updateSuccessCb = function(resp) {
             __this.rebuild(resp.sensor);
@@ -69,8 +70,8 @@
         };
 
         this.sendCommand = function(){
-            this.command_value = this.temp_command_value;
-        }
+            this.command_value(parseFloat(this.temp_command_value()));
+        };
 
         this.command_value.subscribe(function (newValue) {
             //post new value to commands api
@@ -78,6 +79,7 @@
                 "message": __this.command_value()
                ,"duration": 60000
             };
+            console.log(payload);
             var id = __this.uuid();
             if (!id || !__this.validate())
                 return $.Deferred().reject().promise();

@@ -1,0 +1,262 @@
+This howto assumes the user has set up a database and has started the teleceptor webserver
+using the commands ./teleceptorcmd setup and ./teleceptorcmd runserver.
+
+The purpose of the howto is to document the JSON format used by a basestation
+application to send messages to the server, and what to do with the response
+from the server. When applicable, short examples are included. The user is
+encouraged to view the basestation files poller.py and queryer.py for full
+examples in how to interact with the server and a serial device. The software
+sensors are also good examples, but do not include serial communication.
+
+
+This howto uses python and the requests module for examples. For more details
+on how to use python and requests, please visit the documentation pages at:
+https://www.python.org/doc/
+http://docs.python-requests.org/en/latest/
+
+
+JSON format
+
+
+To communicate between the basestation middleware and the webserver, we use
+a simple JSON format:
+[
+                {
+                    "info":
+                        {
+                            *"uuid": ".....",
+                            "name": ".....",
+                            "rev" : ".....",
+                            ...
+                            *"in"  : [
+                                        {
+                                            *"name"  : "in1",
+                                            *"timestamp": 100000,
+                                            *"metadata":{},
+                                            *"sensor_type": "float",
+                                            "scale" : [1,2,3,...],
+                                            ...
+                                        },
+                                        {
+                                            *"name"  : "in2",
+                                            *"timestamp": 100000,
+                                            *"metadata":{},
+                                            *"sensor_type": "float",
+                                            "scale" : [1,2,3,...],
+                                            ...
+                                        }
+                                    ]
+                            *"out" : [
+                                        {
+                                            *"name"  : "out1",
+                                            *"timestamp": 100000,
+                                            *"metadata":{},
+                                            *"sensor_type": "float",
+                                            "scale" : [1,2,3,...],
+                                            ...
+                                        },
+                                        {
+                                            *"name"  : "out2",
+                                            *"timestamp": 100000,
+                                            *"metadata":{},
+                                            *"sensor_type": "float",
+                                            "scale" : [1,2,3,...],
+                                            ...
+                                        }
+                                    ]
+
+
+                        }
+                    "readings":
+                        [
+                            [*sensorname, *val, *time],
+                            [*sensorname, *val, *time],
+                            ...
+                        ]
+                }
+
+            ]
+
+Where fields marked with a * are required.
+
+The JSON array is made of mote objects, which are representations of a sensor platform.
+Each platform may handle multiple sensors, each of which is described as an input
+or output sensor. The "info" field of each mote describes the information about that
+mote, such as its uuid and what sensors it has. The "readings" field is an array
+of arrays that contain values and timestamps for any of that mote's sensors.
+
+Please note that each sensor has a uuid (unique id) that is given as the mote's uuid
+concatenated with the sensor's name.
+
+
+
+Communicating with the server.
+
+This JSON string should be sent as a POST request to the webserver api function
+delegation.
+
+Example:
+    #build object to send to server
+    jsonExample = [{"info":{"uuid":"mote1234", "name":"myfirstmote","description":"My first mote","out":[],"in":[{"name":"in1","sensor_type":"float","timestamp":30000,"meta_data":{}}]},"readings":[["in1",examplevalue,time.time()]]}]
+
+This jsonExample describes a single mote, called myfirstmost, with a single output sensor called out1. It includes a single point of data for out1 that was taken at timestamp 30000. Note that the sensor's uuid is mote1234in1.
+
+See the appendix for a full list of accepted fields, or refer to the documentation in models.py.
+
+To send this string to our webserver, assuming the server is running on localhost and uses the port defined as teleceptor.PORT,
+
+import requests
+import json
+serverURL = "http://localhost:" + str(teleceptor.PORT) + "/api/delegation/"
+response = requests.post(serverURL, data=json.dumps(jsonExample))
+
+The user may change the URL to match his/her configuration as needed.
+
+A few gotchas:
+The json object should be an array (python list), even if there is only one mote
+in that list. Likewise, the out and in arrays for each mote must be there, even
+if they are empty.
+Finally, any sensorname in the readings section must match a name of a sensor listed
+in the "in" or "out" fields of the "info" section.
+
+Receiving data from the server.
+
+In the final line of code in the previous section, we received an object from
+the requests.post call. If everything went well, we can print the response.
+
+>>>print response
+<Response [200]>
+
+The response codes follow the standard HTTP conventions.
+
+The server always responds with its most up-to-date view of the sensors sent
+in the previous post request. Again, this is in JSON format:
+
+{
+    "info": [
+        {"uuid": uuid,
+         "coefficients": [xn, xn-1, ... , x1, x0],
+         ...
+         },
+         ...
+    ],
+    "newValues": {
+        sensorname : [
+            {
+                "read": true,
+                "message": message
+                "id": id
+                "timeout": timeout
+            },
+            ...
+        ],
+        ...
+    }
+}
+
+The newValues field is an object with fields for each sensor that was part of
+the last post request. If there are no new messages/values, the array will be empty.
+Otherwise, the array will contain objects representing messages on the server
+for that sensor. Note that the server will only send messages it has not sent before;
+it is up to your basestation to decide what to do if multiple unread messages are sent
+back. The visgence basestation has the default behaviour to just take the most recent (last)
+message in the array and update its sensor with that value.
+
+Note that the server will only send messages for input type sensors. Although it
+is possible to create messages for any sensor, we consider output type sensors
+as incapable of changing state themselves.
+
+A simple receipe for parsing the response object to update new sensors follows:
+
+responseData = json.loads(response.text)
+
+#check for any new values from server
+if 'newValues' in responseData:
+    parsedNewValues = {}
+    for sen in responseData['newValues']:
+        if len(responseData['newValues'][sen]) == 0:
+            continue
+        message = responseData['newValues'][sen][-1]
+        for senName,senMessage in message.items():
+            if senName == "id":
+                pass
+            elif senName == "message":
+                parsedNewValues[sen] = senMessage
+
+    #update value for sensor "in1"
+    if "in1" in parsedNewValues:
+        examplevalue = parsedNewValues["in1"]
+
+
+The full program for a simple software based input sensor follows. It is also available
+in the repository under softSensors/SimpleInput/simpleInput.py.
+
+import requests
+import time
+import json
+
+
+caltime = time.time()
+
+#just a value
+examplevalue = 22
+
+#loop forever
+while True:
+    #build object to send to server
+    jsonExample = [{"info":{"uuid":"mote1234", "name":"myfirstmote","description":"My first mote","out":[],"in":[{"name":"in1","sensor_type":"float","timestamp":caltime,"meta_data":{}}]},"readings":[["in1",examplevalue,time.time()]]}]
+
+    #send to server
+    serverURL = "http://localhost:" + str(8000) + "/api/delegation/"
+    response = requests.post(serverURL, data=json.dumps(jsonExample))
+
+    print response
+    print response.text
+    #decode response
+    responseData = json.loads(response.text)
+
+    #check for any new values from server
+    if 'newValues' in responseData:
+        parsedNewValues = {}
+        for sen in responseData['newValues']:
+            if len(responseData['newValues'][sen]) == 0:
+                continue
+            message = responseData['newValues'][sen][-1]
+            for senName,senMessage in message.items():
+                if senName == "id":
+                    pass
+                elif senName == "message":
+                    parsedNewValues[sen] = senMessage
+
+        #update value
+        if "in1" in parsedNewValues:
+            examplevalue = parsedNewValues["in1"]
+
+    #sleep based on rate of query
+    time.sleep(3)
+
+
+Appendix
+
+For each mote, the following fields are required:
+uuid - a string of characters
+
+For each mote, the follow fields are allowed but not required:
+model - a string representing the model of the mote
+rev - a string representing the revision of the mote
+
+For each sensor (listed in the "in" or "out" fields), the following fields are required:
+name - a string of characters
+sensor_type - a string of either "bool" or "float"
+meta_data - a JSON formatted dictionary of arbitrary values. May be nested, or empty.
+timestamp - the timestamp for the calibration of this sensor. May use 0. This timestamp
+should follow the UNIX standard, and can be taken from python's time.time() function.
+
+For each sensor, the following are allowed but not required:
+description - a string representing the description of this sensor
+units - a string representing the units of this sensor (e.g. Degrees F)
+model - a string representing the model of the sensor
+scale - an array of float values representing a polynomial's coefficients in decending order such that:
+    value = (x_n) * rawvalue^n + (x_(n-1) ) * rawvalue^(n-1) + ... + x_2 * rawvalue^2 + x_1 * rawvalue + x_0
+
+    for a scale array : [x_n, x_(n-1), ... , x_2, x_1, x_0]
