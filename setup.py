@@ -27,7 +27,7 @@ datadir = os.path.join('webroot')
 datafiles = [(d, [os.path.join(d, f) for f in files]) for d,folders,files in os.walk(datadir)]
 datafiles.append(('whisperData',[os.path.join('whisperData','blank.txt')]))
 datafiles.append(('database',[os.path.join('database','blank.txt')]))
-datafiles.append(('defaults.conf',['defaults.conf']))
+datafiles.append(('defaults.json'))
 
 #for d in datafiles:
 #    print d
