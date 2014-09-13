@@ -44,6 +44,7 @@ setup(
     license='GPL3',
     author='Visgnece Inc.',
     author_email='info@visgence.com',
+    description='Data collection web application for microcontrollers',
     include_package_data=True,
     data_files = datafiles,
     packages=find_packages())
