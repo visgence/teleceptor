@@ -32,8 +32,8 @@ else:
     DATAPATH = os.path.join(os.getenv("HOME"),".config","teleceptor")
 
 #Check if we have a config relative to library
-if os.path.exists(os.path.join(PATH,'config.json')):
-    conf = json.load(open(os.path.join(PATH,'config.json')))
+if os.path.exists(os.path.join(PATH,'config','config.json')):
+    conf = json.load(open(os.path.join(PATH,'config','config.json')))
     DATAPATH = PATH
 
 #If not check if we have a user config
@@ -42,7 +42,7 @@ elif os.path.exists(os.path.join(DATAPATH,'config.json')):
 
 #Use defaults.json
 else:
-    conf = json.load(open(os.path.join(PATH,'defaults.json')))
+    conf = json.load(open(os.path.join(PATH,'config','defaults.json')))
     DATAPATH = PATH
 
 #Set SQL DB File

@@ -62,7 +62,7 @@ def copyConfig():
     if not os.path.exists(appdata):
         os.makedirs(appdata)
     
-    fromfile = os.path.join(teleceptor.PATH,"defaults.json")
+    fromfile = os.path.join(teleceptor.PATH,'config',"defaults.json")
     tofile = os.path.join(appdata,"config.json")
     shutil.copy2(fromfile,tofile)
     

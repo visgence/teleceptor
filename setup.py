@@ -32,7 +32,7 @@ for t in [(d, [os.path.join(d, f) for f in files]) for d,folders,files in os.wal
 
 datafiles.append(('whisperData',[os.path.join('whisperData','blank.txt')]))
 datafiles.append(('database',[os.path.join('database','blank.txt')]))
-datafiles.append(('defaults.json'))
+datafiles.append(('config',[os.path.join('config','defaults.json')]))
 datafiles.append(('server_startup'))
 datafiles.append(('basestation_startup'))
 

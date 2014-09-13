@@ -23,17 +23,18 @@ jinja2
 sqlalchemy
 whisper
 pip
-cherrypy (pip install --no-use-wheel cherrypy)
+cherrypy (pip install --no-use-wheel cherrypy on windows)
 requests
 ```
 ##Setting Up Teleceptor
 1. Pull the latest version of Teleceptor from GitHub.
-2. In teleceptor folder, run command ```./teleceptorcmd setup``` and wait until _Done!_ is printed.
-  * **Note:** All commands should be run in the teleceptor folder
-3. Run command ```./teleceptorcmd runserver```. You will now be running teleceptor as a local host.
-4. Open up either a Chrome or Mozilla Firefox browser and go to page [http://0.0.0.0:8000/] (http://0.0.0.0:8000/)
+2. To insatll a local config customizable first run ```./teleceptor copyconfig``` app will print path
+3. In teleceptor folder, run command ```./teleceptorcmd setup``` and wait until _Done!_ is printed.
+  * **Note:** All commands should be run in the teleceptor folder unless installed with pip or setuptools
+4. Run command ```./teleceptorcmd runserver```. You will now be running teleceptor as a local host.
+5. Open up either a Chrome or Mozilla Firefox browser and go to page [http://0.0.0.0:8000/] (http://0.0.0.0:8000/)
   * If you do not have any sensors connected, you should see two default sensors producing a graph per tab with random data.
-5. Set up desired sensors and start collecting data.(_See below for setting up sensors_)
+6. Set up desired sensors and start collecting data.(_See below for setting up sensors_)
 
 ##Setting Up Sensors
 1. Run command ```./teleceptorcmd poller```. This will begin to look for sensors via USB ports.
