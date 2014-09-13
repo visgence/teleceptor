@@ -21,61 +21,59 @@ JSON format
 To communicate between the basestation middleware and the webserver, we use
 a simple JSON format:
 [
-                {
-                    "info":
-                        {
-                            *"uuid": ".....",
-                            "name": ".....",
-                            "rev" : ".....",
-                            ...
-                            *"in"  : [
-                                        {
-                                            *"name"  : "in1",
-                                            *"timestamp": 100000,
-                                            *"metadata":{},
-                                            *"sensor_type": "float",
-                                            "scale" : [1,2,3,...],
-                                            ...
-                                        },
-                                        {
-                                            *"name"  : "in2",
-                                            *"timestamp": 100000,
-                                            *"metadata":{},
-                                            *"sensor_type": "float",
-                                            "scale" : [1,2,3,...],
-                                            ...
-                                        }
-                                    ]
-                            *"out" : [
-                                        {
-                                            *"name"  : "out1",
-                                            *"timestamp": 100000,
-                                            *"metadata":{},
-                                            *"sensor_type": "float",
-                                            "scale" : [1,2,3,...],
-                                            ...
-                                        },
-                                        {
-                                            *"name"  : "out2",
-                                            *"timestamp": 100000,
-                                            *"metadata":{},
-                                            *"sensor_type": "float",
-                                            "scale" : [1,2,3,...],
-                                            ...
-                                        }
-                                    ]
-
-
-                        }
-                    "readings":
-                        [
-                            [*sensorname, *val, *time],
-                            [*sensorname, *val, *time],
-                            ...
+    {
+        "info":
+            {
+                *"uuid": ".....",
+                "name": ".....",
+                "rev" : ".....",
+                ...
+                *"in"  : [
+                            {
+                                *"name"  : "in1",
+                                *"timestamp": 100000,
+                                *"metadata":{},
+                                *"sensor_type": "float",
+                                "scale" : [1,2,3,...],
+                                ...
+                            },
+                            {
+                                *"name"  : "in2",
+                                *"timestamp": 100000,
+                                *"metadata":{},
+                                *"sensor_type": "float",
+                                "scale" : [1,2,3,...],
+                                ...
+                            }
                         ]
-                }
-
+                *"out" : [
+                            {
+                                *"name"  : "out1",
+                                *"timestamp": 100000,
+                                *"metadata":{},
+                                *"sensor_type": "float",
+                                "scale" : [1,2,3,...],
+                                ...
+                            },
+                            {
+                                *"name"  : "out2",
+                                *"timestamp": 100000,
+                                *"metadata":{},
+                                *"sensor_type": "float",
+                                "scale" : [1,2,3,...],
+                                ...
+                            }
+                        ]
+            },
+        "readings":
+            [
+                [*sensorname, *val, *time],
+                [*sensorname, *val, *time],
+                ...
             ]
+    }
+
+]
 
 Where fields marked with a * are required.
 
