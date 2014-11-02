@@ -26,7 +26,7 @@ char value;
 int sensorValue = 0;
 SoftwareSerial mySerial(6,7);
 
-static const char jsonData[] = "{\"model\": \"WifiTmp\",\"description\": \"Wifi Sensor\", \"in\": [{\"timestamp\": 1404436932.2,\"name\": \"LED1\" ,\"units\": \"F\", \"description\": \"status\", \"sensor_type\": \"bool\"}], \"uuid\": \"TEMPWIFI1\", \"out\": [{\"name\": \"WIFITEMP1\", \"description\": \"Temperature Sensor\",\"units\":\"Degrees F\",\"model\":\"LM335\",\"sensor_type\":\"float\", \"scale\": [0.4507,-11.4872], \"timestamp\" : 1404436932.2}]}";
+static const char jsonData[] = "{\"model\": \"WifiTmp\",\"description\": \"Wifi Sensor\", \"in\": [{\"timestamp\": 1404436932.2,\"name\": \"LED1\" ,\"units\": \"F\", \"description\": \"status\", \"sensor_type\": \"bool\"}], \"uuid\": \"TEMPWIFI1\", \"out\": [{\"name\": \"WIFITEMP1\", \"description\": \"Temperature Sensor\",\"units\":\"Degrees F\",\"model\":\"LM335\",\"sensor_type\":\"float\", \"scale\": [1,0], \"timestamp\" : 1404436932.2}]}";
 
 // the setup routine runs once when you press reset:
 void setup() {
