@@ -21,10 +21,34 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-
+#include <Config.h>
 #include "Arduino.h"
-#include "Config.h"
 #define FS(x) (__FlashStringHelper*)(x)
+
+/**
+Convience function to write out the values of each sensor in the nested array format [ ["sensorname", sensorvalue], ["sensorname", sensorvalue], ... ]
+*/
+void writeSensorStates(TELECEPTORSERIAL s){
+    int numsensors = NUMOUTPUTSENSORS + NUMINPUTSENSORS;
+    s.print("[");
+    for(int i = 0; i < numsensors; i++){
+        s.print("[");
+        if(i < NUMOUTPUTSENSORS){
+            s.print(outputsensornames[i]);
+            s.print(",");
+            s.print(outputsensorvalues[i]);
+        }
+        else{
+            s.print(inputsensornames[i-NUMOUTPUTSENSORS]);
+            s.print(",");
+            s.print(inputsensorstate[i-NUMOUTPUTSENSORS]);
+        }
+        s.print("]");
+        if(i < numsensors-1) s.print(",");
+    }
+    s.print("]");
+}
+
 
 /**
 Param: Stream s - object of type Stream. Stream inherits from Print, so we still have access to print statements.
@@ -33,9 +57,9 @@ serialComm will read in serial data as described in the file basestationHOWTO (T
 
 See Also: writeSensorStates
 */
-void serialComm(Stream s){
+void serialComm(TELECEPTORSERIAL s){
     if(s.available() > 0){
-        serialRead = s.read();
+        char serialRead = s.read();
 
         if(serialRead == '@'){
             while(!s.available()){} //wait for more data
@@ -63,27 +87,5 @@ void serialComm(Stream s){
     }
 }
 
-/**
-Convience function to write out the values of each sensor in the nested array format [ ["sensorname", sensorvalue], ["sensorname", sensorvalue], ... ]
-*/
-void writeSensorStates(Stream s){
-    int numsensors = NUMOUTPUTSENSORS + NUMINPUTSENSORS;
-    s.print("[");
-    for(int i = 0; i < numsensors; i++){
-        s.print("[");
-        if(i < NUMOUTPUTSENSORS){
-            s.print(outputsensornames[i]);
-            s.print(",");
-            s.print(outputsensorvalues[i]);
-        }
-        else{
-            s.print(inputsensornames[i-NUMOUTPUTSENSORS]);
-            s.print(",");
-            s.print(inputsensorstate[i-NUMOUTPUTSENSORS]);
-        }
-        s.print("]");
-        if(i < numsensors-1) s.print(",");
-    }
-    s.print("]");
-}
+
 

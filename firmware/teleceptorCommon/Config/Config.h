@@ -25,10 +25,12 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-#ifndef CONFIG.H
-#define CONFIG.H
+
+#ifndef CONFIG_H
+#define CONFIG_H
 
 #include "Arduino.h"
+#include "HardwareSerial.h"
 
 
 /* Serial config */
@@ -57,28 +59,25 @@ RMSValue on MicSensor.*/
 #define NUMOUTPUTSENSORS 2
 #define NUMINPUTSENSORS 1
 
-
-//Use Flash memory to save Ram
-const char jsonData[] PROGMEM = "{\"model\": \"001-TEMP0002\",\"description\": \"TEMPMIC Sensor A\", \"in\": [], \"uuid\": \"TEMPMIC\", \"out\": [{\"name\": \"temp1\", \"description\": \"Temp Sensor\",\"units\":\"degrees F\",\"model\":\"m\",\"sensor_type\":\"float\", \"scale\": [0.18,32], \"timestamp\" : 1404436932.2},{\"name\": \"temp2\", \"description\": \"Temp Sensor\",\"units\":\"degrees F\",\"model\":\"m\",\"sensor_type\":\"float\", \"scale\": [0.18,32], \"timestamp\" : 1404436932.2},{\"name\": \"RMSValue\", \"description\": \"Temp Sensor\",\"units\":\"degrees F\",\"model\":\"m\",\"sensor_type\":\"float\", \"scale\": [1,0], \"timestamp\" : 1404436932.2},{\"name\": \"RMSCurrent\", \"description\": \"Temp Sensor\",\"units\":\"degrees F\",\"model\":\"m\",\"sensor_type\":\"float\", \"scale\": [1,0], \"timestamp\" : 1404436932.2}]}";
-
-
-Stream serial;
 #if USESOFTSERIAL
-serial = SoftSerial(SOFTSERIALRX,SOFTSERIALTX);
+typedef SoftSerial *TELECEPTORSERIAL;
+extern TELECEPTORSERIAL serial;
 #else
-serial = Serial;
+typedef HardwareSerial TELECEPTORSERIAL;
+extern TELECEPTORSERIAL serial;
 #endif
 
 //modify the array defs based on the defined sensors above.
-int outputsensorpins[NUMOUTPUTSENSORS] = {OUTPUTSENSORA, OUTPUTSENSORB};
-int outputsensorvalue[NUMOUTPUTSENSORS] = {0, 0};
-char * outputsensornames[] = {OUTPUTNAMEA, OUTPUTNAMEB};
+extern int outputsensorpins[];
+extern int outputsensorvalues[];
+extern char * outputsensornames[];
 
 
-int inputsensorpins[NUMINPUTSENSORS] = {INPUTSENSORA};
-boolean inputsensorstate[NUMINPUTSENSORS] = {true};
-char * inputsensornames[] = {INPUTNAMEA};
+extern int inputsensorpins[];
+extern boolean inputsensorstate[];
+extern char * inputsensornames[];
 
+extern const char jsonData[] PROGMEM;
 
 
 #endif

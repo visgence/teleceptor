@@ -15,8 +15,9 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-#include "SerialHelper.h"
-#include "Config.h"
+#include <SerialHelper.h>
+#include <Config.h>
+
 
 // the setup routine runs once when you press reset:
 void setup() {
@@ -33,9 +34,9 @@ void setup() {
 // the loop routine runs over and over again forever:
 void loop() {
 
-    for(int i = 0; i < NUMOUTPUTSENSORS; i++{
+    for(int i = 0; i < NUMOUTPUTSENSORS; i++){
       if(outputsensorpins[i] != 0)
-        outputsensorvalue[i] = analogRead(outputsensorpins[i]);
+        outputsensorvalues[i] = analogRead(outputsensorpins[i]);
     }
 
 
@@ -52,8 +53,8 @@ void loop() {
     serialComm(serial);
 
 
-     }
 }
+
 
 
 
