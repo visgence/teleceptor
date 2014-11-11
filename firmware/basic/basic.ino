@@ -66,7 +66,7 @@ SoftwareSerial myserial(SOFTSERIALRX,SOFTSERIALTX);
 Variable declarations
 
 Variables:
-const char jsonData[] PROGMEM
+const char sensorData[] PROGMEM
 TELECEPTORSERIAL serial
 int outputsensorpins[]
 int outputsensorvalues[]
@@ -78,7 +78,7 @@ char * inputsensornames[]
 */
 
 //Use Flash memory to save Ram
-const char jsonData[] PROGMEM = "{\"model\": \"001-TEMP0002\",\"description\": \"TEMPMIC Sensor A\", \"in\": [], \"uuid\": \"TEMPMIC\", \"out\": [{\"name\": \"temp1\", \"description\": \"Temp Sensor\",\"units\":\"degrees F\",\"model\":\"m\",\"sensor_type\":\"float\", \"scale\": [0.18,32], \"timestamp\" : 1404436932.2},{\"name\": \"temp2\", \"description\": \"Temp Sensor\",\"units\":\"degrees F\",\"model\":\"m\",\"sensor_type\":\"float\", \"scale\": [0.18,32], \"timestamp\" : 1404436932.2},{\"name\": \"RMSValue\", \"description\": \"Temp Sensor\",\"units\":\"degrees F\",\"model\":\"m\",\"sensor_type\":\"float\", \"scale\": [1,0], \"timestamp\" : 1404436932.2},{\"name\": \"RMSCurrent\", \"description\": \"Temp Sensor\",\"units\":\"degrees F\",\"model\":\"m\",\"sensor_type\":\"float\", \"scale\": [1,0], \"timestamp\" : 1404436932.2}]}";
+const char sensorData[] PROGMEM = "{\"model\": \"001-TEMP0002\",\"description\": \"TEMPMIC Sensor A\", \"in\": [{\"name\": \"LED1\", \"description\": \"LED\", \"units\": \"tf\", \"model\": \"m\", \"sensor_type\": \"bool\", \"scale\": [1,0], \"timestamp\": 1404436932.2}], \"uuid\": \"TEMPMIC\", \"out\": [{\"name\": \"temp1\", \"description\": \"Temp Sensor\",\"units\":\"degrees F\",\"model\":\"m\",\"sensor_type\":\"float\", \"scale\": [0.18,32], \"timestamp\" : 1404436932.2},{\"name\": \"temp2\", \"description\": \"Temp Sensor\",\"units\":\"degrees F\",\"model\":\"m\",\"sensor_type\":\"float\", \"scale\": [0.18,32], \"timestamp\" : 1404436932.2},{\"name\": \"RMSValue\", \"description\": \"Temp Sensor\",\"units\":\"degrees F\",\"model\":\"m\",\"sensor_type\":\"float\", \"scale\": [1,0], \"timestamp\" : 1404436932.2},{\"name\": \"RMSCurrent\", \"description\": \"Temp Sensor\",\"units\":\"degrees F\",\"model\":\"m\",\"sensor_type\":\"float\", \"scale\": [1,0], \"timestamp\" : 1404436932.2}]}";
 
 //modify the array defs based on the defined sensors above.
 int outputsensorpins[] = {OUTPUTSENSORA, OUTPUTSENSORB};
@@ -89,7 +89,32 @@ int inputsensorpins[] = {INPUTSENSORA};
 boolean inputsensorstate[] = {true};
 char * inputsensornames[] = {INPUTNAMEA};
 
+/*
+--------------------------------------------------------------------------
+Parser values
 
+
+--------------------------------------------------------------------------
+*/
+typedef struct __attribute__ ((__packed__)) json{
+    char* symbol;
+    char type; //Can be 's':string, 'n'number, 'b',bool
+    char* value;
+} json;
+
+
+//Max Memory used,
+#define JSONMAXSIZE 64 //255 is max due to using an unsigned char counter
+#define JSONMAXELEMENTS 8
+
+//Globals needed for parser
+char jsonData[JSONMAXSIZE];
+json jsonRefs[JSONMAXELEMENTS];
+unsigned char jsonRefCount=0;
+unsigned char jsonDataCount=0;
+
+//States for json parser
+typedef enum {START,BEGIN,SYMSTR,SYMEND,STARTVAL,STRVAL,READBOOL,READNUM,ENDSTRVAL,END} jsonState;
 
 /*
 --------------------------------------------------------------------------
@@ -98,6 +123,7 @@ Helper Functions
 Functions:
 void writeSensorStates()
 void serialComm()
+jsonState parseJson(char, jsonState)
 --------------------------------------------------------------------------
 */
 /**
@@ -128,6 +154,121 @@ void writeSensorStates(){
     SERIAL.println("]");
 }
 
+//Read in a single char at a time, run though state machine
+jsonState parseJson(char c,jsonState state) {
+
+    switch(state) {
+
+        case START:
+            if(c != '{')
+                return START;
+
+        case BEGIN:
+            if(c == '"') {
+                jsonRefs[jsonRefCount].symbol = &jsonData[jsonDataCount];
+                //printf("count %d ",jsonDataCount);
+                return SYMSTR;
+            }
+            else
+                return BEGIN;
+
+        case SYMSTR:
+            if(c == '"')
+                return SYMEND;
+            else {
+                jsonData[jsonDataCount++] = c;
+                //printf("%c",c);
+                return SYMSTR;
+            }
+
+        case SYMEND:
+            jsonData[jsonDataCount++] = '\0';
+            if(c == ':')
+                return STARTVAL;
+            else
+                return SYMEND;
+
+        case STARTVAL:
+            if(c == '"') {
+                jsonRefs[jsonRefCount].value = &jsonData[jsonDataCount];
+                //printf("count %d ",jsonDataCount);
+                jsonRefs[jsonRefCount].type = 's';
+                return STRVAL;
+            }
+            else if(c == 't' || c == 'f') {
+                jsonRefs[jsonRefCount].value = &jsonData[jsonDataCount];
+                //printf("count %d ",jsonDataCount);
+                jsonRefs[jsonRefCount].type = 'b';
+                jsonData[jsonDataCount++] = c;
+                return READBOOL;
+            }
+            else if(c == '-' || (c>=48 && c<=57) || c == '.' ) {
+                jsonRefs[jsonRefCount].value = &jsonData[jsonDataCount];
+                jsonRefs[jsonRefCount].type = 'n';
+                jsonData[jsonDataCount++] = c;
+                return READNUM;
+            }
+
+            else
+                return STARTVAL;
+
+        case STRVAL:
+            if(c == '"')
+                return ENDSTRVAL;
+            else {
+                jsonData[jsonDataCount++] = c;
+                //printf("%c",c);
+                return STRVAL;
+            }
+
+        case READNUM:
+            if(c == ',') {
+                jsonData[jsonDataCount++] = '\0';
+                jsonRefCount++;
+                return BEGIN;
+            }
+            else if(c == '}'){
+                jsonData[jsonDataCount++] = '\0';
+                jsonRefCount++;
+                return END;
+            }
+            else if(c == '-' || (c>=48 && c<=57) || c == '.' ) {
+                jsonData[jsonDataCount++] = c;
+                return READNUM;
+            }
+            else
+                return READNUM;
+
+
+        case READBOOL:
+            if(c == ',') {
+                jsonData[jsonDataCount++] = '\0';
+                jsonRefCount++;
+                return BEGIN;
+            }
+            else if(c == '}'){
+                jsonData[jsonDataCount++] = '\0';
+                jsonRefCount++;
+                return END;
+            }
+            else {
+                //printf("%c",c);
+                return READBOOL;
+            }
+        case ENDSTRVAL:
+            jsonData[jsonDataCount++] = '\0';
+            jsonRefCount++;
+            if(c == ',')
+                return BEGIN;
+            else if (c == '}')
+                return END;
+            else
+                return ENDSTRVAL;
+
+    }
+
+}
+
 
 /**
 Param: Stream s - object of type Stream. Stream inherits from Print, so we still have access to print statements.
@@ -141,14 +282,58 @@ void serialComm(){
         char serialRead = SERIAL.read();
 
         if(serialRead == '@'){
-            while(!SERIAL.available()){} //wait for more data
+            while(SERIAL.available() <= 0){delay(50);} //wait for more data
+
+
+            char whitespace = ' ';
             if (SERIAL.available()) {
-                /* First, skip any accidental whitespace like newlines. */
-                char whitespace = SERIAL.peek();
+                //First, skip any accidental whitespace like newlines.
+                whitespace = SERIAL.peek();
                 while(whitespace == ' ' || whitespace == '\t' || whitespace == '\n'){SERIAL.read(); whitespace = SERIAL.peek();}
             }
 
             if (SERIAL.available()) {
+                jsonState state = START;
+                char c;
+                while(SERIAL.available() > 0){
+                    c = SERIAL.read();
+
+                    state = parseJson(c, state);
+                    if(state == END) break;
+                }
+
+                if(state != END){
+                    //JSON from serial is bad, discard and continue
+                    return;
+                }
+                for(int i=0; i < jsonRefCount; i++){
+                    //we support only boolean right now (we only have boolean type inputs)
+
+                    //find the input sensor referred to by jsonRefs[i].symbol
+                    for(int j = 0; j < NUMINPUTSENSORS; j++){
+
+                        if(strcmp(inputsensornames[j],jsonRefs[i].symbol) == 0){
+                            //message is for this sensor
+                            if(jsonRefs[i].type == 'b'){
+                                if(strcmp(jsonRefs[i].value,"t") == 0){
+                                    inputsensorstate[j] = true;
+                                    //set pin high
+                                    digitalWrite(inputsensorpins[j], HIGH);
+                                }
+                                else{
+                                    inputsensorstate[j] = false;
+                                    //set pin high
+                                    digitalWrite(inputsensorpins[j], LOW);
+                                }
+                            }
+                            break; //done checking sensor names since we found a match
+                        }
+                    }
+                }
+
+
+
+
                 //replace this section with new JSON parser.
                 /*
                 aJsonObject *msg = aJson.parse(&serial_stream, jsonFilter);
@@ -159,7 +344,7 @@ void serialComm(){
         }
 
         if(serialRead == '%'){
-            SERIAL.println(FS(jsonData));
+            SERIAL.println(FS(sensorData));
 
             writeSensorStates();
        }
@@ -213,7 +398,3 @@ void loop() {
 
 
 }
-
-
-
-
