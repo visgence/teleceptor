@@ -1,0 +1,57 @@
+Current JSON:
+
+{
+    "Description": ...,
+    "uuid": ...,
+    "out":
+        [
+            "scale": [...],
+            "name": ...,
+            "timestamp": ...,
+            "sensor_type":...,
+            "units":...,
+            "model":...,
+            "description":...,
+        ],
+    "in":
+        [
+            "scale": [...],
+            "name": ...,
+            "timestamp": ...,
+            "sensor_type":...,
+            "units":...,
+            "model":...,
+            "description":...,
+        ]
+    others...
+
+}
+
+Reduced:
+
+{
+    "Desc": ...,
+    "uuid": ...,
+    "out":
+        [
+            "scale": [...],//optional, script will default to [1,0]
+            "name": ...,
+            "t": ..., //optional, script will default it to 0
+            "s_t":...,
+            "u":...,
+            "model":...,//optional, script will default to ""
+            "desc":...,//optional, script will default to ""
+        ],
+    "in":
+        [
+            "scale": [...],
+            "name": ...,
+            "t": ..., //optional, script will default it to 0
+            "s_t":...,
+            "u":...,
+            "model":...,//optional, script will default to ""
+            "desc":...,//optional, script will default to ""
+        ]
+    others...
+
+}

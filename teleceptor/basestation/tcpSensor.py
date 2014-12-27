@@ -107,6 +107,36 @@ def main(host="192.168.55.12",port=2000,queryRate=60):
         payload = {"info":info, "readings":readings}
         #add to each sensor
         for sensor in payload['info']['in'] + payload['info']['out']:
+
+            #do some translation from sensor mini-json to full JSON
+            if "t" not in sensor and "timestamp" not in sensor:
+                sensor.update({'timestamp':0})
+            elif "timestamp" not in sensor:#then t is in sensor, translate t to timestamp
+                sensor.update({'timestamp': sensor['t']})
+                sensor.remove('t')
+
+            if "s_t" in sensor:
+                sensor.update({'sensor_type': sensor['s_t']})
+                sensor.remove('s_t')
+
+            if "desc" in sensor:
+                sensor.update({'description': sensor['desc']})
+                sensor.remove('desc')
+
+            if "u" in sensor:
+                sensor.update({'units': sensor['u']})
+                sensor.remove('u')
+
+            if "model" not in sensor:
+                sensor.update({'model':""})
+
+            if "scale" not in sensor:
+                sensor.update({'scale':[1,0]})
+
+            if "desc" not in sensor and "description" not in sensor:
+                sensor.update({'description':""})
+
+
             sensor.update({'meta_data':{'uptime' : uptime, 'pid' : pid, 'host' : host,'port':port}})
 
         payloads.append(payload)
