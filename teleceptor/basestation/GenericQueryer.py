@@ -19,6 +19,7 @@ import requests
 from requests import ConnectionError
 import os
 
+
 #local imports
 import teleceptor
 

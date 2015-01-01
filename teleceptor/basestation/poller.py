@@ -1,7 +1,7 @@
 """
 Contributing Authors:
-	Victor Szczepanski (Visgence, Inc)
-	Jessica Greenling (Visgence, Inc)
+    Victor Szczepanski (Visgence, Inc)
+    Jessica Greenling (Visgence, Inc)
 
 
 Poller actively searches for newly connected motes.  Each new mote found is sent as a new process to queryer.  Previously found motes are still returned in the list of active processes.  If a mote is disconnected, it is not returned in the list.
@@ -20,7 +20,7 @@ or
 Dependencies:
 
 local libraries:
-	queryer
+    queryer
 
 
 (c) 2014 Visgence, Inc.
@@ -43,51 +43,88 @@ import multiprocessing
 import subprocess
 import re
 import time
+import argparse
+import logging
+from serial import SerialException, SerialTimeoutException
+
 #Local Imports
-from teleceptor.basestation import queryer
+from teleceptor.basestation import GenericQueryer
+from teleceptor import USE_DEBUG
+
 
 
 def grepfinddevices(previousDevices=[]):
-        """
+    """
         Searches for a mote connected through a USB port.
         Gathers info about all ports from /dev/, splits each item by a newline character, and a process is created for each new mote found. A mote is described by having these two properties in the /dev/ folder: '    DRIVERS=="ftdi_sio" and '    ATTRS{product}=="FT232R USB UART"
 
         previousDevices : a list of process names
-        	Refers to previously found motes that were stored to this list via their process name.
-        """
-	df = subprocess.Popen("ls /dev | grep ttyUSB",shell=True,stdout=subprocess.PIPE,)
-	stdout_list = df.communicate()[0].split('\n')
+            Refers to previously found motes that were stored to this list via their process name.
+    """
+    logging.debug("Getting all available ttyUSB paths.")
+    df = subprocess.Popen("ls /dev | grep ttyUSB",shell=True,stdout=subprocess.PIPE,)
+    stdout_list = df.communicate()[0].split('\n')
 
-	for dev in stdout_list:
-		if dev == "":
-			continue
-		if dev in previousDevices:
-			continue
-		print dev
-		devpath = "/dev/" + dev
-		bashcommand = "udevadm info -a -n " + devpath
-		#print bashcommand + 'j'
-		df2 = subprocess.Popen(bashcommand,shell=True,stdout=subprocess.PIPE,)
-		udev_list = df2.communicate()[0].split('\n')
-		#print udev_list
-		if '    DRIVERS=="ftdi_sio"' in udev_list and '    ATTRS{product}=="FT232R USB UART"' in udev_list:
-			print "Looks like device " + dev + " is a mote. Making process..."
-			p = multiprocessing.Process(target=queryer.main,name=dev,args=(devpath,3))
-			p.start()
-			print "Made process"
+    logging.debug("Got paths: %s", str(stdout_list))
+    for dev in stdout_list:
+        if dev == "":
+            continue
+        if dev in previousDevices:
+            continue
+        logging.info("Found new device %s", dev)
+        devpath = "/dev/" + dev
 
-	#print(stdout_list)
-	return [p.name for p in multiprocessing.active_children()]
+        bashcommand = "udevadm info -a -n " + devpath
+
+        logging.debug("Getting device information with command %s", bashcommand)
+
+        df2 = subprocess.Popen(bashcommand,shell=True,stdout=subprocess.PIPE,)
+        udev_list = df2.communicate()[0].split('\n')
+
+        logging.debug("Got udev_list: %s", str(udev_list))
+
+        if '    DRIVERS=="ftdi_sio"' in udev_list and '    ATTRS{product}=="FT232R USB UART"' in udev_list:
+            logging.info("Looks like device %s is a mote. Making process...", dev)
+
+
+            #make a new SerialMote to pass to new process
+            try:
+                logging.debug("Creating SerialMote with devpath %s", devpath)
+                device = SerialMote(devpath,3, debug=USE_DEBUG)
+            except SerialTimeoutException, ste:
+                #device may not be ready yet. Try again.
+                logging.error("Device at %s not ready yet.", devpath)
+                continue
+            except SerialException, se:
+                #failed device
+                logging.error(se)
+                logging.error("Device at %s failed.", devpath)
+                continue
+            else:
+                logging.debug("Succeeded making device with devpath %s, starting query process.", devpath)
+
+                p = multiprocessing.Process(target=GenericQueryer.main,name=dev,args=(device,3))
+                p.start()
+
+                logging.debug("Began process.")
+
+    #print(stdout_list)
+    return [p.name for p in multiprocessing.active_children()]
 
 
 if __name__ == "__main__":
-	#print finddevices()
+    if USE_DEBUG:
+        logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s',level=logging.DEBUG)
+    else:
+        logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s',level=logging.INFO)
 
-	foundDevices = []
+    logging.debug("Beginning polling cycle.")
 
-	while(1):
-		foundDevices = grepfinddevices(foundDevices)
+    foundDevices = []
 
-		time.sleep(6)
+    while(1):
+        foundDevices = grepfinddevices(foundDevices)
+
+        time.sleep(6)
 
 

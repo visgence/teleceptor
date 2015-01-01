@@ -21,6 +21,7 @@ import json
 from .version import __version__
 PATH = os.path.abspath(os.path.join(os.path.dirname(__file__),'..'))
 
+
 #Path to WEBROOT and Template are part of application
 WEBROOT = os.path.abspath(os.path.join(PATH,'webroot'))
 TEMPLATES = os.path.abspath(os.path.join(PATH,'templates'))
@@ -44,6 +45,9 @@ elif os.path.exists(os.path.join(DATAPATH,'config.json')):
 else:
     conf = json.load(open(os.path.join(PATH,'config','defaults.json')))
     DATAPATH = PATH
+
+#Set verbose debug mode
+USE_DEBUG = conf['USE_DEBUG']
 
 #Set SQL DB File
 if os.path.isabs(conf['DBFILE']):

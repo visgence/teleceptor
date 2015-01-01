@@ -1,8 +1,8 @@
 """
 Contributing Authors:
-	Evan Salazar (Visgence, Inc)
-	Victor Szczepanski (Visgence, Inc)
-	Jessica Greenling (Visgence, Inc)
+    Evan Salazar (Visgence, Inc)
+    Victor Szczepanski (Visgence, Inc)
+    Jessica Greenling (Visgence, Inc)
 
 
 Poller can be run with or without the server.
@@ -27,36 +27,59 @@ import multiprocessing
 import subprocess
 import re
 import time
+import argparse
+import logging
+
 #Local Imports
-from teleceptor import TCP_POLLER_HOSTS
-from teleceptor.basestation import tcpSensor
+from teleceptor import TCP_POLLER_HOSTS, USE_DEBUG
+from teleceptor.basestation import GenericQueryer
 
 
 def tcpDevices(previousDevices,devices):
 
-        for dev in devices:
-		if dev in previousDevices:
-			continue
+    for dev in devices:
+        if dev in previousDevices:
+            continue
+        logging.debug("Got new host:port %s", dev)
+        host,port = dev.split(":")
+        port = int(port)
 
-                host,port = dev.split(":")
-		port = int(port)
-                print dev
-                p = multiprocessing.Process(target=tcpSensor.main,name=dev,args=(host,port,10))
-                p.start()
-                print "Made process"
+        #make a new TCPMote to pass to new process
+        logging.debug("Creating new TCPMote.")
 
-	#print(stdout_list)
-	return [p.name for p in multiprocessing.active_children()]
+        device = TCPMote(host, port, 3, debug=USE_DEBUG)
+
+        logging.debug("Succeeded making device, starting query process.")
+
+        p = multiprocessing.Process(target=GenericQueryer.main,name=dev,args=(device,10))
+        p.start()
+
+        logging.debug("Began process.")
+
+    #print(stdout_list)
+    return [p.name for p in multiprocessing.active_children()]
 
 
 if __name__ == "__main__":
-	#print finddevices()
+    parser = argparse.ArgumentParser(description='Creates a poller that checks serial ports periodically and creates a new query process for new motes.')
+    parser.add_argument('debug', metavar='d',help='Turns on or off the debug messages for spawned queryers.')
+    parser.set_defaults(debug=False)
+    args = parser.parse_args()
 
-        deviceList = TCP_POLLER_HOSTS
-	foundDevices = []
+    if args.debug == "True" or args.debug == "true" or args.debug == "t":
+        USE_DEBUG=True
+        logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s',level=logging.DEBUG)
+    else:
+        logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s',level=logging.INFO)
 
-	while(1):
-		foundDevices = tcpDevices(foundDevices,deviceList)
-		time.sleep(6)
+    logging.info(args)
+    logging.debug("Beginning polling cycle.")
+
+    deviceList = TCP_POLLER_HOSTS
+    foundDevices = []
+
+    while(1):
+        foundDevices = tcpDevices(foundDevices,deviceList)
+        time.sleep(6)
 
 
