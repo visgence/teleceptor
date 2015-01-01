@@ -41,14 +41,12 @@ local libraries:
 
 import multiprocessing
 import subprocess
-import re
 import time
-import argparse
 import logging
 from serial import SerialException, SerialTimeoutException
 
 #Local Imports
-from teleceptor.basestation import GenericQueryer
+from teleceptor.basestation import GenericQueryer, SerialMote
 from teleceptor import USE_DEBUG
 
 
@@ -90,7 +88,7 @@ def grepfinddevices(previousDevices=[]):
             #make a new SerialMote to pass to new process
             try:
                 logging.debug("Creating SerialMote with devpath %s", devpath)
-                device = SerialMote(devpath,3, debug=USE_DEBUG)
+                device = SerialMote.SerialMote(devpath,3, debug=USE_DEBUG)
             except SerialTimeoutException, ste:
                 #device may not be ready yet. Try again.
                 logging.error("Device at %s not ready yet.", devpath)

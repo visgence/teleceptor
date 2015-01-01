@@ -24,15 +24,12 @@ Poller can be run with or without the server.
 """
 
 import multiprocessing
-import subprocess
-import re
 import time
-import argparse
 import logging
 
 #Local Imports
 from teleceptor import TCP_POLLER_HOSTS, USE_DEBUG
-from teleceptor.basestation import GenericQueryer
+from teleceptor.basestation import GenericQueryer, TCPMote
 
 
 def tcpDevices(previousDevices,devices):
@@ -47,7 +44,7 @@ def tcpDevices(previousDevices,devices):
         #make a new TCPMote to pass to new process
         logging.debug("Creating new TCPMote.")
 
-        device = TCPMote(host, port, 3, debug=USE_DEBUG)
+        device = TCPMote.TCPMote(host, port, 3, debug=USE_DEBUG)
 
         logging.debug("Succeeded making device, starting query process.")
 
@@ -61,18 +58,11 @@ def tcpDevices(previousDevices,devices):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Creates a poller that checks serial ports periodically and creates a new query process for new motes.')
-    parser.add_argument('debug', metavar='d',help='Turns on or off the debug messages for spawned queryers.')
-    parser.set_defaults(debug=False)
-    args = parser.parse_args()
-
-    if args.debug == "True" or args.debug == "true" or args.debug == "t":
-        USE_DEBUG=True
+    if USE_DEBUG:
         logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s',level=logging.DEBUG)
     else:
         logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s',level=logging.INFO)
 
-    logging.info(args)
     logging.debug("Beginning polling cycle.")
 
     deviceList = TCP_POLLER_HOSTS
