@@ -68,7 +68,13 @@ def main(device, queryRate=60):
         #metadata info
         payload = {"info":info, "readings":readings}
         #add to each sensor
-        for sensor in payload['info']['in'] + payload['info']['out']:
+        sensors = []
+        if 'out' in payload['info']:
+            sensors = payload['info']['out']
+        if 'in' in payload['info']:
+            sensors = sensors + payload['info']['in']
+
+        for sensor in sensors:
             #do some translation from sensor mini-json to full JSON
             if "t" not in sensor and "timestamp" not in sensor:
                 sensor.update({'timestamp':0})
