@@ -69,6 +69,34 @@ def main(device, queryRate=60):
         payload = {"info":info, "readings":readings}
         #add to each sensor
         for sensor in payload['info']['in'] + payload['info']['out']:
+            #do some translation from sensor mini-json to full JSON
+            if "t" not in sensor and "timestamp" not in sensor:
+                sensor.update({'timestamp':0})
+            elif "timestamp" not in sensor:#then t is in sensor, translate t to timestamp
+                sensor['timestamp'] = sensor['t']
+                del sensor['t']
+
+            if "s_t" in sensor:
+                sensor['sensor_type'] = sensor['s_t']
+                del sensor['s_t']
+
+            if "desc" in sensor:
+                sensor['description'] = sensor['desc']
+                del sensor['desc']
+
+            if "u" in sensor:
+                sensor['units'] = sensor['u']
+                del sensor['u']
+
+            if "model" not in sensor:
+                sensor['model'] = ""
+
+            if "scale" not in sensor:
+                sensor['scale'] = [1, 0]
+
+            if "desc" not in sensor and "description" not in sensor:
+                sensor['description'] = ""
+
             sensor.update({'meta_data':{'uptime' : uptime(starttime), 'pid' : pid, 'tty' : device.deviceurl}})
 
         logging.info("Sending POST to server: %s", json.dumps(payload))
