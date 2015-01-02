@@ -16,6 +16,7 @@ updateValues(newValues) //Accepts a dictionary of sensorName: value pairs. Retur
 import socket
 from requests import ConnectionError
 import json
+import logging
 
 class TCPMote():
     def __init__(self,host,port,timeout=3, debug=False):
@@ -39,7 +40,7 @@ class TCPMote():
             print "NO Hello Line"
 
 
-    def getReadings():
+    def getReadings(self):
         """
         Gets the JSON formatted information from the mote on one line and current sensor readings on the next line. Returns two strings: the JSON info and the readings, where the info is a JSON object(dictionary) and readings is a JSON array(list).
 
@@ -57,7 +58,7 @@ class TCPMote():
         readings = self._device.readline()
         return info, readings
 
-    def updateValues(device,newValues={}):
+    def updateValues(self,device,newValues={}):
         """
         Sends values to update this mote's input sensors. The format should be a dictionary with key/value pairs in the form sensorName: value.
 
