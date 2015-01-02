@@ -18,7 +18,7 @@ from requests import ConnectionError
 import json
 
 class TCPMote():
-    def __init__(host,port,timeout=3, debug=False):
+    def __init__(self,host,port,timeout=3, debug=False):
         """
         Initializes the TCP socket connection. Required arguments are host and port
         host -- The IP address of the Teleimperium-like device as a string. For example 192.168.55.12
@@ -33,7 +33,7 @@ class TCPMote():
         self._device = s.makefile()
 
         try:
-            print device.read(7)
+            print self._device.read(7)
 
         except socket.timeout as e:
             print "NO Hello Line"
