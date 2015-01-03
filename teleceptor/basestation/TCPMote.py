@@ -32,6 +32,7 @@ class TCPMote():
         s.connect((host, port))
         s.settimeout(timeout)
         self._device = s.makefile()
+        self.metadata = {'host':host,'port':port}
 
         try:
             print self._device.read(7)

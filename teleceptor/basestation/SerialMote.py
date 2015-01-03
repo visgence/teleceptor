@@ -61,6 +61,7 @@ class SerialMote(serial.Serial):
         info = json.loads(info)
         self.uuid = info['uuid']
         self.deviceurl = deviceName
+        self.metadata = {"deviceurl":deviceName}
 
     def getReadings(self):
         """
