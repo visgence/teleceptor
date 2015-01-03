@@ -59,7 +59,7 @@ class TCPMote():
         readings = self._device.readline()
         return info, readings
 
-    def updateValues(self,device,newValues={}):
+    def updateValues(self,newValues={}):
         """
         Sends values to update this mote's input sensors. The format should be a dictionary with key/value pairs in the form sensorName: value.
 
@@ -78,7 +78,7 @@ class TCPMote():
 
         """
         if newValues:
-            logging.info("Sending new Values: %s", json.dumps(newValues))
+            logging.debug("Sending new Values: %s", json.dumps(newValues))
             self._device.write('@') #TODO: Check if this is correct code.
             self._device.flush()
             self._device.write(json.dumps(newValues))
