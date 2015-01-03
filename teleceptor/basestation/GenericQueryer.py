@@ -115,6 +115,7 @@ def main(device, queryRate=60):
             payloads = []
         except ConnectionError:
             logging.error("Error connecting to server. Caching data: %s", str(payloads[-1]))
+            continue
 
 
         logging.info("%s", str(response))

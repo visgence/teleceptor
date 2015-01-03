@@ -26,6 +26,7 @@ Poller can be run with or without the server.
 import multiprocessing
 import time
 import logging
+import socket
 
 #Local Imports
 from teleceptor import TCP_POLLER_HOSTS, USE_DEBUG
@@ -44,7 +45,10 @@ def tcpDevices(previousDevices,devices):
         #make a new TCPMote to pass to new process
         logging.debug("Creating new TCPMote.")
 
-        device = TCPMote.TCPMote(host, port, 3, debug=USE_DEBUG)
+        try:
+            device = TCPMote.TCPMote(host, port, 3, debug=USE_DEBUG)
+        except socket.error:
+            continue #route may not exist, just give up and retry later
 
         logging.debug("Succeeded making device, starting query process.")
 
