@@ -3,7 +3,7 @@ Contributing Authors:
     Victor Szczepanski (Visgence, Inc)
 VirtualTCPSensor.py
 
-
+Simulates a teleimperium-like TCP sensor.
 """
 
 import socket
@@ -13,6 +13,7 @@ TCP_IP = '127.0.0.1'
 TCP_PORT = 5005
 BUFFER_SIZE = 1024
 
+#basic sensor for testing without any input sensors.
 SENSOR_INFO = {"Desc": "Virtual TCP Sensor",
                 "out": [
                         {
@@ -27,9 +28,14 @@ SENSOR_INFO = {"Desc": "Virtual TCP Sensor",
 IN_STATES = {
 
 }#would be of form "sensorname": state
+
 SENSOR_READINGS = [["VirtualOut1", 3.2]]
 
 def parseJSON(data):
+    """
+    Parses incoming update data and tries to update any input sensors
+    given in the data.
+    """
     j = json.loads(data)
     if "in" not in SENSOR_INFO:
         return
@@ -41,13 +47,16 @@ def parseJSON(data):
 
 
 def main():
+    """
+    Simple TCP server that simulates a teleimperium-like sensor that is compatible with GenericQueryer basestation.
+
+    Creates a socket connection with ip and port defined above, then
+    waits forever for a connection.
+    """
 
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.bind((TCP_IP, TCP_PORT))
     s.listen(1)
-
-
-
 
     while 1:
         (conn, addr) = s.accept()
@@ -69,7 +78,7 @@ def main():
         elif data[0] == '%':
             print "in % block. Sending:"
             print json.dumps(SENSOR_INFO) + '\n' + json.dumps(SENSOR_READINGS)
-            #return SENSOR_INFO
+
             conn.send(json.dumps(SENSOR_INFO) + '\n')
             conn.send(json.dumps(SENSOR_READINGS) + '\n')
 
