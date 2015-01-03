@@ -103,7 +103,7 @@ def main(device, queryRate=60):
             if "desc" not in sensor and "description" not in sensor:
                 sensor['description'] = ""
 
-            sensor.update({'meta_data':dict({'uptime' : uptime(starttime), 'pid' : pid}, **device.metadata})
+            sensor.update({'meta_data':dict({'uptime' : uptime(starttime), 'pid' : pid}, **device.metadata)})
 
         logging.info("Sending POST to server: %s", json.dumps(payload))
         payloads.append(payload)
