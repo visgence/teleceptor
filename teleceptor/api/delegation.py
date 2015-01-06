@@ -179,12 +179,13 @@ class Delegation:
                 data['error'] = "No info for this mote"
             print "mote:"
             print mote
-            for sensor in mote['info']['in'] + mote['info']['out']:
-
-
+            sensors = []
+            if 'out' in mote['info']:
+                sensors = mote['info']['out']
+            if 'in' in mote['info']:
+                sensors = sensors + mote['info']['in']
+            for sensor in sensors:
                 sensorUuid = mote['info']['uuid']+sensor['name']
-
-
 
                 coefficients = None
                 if 'scale' not in sensor:
@@ -200,7 +201,7 @@ class Delegation:
                         foundSensor.meta_data = sensor['meta_data']
 
                         #get any new messages for input sensors
-                        if sensor in mote['info']['in']:
+                        if 'in' in mote['info'] and sensor in mote['info']['in']:
                             if foundSensor.message_queue is not None:
                                 msgList = []
                                 #only send messages with a valid timestamp and haven't expired
@@ -217,7 +218,7 @@ class Delegation:
                 except NoResultFound:
                     #no sensor, so make one and try to find a datastream for it to claim (using the user+name combo)
                     sensor['uuid'] = sensorUuid
-                    if sensor in mote['info']['in']:
+                    if 'in' in mote['info'] and sensor in mote['info']['in']:
                         sensor['sensor_IOtype'] = True
                     else:
                         sensor['sensor_IOtype'] = False

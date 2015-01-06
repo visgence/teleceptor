@@ -114,21 +114,24 @@
 			<!-- ko ifnot: isInput -->
 			<p class="form-control-static" > Output Sensor</p>
 			<!-- /ko -->
-			<!-- ko if: sensor_type == "bool" -->
-			<div class = "col-md-1" style="height: 30px">
-				<input class="form-control" type="checkbox" data-bind="bootstrapSwitchOn: command_value">
-			</div>
-			<!-- /ko -->
-			<!--ko ifnot: sensor_type == "bool"-->
-			<label class="col-md-2 control-label">Value:</label>
-			<div class="col-md-4">
-			<input class="form-control" data-bind="value: temp_command_value">
-			<p class="text-danger" data-bind="text: temp_command_value.validationMessage, if: temp_command_value.hasError"></p>
-			<button type="button" class="btn btn-primary btn-sm" data-bind="click: sendCommand">
-				<span class="glyphicon glyphicon-send"></span> Send
-			</button>
+			<!-- ko if: isInput -->
 
-			</div>
+				<!-- ko if: sensor_type() == "bool" -->
+				<div class = "col-md-1" style="height: 30px">
+					<input class="form-control" type="checkbox" data-bind="bootstrapSwitchOn: command_value">
+				</div>
+				<!-- /ko -->
+				<!--ko ifnot: sensor_type() == "bool"-->
+				<label class="col-md-2 control-label">Value:</label>
+				<div class="col-md-4">
+				<input class="form-control" data-bind="value: temp_command_value">
+				<p class="text-danger" data-bind="text: temp_command_value.validationMessage, if: temp_command_value.hasError"></p>
+				<button type="button" class="btn btn-primary btn-sm" data-bind="click: sendCommand">
+					<span class="glyphicon glyphicon-send"></span> Send
+				</button>
+
+				</div>
+				<!-- /ko -->
 			<!-- /ko -->
 
 

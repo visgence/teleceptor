@@ -1,8 +1,8 @@
 """
 Contributing Authors:
-	Evan Salazar (Visgence, Inc)
-	Victor Szczepanski (Visgence, Inc)
-	Jessica Greenling (Visgence, Inc)
+    Evan Salazar (Visgence, Inc)
+    Victor Szczepanski (Visgence, Inc)
+    Jessica Greenling (Visgence, Inc)
 
 
 Poller can be run with or without the server.
@@ -24,39 +24,56 @@ Poller can be run with or without the server.
 """
 
 import multiprocessing
-import subprocess
-import re
 import time
+import logging
+import socket
+
 #Local Imports
-from teleceptor import TCP_POLLER_HOSTS
-from teleceptor.basestation import tcpSensor
+from teleceptor import TCP_POLLER_HOSTS, USE_DEBUG
+from teleceptor.basestation import GenericQueryer, TCPMote
 
 
 def tcpDevices(previousDevices,devices):
 
-        for dev in devices:
-		if dev in previousDevices:
-			continue
+    for dev in devices:
+        if dev in previousDevices:
+            continue
+        logging.debug("Got new host:port %s", dev)
+        host,port = dev.split(":")
+        port = int(port)
 
-                host,port = dev.split(":")
-		port = int(port)
-                print dev
-                p = multiprocessing.Process(target=tcpSensor.main,name=dev,args=(host,port,10))
-                p.start()
-                print "Made process"
+        #make a new TCPMote to pass to new process
+        logging.debug("Creating new TCPMote.")
 
-	#print(stdout_list)
-	return [p.name for p in multiprocessing.active_children()]
+        try:
+            device = TCPMote.TCPMote(host, port, 3, debug=USE_DEBUG)
+        except socket.error:
+            continue #route may not exist, just give up and retry later
+
+        logging.debug("Succeeded making device, starting query process.")
+
+        p = multiprocessing.Process(target=GenericQueryer.main,name=dev,args=(device,10))
+        p.start()
+
+        logging.debug("Began process.")
+
+    #print(stdout_list)
+    return [p.name for p in multiprocessing.active_children()]
 
 
 if __name__ == "__main__":
-	#print finddevices()
+    if USE_DEBUG:
+        logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s',level=logging.DEBUG)
+    else:
+        logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s',level=logging.INFO)
 
-        deviceList = TCP_POLLER_HOSTS
-	foundDevices = []
+    logging.debug("Beginning polling cycle.")
 
-	while(1):
-		foundDevices = tcpDevices(foundDevices,deviceList)
-		time.sleep(6)
+    deviceList = TCP_POLLER_HOSTS
+    foundDevices = []
+
+    while(1):
+        foundDevices = tcpDevices(foundDevices,deviceList)
+        time.sleep(6)
 
 

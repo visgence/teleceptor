@@ -41,10 +41,16 @@
 
         this.updateSuccessCb = function(resp) {
             __this.rebuild(resp.sensor);
-            //__this.setCache();
             __this.editing(false);
             __this.updateError(null);
+            $(__this).trigger('calibrationchanged')
         };
+
+        this.commandSuccessCb = function(resp){
+            __this.rebuild(resp.sensor);
+            __this.editing(false);
+            __this.updateError(null);
+        }
 
         this.updateFailCb = function(resp,a) {
             var errorMsg = "";
@@ -90,7 +96,7 @@
                dataType: "json",
                contentType: "application/json",
                processData: false
-            }).then(__this.updateSuccessCb.bind(__this),__this.updateFailCb.bind(__this));
+            }).then(__this.commandSuccessCb.bind(__this),__this.updateFailCb.bind(__this));
             console.log("Updating command");
             console.log(newValue);
 
@@ -160,7 +166,7 @@
                dataType: "json",
                contentType: "application/json",
                processData: false
-        }).then(updateSuccessCb.bind(this),updateFailCb.bind(this));
+        }).then(this.updateSuccessCb.bind(this),this.updateFailCb.bind(this));
 
     };
 
@@ -199,6 +205,7 @@
             else
                 this.coefficients(ko.toJSON(vars.last_calibration.coefficients));
             this.last_calibration(vars.last_calibration);
+            this.last_calibration().coefficients = vars.last_calibration.coefficients;
         }
         if (vars.hasOwnProperty('units'))
             this.units(vars.units);
