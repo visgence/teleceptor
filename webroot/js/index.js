@@ -54,7 +54,7 @@ $(function($) {
 
             
             //TODO: Get params from url for graph init
-            vars["sensor"] = vars["activeSensor"];
+            vars["sensor"] = __this.activeSensor;
 			initGraph(vars);
 
             $("#sensor-tabs").on("click", "li.tab", switchSensorTab);
