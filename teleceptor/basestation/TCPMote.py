@@ -53,10 +53,22 @@ class TCPMote():
 
         """
         #TODO: Raise generic timeout exception if we get a sockettimeout.
-        self._device.write('%')
-        self._device.flush()
-        info = self._device.readline()
-        readings = self._device.readline()
+        info = None
+        readings = None
+        try:
+            self._device.write('%')
+            self._device.flush()
+            info = self._device.readline()
+            readings = self._device.readline()
+        except socket.timeout as e:
+            #try again
+            try:
+                self._device.write('%')
+                self._device.flush()
+                info = self._device.readline()
+                readings = self._device.readline()
+            except socket.timeout as st:
+                return None, None
         return info, readings
 
     def updateValues(self,newValues={}):
