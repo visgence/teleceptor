@@ -50,9 +50,9 @@ $(function($) {
                 __this.activeSensor(new Sensor(vars.activeSensor));
 
             initTimeControls(vars);
-            
 
-            
+
+
             //TODO: Get params from url for graph init
             vars["sensor"] = __this.activeSensor;
 			initGraph(vars);
@@ -83,6 +83,7 @@ $(function($) {
             __this.timeControls(tc);
             $(__this.timeControls()).on('timechanged', timeChanged.bind(__this));
             $(__this.timeControls()).on('rangechanged', timeChanged.bind(__this));
+            $(__this.timeControls()).on('calibrationchanged', __this.activateSelectedTime.bind(__this));
         }
 
         function initGraph(params) {
