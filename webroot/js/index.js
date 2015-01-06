@@ -40,6 +40,7 @@ $(function($) {
             	return;
 
             this.activeSensor(sensor);
+            $(this.activeSensor()).on('calibrationchanged', timeChanged.bind(__this));
         };
 
 
@@ -83,7 +84,7 @@ $(function($) {
             __this.timeControls(tc);
             $(__this.timeControls()).on('timechanged', timeChanged.bind(__this));
             $(__this.timeControls()).on('rangechanged', timeChanged.bind(__this));
-            $(__this.timeControls()).on('calibrationchanged', timeChanged.bind(__this));
+
         }
 
         function initGraph(params) {
