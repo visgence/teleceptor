@@ -40,7 +40,7 @@ $(function($) {
             	return;
 
             this.activeSensor(sensor);
-            $(this.activeSensor()).on('calibrationchanged', timeChanged.bind(__this));
+            $(this.activeSensor()).on('calibrationchanged', this.timeControls().activateSelectedTime.bind(__this));
         };
 
 
