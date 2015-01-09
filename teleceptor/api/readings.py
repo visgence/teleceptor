@@ -53,9 +53,10 @@ except ImportError:
     import json
 
 import re
+import logging
 
 # Local Imports
-from teleceptor import SQLDATA,SQLREADTIME
+from teleceptor import SQLDATA,SQLREADTIME, USE_DEBUG
 from teleceptor.models import SensorReading, DataStream
 from teleceptor.sessionManager import sessionScope
 from teleceptor.whisperUtils import getReadings, insertReading as whisperInsert
@@ -63,6 +64,11 @@ from teleceptor.whisperUtils import getReadings, insertReading as whisperInsert
 
 class SensorReadings:
     exposed = True
+
+    if USE_DEBUG:
+        logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s',level=logging.DEBUG)
+    else:
+        logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s',level=logging.INFO)
 
     validFilterArgs = {
          'datastream': '^\d+$'
@@ -84,10 +90,12 @@ class SensorReadings:
             Returns: Array of SensorReadings values in the denoted format.
          """
 
+        logging.debug("Condensing SensorReading objects to simple [timestamp, value] format: %s", str(readings))
         data = []
         for reading in readings:
             data.append([reading.timestamp, reading.value])
 
+        logging.debug("Made readings list: %s", str(data))
         return data
 
 
@@ -103,6 +111,8 @@ class SensorReadings:
                      did not have a correct value format.
         """
 
+        logging.debug("Validating parameters: %s", str(params))
+
         valueConversions = {
             'null': None
         }
@@ -117,6 +127,7 @@ class SensorReadings:
             elif key in self.validOperatorArgs:
                 arg = self.validOperatorArgs[key]
             else:
+                logging.error("Key %s is invalid filter or operator argument.", str(key))
                 return None
 
             if key in self.validFilterArgs and value in valueConversions:
@@ -126,6 +137,7 @@ class SensorReadings:
 
             safeParams[key] = value
 
+        logging.debug("Returning safe parameters: %s", str(safeParams))
         return safeParams
 
 
@@ -138,6 +150,7 @@ class SensorReadings:
         params : dict
             Contains the start time, end time, and datastream.
         """
+        logging.debug("Filtering readings with parameters: %s", str(params))
         filterArgs = {}
         paramsCopy = params.copy()
 
@@ -165,10 +178,13 @@ class SensorReadings:
                 del params[key]
 
         if SQLDATA and (int(end) - int(start) < SQLREADTIME):
-            print "\nTIME LESS THAN " + str(SQLREADTIME)
+
+            logging.debug("Request time %s less than SQLREADTIME %s. Getting high-resolution data.", str((int(end) - int(start))), str(SQLREADTIME))
+
             readings = query.filter_by(**filterArgs).order_by('timestamp').all()
             readings = [(reading.timestamp,reading.value) for reading in readings]
         else:
+            logging.debug("Getting low resolution data.")
             readings = getReadings(uuid, start, end)
         encodeReady = False
 
@@ -176,6 +192,8 @@ class SensorReadings:
 
     @staticmethod
     def insertReadings(session, readings):
+
+        logging.debug("Inserting readings.")
 
         data = {
             "insertions_attempted":    0
@@ -224,10 +242,12 @@ class SensorReadings:
 
                 data['successfull_insertions'] += 1
             except IOError:
-                print "Failed to insert reading into whisper %s" % str(streamId)
+                logging.error("Failed to insert reading into whisper %s", str(streamId))
                 continue
 
         data['failed_insertions'] = data['insertions_attempted'] - data['successfull_insertions']
+
+        logging.debug("Stats from attempted insertions: %s", str(data))
         return data
 
 
@@ -264,16 +284,21 @@ class SensorReadings:
                 'readings': [List of readings]
             }
         """
+        logging.info("GET request to readings.")
+
         cherrypy.response.headers['Content-Type'] = 'application/json'
         data = {}
         inputs = self.cleanInputs(kwargs)
+        logging.debug("Got clean input arguments %s", str(inputs))
 
         if len(kwargs) > 0 and inputs is None:
+            logging.error("Got invalid url parameters %s", str(kwargs))
             data['error'] = "Invalid url parameters"
         else:
             with sessionScope() as s:
                 data['readings'] = self.filterReadings(s, inputs)
 
+        logging.info("Finished GET request to readings.")
         return json.dumps(data, indent=4)
 
 
@@ -287,21 +312,27 @@ class SensorReadings:
                 'readings': [List of readings]
             }
         """
+        logging.info("POST request to readings.")
+
         cherrypy.response.headers['Content-Type'] = 'application/json'
         data = {}
 
+        logging.debug("Request body: %s", str(readingData))
         try:
             readingData = json.load(cherrypy.request.body)
         except (ValueError, TypeError):
+            logging.error("Request body is not in JSON format.")
             data['error'] = "Bad json"
             return json.dumps(data, indent=4)
 
         if 'readings' not in readingData:
+            logging.error("No readings in request body to insert.")
             data['error'] = "No readings to insert"
 
         with sessionScope() as s:
             data = insertReadings(s, readingData['readings'])
 
+        logging.info("Finished POST request to readings.")
         return json.dumps(data, indent=4)
 
 
@@ -319,11 +350,18 @@ def reduceData(readings, granularity, red = 'mean'):
         The reduction method.  Can be 'mean', 'sample', etc.
     """
 
+    logging.debug("Reducing data with granularity %s and method %s", str(granularity), str(red))
+
+    if red not in reductMethods:
+        logging.error("Method %s not a valid reduction method.")
+        return []
+
     increment = len(readings)/granularity
     data = []
     for i in range(0, len(readings), increment):
         data.append(reductMethods[red](readings[i:i+increment]))
 
+    logging.debug("Finished reducing data.")
     return data
 
 
@@ -331,6 +369,7 @@ def incrementMean(readings):
     """
     Return the timeCenter of the increment and the mean of the readings_values within the increment as a list of 2 values
     """
+    logging.debug("Using incrementMean method for reducing data.")
     mid_time = (readings[len(readings)-1][0] + readings[0][0])/2
 
     # convert to float before taking mean, because float operations are faster than decimal operations

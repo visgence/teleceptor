@@ -61,15 +61,22 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.exc import NoResultFound
 import time
+import logging
 
 # Local Imports
 from teleceptor.models import Sensor, Calibration
 from teleceptor.sessionManager import sessionScope
 from teleceptor.auth import require
+from teleceptor import USE_DEBUG
 
 
 class Sensors:
     exposed = True
+
+    if USE_DEBUG:
+        logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s',level=logging.DEBUG)
+    else:
+        logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s',level=logging.INFO)
 
 
     # @require()
@@ -92,29 +99,37 @@ class Sensors:
         --------
         `models.Sensor`
         """
+        logging.info("GET request to sensors.")
+
         cherrypy.response.headers['Content-Type'] = 'application/json'
         data = {}
 
         if sensor_id is not None:
+            logging.debug("Request for sensor %s", str(sensor_id))
             with sessionScope() as s:
                 try:
                     sensor = s.query(Sensor).filter_by(uuid = sensor_id).one()
                 except NoResultFound:
+                    logging.error("Requested sensor %s does not exist.", str(sensor_id))
                     data['error'] = "Sensor with id %s doesn't exist." % sensor_id
                 else:
                     data['sensor'] = sensor.toDict()
+                    logging.debug("Sensor info: %s", str(data['sensor']))
 
-            return json.dumps(data, indent=4)
         else:
+            logging.debug("Request for all sensors.")
             with sessionScope() as s:
                 sensors = s.query(Sensor).all()
                 data['sensors'] = [sensor.toDict() for sensor in sensors]
+                logging.debug("Got sensors: %s", str(data['sensors']))
 
-            return json.dumps(data, indent=4)
+        logging.info("Finished GET request to sensors.")
+        return json.dumps(data, indent=4)
 
 
     @require()
     def POST(self, sensor_id=None):
+        logging.error("POST request to sensors. This API end point is not implemented.")
         #TODO: Implement this for sensor creation
         pass
 
@@ -138,23 +153,30 @@ class Sensors:
         --------
         `models.Sensor`
         """
+        logging.info("PUT request to sensors.")
+
         returnData = {}
         statusCode = "200"
         cherrypy.response.headers['Content-Type'] = 'application/json'
         data = json.loads(cherrypy.request.body.read())
 
+        logging.debug("Request body: %s", data)
+
         with sessionScope() as s:
             try:
                 sensor = s.query(Sensor).filter_by(uuid = sensor_id).one()
             except NoResultFound:
+                logging.error("Sensor with id %s doesn't exist.", str(sensor_id))
                 returnData['error'] = "Sensor with id %s doesn't exist." % sensor_id
                 statusCode = "400"
             else:
+                logging.debug("Updating sensor.")
                 sensor = Sensors.updateSensor(s,sensor,data)
                 returnData['sensor'] = sensor.toDict()
 
         cherrypy.response.status = statusCode
 
+        logging.info("Finished PUT request to sensors.")
         return json.dumps(returnData,indent=4)
 
     #expects sensor to be a Sensor() from model
@@ -174,11 +196,10 @@ class Sensors:
         --------
         `models.Sensor`
         """
-        print "in create Sensor. Sensor:"
-        print sensor
+        logging.debug("Creating sensor %s", str(sensor))
+
         if sensor is not None:
-		    session.add(sensor)
-        print "exiting createSensor"
+            session.add(sensor)
 
     @staticmethod
     def updateSensor(session, sensor, data):
@@ -210,17 +231,22 @@ class Sensors:
         blacklist = ["uuid","message"]
         """
 
+        logging.debug("Updating sensor %s with data %s", str(sensor), str(data))
         blacklist = ["uuid","message"]
         for key,value in data.iteritems():
             if key in blacklist:
+                logging.error("Request to updateSensor included blacklisted key %s", str(key))
                 continue
             if key == "last_calibration":
                 if type(value['coefficients']) is not type(str()):
                     value['coefficients'] = json.dumps(value['coefficients'])
+
                 #if no timestamp, create timestamp
                 if 'timestamp' not in value or value['timestamp'] is None or value['timestamp'] == 0:
-                    print "timestamp not in value. Using current time."
+
+                    logging.debug("No timestamp provided. Using current time %s", str(time.time()))
                     value['timestamp'] = time.time()
+
                 Sensors.updateCalibration(session,sensor,value['coefficients'],value['timestamp'])
             else:
                 setattr(sensor,key,value)
@@ -228,6 +254,7 @@ class Sensors:
         session.add(sensor)
         session.commit()
 
+        logging.debug("Finished updating sensor.")
         return sensor
 
     @staticmethod
@@ -253,6 +280,17 @@ class Sensors:
         `models.Sensor`
         `models.Calibration`
         """
+        logging.debug("Updating calibration of sensor %s with coefficients %s and timestamp %s", str(sensor), str(coefficients), str(timestamp))
+
+        if sensor is None:
+            logging.error("Input sensor is None.")
+
+        if coefficients is None:
+            logging.error("Input coefficients is None.")
+
+        if timestamp is None:
+            logging.error("Input timestamp is None.")
+
         updateNeeded = False
         if sensor.last_calibration_id is None:
             #sensor doesn't have a calibration id, so we need to make a new calibration
@@ -266,35 +304,49 @@ class Sensors:
                 #update calibration based on timestamps
                 currentTimestamp = timestamp
                 oldTimestamp = Cal.timestamp
-                print "new timestamp:"
-                print timestamp
-                print "old timestamp:"
-                print oldTimestamp
+
+                logging.debug("Request timestamp: %s, Database timestamp: %s", currentTimestamp, oldTimestamp)
+
                 if currentTimestamp > oldTimestamp:
-                    print "new calibration is newer than one in db. checking coefficients..."
+                    logging.debug("Comparing coefficients.")
+
                     #check if coefficients are different
                     if Cal.coefficients != coefficients:
-                        print "coefficients are different, so we'll make a new calibration."
+                        logging.debug("Coefficients are different, updating...")
+
                         Cal = Calibration(coefficients=coefficients,timestamp=timestamp,sensor_id=sensor.uuid)
                         session.add(Cal)
                         session.commit()
+                        logging.debug("Added new calibration to database.")
+
                         updateNeeded = True
             except NoResultFound:
+                logging.debug("No calibration found for calibration id %s. Creating new calibration...", str(sensor.last_calibration_id))
+
                 Cal = Calibration(coefficients=coefficients,timestamp=timestamp,sensor_id=sensor.uuid)
                 session.add(Cal)
                 session.commit()
+                logging.debug("Created new calibration.")
+
                 updateNeeded = True
             if sensor.uuid != Cal.sensor_id:
                 #sensor thinks the calibration it has belongs to it, but it doesn't (may belong to another sensor). Make a new calibration.
+                logging.error("Calibration has different sensor foreign key %s than input sensor uuid %s", Cal.sensor_id, sensor.uuid)
+
                 Cal = Calibration(coefficients=coefficients,timestamp=timestamp,sensor_id=sensor.uuid)
                 session.add(Cal)
                 session.commit()
+                logging.debug("Created new Calibration for input sensor.")
+
                 updateNeeded = True
 
         #update sensor model with calibration
         if updateNeeded:
+            logging.debug("Updating sensor with new calibration.")
+
             sensor = session.query(Sensor).filter_by(uuid = sensor.uuid).one()
             Cal = session.query(Calibration).filter_by(sensor_id=sensor.uuid)[-1] #Gets most recent (by id) calibration
+
             sensor.last_calibration_id = Cal.id
             sensor.last_calibration = Cal
             session.commit()

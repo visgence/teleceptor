@@ -83,10 +83,15 @@ from teleceptor.sessionManager import sessionScope
 from teleceptor.api.sensors import Sensors
 from teleceptor.api.datastreams import DataStreams
 from teleceptor.api.readings import SensorReadings
+from teleceptor import USE_DEBUG
 
 class Delegation:
     exposed = True
 
+    if USE_DEBUG:
+        logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s',level=logging.DEBUG)
+    else:
+        logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s',level=logging.INFO)
 
     def POST(self):
         """ Handles incoming data from a basestation by updating (or creating) sensor information, including metadata, calibration, and datastream. Additionally updates sensor readings, if any.
@@ -160,6 +165,7 @@ class Delegation:
 
             ]
         """
+        logging.info("Got POST request to delegation.")
 
         cherrypy.response.headers['Content-Type'] = 'application/json'
         data = {'info':[],"newValues":{}}
@@ -167,7 +173,9 @@ class Delegation:
 
         try:
             readingData = json.load(cherrypy.request.body)
+            logging.debug("Got data: %s", readingData)
         except (ValueError, TypeError):
+            logging.error("Request data is not JSON: %s", cherrypy.request.body)
             data['error'] = "Bad json"
             return json.dumps(data, indent=4)
 
@@ -176,19 +184,24 @@ class Delegation:
         for mote in readingData:
 
             if 'info' not in mote:
+                logging.error("Mote %s did not report its info", str(mote))
                 data['error'] = "No info for this mote"
-            print "mote:"
-            print mote
+            logging.debug("mote: %s", str(mote))
+
             sensors = []
             if 'out' in mote['info']:
                 sensors = mote['info']['out']
             if 'in' in mote['info']:
                 sensors = sensors + mote['info']['in']
+
+            logging.debug("Motes in request: %s", str(sensors))
+
             for sensor in sensors:
                 sensorUuid = mote['info']['uuid']+sensor['name']
 
                 coefficients = None
                 if 'scale' not in sensor:
+                    logging.debug("Sensor did not report a scaling function. Using identity function.")
                     coefficients = json.dumps([1, 0])
                 else:
                     coefficients = json.dumps(sensor['scale'])
@@ -197,6 +210,8 @@ class Delegation:
                 try:
                     with sessionScope() as s:
                         foundSensor = s.query(Sensor).filter_by(uuid=sensorUuid).one()
+                        logging.debug("Found sensor in database.")
+
                         #update metadata in sensor
                         foundSensor.meta_data = sensor['meta_data']
 
@@ -211,28 +226,37 @@ class Delegation:
                                 for msg in msgs:
                                     msg.read = True
                                     msgList.append(msg.to_dict())
+
+                                logging.debug("Got unread messages: %s", str(msgList))
                                 data['newValues'][sensor['name']] = msgList
 
 
 
                 except NoResultFound:
+                    logging.debug("Sensor with uuid %s not found. Creating new entry in database.", str(sensorUuid))
                     #no sensor, so make one and try to find a datastream for it to claim (using the user+name combo)
+
                     sensor['uuid'] = sensorUuid
                     if 'in' in mote['info'] and sensor in mote['info']['in']:
                         sensor['sensor_IOtype'] = True
                     else:
                         sensor['sensor_IOtype'] = False
+
                     timestamp = sensor['timestamp']
                     del sensor['timestamp']
+
                     newSensor = Sensor(**sensor)
-                    #newSensor.message_queue.sensor_id = newSensor.uuid
+
                     with sessionScope() as s:
                         Sensors.createSensor(s, newSensor)
+                    logging.debug("Added sensor to database.")
 
                     #restore timestamp
                     sensor['timestamp'] = timestamp
                 with sessionScope() as s:
                     newSensor = s.query(Sensor).filter_by(uuid=sensorUuid).one()
+
+                    logging.debug("Updating calibration...")
                     Sensors.updateCalibration(s, newSensor, coefficients, sensor['timestamp'])
                     data['info'].append(json.dumps(newSensor.toDict()))
 
@@ -241,18 +265,24 @@ class Delegation:
                 try:
                     with sessionScope() as s:
                         ds = s.query(DataStream).filter_by(sensor=sensorUuid).one()
+
+                        logging.debug("Found datastream associated with sensor.")
                         foundds[sensor['name']] = ds.id
                 #no data stream, so we need to make one
                 except NoResultFound:
+                    logging.debug("Sensor has no datastream. Creating one...")
                     ds = DataStream(sensor=sensorUuid)
+
                     with sessionScope() as s:
                         print ds.toDict()
                         DataStreams.createDatastream(s, ds)
                         foundds[sensor['name']] = ds.id
 
-            print foundds
+                    logging.debug("Created datastream.")
+
 
             with sessionScope() as s:
+
                 for reading in mote['readings']:
                     sensorUuid = mote['info']['uuid']+reading[0]
                     sensor = s.query(Sensor).filter_by(uuid=sensorUuid).one()
@@ -261,8 +291,11 @@ class Delegation:
                     print reading
 
             with sessionScope() as s:
+                logging.debug("Inserting new readings from mote into database: %s", str(mote['readings']))
+
                 SensorReadings.insertReadings(s, mote['readings'])
 
+        logging.info("Finished POST request to delegation.")
         return json.dumps(data, indent=4)
 
 
