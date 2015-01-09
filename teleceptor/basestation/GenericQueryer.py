@@ -28,7 +28,7 @@ serverURL = "http://localhost:" + str(teleceptor.PORT) + "/api/delegation/"
 serverDeleteURL = "http://localhost:" + str(teleceptor.PORT) + "/api/messages/"
 pid = os.getpid()
 starttime = time.time()
-logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s',level=logging.INFO)
+
 
 def main(device, queryRate=60):
     """
@@ -38,6 +38,12 @@ def main(device, queryRate=60):
     device -- The device connected to the mote. e.g. a TCPMote
     queryRate -- The rate to get readings from the mote and POST them.
     """
+
+    if teleceptor.USE_DEBUG:
+        logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s',level=logging.DEBUG)
+    else:
+        logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s',level=logging.INFO)
+
 
     #array of not sent readings, saved for various reasons
     payloads = []
@@ -61,6 +67,8 @@ def main(device, queryRate=60):
             logging.error("Mangled JSON data from mote.")
             logging.debug("Mangled readings data: %s", str(readings))
             continue
+
+        logging.debug("Info and Readings are proper JSON: %s \n %s", json.dumps(info), json.dumps(readings))
 
         for reading in readings:
             reading.append(time.time())
@@ -118,12 +126,11 @@ def main(device, queryRate=60):
             continue
 
 
-        logging.info("%s", str(response))
-        logging.info("%s", str(response.text))
+        logging.info("Server response: %s", str(response.text))
 
         if response.status_code == requests.codes.ok:
             responseData = json.loads(response.text)
-            logging.info("%s", json.dumps(responseData))
+            logging.debug("Messages from server: %s", json.dumps(responseData))
             if 'newValues' in responseData:
                 updateMote(device, (responseData['newValues']))
 
@@ -150,9 +157,8 @@ def updateMote(moteHandle, newValues={}):
     if not newValues:
         return
     parsedNewValues = {}
-    deleteMessages = []
     for sen in newValues:
-        logging.info("sen: %s", sen)
+        logging.debug("sen: %s", sen)
         if len(newValues[sen]) == 0:
             continue
         message = newValues[sen][-1] #get the last message (ignore others)
@@ -162,14 +168,14 @@ def updateMote(moteHandle, newValues={}):
             elif senName == "message":
                 parsedNewValues[sen] = senMessage
 
-    logging.info(parsedNewValues)
-    logging.info(deleteMessages)
+    logging.debug("Values to send to mote: %s", str(parsedNewValues))
     info, readings = moteHandle.updateValues(parsedNewValues)
     info = json.loads(info)
     readings = json.loads(readings)
-    logging.info("info after update: %s", info)
-    logging.info("readings after update: %s", readings)
+    logging.debug("info after update: %s", info)
+    logging.debug("readings after update: %s", readings)
 
+    return info, readings
 
 def uptime(starttime):
     """

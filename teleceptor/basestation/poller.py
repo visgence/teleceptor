@@ -82,7 +82,7 @@ def grepfinddevices(previousDevices=[]):
         logging.debug("Got udev_list: %s", str(udev_list))
 
         if '    DRIVERS=="ftdi_sio"' in udev_list and '    ATTRS{product}=="FT232R USB UART"' in udev_list:
-            logging.info("Looks like device %s is a mote. Making process...", dev)
+            logging.debug("Looks like device %s is a mote. Making process...", dev)
 
 
             #make a new SerialMote to pass to new process

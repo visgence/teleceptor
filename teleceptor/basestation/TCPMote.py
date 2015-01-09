@@ -28,17 +28,29 @@ class TCPMote():
         debug -- Whether to display debug messages.
 
         """
+        if debug:
+            logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s',level=logging.DEBUG)
+        else:
+            logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s',level=logging.INFO)
+
+        logging.debug("Creating socket connection to host %s and port %s", str(host), str(port))
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((host, port))
+
+        logging.debug("Made socket connection.")
         s.settimeout(timeout)
+
         self._device = s.makefile()
         self.metadata = {'host':host,'port':port}
 
+        logging.info("Created mote with metadata %s", str(self.metadata))
+
+        logging.debug("Trying to read any ack characters...")
         try:
-            print self._device.read(7)
+            logging.debug("Got ack characters: %s", repr(self._device.read(7)))
 
         except socket.timeout as e:
-            print "NO Hello Line"
+            logging.debug("No Hello Line")
 
 
     def getReadings(self):
@@ -56,19 +68,38 @@ class TCPMote():
         info = None
         readings = None
         try:
+            logging.debug("Writing %...")
             self._device.write('%')
+
+            logging.debug("Flushing...")
             self._device.flush()
+
+            logging.debug("Reading a line...")
             info = self._device.readline()
+            logging.debug("Read line %s \n Reading a line...", info)
             readings = self._device.readline()
+            logging.debug("Read line %s.", readings)
         except socket.timeout as e:
             #try again
+            logging.debug("Timed out trying to read from device. Trying again...")
             try:
+                logging.debug("Writing %...")
                 self._device.write('%')
+
+                logging.debug("Flushing...")
                 self._device.flush()
+
+                logging.debug("Reading a line...")
                 info = self._device.readline()
+
+                logging.debug("Read line %s \n Reading a line...", info)
                 readings = self._device.readline()
+
+                logging.debug("Read line %s", readings)
             except socket.timeout as st:
+                logging.error("Timed out trying to read from device twice. Device may be unresponsive.")
                 return None, None
+
         return info, readings
 
     def updateValues(self,newValues={}):
@@ -91,8 +122,12 @@ class TCPMote():
         """
         if newValues:
             logging.debug("Sending new Values: %s", json.dumps(newValues))
+
+            logging.debug("Writing @")
             self._device.write('@') #TODO: Check if this is correct code.
             self._device.flush()
+
+            logging.debug("Writing new values.")
             self._device.write(json.dumps(newValues))
             self._device.flush()
         #get values from sensor
