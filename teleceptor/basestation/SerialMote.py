@@ -29,7 +29,7 @@ class SerialMote(serial.Serial):
 
     All Visgence motes use a baudrate of 9600.
     """
-    def __init__(self, deviceName, timeout, baudRate=9600, debug=False):
+    def __init__(self, deviceName, timeout=3, baudRate=9600, debug=False):
         """
         Initializes the mote. Required arguments are deviceName and timeout.
         deviceName -- The path to the serial device as a string. For example: /dev/ttyUSB0

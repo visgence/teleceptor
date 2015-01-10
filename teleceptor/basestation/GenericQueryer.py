@@ -22,6 +22,7 @@ import os
 
 #local imports
 import teleceptor
+from teleceptor.basestation import TCPMote, SerialMote
 
 
 serverURL = "http://localhost:" + str(teleceptor.PORT) + "/api/delegation/"
@@ -29,14 +30,49 @@ serverDeleteURL = "http://localhost:" + str(teleceptor.PORT) + "/api/messages/"
 pid = os.getpid()
 starttime = time.time()
 
+def moteFactory(**kwargs):
+    """
+    Generates a new device based on the input kwargs.
+    kwargs -- the keyword arguments for the device. Currently the GenericQueryer supports two devices - TCPMote and SerialMote. Arguments for TCPMote should be of the form
+            host = "192.168.0.0"
+            port = 5000
+            debug = False *
+        Arguments for SerialMote should be of the form
+            deviceName = "/dev/ttyUSB0"
+            timeout = 5
+            baudrate = 9600 *
+            debug = False *
 
-def main(device, queryRate=60):
+        Note that arguments marked with a * are optional. See the documentation for the respective device for default values.
+    """
+    device = None
+    if "host" in kwargs.iterkeys() and "port" in kwargs.iterkeys():
+        device = TCPMote.TCPMote(**kwargs)
+
+    if "deviceName" in kwargs.iterkeys():
+        device = SerialMote.SerialMote(**kwargs)
+
+    return device
+
+
+
+def main(queryRate=60, **kwargs):
     """
     Begins a query loop on the device and sends POST requests to
     the server at serverURL.
 
-    device -- The device connected to the mote. e.g. a TCPMote
     queryRate -- The rate to get readings from the mote and POST them.
+    kwargs -- the keyword arguments for the device. Currently the GenericQueryer supports two devices - TCPMote and SerialMote. Arguments for TCPMote should be of the form
+            host = "192.168.0.0"
+            port = 5000
+            debug = False *
+        Arguments for SerialMote should be of the form
+            deviceName = "/dev/ttyUSB0"
+            timeout = 5
+            baudrate = 9600 *
+            debug = False *
+
+        Note that arguments marked with a * are optional. See the documentation for the respective device for default values.
     """
 
     if teleceptor.USE_DEBUG:
@@ -44,6 +80,16 @@ def main(device, queryRate=60):
     else:
         logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s',level=logging.INFO)
 
+    #create the device from kwargs
+    try:
+        device = moteFactory(**kwargs)
+    except:
+        logging.error("Provided kwargs caused exception during mote creation.\n kwargs: %s", str(kwargs))
+        return
+
+    if device is None:
+        logging.error("Provided kwargs are not compatible with any Motes.\n kwargs: %s", str(kwargs))
+        return
 
     #array of not sent readings, saved for various reasons
     payloads = []

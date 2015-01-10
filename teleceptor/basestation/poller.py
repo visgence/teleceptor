@@ -84,24 +84,7 @@ def grepfinddevices(previousDevices=[]):
         if '    DRIVERS=="ftdi_sio"' in udev_list and '    ATTRS{product}=="FT232R USB UART"' in udev_list:
             logging.debug("Looks like device %s is a mote. Making process...", dev)
 
-
-            #make a new SerialMote to pass to new process
-            try:
-                logging.debug("Creating SerialMote with devpath %s", devpath)
-                device = SerialMote.SerialMote(devpath,3, debug=USE_DEBUG)
-            except SerialTimeoutException, ste:
-                #device may not be ready yet. Try again.
-                logging.error("Device at %s not ready yet.", devpath)
-                continue
-            except SerialException, se:
-                #failed device
-                logging.error(se)
-                logging.error("Device at %s failed.", devpath)
-                continue
-            else:
-                logging.debug("Succeeded making device with devpath %s, starting query process.", devpath)
-
-                p = multiprocessing.Process(target=GenericQueryer.main,name=dev,args=(device,3))
+                p = multiprocessing.Process(target=GenericQueryer.main,name=dev,args=(3,), kwargs={"deviceName":devpath, "timeout":3, "debug":USE_DEBUG})
                 p.start()
 
                 logging.debug("Began process.")
