@@ -48,6 +48,11 @@ def tcpPoller():
     print tcppollercmd
     runpy.run_path(tcppollercmd,None,'__main__')
 
+def envtest():
+    unittestcmd = os.path.join(teleceptor.__path__[0],'envtest.py')
+    print unittestcmd
+    runpy.run_path(unittestcmd,None,'__main__')
+
 def copyConfig():
     if platform.system() == 'Windows':
         appdata = os.path.join(os.getenv("APPDATA"),"teleceptor")
@@ -135,6 +140,7 @@ if __name__ == "__main__":
         ,'poller': [poller,"Serial poller"]
         ,'tcppoller': [tcpPoller,"TCP poller (Hosts are added in config.json)"]
         ,'loadfixtures': [loadfixtures,"Load test database data"]
+        ,'envtest': [envtest,"verify enviroment vairables work"]
         ,'version': [displayVersion,"Display version"]
     }
 
