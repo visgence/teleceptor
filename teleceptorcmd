@@ -155,7 +155,7 @@ if __name__ == "__main__":
         
         if len(args) > 2 and args[2] == "-d":
             print "Starting process %s as daemon..." % args[1].lower()
-            pidfilename = "/tmp/" + args[1].lower() + '.pid'
+            pidfilename = "/tmp/teleceptor-" + args[1].lower() + '.pid'
             try:
                 pid = os.fork()
                 if pid > 0:
