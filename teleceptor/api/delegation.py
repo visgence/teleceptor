@@ -165,7 +165,7 @@ class Delegation:
 
             ]
         """
-        logging.info("Got POST request to delegation.")
+        logging.debug("Got POST request to delegation.")
 
         cherrypy.response.headers['Content-Type'] = 'application/json'
         data = {'info':[],"newValues":{}}
@@ -295,7 +295,7 @@ class Delegation:
 
                 SensorReadings.insertReadings(s, mote['readings'])
 
-        logging.info("Finished POST request to delegation.")
+        logging.debug("Finished POST request to delegation.")
         return json.dumps(data, indent=4)
 
 

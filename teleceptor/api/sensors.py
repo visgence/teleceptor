@@ -70,6 +70,7 @@ from teleceptor.auth import require
 from teleceptor import USE_DEBUG
 
 
+
 class Sensors:
     exposed = True
 
@@ -99,7 +100,7 @@ class Sensors:
         --------
         `models.Sensor`
         """
-        logging.info("GET request to sensors.")
+        logging.debug("GET request to sensors.")
 
         cherrypy.response.headers['Content-Type'] = 'application/json'
         data = {}
@@ -153,7 +154,7 @@ class Sensors:
         --------
         `models.Sensor`
         """
-        logging.info("PUT request to sensors.")
+        logging.debug("PUT request to sensors.")
 
         returnData = {}
         statusCode = "200"
@@ -176,7 +177,7 @@ class Sensors:
 
         cherrypy.response.status = statusCode
 
-        logging.info("Finished PUT request to sensors.")
+        logging.debug("Finished PUT request to sensors.")
         return json.dumps(returnData,indent=4)
 
     #expects sensor to be a Sensor() from model
