@@ -84,10 +84,10 @@ def grepfinddevices(previousDevices=[]):
         if '    DRIVERS=="ftdi_sio"' in udev_list and '    ATTRS{product}=="FT232R USB UART"' in udev_list:
             logging.debug("Looks like device %s is a mote. Making process...", dev)
 
-                p = multiprocessing.Process(target=GenericQueryer.main,name=dev,args=(3,), kwargs={"deviceName":devpath, "timeout":3, "debug":USE_DEBUG})
-                p.start()
+            p = multiprocessing.Process(target=GenericQueryer.main,name=dev,args=(3,), kwargs={"deviceName":devpath, "timeout":3, "debug":USE_DEBUG})
+            p.start()
 
-                logging.debug("Began process.")
+            logging.debug("Began process.")
 
     #print(stdout_list)
     return [p.name for p in multiprocessing.active_children()]
