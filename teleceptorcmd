@@ -27,11 +27,10 @@ from sqlalchemy import create_engine
 import teleceptor
 from  teleceptor import models
 from  teleceptor import testFixtures
+from teleceptor import server
 
 def runserver():
-    servercmd = os.path.join(teleceptor.__path__[0],'server.py')
-    print servercmd
-    runpy.run_path(servercmd)
+    server.runserver()
 
 def btcmote():
     btcmotecmd = os.path.join(teleceptor.__path__[0],'softSensors','BitcoinSensor','BTCMote.py')
