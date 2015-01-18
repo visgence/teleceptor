@@ -19,9 +19,11 @@ import os,sys
 import json
 import cherrypy
 import jinja2
+import logging
 
 #local Imports
 from teleceptor import TEMPLATES
+from teleceptor import USE_DEBUG
 from teleceptor import api
 from teleceptor.api import ResourceApi
 from teleceptor.auth import AuthController, require, member_of, name_is
@@ -30,6 +32,11 @@ env = jinja2.Environment(loader=jinja2.FileSystemLoader(searchpath=TEMPLATES))
 class Root(object):
     auth = AuthController()
     api  = ResourceApi()
+
+    if USE_DEBUG:
+        logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s',level=logging.DEBUG)
+    else:
+        logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s',level=logging.INFO)
 
     @require()
     def index(self,sensor_id=None, *args, **kwargs):
@@ -47,8 +54,8 @@ class Root(object):
             try:
                 activeSensor = json.loads(sensors.GET(sensor_id))["sensor"]
             except KeyError, ke:
-                print "Error: no sensor with id %s", sensor_id
-                print ke
+                logging.error("Error: no sensor with id %s", sensor_id)
+                logging.error(str(ke))
 
         datastream = None
         if activeSensor is not None:
