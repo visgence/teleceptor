@@ -274,7 +274,7 @@ class Delegation:
                     ds = DataStream(sensor=sensorUuid)
 
                     with sessionScope() as s:
-                        print ds.toDict()
+                        logging.debug(str(ds.toDict()))
                         DataStreams.createDatastream(s, ds)
                         foundds[sensor['name']] = ds.id
 
@@ -288,7 +288,7 @@ class Delegation:
                     sensor = s.query(Sensor).filter_by(uuid=sensorUuid).one()
                     sensor.last_value = reading[1]
                     reading[0] = foundds[reading[0]]
-                    print reading
+                    logging.debug(str(reading))
 
             with sessionScope() as s:
                 logging.debug("Inserting new readings from mote into database: %s", str(mote['readings']))

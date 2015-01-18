@@ -217,7 +217,6 @@ class Sensor(Base):
 
 
     def toDict(self):
-        print "todict sensor"
         data = {
              'uuid': self.uuid
             ,'sensor_type': self.sensor_type
@@ -319,8 +318,6 @@ class Calibration(Base):
 
 
     def toDict(self):
-        print "calibration toDict"
-        print self.coefficients
         return {
              'id': self.id
             ,'sensor_id': self.sensor_id
