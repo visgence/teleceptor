@@ -42,17 +42,7 @@ def tcpDevices(previousDevices,devices):
         host,port = dev.split(":")
         port = int(port)
 
-        #make a new TCPMote to pass to new process
-        logging.debug("Creating new TCPMote.")
-
-        try:
-            device = TCPMote.TCPMote(host, port, 3, debug=USE_DEBUG)
-        except socket.error:
-            continue #route may not exist, just give up and retry later
-
-        logging.debug("Succeeded making device, starting query process.")
-
-        p = multiprocessing.Process(target=GenericQueryer.main,name=dev,args=(device,10))
+        p = multiprocessing.Process(target=GenericQueryer.main, name=dev, args=(10, ), kwargs={"host":host, "port":port, "timeout":3, "debug":USE_DEBUG})
         p.start()
 
         logging.debug("Began process.")

@@ -25,20 +25,23 @@ from teleceptor import WEBROOT,PORT
 from teleceptor.auth import AuthController, require, member_of, name_is
 from teleceptor.pages import Root
 
+def runserver():
+    cherrypy.tree.mount(Root(), '/', config = {
+        '/': {
+             'tools.staticdir.on': True
+            ,'tools.staticdir.dir': WEBROOT
+            # ,'tools.auth.on': True
+            ,'tools.sessions.on': True
+        },
+        '/api': {
+            'request.dispatch': cherrypy.dispatch.MethodDispatcher()
+        }
+    })
 
-cherrypy.tree.mount(Root(), '/', config = {
-    '/': {
-         'tools.staticdir.on': True
-        ,'tools.staticdir.dir': WEBROOT
-        # ,'tools.auth.on': True
-        ,'tools.sessions.on': True
-    },
-    '/api': {
-        'request.dispatch': cherrypy.dispatch.MethodDispatcher()
-    }
-})
+    cherrypy.server.socket_host = "0.0.0.0"
+    cherrypy.server.socket_port = PORT
+    cherrypy.engine.start()
+    cherrypy.engine.block()
 
-cherrypy.server.socket_host = "0.0.0.0"
-cherrypy.server.socket_port = PORT
-cherrypy.engine.start()
-cherrypy.engine.block()
+if __name__ == "__main__":
+    runserver()

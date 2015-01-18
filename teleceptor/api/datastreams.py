@@ -67,15 +67,22 @@ import cherrypy
 import json
 from sqlalchemy.orm.exc import NoResultFound
 import re
+import logging
 
 # Local Imports
 from teleceptor.models import DataStream
 from teleceptor.sessionManager import sessionScope
 from teleceptor import  whisperUtils
+from teleceptor import USE_DEBUG
 
 
 class DataStreams:
     exposed = True
+
+    if USE_DEBUG:
+        logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s',level=logging.DEBUG)
+    else:
+        logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s',level=logging.INFO)
 
     def cleanInputs(self, inputs):
         """
@@ -165,24 +172,32 @@ class DataStreams:
                 'stream':  A single stream
             }
         """
+        logging.debug("GET request to datastreams.")
+
         cherrypy.response.headers['Content-Type'] = 'application/json'
         data = {}
 
         if stream_id is not None:
+            logging.debug("Request for datastream with id %s", str(stream_id))
             with sessionScope() as s:
                 try:
                     stream = s.query(DataStream).filter_by(id = stream_id).one()
                 except NoResultFound:
+                    logging.error("Stream with id %s does not exist.", str(stream_id))
                     data['error'] = "Stream with id %s doesn't exist." % stream_id
                 else:
+                    logging.debug("Found stream with id %s: %s", str(stream_id), str(stream.toDict()))
                     data['stream'] = stream.toDict()
 
             return json.dumps(data, indent=4)
         else:
+            logging.debug("Request for all datastreams with parameters %s", str(kwargs))
             inputs = self.cleanInputs(kwargs)
             if len(kwargs) > 0 and inputs is None:
+                logging.error("Provided url parameters are invalid: %s", str(kwargs))
                 data['error'] = "Invalid url parameters"
             else:
+                logging.debug("Parameters are valid.")
                 with sessionScope() as s:
                     datastreams = s.query(DataStream).filter_by(**inputs).all()
                     data['datastreams'] = [stream.toDict() for stream in datastreams]
@@ -191,10 +206,12 @@ class DataStreams:
 
     def POST(self, stream_id=None):
         #TODO: Implement this for datastream creation
+        logging.error("POST request to datastreams. This API end point is not implemented.")
         pass
 
     def PUT(self, streamid=None):
         #TODO: Implement this for datastream update
+        logging.error("PUT request to datastreams. This API end point is not implemented.")
         pass
 
     #expects datastream to be a DataStream() from model
@@ -215,16 +232,14 @@ class DataStreams:
         -----
         This function is *not* idempotent. That is, multiple calls to this function with the same input `datastream` will create multiple `DataStream` objects in the database, each with its own whisper file.
         """
-        print "In createDatastream with datastream:"
-        print datastream
         if datastream is not None:
-            print "Creating datastream with these options:"
-            print datastream.toDict()
+            logging.debug("Creating datastream with options: %s", str(datastream.toDict()))
             session.add(datastream)
             session.commit()
-            print "Creating whisper database with id"
-            print datastream.id
+            logging.debug("Creating whisper database with id %s", str(datastream.id))
             whisperUtils.createDs(datastream.id)
-            print "exiting create datastream"
+            logging.debug("Done making datastream and whisper database.")
+        else:
+            logging.error("Provided datastream to createDatastream method is None.")
 
 

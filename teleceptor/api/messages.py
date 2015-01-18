@@ -50,14 +50,22 @@ try:
     import simplejson as json
 except ImportError:
     import json
+import logging
 
 # Local Imports
 from teleceptor.models import Sensor, MessageQueue, Message
 from teleceptor.sessionManager import sessionScope
 from teleceptor.auth import require
+from teleceptor import USE_DEBUG
+
 
 class Messages:
     exposed = True
+
+    if USE_DEBUG:
+        logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s',level=logging.DEBUG)
+    else:
+        logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s',level=logging.INFO)
 
     def GET(self, sensor_id=None):
         """
@@ -92,29 +100,38 @@ class Messages:
         sensor_id: int
             Unique identifier for a sensor.
         """
+
+        logging.debug("GET request to messages.")
+
         cherrypy.response.headers['Content-Type'] = 'application/json'
         data = {}
         statusCode = "200"
 
 
         if sensor_id is not None:
+            logging.debug("Request for sensor_id %s", str(sensor_id))
             with sessionScope() as s:
                 try:
                     sensor = s.query(Sensor).filter_by(uuid=sensor_id).one()
                 except NoResultFound:
+                    logging.error("Sensor with id %s does not exist.", str(sensor_id))
                     data['error'] = "Sensor with id %s doesn't exist" % sensor_id
                 else:
                     msgQueue = sensor.message_queue
                     if msgQueue is not None:
+                        logging.debug("Found message queue for sensor with id %s: %s", str(sensor_id), str(msgQueue.to_dict()) )
                         data['message_queue'] = msgQueue.to_dict()
                     else:
+                        logging.error("Sensor with id %s does not have a message queue.", str(sensor_id))
                         data['error'] = "Sensor with id %s doesn't have a message queue" % sensor_id
-                return json.dumps(data, indent=4)
         else:
+            logging.debug("Getting message queues for all sensors.")
             with sessionScope() as s:
                 messageQueues = s.query(MessageQueue).all()
                 data['messageQueues'] = [messageQueue.to_dict() for messageQueue in messageQueues]
-            return json.dumps(data, indent=4)
+
+        logging.debug("Completed GET request to messages.")
+        return json.dumps(data, indent=4)
 
 
     def is_valid_type(self,message,sensor_type):
@@ -128,7 +145,7 @@ class Messages:
             return type(message) == bool
         elif sensor_type == "float":
             return type(message) == float
-        print "Didn't have any matches in type validation"
+        logging.error("Provided sensor type %s does not match int, bool, or float")
         return False
 
     @require()
@@ -145,16 +162,20 @@ class Messages:
         sensor_id: int
             Unique identifier for a sensor.
         """
+        logging.debug("POST request to messages.")
+
         cherrypy.response.headers['Content-Type'] = 'application/json'
         statusCode = "200"
         returnData = {}
 
         data = json.loads(cherrypy.request.body.read())
         if "message" not in data:
+            logging.error("POST request to messages has no message data.")
             returnData['error'] = "POST to messages does not contain message data"
             statusCode = "400"
             return json.dumps(returnData,indent=4)
         if "duration" not in data:
+            logging.error("POST request to messages has no duration data.")
             returnData['error'] = "POST to messages does not contain duration data"
             statusCode = "400"
             return json.dumps(returnData,indent=4)
@@ -163,30 +184,38 @@ class Messages:
             try:
                 sensor = s.query(Sensor).filter_by(uuid=sensor_id).one()
             except NoResultFound:
+                logging.error("Sensor with id %s does not exist.", str(sensor_id))
                 returnData['error'] = "Sensor with id %s doesn't exist" % sensor_id
                 statusCode = "400"
             else:
                 msgQueue = sensor.message_queue
                 if msgQueue is None:
+                    logging.debug("Sensor has no message queue. Creating one...")
                     sensor.message_queue = MessageQueue(sensor_id=sensor.uuid)
                     s.commit()
+                    logging.debug("Completed message queue creation.")
                     msgQueue = sensor.message_queue
-                print data
-                print data['message']
-                print json.dumps(data['message'])
+                
                 msg = Message()
-                print "sensor type is " + sensor.sensor_type
+                logging.debug("Sensor's type is %s", str(sensor.sensor_type))
                 if not self.is_valid_type(data['message'], sensor.sensor_type):
+                    logging.error("Message type %s does not match sensor type %s", str(type(data['message'])), str(sensor.sensor_type))
                     returnData['error'] = "Message type does not match sensor type"
                     statusCode = "400"
                     return json.dumps(returnData,indent=4)
+
                 msg.message = json.dumps(data['message'])
                 msg.timeout = time.time() + data['duration']
+                logging.debug("Adding message to database: %s", str(msg.to_dict()))
                 s.add(msg)
                 s.commit()
 
+                logging.debug("Adding message to message queue...")
                 msgQueue.messages.append(msg)
                 s.commit()
+                logging.debug("Completed adding message.")
+
+            logging.debug("Finished POST request to messages.")
             return json.dumps(returnData,indent=4)
 
 
@@ -203,6 +232,7 @@ class Messages:
             Unique identifier for a message.
         """
 
+        logging.debug("DELETE request to messages.")
         cherrypy.response.headers['Content-Type'] = 'application/json'
         statusCode = "200"
         returnData = {}
@@ -211,11 +241,13 @@ class Messages:
             try:
                 sensor = s.query(Sensor).filter_by(uuid=sensor_id).one()
             except NoResultFound:
+                logging.error("Sensor with id %s does not exist", str(sensor_id))
                 returnData['error'] = "Sensor with id %s doesn't exist" % sensor_id
                 statusCode = "400"
             msgQueue = sensor.message_queue
 
             if msgQueue is None:
+                logging.error("Sensor with id %s has no message queue to DELETE from.", str(sensor_id))
                 returnData['error'] = "DELETE to messages does not contain message data"
                 statusCode = "400"
                 return json.dumps(returnData,indent=4)
@@ -223,18 +255,25 @@ class Messages:
             try:
                 msgToDel = s.query(Message).filter_by(id=message_id).one()
             except NoResultFound:
+                logging.error("Message with id %s does not exist.", str(message_id))
                 returnData['error'] = "Message with id %s doesn't exist" % message_id
                 statusCode = "400"
                 return json.dumps(returnData,indent=4)
+
             if msgToDel not in msgQueue.messages:
+                logging.error("Message with id %s does not belong to sensor with id %s", str(message_id), str(sensor_id))
                 returnData['error'] = "Message with id %(m_id)s doesn't belong to Sensor with id %(sens_id)s" % {"m_id":message_id, "sens_id":sensor_id}
                 statusCode = "400"
                 return json.dumps(returnData,indent=4)
 
+            logging.debug("Removing message...")
             msgQueue.messages.remove(msgToDel)
             returnData['message'] = msgToDel.to_dict()
             s.delete(msgToDel)
             s.commit()
+            logging.debug("Finished removing message.")
+
+            logging.debug("Finished DELETE request to messages.")
             return json.dumps(returnData, indent=4)
 
     @cherrypy.expose
@@ -252,6 +291,8 @@ class Messages:
         timeout : float
             The time at which the message(s) will expire.
         """
+        logging.debug("PURGE request to messages.")
+
         cherrypy.response.headers['Content-Type'] = 'application/json'
         statusCode="200"
         returnData = {}
@@ -261,17 +302,24 @@ class Messages:
             try:
                 sensor = s.query(Sensor).filter_by(uuid=sensor_id).one()
             except NoResultFound:
+                logging.error("Sensor with id %s does not exist", str(sensor_id))
                 returnData['error'] = "Sensor with id %s doesn't exist" % sensor_id
                 statusCode = "400"
             msgQueue = sensor.message_queue
 
             if msgQueue is None:
+                logging.error("Sensor with id %s has no message queue.", str(sensor_id))
                 returnData['error'] = "Sensor with id %s has no messages" % sensor_id
                 statusCode = "400"
                 return json.dumps(returnData,indent=4)
             #actually delete
+            logging.debug("Deleting message queue for sensor with id %s...", str(sensor_id))
             rowsDeleted = s.query(Message).\
             filter(Message.message_queue_id==msgQueue.id, Message.timeout <= timeout).delete()
+            logging.debug("Finished deleting message queue.")
 
         returnData['success'] = "Deleted %s messages" % rowsDeleted
+        logging.debug("Deleted %s messages", rowsDeleted)
+        
+        logging.debug("Finished PURGE request to messages.")
         return json.dumps(returnData,indent=4)

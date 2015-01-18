@@ -97,7 +97,7 @@ $(function($) {
             vars = vars || {};
 
             if (vars.hasOwnProperty("sensor"))
-                __this.sensor(new Sensor(vars.sensor));
+                __this.sensor = vars.sensor;
 
             if (vars.hasOwnProperty("datastream"))
                 __this.datastream(vars.datastream);

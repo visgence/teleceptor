@@ -29,7 +29,7 @@ class SerialMote(serial.Serial):
 
     All Visgence motes use a baudrate of 9600.
     """
-    def __init__(self, deviceName, timeout, baudRate=9600, debug=False):
+    def __init__(self, deviceName, timeout=3, baudRate=9600, debug=False):
         """
         Initializes the mote. Required arguments are deviceName and timeout.
         deviceName -- The path to the serial device as a string. For example: /dev/ttyUSB0
@@ -39,12 +39,18 @@ class SerialMote(serial.Serial):
 
         Additional Serial settings can be configured after creating the mote.
         """
+        if debug:
+            logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s',level=logging.DEBUG)
+        else:
+            logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s',level=logging.INFO)
+
         logging.debug("Calling serial.Serial...")
         super(serial.Serial, self).__init__(deviceName,timeout=timeout,baudrate=baudRate)
         #wait 5 seconds to allow mote time to boot
         time.sleep(5)
+
         logging.debug("Finished creating serial object as self")
-        logging.info("Created mote %s with timeout %s seconds and %s baudrate", deviceName, str(timeout), str(baudRate))
+        logging.info("Created mote %s with timeout %s seconds and baudrate %s", deviceName, str(timeout), str(baudRate))
 
         #get reading to make sure device is alive
         info = ""
@@ -53,15 +59,19 @@ class SerialMote(serial.Serial):
             info, readings = self.getReadings()
         except SerialTimeoutException, ste:
             #device may not be ready yet. Try again.
+            logging.error("Serial Timeout Exception, device may not be ready yet. \n %s", str(ste))
             raise ste
         except SerialException, se:
             #failed device
+            logging.error("Serial Exception, device may not be connected or has failed. \n %s", str(se))
             raise se
 
         info = json.loads(info)
         self.uuid = info['uuid']
         self.deviceurl = deviceName
         self.metadata = {"deviceurl":deviceName}
+
+        logging.debug("Finished creating SerialMote, uuid: %s, metadata: %s.", str(self.uuid), str(metadata))
 
     def getReadings(self):
         """
@@ -74,9 +84,17 @@ class SerialMote(serial.Serial):
         >>> json.loads(readings)
 
         """
+        logging.debug("Writing %...")
         self.write('%')
+
+        logging.debug("Wrote %. Reading a line...")
         info = self.readline()
+
+        logging.debug("Got line %s \n Reading a line...", info)
         readings = self.readline()
+
+        logging.debug("Got line %s", readings)
+
         return info, readings
 
     def updateValues(self, newValues={}):
@@ -98,7 +116,7 @@ class SerialMote(serial.Serial):
 
         """
         if newValues:
-            logging.info("Sending new Values: %s", json.dumps(newValues))
+            logging.debug("Sending new Values: %s", json.dumps(newValues))
             self.write('@') #TODO: Check if this is correct code.
             self.write(json.dumps(newValues))
         #get values from sensor

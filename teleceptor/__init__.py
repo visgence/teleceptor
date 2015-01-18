@@ -21,13 +21,15 @@ import json
 from .version import __version__
 PATH = os.path.abspath(os.path.join(os.path.dirname(__file__),'..'))
 
-
 #Path to WEBROOT and Template are part of application
 WEBROOT = os.path.abspath(os.path.join(PATH,'webroot'))
 TEMPLATES = os.path.abspath(os.path.join(PATH,'templates'))
 
 #Set config path based on system
-if platform.system() == 'Windows':
+
+if os.environ.get('TELECEPTOR_DATAPATH') is not None:
+    DATAPATH = os.environ.get('TELECEPTOR_DATAPATH')
+elif platform.system() == 'Windows':
     DATAPATH = os.path.join(os.getenv("APPDATA"),"teleceptor")
 else:
     DATAPATH = os.path.join(os.getenv("HOME"),".config","teleceptor")
@@ -78,6 +80,7 @@ SQLREADTIME = conf["SQLREADTIME"]
 
 #Server Port
 PORT = conf["PORT"]
+
 
 #TCP Poller Hosts
 TCP_POLLER_HOSTS = conf["TCP_POLLER_HOSTS"]
