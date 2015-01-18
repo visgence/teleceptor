@@ -21,7 +21,6 @@ import json
 from .version import __version__
 PATH = os.path.abspath(os.path.join(os.path.dirname(__file__),'..'))
 
-
 #Path to WEBROOT and Template are part of application
 WEBROOT = os.path.abspath(os.path.join(PATH,'webroot'))
 TEMPLATES = os.path.abspath(os.path.join(PATH,'templates'))
@@ -77,7 +76,11 @@ SQLDATA = conf["SQLDATA"]
 SQLREADTIME = conf["SQLREADTIME"]
 
 #Server Port
-PORT = conf["PORT"]
+if(os.environ.get('TELECEPTOR_PORT') is not None):
+    PORT = int(os.environ.get('TELECEPTOR_PORT'))
+else:
+    PORT = conf["PORT"]
+
 
 #TCP Poller Hosts
 TCP_POLLER_HOSTS = conf["TCP_POLLER_HOSTS"]
