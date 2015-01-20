@@ -44,8 +44,9 @@ class TestTeleceptor(unittest.TestCase):
     def setUpClass(self):
         build_config()
         os.environ["TELECEPTOR_DATAPATH"] = DATAPATH 
-        assert subprocess.call(sys.executable + " "+ os.path.join(PATH,'teleceptorcmd setup')) == 0
-        self.process = subprocess.Popen(sys.executable + " "+ os.path.join(PATH,'teleceptorcmd runserver')) 
+        print sys.executable + " "+ os.path.join(PATH,'teleceptorcmd setup')
+        assert subprocess.call([sys.executable,os.path.join(PATH,'teleceptorcmd'),'setup']) == 0
+        self.process = subprocess.Popen([sys.executable,os.path.join(PATH,'teleceptorcmd'),'runserver']) 
         time.sleep(2)
     def test00_base_url(self):
         r = requests.get(URL)
