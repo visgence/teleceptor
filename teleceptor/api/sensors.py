@@ -64,6 +64,7 @@ import time
 import logging
 
 # Local Imports
+from teleceptor import models
 from teleceptor.models import Sensor, Calibration
 from teleceptor.sessionManager import sessionScope
 from teleceptor.auth import require
@@ -159,7 +160,11 @@ class Sensors:
         returnData = {}
         statusCode = "200"
         cherrypy.response.headers['Content-Type'] = 'application/json'
-        data = json.loads(cherrypy.request.body.read())
+        try:
+            data = json.loads(cherrypy.request.body.read())
+        except ValueError:
+            #no json object to decode, just use an empty dictionary
+            data = {}
 
         logging.debug("Request body: %s", data)
 
@@ -230,6 +235,7 @@ class Sensors:
         This documentation should contain the full blacklist:
 
         blacklist = ["uuid","message"]
+        whitelist = ["sensor_IOtype", "sensor_type", "name", "units", ""]
         """
 
         logging.debug("Updating sensor %s with data %s", str(sensor), str(data))
@@ -249,7 +255,7 @@ class Sensors:
                     value['timestamp'] = time.time()
 
                 Sensors.updateCalibration(session,sensor,value['coefficients'],value['timestamp'])
-            else:
+            elif key in models.SENSORWHITELIST:
                 setattr(sensor,key,value)
 
         session.add(sensor)
