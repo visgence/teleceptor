@@ -47,5 +47,5 @@ class ResourceApi:
     datastreams  = DataStreams()
     sensors      = Sensors()
     readings     = SensorReadings()
-    delegation   = Delegation()
+    station      = Station()
     messages     = Messages()

@@ -14,7 +14,7 @@
     API:
         Unless otherwise noted api will return data as JSON.
 
-        POST /api/delegation/
+        POST /api/station/
             Update sensor information (and create if necessary) and put new sensor readings by calling respective api modules.
 
             In the HTTP POST request, the data field must be a JSON array of the following form:
@@ -85,7 +85,7 @@ from teleceptor.api.datastreams import DataStreams
 from teleceptor.api.readings import SensorReadings
 from teleceptor import USE_DEBUG
 
-class Delegation:
+class Station:
     exposed = True
 
     if USE_DEBUG:

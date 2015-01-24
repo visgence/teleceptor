@@ -25,7 +25,7 @@ import teleceptor
 from teleceptor.basestation import TCPMote, SerialMote
 
 
-serverURL = "http://localhost:" + str(teleceptor.PORT) + "/api/delegation/"
+serverURL = "http://localhost:" + str(teleceptor.PORT) + "/api/station/"
 serverDeleteURL = "http://localhost:" + str(teleceptor.PORT) + "/api/messages/"
 pid = os.getpid()
 starttime = time.time()
