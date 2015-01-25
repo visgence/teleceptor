@@ -30,7 +30,8 @@ def build_config():
             "PORT": TEST_PORT,
             "LOG": "teleceptor.log",
             "TCP_POLLER_HOSTS": [],
-            "USE_DEBUG": False}
+            "USE_DEBUG": False,
+            "SUPRESS_SERVER_OUTPUT": True}
 
     conf = open(os.path.join(DATAPATH, 'config.json'), "w")
     json.dump(data,conf,indent=4)
@@ -121,11 +122,29 @@ class TestTeleceptor(unittest.TestCase):
         self.assertTrue('sensor' in sensors)
         self.assertTrue(sensors['sensor']['uuid'] == "volts")
 
+    def test07_sensor_put_incorrect_sensor(self):
+        """
+        Assumes sensor with uuid 1 does not exist
+        """
+
+        r = requests.put(URL + "api/sensors/1", data=json.dumps({}))
+        self.assertFalse(r.status_code == requests.codes.ok)
+        self.assertTrue('error' in r.json())
 
     """
     Tests for messages api
     """
 
+
+    """
+    Set up and teardown before and after each test
+    """
+    def setUp(self):
+        self.startTime = time.time()
+
+    def tearDown(self):
+        t = time.time() - self.startTime
+        print "\n%s: %.3f\n" % (self.id(), t)
 
     @classmethod
     def tearDownClass(self):

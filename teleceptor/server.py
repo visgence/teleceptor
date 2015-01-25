@@ -21,7 +21,7 @@ from cherrypy.lib.static import serve_file
 PATH = os.path.abspath(os.path.join(os.path.dirname(__file__),'..'))
 sys.path.append(PATH)
 # Local Imports
-from teleceptor import WEBROOT,PORT
+from teleceptor import WEBROOT,PORT, SUPRESS_SERVER_OUTPUT
 from teleceptor.auth import AuthController, require, member_of, name_is
 from teleceptor.pages import Root
 
@@ -37,6 +37,9 @@ def runserver():
             'request.dispatch': cherrypy.dispatch.MethodDispatcher()
         }
     })
+
+    if SUPRESS_SERVER_OUTPUT:
+        cherrypy.config.update({ "environment": "embedded" })
 
     cherrypy.server.socket_host = "0.0.0.0"
     cherrypy.server.socket_port = PORT

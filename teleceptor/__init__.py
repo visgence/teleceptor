@@ -84,3 +84,6 @@ PORT = conf["PORT"]
 
 #TCP Poller Hosts
 TCP_POLLER_HOSTS = conf["TCP_POLLER_HOSTS"]
+
+#Supress server output
+SUPRESS_SERVER_OUTPUT = conf["SUPRESS_SERVER_OUTPUT"]
