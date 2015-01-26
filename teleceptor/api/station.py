@@ -78,7 +78,7 @@ except ImportError:
 import logging
 
 # Local Imports
-from teleceptor.models import DataStream, Sensor, Message
+from teleceptor.models import DataStream, Sensor, Message, MessageQueue
 from teleceptor.sessionManager import sessionScope
 from teleceptor.api.sensors import Sensors
 from teleceptor.api.datastreams import DataStreams
@@ -246,6 +246,7 @@ class Station:
                     del sensor['timestamp']
 
                     newSensor = Sensor(**sensor)
+                    newSensor.message_queue = MessageQueue(sensor_id=newSensor.uuid)
 
                     with sessionScope() as s:
                         Sensors.createSensor(s, newSensor)

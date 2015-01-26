@@ -11,8 +11,6 @@ import shutil
 PATH = os.path.abspath(os.path.join(os.path.dirname(__file__)))
 sys.path.append(PATH)
 
-from teleceptor.sessionManager import sessionScope
-
 
 DATAPATH = tempfile.mkdtemp(prefix="tmpteleceptor")
 TEST_PORT = 20000
@@ -135,6 +133,52 @@ class TestTeleceptor(unittest.TestCase):
     Tests for messages api
     """
 
+    def test08_messages_get_correct_sensor_no_message(self):
+        """
+        Tests when a get is made to a sensor with no messages added.
+        Assumes sensor with uuid volts does exist, and has no messages added.
+        """
+        r = requests.get(URL + "api/messages/volts")
+        self.assertTrue(r.status_code == requests.codes.ok)
+        responsedata = r.json()
+        self.assertTrue('message_queue' in responsedata)
+        self.assertTrue('messages' in responsedata['message_queue'])
+        self.assertTrue(len(responsedata['message_queue']['messages']) == 0)
+
+
+    def test09_messages_get_correct_sensor_has_messages(self):
+        """
+        Tests when a get is made to a sensor with messages added.
+        This test adds a message to a sensor with uuid volts.
+        """
+        r = requests.post(URL + "api/messages/volts", data=json.dumps({"message": True, "duration": 30000}))
+
+        self.assertTrue(r.status_code == requests.codes.ok)
+        self.assertTrue('error' not in r.json())
+
+        r = requests.get(URL + "api/messages/volts")
+        self.assertTrue(r.status_code == requests.codes.ok)
+        responsedata = r.json()
+        self.assertTrue('message_queue' in responsedata)
+        self.assertTrue('messages' in responsedata['message_queue'])
+        self.assertTrue(len(responsedata['message_queue']['messages']) > 0)
+        self.assertTrue(responsedata['message_queue']['messages'][-1]['message'] == True)
+
+    def test10_messages_get_incorrect_sensor(self):
+        r = requests.get(URL + "api/messages/1")
+        self.assertFalse(r.status_code == requests.codes.ok)
+        self.assertTrue('error' in r.json())
+
+    def test11_messages_get_all_sensors(self):
+        """
+        Assumes at least one sensor is in the database.
+        """
+        r = requests.get(URL + "api/messages/")
+        self.assertTrue(r.status_code == requests.codes.ok)
+        responsedata = r.json()
+        print responsedata
+        self.assertTrue('message_queues' in responsedata)
+        self.assertTrue(len(responsedata['message_queues']) > 0)
 
     """
     Set up and teardown before and after each test
