@@ -1,13 +1,7 @@
 #!/usr/bin/env python
 import unittest
-import os
-import sys
-import subprocess
-import time
 import json
 import requests
-import tempfile
-import shutil
 
 #local
 from abstractTest import AbstractTeleceptorTest, URL
@@ -142,13 +136,6 @@ class TestTeleceptor(AbstractTeleceptorTest):
         print responsedata
         self.assertTrue('message_queues' in responsedata)
         self.assertTrue(len(responsedata['message_queues']) > 0)
-
-
-def suite():
-    suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(TestTeleceptor, 'test'))
-    return suite
-
 
 
 if __name__ == "__main__":
