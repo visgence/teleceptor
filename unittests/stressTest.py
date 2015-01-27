@@ -70,6 +70,6 @@ if __name__ == "__main__":
 		#Error
 		sys.exit(1)
 
-	del sys.argv[1:]
+	sys.argv[1:] = args.unittest_args
 
 	unittest.main()
