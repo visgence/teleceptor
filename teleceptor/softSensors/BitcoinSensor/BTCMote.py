@@ -23,7 +23,7 @@ import teleceptor
 
 queryrate = 60
 blockchainURL = "http://blockchain.info/ticker"
-teleceptorURL = "http://localhost:"+str(teleceptor.PORT)+"/api/delegation/"
+teleceptorURL = "http://localhost:"+str(teleceptor.PORT)+"/api/station/"
 caltime = time.time()
 def main():
     #loop forever getting 15 minute rate updates
