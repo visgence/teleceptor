@@ -55,6 +55,7 @@ if __name__ == "__main__":
 	parser = argparse.ArgumentParser(description='Run a stress test of the teleceptor backend (server/database)')
 	parser.add_argument('--type', nargs='?',type=str, default="light", help='The type of stress test. May be one of ["light","medium","heavy"]')
 	parser.add_argument('--numTests', nargs='?', type=int, default=10, help="The custom number of iterations of each stress test.")
+	parser.add_argument('unittest_args', nargs='*')
 
 	args = parser.parse_args()
 	print args
