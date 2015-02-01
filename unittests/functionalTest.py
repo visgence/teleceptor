@@ -311,6 +311,79 @@ class TestTeleceptor(AbstractTeleceptorTest):
 
         self.assertTrue(json.loads(data['info'][0])['last_calibration']['coefficients'] == newCalibration)
 
+
+    """
+    Tests for datastreams api
+    """
+
+    def test19_datastreams_get_all(self):
+        """
+        Tests getting all datastreams
+        """
+        r = requests.get(URL + "/api/datastreams")
+
+        self.assertTrue(r.status_code == requests.codes.ok)
+        data = r.json()
+
+        self.assertFalse('error' in data)
+        self.assertTrue('datastreams' in data)
+        datastreams = data['datastreams']
+        self.assertTrue(len(datastreams) > 0)
+
+    def test20_datastreams_get_single(self):
+        """
+        Tests getting a specific datastream.
+        Note that traditionally the client would need to 
+        get the datastream id by making a get request to sensors.
+        """
+
+        r = requests.get(URL + "/api/datastreams/1/")
+
+        self.assertTrue(r.status_code == requests.codes.ok)
+        data = r.json()
+
+        self.assertFalse('error' in data)
+        self.assertTrue('stream' in data)
+        datastream = data['stream']
+
+        self.assertTrue(datastream['id'] == 1)
+
+    def test21_datastreams_get_filtered(self):
+        """
+        Tests getting a set of datastreams filtered by 
+        url arguments.
+        """
+
+        r = requests.get(URL + "api/datastreams/?sensor=volts")
+
+        self.assertTrue(r.status_code == requests.codes.ok)
+        data = r.json()
+
+        self.assertFalse('error' in data)
+        self.assertTrue('datastreams' in data)
+
+        datastreams = data['datastreams']
+
+        self.assertTrue(len(datastreams) == 1)
+        self.assertTrue(datastreams[0]['sensor'] == "volts")
+
+    def test22_datastreams_get_incorrect_kwarg(self):
+        """
+        Tests getting a set of datastreams filtered by
+        an incorrect url argument.
+        """
+
+        r = requests.get(URL + "api/datastreams/?sensor=volts&calibration=[1,0]")
+
+        self.assertFalse(r.status_code == requests.codes.ok)
+        data = r.json()
+
+        self.assertTrue('error' in data)
+
+    """
+    Tests for readings api
+    """
+
 if __name__ == "__main__":
 
     unittest.main()
