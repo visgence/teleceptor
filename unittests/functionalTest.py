@@ -2,6 +2,7 @@
 import unittest
 import json
 import requests
+import time
 
 #local
 from abstractTest import AbstractTeleceptorTest, URL
@@ -133,10 +134,182 @@ class TestTeleceptor(AbstractTeleceptorTest):
         r = requests.get(URL + "api/messages/")
         self.assertTrue(r.status_code == requests.codes.ok)
         responsedata = r.json()
-        print responsedata
+
         self.assertTrue('message_queues' in responsedata)
         self.assertTrue(len(responsedata['message_queues']) > 0)
 
+
+    """
+    Tests for station api
+    """
+
+    def test12_station_post_existing_sensor(self):
+        """
+        Tests when a post to station is made for a sensor
+        that already exists in the database
+        """
+        caltime = time.time()
+        examplevalue = 22
+
+        #note here that a sensor's full uuid is the concatenation
+        #of its mote uuid and its name
+        #Since the uuid of our test sensor is volts, we will leave the
+        #mote uuid empty. A uuid field must still be included, however.
+
+        jsonExample = [{"info":{"uuid":"", "name":"myfirstmote","description":"My first mote","out":[],
+        "in":[{"name":"volts","sensor_type":"float","timestamp":caltime,"meta_data":{}}]},"readings":[["volts",examplevalue,time.time()]]}]
+
+        r = requests.post(URL + "/api/station", data=json.dumps(jsonExample))
+        self.assertTrue(r.status_code == requests.codes.ok)
+
+        data = r.json()
+
+        self.assertFalse('error' in data)
+        self.assertTrue('info' in data)
+        self.assertTrue(len(data['info']) > 0)
+
+        self.assertTrue('newValues' in data)
+
+    def test13_station_post_has_messages(self):
+        r = requests.post(URL + "api/messages/volts", data=json.dumps({"message": True, "duration": 30000}))
+
+        self.assertTrue(r.status_code == requests.codes.ok)
+        self.assertTrue('error' not in r.json())
+
+        caltime = time.time()
+        examplevalue = 22
+
+        jsonExample = [{"info":{"uuid":"", "name":"myfirstmote","description":"My first mote","out":[],
+        "in":[{"name":"volts","sensor_type":"float","timestamp":caltime,"meta_data":{}}]},"readings":[["volts",examplevalue,time.time()]]}]
+
+        r = requests.post(URL + "/api/station", data=json.dumps(jsonExample))
+        self.assertTrue(r.status_code == requests.codes.ok)
+        data = r.json()
+        
+        self.assertFalse('error' in data)
+        self.assertTrue('info' in data)
+        self.assertTrue(len(data['info']) > 0)
+
+        self.assertTrue('newValues' in data)
+        self.assertTrue('volts' in data['newValues'])
+        self.assertTrue(len(data['newValues']['volts']) > 0)
+
+    def test14_station_post_only_output(self):
+        """
+        Tests when a post is made for a sensor that is output only.
+        We expect 'newValues' to be an empty dictionary.
+        """
+        caltime = time.time()
+        examplevalue = 22
+        jsonExample = [{"info":{"uuid":"", "name":"myfirstmote","description":"My first mote","in":[],
+        "out":[{"name":"volts","sensor_type":"float","timestamp":caltime,"meta_data":{}}]},"readings":[["volts",examplevalue,time.time()]]}]
+
+        r = requests.post(URL + "/api/station", data=json.dumps(jsonExample))
+        self.assertTrue(r.status_code == requests.codes.ok)
+        data = r.json()
+        
+        self.assertFalse('error' in data)
+        self.assertTrue('info' in data)
+        self.assertTrue(len(data['info']) > 0)
+
+        self.assertTrue('newValues' in data)
+        self.assertTrue(len(data['newValues']) == 0)
+
+    def test15_station_post_empty_readings(self):
+        caltime = time.time()
+        examplevalue = 22
+        jsonExample = [{"info":{"uuid":"", "name":"myfirstmote","description":"My first mote","in":[],
+        "out":[{"name":"volts","sensor_type":"float","timestamp":caltime,"meta_data":{}}]},"readings":[]}]
+
+        r = requests.post(URL + "/api/station", data=json.dumps(jsonExample))
+        self.assertTrue(r.status_code == requests.codes.ok)
+        data = r.json()
+        
+        self.assertFalse('error' in data)
+        self.assertTrue('info' in data)
+        self.assertTrue(len(data['info']) > 0)
+
+    def test16_station_post_no_readings(self):
+        caltime = time.time()
+        examplevalue = 22
+        jsonExample = [{"info":{"uuid":"", "name":"myfirstmote","description":"My first mote","in":[],
+        "out":[{"name":"volts","sensor_type":"float","timestamp":caltime,"meta_data":{}}]}}]
+
+        r = requests.post(URL + "/api/station", data=json.dumps(jsonExample))
+        self.assertFalse(r.status_code == requests.codes.ok)
+
+    def test17_station_post_nonexistant_sensor(self):
+        """
+        Tests when a sensor is not in the database. A new sensor should be created.
+        """
+
+        #get the number of sensors already in the database
+        r = requests.get(URL + "/api/sensors")
+        sensors = r.json()
+        self.assertTrue(r.status_code == requests.codes.ok)
+        self.assertTrue('sensors' in sensors)
+
+        numSensors = len(sensors['sensors'])
+
+        caltime = time.time()
+        examplevalue = 22
+        jsonExample = [{"info":{"uuid":"", "name":"myfirstmote","description":"My first mote","in":[],
+        "out":[{"name":"1","sensor_type":"float","timestamp":caltime,"meta_data":{}}]},"readings":[]}]
+
+        r = requests.post(URL + "/api/station", data=json.dumps(jsonExample))
+
+        self.assertTrue(r.status_code == requests.codes.ok)
+        data = r.json()
+        
+        self.assertFalse('error' in data)
+        self.assertTrue('info' in data)
+        self.assertTrue(len(data['info']) > 0)
+
+        self.assertTrue('1' == json.loads(data['info'][0])['uuid'])
+
+        #check that the number of sensors has increased
+        r = requests.get(URL + "/api/sensors")
+        sensors = r.json()
+        self.assertTrue(r.status_code == requests.codes.ok)
+        self.assertTrue('sensors' in sensors)
+
+        self.assertTrue(len(sensors['sensors']) == numSensors + 1)
+
+    def test18_station_post_update_calibration(self):
+        """
+        Tests changing the calibration. Assumes the test sensor uses the 
+        identity calibration function [1,0]
+        """
+
+        #get the test sensor's calibration
+        r = requests.get(URL + "/api/sensors/volts")
+        self.assertTrue(r.status_code == requests.codes.ok)
+        sensors = r.json()
+        self.assertTrue('sensor' in sensors)
+
+        self.assertTrue(sensors['sensor']['uuid'] == 'volts')
+
+        initialCalibration = sensors['sensor']['last_calibration']['coefficients']
+
+        #create new calibration
+        newCalibration = [i+1 for i in initialCalibration]
+
+        #post to station
+        caltime = time.time()
+        examplevalue = 22
+        jsonExample = [{"info":{"uuid":"", "name":"myfirstmote","description":"My first mote","in":[],
+        "out":[{"scale": newCalibration, "name":"volts","sensor_type":"float","timestamp":caltime,"meta_data":{}}]},"readings":[]}]
+
+        r = requests.post(URL + "/api/station", data=json.dumps(jsonExample))
+
+        self.assertTrue(r.status_code == requests.codes.ok)
+        data = r.json()
+        
+        self.assertFalse('error' in data)
+        self.assertTrue('info' in data)
+        self.assertTrue(len(data['info']) > 0)
+
+        self.assertTrue(json.loads(data['info'][0])['last_calibration']['coefficients'] == newCalibration)
 
 if __name__ == "__main__":
 

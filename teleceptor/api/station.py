@@ -170,6 +170,7 @@ class Station:
         cherrypy.response.headers['Content-Type'] = 'application/json'
         data = {'info':[],"newValues":{}}
 
+        statusCode = "200"
 
         try:
             readingData = json.load(cherrypy.request.body)
@@ -177,6 +178,8 @@ class Station:
         except (ValueError, TypeError):
             logging.error("Request data is not JSON: %s", cherrypy.request.body)
             data['error'] = "Bad json"
+            statusCode = "400"
+            cherrypy.response.status = statusCode
             return json.dumps(data, indent=4)
 
 
@@ -186,6 +189,7 @@ class Station:
             if 'info' not in mote:
                 logging.error("Mote %s did not report its info", str(mote))
                 data['error'] = "No info for this mote"
+                statusCode = "400"
             logging.debug("mote: %s", str(mote))
 
             sensors = []
@@ -281,22 +285,26 @@ class Station:
 
                     logging.debug("Created datastream.")
 
+            if 'readings' not in mote:
+                data['error'] = "No readings key provided."
+                statusCode = "400"
+            else:
+                with sessionScope() as s:
 
-            with sessionScope() as s:
+                    for reading in mote['readings']:
+                        sensorUuid = mote['info']['uuid']+reading[0]
+                        sensor = s.query(Sensor).filter_by(uuid=sensorUuid).one()
+                        sensor.last_value = reading[1]
+                        reading[0] = foundds[reading[0]]
+                        logging.debug(str(reading))
 
-                for reading in mote['readings']:
-                    sensorUuid = mote['info']['uuid']+reading[0]
-                    sensor = s.query(Sensor).filter_by(uuid=sensorUuid).one()
-                    sensor.last_value = reading[1]
-                    reading[0] = foundds[reading[0]]
-                    logging.debug(str(reading))
+                with sessionScope() as s:
+                    logging.debug("Inserting new readings from mote into database: %s", str(mote['readings']))
 
-            with sessionScope() as s:
-                logging.debug("Inserting new readings from mote into database: %s", str(mote['readings']))
-
-                SensorReadings.insertReadings(s, mote['readings'])
+                    SensorReadings.insertReadings(s, mote['readings'])
 
         logging.debug("Finished POST request to delegation.")
+        cherrypy.response.status = statusCode
         return json.dumps(data, indent=4)
 
 
