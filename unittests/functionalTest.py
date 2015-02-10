@@ -185,7 +185,7 @@ class TestTeleceptor(AbstractTeleceptorTest):
         r = requests.post(URL + "/api/station", data=json.dumps(jsonExample))
         self.assertTrue(r.status_code == requests.codes.ok)
         data = r.json()
-        
+
         self.assertFalse('error' in data)
         self.assertTrue('info' in data)
         self.assertTrue(len(data['info']) > 0)
@@ -207,7 +207,7 @@ class TestTeleceptor(AbstractTeleceptorTest):
         r = requests.post(URL + "/api/station", data=json.dumps(jsonExample))
         self.assertTrue(r.status_code == requests.codes.ok)
         data = r.json()
-        
+
         self.assertFalse('error' in data)
         self.assertTrue('info' in data)
         self.assertTrue(len(data['info']) > 0)
@@ -224,7 +224,7 @@ class TestTeleceptor(AbstractTeleceptorTest):
         r = requests.post(URL + "/api/station", data=json.dumps(jsonExample))
         self.assertTrue(r.status_code == requests.codes.ok)
         data = r.json()
-        
+
         self.assertFalse('error' in data)
         self.assertTrue('info' in data)
         self.assertTrue(len(data['info']) > 0)
@@ -260,7 +260,7 @@ class TestTeleceptor(AbstractTeleceptorTest):
 
         self.assertTrue(r.status_code == requests.codes.ok)
         data = r.json()
-        
+
         self.assertFalse('error' in data)
         self.assertTrue('info' in data)
         self.assertTrue(len(data['info']) > 0)
@@ -277,7 +277,7 @@ class TestTeleceptor(AbstractTeleceptorTest):
 
     def test18_station_post_update_calibration(self):
         """
-        Tests changing the calibration. Assumes the test sensor uses the 
+        Tests changing the calibration. Assumes the test sensor uses the
         identity calibration function [1,0]
         """
 
@@ -304,7 +304,7 @@ class TestTeleceptor(AbstractTeleceptorTest):
 
         self.assertTrue(r.status_code == requests.codes.ok)
         data = r.json()
-        
+
         self.assertFalse('error' in data)
         self.assertTrue('info' in data)
         self.assertTrue(len(data['info']) > 0)
@@ -333,7 +333,7 @@ class TestTeleceptor(AbstractTeleceptorTest):
     def test20_datastreams_get_single(self):
         """
         Tests getting a specific datastream.
-        Note that traditionally the client would need to 
+        Note that traditionally the client would need to
         get the datastream id by making a get request to sensors.
         """
 
@@ -350,7 +350,7 @@ class TestTeleceptor(AbstractTeleceptorTest):
 
     def test21_datastreams_get_filtered(self):
         """
-        Tests getting a set of datastreams filtered by 
+        Tests getting a set of datastreams filtered by
         url arguments.
         """
 
@@ -383,6 +383,108 @@ class TestTeleceptor(AbstractTeleceptorTest):
     """
     Tests for readings api
     """
+
+    def test23_readings_get_all(self):
+        """
+        Tests getting all available readings (i.e. no url arguments).
+        """
+        r = requests.get(URL + "api/readings/")
+
+        self.assertTrue(r.status_code == requests.codes.ok)
+
+        data = r.json()
+
+        self.assertFalse('error' in data)
+        self.assertTrue('readings' in data)
+        self.assertTrue(len(data['readings']) > 0)
+
+    def test24_readings_get_condense(self):
+        """
+        Tests getting all readings with condense set to true.
+        This should return readings that are just timestamp, value pairs.
+        """
+        r = requests.get(URL + "api/readings/?condense=true")
+
+        self.assertTrue(r.status_code == requests.codes.ok)
+
+        data = r.json()
+
+        self.assertFalse('error' in data)
+        self.assertTrue('readings' in data)
+        self.assertTrue(len(data['readings']) > 0)
+
+        #test that every reading only has two integer elements
+        for reading in data['readings']:
+            self.assertTrue(len(reading) == 2)
+            self.assertTrue(isinstance(reading[0],int))
+            self.assertTrue(isinstance(reading[1],float))
+
+
+    def test25_readings_get_timeframe_with_data(self):
+        """
+        Tests that a recently posted reading will be retreived using
+        timeframe url arguments. Tries to get a reading using a timeframe
+        of 1 second before and after insertion time.
+
+        Assumes a datastream with id 1 exists in the database.
+
+        Note that this serves as an indirect test of the readings post api, but
+        is not to be used in place of a direct test.
+        """
+
+        #format of reading is [datastreamid, value, timestamp]
+        insertiontime = int(time.time())
+        sampleJson = {'readings':[[1,1,insertiontime]]}
+        r = requests.post(URL + "api/readings/", data=json.dumps(sampleJson))
+
+        self.assertTrue(r.status_code == requests.codes.ok)
+
+        data = r.json()
+
+        self.assertFalse('error' in data)
+        self.assertTrue('successfull_insertions' in data)
+        self.assertTrue(data['successfull_insertions'] == 1)
+        self.assertFalse(data['failed_insertions'] > 0)
+
+        #now get reading, using url arguments
+        r = requests.get(URL + "api/readings/?start=" + str(insertiontime-1) + "&end=" + str(insertiontime+1) + "&datastream=1")
+
+        print r.json()
+
+
+        self.assertTrue(r.status_code == requests.codes.ok)
+
+        data = r.json()
+
+        self.assertFalse('error' in data)
+        self.assertTrue('readings' in data)
+        self.assertTrue(len(data['readings']) == 1)
+
+        reading = data['readings'][0]
+
+        self.assertTrue(reading[0] == insertiontime)
+        self.assertTrue(reading[1] == 1)
+
+    def test26_readings_post_single_reading(self):
+        """
+        Tests posting a single reading.
+
+        Assumes a datastream with id 1 exists in the database.
+        """
+        #format of reading is [datastreamid, value, timestamp]
+        sampleJson = {'readings':[[1,1,time.time()]]}
+        r = requests.post(URL + "api/readings/", data=json.dumps(sampleJson))
+
+        self.assertTrue(r.status_code == requests.codes.ok)
+
+        data = r.json()
+
+        self.assertFalse('error' in data)
+        self.assertTrue('successfull_insertions' in data)
+        self.assertTrue(data['successfull_insertions'] == 1)
+        self.assertTrue(data['failed_insertions'] == 0)
+        self.assertTrue(data['successfull_insertions'] == data['insertions_attempted'])
+
 
 if __name__ == "__main__":
 

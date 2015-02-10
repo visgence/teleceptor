@@ -82,6 +82,7 @@ from teleceptor.models import DataStream, Sensor, Message, MessageQueue
 from teleceptor.sessionManager import sessionScope
 from teleceptor.api.sensors import Sensors
 from teleceptor.api.datastreams import DataStreams
+from teleceptor.api import readings
 from teleceptor.api.readings import SensorReadings
 from teleceptor import USE_DEBUG
 
@@ -301,7 +302,7 @@ class Station:
                 with sessionScope() as s:
                     logging.debug("Inserting new readings from mote into database: %s", str(mote['readings']))
 
-                    SensorReadings.insertReadings(s, mote['readings'])
+                    readings.insertReadings(s, mote['readings'])
 
         logging.debug("Finished POST request to delegation.")
         cherrypy.response.status = statusCode
