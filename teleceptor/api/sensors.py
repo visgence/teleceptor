@@ -185,6 +185,29 @@ class Sensors:
         logging.debug("Finished PUT request to sensors.")
         return json.dumps(returnData,indent=4)
 
+    @require()
+    def DELETE(self, sensor_id):
+        """
+        Deletes the sensor with uuid `sensor_id`.
+
+        This function cannot be undone, but the sensor may be created again
+        in a separate transaction.
+
+        Parameters
+        ----------
+        sensor_id : str
+            The UUID of a sensor
+
+        Returns
+        -------
+        A JSON object with an 'error' key if an error occured or 'sensor' key if update succeeded. If 'error', the value is an error string. If 'sensor', the value is a JSON object representing the deleted sensor in the database.
+
+        See Also
+        --------
+        `models.Sensor`
+        """
+        pass
+
     #expects sensor to be a Sensor() from model
     @staticmethod
     def createSensor(session, sensor=None):
