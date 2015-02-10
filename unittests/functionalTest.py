@@ -36,7 +36,7 @@ class TestTeleceptor(AbstractTeleceptorTest):
         Assumes a sensor with uuid 1 does not exist.
         """
         r = requests.get(URL + "/api/sensors/1")
-        self.assertTrue(r.status_code == requests.codes.ok)
+        self.assertFalse(r.status_code == requests.codes.ok)
         sensors = r.json()
         self.assertTrue('error' in sensors)
 
@@ -591,6 +591,62 @@ class TestTeleceptor(AbstractTeleceptorTest):
         data = r.json()
 
         self.assertTrue('error' in data)
+
+    def test33_sensors_delete_correct_uuid(self):
+        """
+        Tests deleting a sensor. The sensor should be removed from the database.
+
+        Assumes a sensor with uuid `volts` exists.
+        """
+        #get the information about the sensor we will delete to test against.
+        r = requests.get(URL + "api/sensors/volts")
+
+        self.assertTrue(r.status_code == requests.codes.ok)
+
+        getData = r.json()
+
+        self.assertTrue('sensor' in getData)
+        self.assertTrue(getData['sensor']['uuid'] == "volts")
+
+        #delete the sensor
+        r = requests.delete(URL + "api/sensors/volts")
+
+        self.assertTrue(r.status_code == requests.codes.ok)
+
+        data = r.json()
+
+        self.assertTrue('sensor' in data)
+        for key in getData['sensor']:
+            self.assertTrue(data['sensor'][key] == getData['sensor'][key])
+
+        #check that sensor is not retrievable from server
+        r = requests.get(URL + "api/sensors/volts")
+
+        self.assertFalse(r.status_code == requests.codes.ok)
+
+        data = r.json()
+
+        self.assertTrue('error' in data)
+        self.assertFalse('sensor' in data)
+
+    def test34_sensors_delete_incorrect_uuid(self):
+        """
+        Tests deleting a sensor that does not exist on the server.
+        An error should be thrown.
+
+        Assumes a sensor with uuid `v` does not exist.
+        """
+        #delete the sensor
+        r = requests.delete(URL + "api/sensors/v")
+
+        self.assertFalse(r.status_code == requests.codes.ok)
+
+        data = r.json()
+
+        self.assertTrue('error' in data)
+        self.assertFalse('sensor' in data)
+
+
 
 
 

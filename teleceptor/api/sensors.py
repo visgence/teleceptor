@@ -105,6 +105,7 @@ class Sensors:
 
         cherrypy.response.headers['Content-Type'] = 'application/json'
         data = {}
+        statusCode = "200"
 
         if sensor_id is not None:
             logging.debug("Request for sensor %s", str(sensor_id))
@@ -114,6 +115,7 @@ class Sensors:
                 except NoResultFound:
                     logging.error("Requested sensor %s does not exist.", str(sensor_id))
                     data['error'] = "Sensor with id %s doesn't exist." % sensor_id
+                    statusCode = "400"
                 else:
                     data['sensor'] = sensor.toDict()
                     logging.debug("Sensor info: %s", str(data['sensor']))
@@ -125,6 +127,7 @@ class Sensors:
                 data['sensors'] = [sensor.toDict() for sensor in sensors]
                 logging.debug("Got sensors: %s", str(data['sensors']))
 
+        cherrypy.response.status = statusCode
         logging.info("Finished GET request to sensors.")
         return json.dumps(data, indent=4)
 
@@ -206,7 +209,25 @@ class Sensors:
         --------
         `models.Sensor`
         """
-        pass
+        logging.debug("DELETE request to sensors.")
+
+        returnData = {}
+        statusCode = "200"
+        cherrypy.response.headers['Content-Type'] = 'application/json'
+
+        with sessionScope() as s:
+            deletedSensor = deleteSensor(s, sensor_id)
+
+            if deletedSensor is None:
+                returnData['error'] = "Sensor with id %s could not be deleted." % sensor_id
+                statusCode = "400"
+            else:
+                returnData['sensor'] = deletedSensor
+
+        cherrypy.response.status = statusCode
+        logging.debug("Finished DELETE request to sensors.")
+        return json.dumps(returnData, indent=4)
+
 
     #expects sensor to be a Sensor() from model
     @staticmethod
@@ -380,4 +401,37 @@ class Sensors:
             sensor.last_calibration_id = Cal.id
             sensor.last_calibration = Cal
             session.commit()
+
+def deleteSensor(session, sensor_id):
+    """
+    Deletes the sensor with given uuid.
+
+    Parameters
+    ----------
+    sensor_id : str
+        The UUID of a sensor
+
+    Returns
+    -------
+    The dictionary representation of the sensor that was deleted if successful; otherwise None.
+
+    See Also
+    --------
+    `models.Sensor`
+    `sensors.DELETE`
+    """
+    logging.info("Deleting sensor %s", sensor_id)
+
+    try:
+        sensor = session.query(Sensor).filter_by(uuid = sensor_id).one()
+    except NoResultFound:
+        logging.error("Requested sensor %s does not exist.", str(sensor_id))
+        return None
+    else:
+        logging.debug("Got Sensor.")
+        sensorDict = sensor.toDict()
+        session.delete(sensor)
+        session.commit()
+        return sensorDict
+    return None
 
