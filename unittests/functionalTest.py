@@ -36,7 +36,7 @@ class TestTeleceptor(AbstractTeleceptorTest):
         Assumes a sensor with uuid 1 does not exist.
         """
         r = requests.get(URL + "/api/sensors/1")
-        self.assertTrue(r.status_code == requests.codes.ok)
+        self.assertFalse(r.status_code == requests.codes.ok)
         sensors = r.json()
         self.assertTrue('error' in sensors)
 
@@ -423,8 +423,8 @@ class TestTeleceptor(AbstractTeleceptorTest):
     def test25_readings_get_timeframe_with_data(self):
         """
         Tests that a recently posted reading will be retreived using
-        timeframe url arguments. Tries to get a reading using a timeframe
-        of 1 second before and after insertion time.
+        timeframe url arguments. We use the insertion time as start and end
+        to ensure we get only the reading we just posted.
 
         Assumes a datastream with id 1 exists in the database.
 
@@ -447,9 +447,7 @@ class TestTeleceptor(AbstractTeleceptorTest):
         self.assertFalse(data['failed_insertions'] > 0)
 
         #now get reading, using url arguments
-        r = requests.get(URL + "api/readings/?start=" + str(insertiontime-1) + "&end=" + str(insertiontime+1) + "&datastream=1")
-
-        print r.json()
+        r = requests.get(URL + "api/readings/?start=" + str(insertiontime) + "&end=" + str(insertiontime) + "&datastream=1")
 
 
         self.assertTrue(r.status_code == requests.codes.ok)
@@ -484,6 +482,172 @@ class TestTeleceptor(AbstractTeleceptorTest):
         self.assertTrue(data['successfull_insertions'] == 1)
         self.assertTrue(data['failed_insertions'] == 0)
         self.assertTrue(data['successfull_insertions'] == data['insertions_attempted'])
+
+    def test27_readings_post_multiple_readings(self):
+        """
+        Tests posting an array of readings (specifically tests 2 readings).
+
+        Assumes a datastream with id 1 exists in the database.
+
+        Note that whisper will not insert data with timestamp greater than its current time,
+        so here we use the current time and current time - 1.
+        """
+
+        #format of reading is [datastreamid, value, timestamp]
+        sampleJson = {'readings':[[1,1,time.time()], [1,2,time.time()-1]]}
+        r = requests.post(URL + "api/readings/", data=json.dumps(sampleJson))
+
+        self.assertTrue(r.status_code == requests.codes.ok)
+
+        data = r.json()
+
+        self.assertFalse('error' in data)
+        self.assertTrue('successfull_insertions' in data)
+        self.assertTrue(data['successfull_insertions'] == 2)
+        self.assertTrue(data['failed_insertions'] == 0)
+        self.assertTrue(data['successfull_insertions'] == data['insertions_attempted'])
+
+    def test28_readings_post_future_reading(self):
+        """
+        Tests inserting a reading with timestamp in the future. Whisper does not accept timestamps
+        outside of its range, so the reading should fail to be inserted.
+        """
+        #format of reading is [datastreamid, value, timestamp]
+        sampleJson = {'readings':[[1,1,time.time()+3000]]}
+        r = requests.post(URL + "api/readings/", data=json.dumps(sampleJson))
+
+        self.assertTrue(r.status_code == requests.codes.ok)
+
+        data = r.json()
+
+        self.assertFalse('error' in data)
+        self.assertTrue('successfull_insertions' in data)
+        self.assertTrue(data['successfull_insertions'] == 0)
+        self.assertTrue(data['failed_insertions'] == 1)
+        self.assertFalse(data['successfull_insertions'] == data['insertions_attempted'])
+
+    def test29_readings_post_past_reading(self):
+        """
+        Tests inserting a reading with a 0 timestamp (far in the past).
+        Reading should not be inserted.
+        """
+        sampleJson = {'readings':[[1,1,0]]}
+        r = requests.post(URL + "api/readings/", data=json.dumps(sampleJson))
+
+        self.assertTrue(r.status_code == requests.codes.ok)
+
+        data = r.json()
+
+        self.assertFalse('error' in data)
+        self.assertTrue('successfull_insertions' in data)
+        self.assertTrue(data['successfull_insertions'] == 0)
+        self.assertTrue(data['failed_insertions'] == 1)
+        self.assertFalse(data['successfull_insertions'] == data['insertions_attempted'])
+
+
+
+    def test30_readings_post_empty_readings(self):
+        """
+        Tests posting an empty array of readings. 
+
+        Assumes a datastream with id 1 exists in the database.
+        """
+        #format of reading is [datastreamid, value, timestamp]
+        sampleJson = {'readings':[]}
+        r = requests.post(URL + "api/readings/", data=json.dumps(sampleJson))
+
+        self.assertTrue(r.status_code == requests.codes.ok)
+
+        data = r.json()
+
+        self.assertFalse('error' in data)
+        self.assertTrue('successfull_insertions' in data)
+        self.assertTrue(data['successfull_insertions'] == 0)
+        self.assertTrue(data['failed_insertions'] == 0)
+        self.assertTrue(data['successfull_insertions'] == data['insertions_attempted'])
+
+    def test31_readings_post_no_readings(self):
+        """
+        Tests posting with no readings. That is, the data field is an empty dictionary.
+
+        """        
+        r = requests.post(URL + "api/readings/", data=json.dumps({}))
+
+        self.assertFalse(r.status_code == requests.codes.ok)
+
+        data = r.json()
+
+        self.assertTrue('error' in data)
+
+    def test32_readings_post_invalid_JSON(self):
+        """
+        Tests posting with the data field of the request being garbage.
+        """
+
+        r = requests.post(URL + "api/readings/", data="Hi")
+
+        self.assertFalse(r.status_code == requests.codes.ok)
+
+        data = r.json()
+
+        self.assertTrue('error' in data)
+
+    def test33_sensors_delete_correct_uuid(self):
+        """
+        Tests deleting a sensor. The sensor should be removed from the database.
+
+        Assumes a sensor with uuid `volts` exists.
+        """
+        #get the information about the sensor we will delete to test against.
+        r = requests.get(URL + "api/sensors/volts")
+
+        self.assertTrue(r.status_code == requests.codes.ok)
+
+        getData = r.json()
+
+        self.assertTrue('sensor' in getData)
+        self.assertTrue(getData['sensor']['uuid'] == "volts")
+
+        #delete the sensor
+        r = requests.delete(URL + "api/sensors/volts")
+
+        self.assertTrue(r.status_code == requests.codes.ok)
+
+        data = r.json()
+
+        self.assertTrue('sensor' in data)
+        for key in getData['sensor']:
+            self.assertTrue(data['sensor'][key] == getData['sensor'][key])
+
+        #check that sensor is not retrievable from server
+        r = requests.get(URL + "api/sensors/volts")
+
+        self.assertFalse(r.status_code == requests.codes.ok)
+
+        data = r.json()
+
+        self.assertTrue('error' in data)
+        self.assertFalse('sensor' in data)
+
+    def test34_sensors_delete_incorrect_uuid(self):
+        """
+        Tests deleting a sensor that does not exist on the server.
+        An error should be thrown.
+
+        Assumes a sensor with uuid `v` does not exist.
+        """
+        #delete the sensor
+        r = requests.delete(URL + "api/sensors/v")
+
+        self.assertFalse(r.status_code == requests.codes.ok)
+
+        data = r.json()
+
+        self.assertTrue('error' in data)
+        self.assertFalse('sensor' in data)
+
+
+
 
 
 if __name__ == "__main__":
