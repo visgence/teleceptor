@@ -1,6 +1,7 @@
 import requests
 import time
 import json
+import argparse
 
 
 class simpleInput():
@@ -8,14 +9,22 @@ class simpleInput():
         self.caltime = time.time()
         self.examplevalue = 22
 
-    def sendData(self):
+    def sendData(self, data=None, host=None):
         #build object to send to server
-        jsonExample = [{"info":{"uuid":"mote1234", "name":"myfirstmote","description":"My first mote","out":[],
+        if data is None:
+            data = [{"info":{"uuid":"mote1234", "name":"myfirstmote","description":"My first mote","out":[],
         "in":[{"name":"in1","sensor_type":"float","timestamp":self.caltime,"meta_data":{}}]},"readings":[["in1",self.examplevalue,time.time()]]}]
 
+
+        print data
+        print json.dumps(data)
+
         #send to server
-        serverURL = "http://localhost:" + str(8000) + "/api/station/"
-        response = requests.post(serverURL, data=json.dumps(jsonExample))
+        if host is None:
+            host = "localhost"
+
+        serverURL = "http://" + host + ":" + str(8000) + "/api/station/"
+        response = requests.post(serverURL, data=json.dumps(data))
 
         print response
         print response.text
@@ -43,11 +52,29 @@ class simpleInput():
 
 
 if __name__ == "__main__":
-    while True:
-        sendData()
 
-        #sleep based on rate of query
-        time.sleep(3)
+    parser = argparse.ArgumentParser(description='By default acts as a sample input sensor. With arguments, can post data.')
+    parser.add_argument('--name',  help="name of sensor", default=None, dest='name')
+    parser.add_argument('--value', type=float, help="value to post", default=None, dest='value')
+    parser.add_argument('--host', help="IP of host server.", default=None, dest='host')
+
+    args = parser.parse_args()
+    if args.name is not None and args.value is not None and args.host is not None:
+
+
+
+        data = [{"info":{"uuid":"", "name":"myfirstmote","description":"My first mote","in":[],
+        "out":[{"name":args.name,"sensor_type":"float","timestamp":time.time(),"meta_data":{}}]},"readings":[[args.name,args.value,time.time()]]}]
+
+        si = simpleInput()
+        print si.sendData(data, args.host)
+
+    else:
+        while True:
+            sendData()
+
+            #sleep based on rate of query
+            time.sleep(3)
 
 
 
