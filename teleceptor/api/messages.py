@@ -115,6 +115,7 @@ class Messages:
                     sensor = s.query(Sensor).filter_by(uuid=sensor_id).one()
                 except NoResultFound:
                     logging.error("Sensor with id %s does not exist.", str(sensor_id))
+                    statusCode = "400"
                     data['error'] = "Sensor with id %s doesn't exist" % sensor_id
                 else:
                     msgQueue = sensor.message_queue
@@ -123,14 +124,16 @@ class Messages:
                         data['message_queue'] = msgQueue.to_dict()
                     else:
                         logging.error("Sensor with id %s does not have a message queue.", str(sensor_id))
+                        statusCode = "400"
                         data['error'] = "Sensor with id %s doesn't have a message queue" % sensor_id
         else:
             logging.debug("Getting message queues for all sensors.")
             with sessionScope() as s:
                 messageQueues = s.query(MessageQueue).all()
-                data['messageQueues'] = [messageQueue.to_dict() for messageQueue in messageQueues]
+                data['message_queues'] = [messageQueue.to_dict() for messageQueue in messageQueues]
 
         logging.debug("Completed GET request to messages.")
+        cherrypy.response.status = statusCode
         return json.dumps(data, indent=4)
 
 
@@ -173,11 +176,13 @@ class Messages:
             logging.error("POST request to messages has no message data.")
             returnData['error'] = "POST to messages does not contain message data"
             statusCode = "400"
+            cherrypy.response.status = statusCode
             return json.dumps(returnData,indent=4)
         if "duration" not in data:
             logging.error("POST request to messages has no duration data.")
             returnData['error'] = "POST to messages does not contain duration data"
             statusCode = "400"
+            cherrypy.response.status = statusCode
             return json.dumps(returnData,indent=4)
 
         with sessionScope() as s:
@@ -195,13 +200,14 @@ class Messages:
                     s.commit()
                     logging.debug("Completed message queue creation.")
                     msgQueue = sensor.message_queue
-                
+
                 msg = Message()
                 logging.debug("Sensor's type is %s", str(sensor.sensor_type))
                 if not self.is_valid_type(data['message'], sensor.sensor_type):
                     logging.error("Message type %s does not match sensor type %s", str(type(data['message'])), str(sensor.sensor_type))
                     returnData['error'] = "Message type does not match sensor type"
                     statusCode = "400"
+                    cherrypy.response.status = statusCode
                     return json.dumps(returnData,indent=4)
 
                 msg.message = json.dumps(data['message'])
@@ -216,6 +222,7 @@ class Messages:
                 logging.debug("Completed adding message.")
 
             logging.debug("Finished POST request to messages.")
+            cherrypy.response.status = statusCode
             return json.dumps(returnData,indent=4)
 
 
@@ -250,6 +257,7 @@ class Messages:
                 logging.error("Sensor with id %s has no message queue to DELETE from.", str(sensor_id))
                 returnData['error'] = "DELETE to messages does not contain message data"
                 statusCode = "400"
+                cherrypy.response.status = statusCode
                 return json.dumps(returnData,indent=4)
 
             try:
@@ -258,12 +266,14 @@ class Messages:
                 logging.error("Message with id %s does not exist.", str(message_id))
                 returnData['error'] = "Message with id %s doesn't exist" % message_id
                 statusCode = "400"
+                cherrypy.response.status = statusCode
                 return json.dumps(returnData,indent=4)
 
             if msgToDel not in msgQueue.messages:
                 logging.error("Message with id %s does not belong to sensor with id %s", str(message_id), str(sensor_id))
                 returnData['error'] = "Message with id %(m_id)s doesn't belong to Sensor with id %(sens_id)s" % {"m_id":message_id, "sens_id":sensor_id}
                 statusCode = "400"
+                cherrypy.response.status = statusCode
                 return json.dumps(returnData,indent=4)
 
             logging.debug("Removing message...")
@@ -274,6 +284,7 @@ class Messages:
             logging.debug("Finished removing message.")
 
             logging.debug("Finished DELETE request to messages.")
+            cherrypy.response.status = statusCode
             return json.dumps(returnData, indent=4)
 
     @cherrypy.expose
@@ -305,12 +316,14 @@ class Messages:
                 logging.error("Sensor with id %s does not exist", str(sensor_id))
                 returnData['error'] = "Sensor with id %s doesn't exist" % sensor_id
                 statusCode = "400"
+                cherrypy.response.status = statusCode
             msgQueue = sensor.message_queue
 
             if msgQueue is None:
                 logging.error("Sensor with id %s has no message queue.", str(sensor_id))
                 returnData['error'] = "Sensor with id %s has no messages" % sensor_id
                 statusCode = "400"
+                cherrypy.response.status = statusCode
                 return json.dumps(returnData,indent=4)
             #actually delete
             logging.debug("Deleting message queue for sensor with id %s...", str(sensor_id))
@@ -320,6 +333,7 @@ class Messages:
 
         returnData['success'] = "Deleted %s messages" % rowsDeleted
         logging.debug("Deleted %s messages", rowsDeleted)
-        
+
         logging.debug("Finished PURGE request to messages.")
+        cherrypy.response.status = statusCode
         return json.dumps(returnData,indent=4)

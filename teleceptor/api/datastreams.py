@@ -177,6 +177,8 @@ class DataStreams:
         cherrypy.response.headers['Content-Type'] = 'application/json'
         data = {}
 
+        statusCode = "200"
+
         if stream_id is not None:
             logging.debug("Request for datastream with id %s", str(stream_id))
             with sessionScope() as s:
@@ -185,6 +187,7 @@ class DataStreams:
                 except NoResultFound:
                     logging.error("Stream with id %s does not exist.", str(stream_id))
                     data['error'] = "Stream with id %s doesn't exist." % stream_id
+                    statusCode = "400"
                 else:
                     logging.debug("Found stream with id %s: %s", str(stream_id), str(stream.toDict()))
                     data['stream'] = stream.toDict()
@@ -196,12 +199,14 @@ class DataStreams:
             if len(kwargs) > 0 and inputs is None:
                 logging.error("Provided url parameters are invalid: %s", str(kwargs))
                 data['error'] = "Invalid url parameters"
+                statusCode = "400"
             else:
                 logging.debug("Parameters are valid.")
                 with sessionScope() as s:
                     datastreams = s.query(DataStream).filter_by(**inputs).all()
                     data['datastreams'] = [stream.toDict() for stream in datastreams]
 
+            cherrypy.response.status = statusCode
             return json.dumps(data, indent=4)
 
     def POST(self, stream_id=None):

@@ -7,5 +7,6 @@
     "PORT": 8000,
     "LOG": "teleceptor.log",
     "TCP_POLLER_HOSTS": [],
-    "USE_DEBUG": false
+    "USE_DEBUG": false,
+    "SUPRESS_SERVER_OUTPUT": false
 }

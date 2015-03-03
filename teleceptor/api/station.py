@@ -14,7 +14,7 @@
     API:
         Unless otherwise noted api will return data as JSON.
 
-        POST /api/delegation/
+        POST /api/station/
             Update sensor information (and create if necessary) and put new sensor readings by calling respective api modules.
 
             In the HTTP POST request, the data field must be a JSON array of the following form:
@@ -78,14 +78,15 @@ except ImportError:
 import logging
 
 # Local Imports
-from teleceptor.models import DataStream, Sensor, Message
+from teleceptor.models import DataStream, Sensor, Message, MessageQueue
 from teleceptor.sessionManager import sessionScope
 from teleceptor.api.sensors import Sensors
 from teleceptor.api.datastreams import DataStreams
+from teleceptor.api import readings
 from teleceptor.api.readings import SensorReadings
 from teleceptor import USE_DEBUG
 
-class Delegation:
+class Station:
     exposed = True
 
     if USE_DEBUG:
@@ -170,6 +171,7 @@ class Delegation:
         cherrypy.response.headers['Content-Type'] = 'application/json'
         data = {'info':[],"newValues":{}}
 
+        statusCode = "200"
 
         try:
             readingData = json.load(cherrypy.request.body)
@@ -177,6 +179,8 @@ class Delegation:
         except (ValueError, TypeError):
             logging.error("Request data is not JSON: %s", cherrypy.request.body)
             data['error'] = "Bad json"
+            statusCode = "400"
+            cherrypy.response.status = statusCode
             return json.dumps(data, indent=4)
 
 
@@ -186,6 +190,7 @@ class Delegation:
             if 'info' not in mote:
                 logging.error("Mote %s did not report its info", str(mote))
                 data['error'] = "No info for this mote"
+                statusCode = "400"
             logging.debug("mote: %s", str(mote))
 
             sensors = []
@@ -246,6 +251,7 @@ class Delegation:
                     del sensor['timestamp']
 
                     newSensor = Sensor(**sensor)
+                    newSensor.message_queue = MessageQueue(sensor_id=newSensor.uuid)
 
                     with sessionScope() as s:
                         Sensors.createSensor(s, newSensor)
@@ -280,22 +286,26 @@ class Delegation:
 
                     logging.debug("Created datastream.")
 
+            if 'readings' not in mote:
+                data['error'] = "No readings key provided."
+                statusCode = "400"
+            else:
+                with sessionScope() as s:
 
-            with sessionScope() as s:
+                    for reading in mote['readings']:
+                        sensorUuid = mote['info']['uuid']+reading[0]
+                        sensor = s.query(Sensor).filter_by(uuid=sensorUuid).one()
+                        sensor.last_value = reading[1]
+                        reading[0] = foundds[reading[0]]
+                        logging.debug(str(reading))
 
-                for reading in mote['readings']:
-                    sensorUuid = mote['info']['uuid']+reading[0]
-                    sensor = s.query(Sensor).filter_by(uuid=sensorUuid).one()
-                    sensor.last_value = reading[1]
-                    reading[0] = foundds[reading[0]]
-                    logging.debug(str(reading))
+                with sessionScope() as s:
+                    logging.debug("Inserting new readings from mote into database: %s", str(mote['readings']))
 
-            with sessionScope() as s:
-                logging.debug("Inserting new readings from mote into database: %s", str(mote['readings']))
-
-                SensorReadings.insertReadings(s, mote['readings'])
+                    readings.insertReadings(s, mote['readings'])
 
         logging.debug("Finished POST request to delegation.")
+        cherrypy.response.status = statusCode
         return json.dumps(data, indent=4)
 
 

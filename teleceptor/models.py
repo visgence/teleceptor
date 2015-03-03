@@ -41,6 +41,10 @@ except ImportError:
 
 Base = declarative_base()
 
+#Used for other modules to know what attributes are changeable for a sensor row.
+SENSORWHITELIST = ["sensor_IOtype", "sensor_type", "name", "units", "model", "description", "meta_data"]
+
+
 class User(Base):
     """
     Information that identifies the user.  Currently unused.

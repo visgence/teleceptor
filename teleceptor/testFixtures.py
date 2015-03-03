@@ -23,6 +23,7 @@ from models import *
 import sys
 import random
 from time import time
+from teleceptor.models import MessageQueue
 
 def loadAdmin(session):
     kwargs = {
@@ -73,6 +74,8 @@ def loadSensors(session):
     }
 
     sensors = [Sensor(**sensor1), Sensor(**sensor2)]
+    for sensor in sensors:
+        sensor.message_queue = MessageQueue(sensor_id=sensor.uuid)
     session.add_all(sensors)
 
 

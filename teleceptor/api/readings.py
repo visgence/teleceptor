@@ -45,6 +45,7 @@ Dependencies:
 
 # System Imports
 import cherrypy
+from whisper import WhisperException
 from time import time
 from sqlalchemy.orm.exc import NoResultFound
 try:
@@ -190,67 +191,6 @@ class SensorReadings:
 
         return readings
 
-    @staticmethod
-    def insertReadings(session, readings):
-
-        logging.debug("Inserting readings.")
-
-        data = {
-            "insertions_attempted":    0
-            ,"successfull_insertions": 0
-            ,"failed_insertions":      0
-        }
-
-        DS   = 0
-        VAL  = 1
-        TIME = 2
-
-        for reading in readings:
-            data['insertions_attempted'] += 1
-
-            streamId  = None
-            rawVal    = None
-            timestamp = None
-
-            try:
-                streamId  = reading[DS]
-                rawVal    = reading[VAL]
-                timestamp = reading[TIME]
-            except:
-                pass
-
-            #If no sensor value then skip this reading
-            if(rawVal is None or rawVal == ""):
-                continue
-
-            #TODO: handle errors better
-            # Get the datastream, if possible
-            try:
-                #TODO: will need to validate retrieved ds
-                ds = session.query(DataStream).filter_by(id = streamId).one()
-            except NoResultFound:
-                continue
-
-            try:
-                whisperInsert(streamId, rawVal, timestamp)
-                if SQLDATA:
-                    newReading = SensorReading()
-                    newReading.datastream = streamId
-                    newReading.value = rawVal
-                    newReading.timestamp = timestamp
-                    session.add(newReading)
-
-                data['successfull_insertions'] += 1
-            except IOError:
-                logging.error("Failed to insert reading into whisper %s", str(streamId))
-                continue
-
-        data['failed_insertions'] = data['insertions_attempted'] - data['successfull_insertions']
-
-        logging.debug("Stats from attempted insertions: %s", str(data))
-        return data
-
-
     def GET(self, **kwargs):
         """
         GET /api/readings/
@@ -287,6 +227,7 @@ class SensorReadings:
         logging.info("GET request to readings.")
 
         cherrypy.response.headers['Content-Type'] = 'application/json'
+        statusCode = "200"
         data = {}
         inputs = self.cleanInputs(kwargs)
         logging.debug("Got clean input arguments %s", str(inputs))
@@ -294,10 +235,12 @@ class SensorReadings:
         if len(kwargs) > 0 and inputs is None:
             logging.error("Got invalid url parameters %s", str(kwargs))
             data['error'] = "Invalid url parameters"
+            statusCode = "400"
         else:
             with sessionScope() as s:
                 data['readings'] = self.filterReadings(s, inputs)
 
+        cherrypy.response.status = statusCode
         logging.info("Finished GET request to readings.")
         return json.dumps(data, indent=4)
 
@@ -316,25 +259,103 @@ class SensorReadings:
 
         cherrypy.response.headers['Content-Type'] = 'application/json'
         data = {}
+        statusCode = "200"
 
-        logging.debug("Request body: %s", str(readingData))
         try:
             readingData = json.load(cherrypy.request.body)
         except (ValueError, TypeError):
             logging.error("Request body is not in JSON format.")
             data['error'] = "Bad json"
+            statusCode = "400"
+            cherrypy.response.status = statusCode
             return json.dumps(data, indent=4)
+
+        logging.debug("Request body: %s", str(readingData))
 
         if 'readings' not in readingData:
             logging.error("No readings in request body to insert.")
             data['error'] = "No readings to insert"
+            statusCode = "400"
+            cherrypy.response.status = statusCode
+            return json.dumps(data, indent=4)
 
         with sessionScope() as s:
             data = insertReadings(s, readingData['readings'])
 
+        cherrypy.response.status = statusCode
         logging.info("Finished POST request to readings.")
         return json.dumps(data, indent=4)
 
+def insertReadings(session, readings):
+
+    logging.debug("Inserting readings.")
+
+    data = {
+        "insertions_attempted":    0
+        ,"successfull_insertions": 0
+        ,"failed_insertions":      0
+    }
+
+    DS   = 0
+    VAL  = 1
+    TIME = 2
+
+    for reading in readings:
+        logging.debug("Looking at reading %s", str(reading))
+        data['insertions_attempted'] += 1
+
+        streamId  = None
+        rawVal    = None
+        timestamp = None
+
+        try:
+            streamId  = reading[DS]
+            rawVal    = reading[VAL]
+            timestamp = reading[TIME]
+        except:
+            logging.error("Error separating %s into streamId, rawVal, and timestamp.", str(reading))
+            continue
+
+        #If no sensor value then skip this reading
+        if(rawVal is None or rawVal == ""):
+            logging.error("Provided rawVal is invalid: %s", str(rawVal))
+            continue
+
+        #TODO: handle errors better
+        # Get the datastream, if possible
+        try:
+            #TODO: will need to validate retrieved ds
+            logging.debug("Looking up datastream with id %s", str(streamId))
+            ds = session.query(DataStream).filter_by(id = streamId).one()
+        except NoResultFound:
+            logging.error("No datastream with id %s exists.", str(streamId))
+            continue
+
+        try:
+            logging.debug("Inserting into whisper database with streamId %s, rawVal %s, and timestamp %s", str(streamId), str(rawVal), str(timestamp))
+            whisperInsert(streamId, rawVal, timestamp)
+            if SQLDATA:
+                logging.debug("Creating new sensor reading in SQL database...")
+                newReading = SensorReading()
+                newReading.datastream = streamId
+                newReading.value = rawVal
+                newReading.timestamp = timestamp
+                logging.debug("Adding newReading...")
+                session.add(newReading)
+                logging.debug("Added newReading.")
+
+            data['successfull_insertions'] += 1
+        except IOError:
+            logging.error("Failed to insert reading into whisper %s", str(streamId))
+            continue
+        except WhisperException:
+            logging.error("Failed to insert reading into whisper %s", str(streamId))
+            continue
+
+    data['failed_insertions'] = data['insertions_attempted'] - data['successfull_insertions']
+
+    logging.debug("Stats from attempted insertions: %s", str(data))
+    return data
 
 
 def reduceData(readings, granularity, red = 'mean'):

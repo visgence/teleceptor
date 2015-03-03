@@ -19,6 +19,7 @@ import os
 import platform
 import json
 from .version import __version__
+import softSensors
 PATH = os.path.abspath(os.path.join(os.path.dirname(__file__),'..'))
 
 #Path to WEBROOT and Template are part of application
@@ -84,3 +85,6 @@ PORT = conf["PORT"]
 
 #TCP Poller Hosts
 TCP_POLLER_HOSTS = conf["TCP_POLLER_HOSTS"]
+
+#Supress server output
+SUPRESS_SERVER_OUTPUT = conf["SUPRESS_SERVER_OUTPUT"]

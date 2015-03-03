@@ -28,7 +28,7 @@ from teleceptor import __version__
 from datastreams import DataStreams
 from sensors import Sensors
 from readings import SensorReadings
-from delegation import Delegation
+from station import Station
 from messages import Messages
 
 
@@ -47,5 +47,5 @@ class ResourceApi:
     datastreams  = DataStreams()
     sensors      = Sensors()
     readings     = SensorReadings()
-    delegation   = Delegation()
+    station      = Station()
     messages     = Messages()
