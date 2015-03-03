@@ -413,10 +413,11 @@ class TestTeleceptor(AbstractTeleceptorTest):
         self.assertTrue('readings' in data)
         self.assertTrue(len(data['readings']) > 0)
 
-        #test that every reading only has two integer elements
+        #test that every reading only has two elements. 
+        #First element is either int or float, second is always float.
         for reading in data['readings']:
             self.assertTrue(len(reading) == 2)
-            self.assertTrue(isinstance(reading[0],int))
+            self.assertTrue(isinstance(reading[0],int) or isinstance(reading[0],float))
             self.assertTrue(isinstance(reading[1],float))
 
 

@@ -57,7 +57,7 @@ import re
 import logging
 
 # Local Imports
-from teleceptor import SQLDATA,SQLREADTIME, USE_DEBUG
+from teleceptor import SQLDATA,SQLREADTIME, USE_DEBUG, USE_SQL_ALWAYS
 from teleceptor.models import SensorReading, DataStream
 from teleceptor.sessionManager import sessionScope
 from teleceptor.whisperUtils import getReadings, insertReading as whisperInsert
@@ -178,7 +178,7 @@ class SensorReadings:
 
                 del params[key]
 
-        if SQLDATA and (int(end) - int(start) < SQLREADTIME):
+        if USE_SQL_ALWAYS or (SQLDATA and (int(end) - int(start) < SQLREADTIME)):
 
             logging.debug("Request time %s less than SQLREADTIME %s. Getting high-resolution data.", str((int(end) - int(start))), str(SQLREADTIME))
 

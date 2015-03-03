@@ -88,3 +88,9 @@ TCP_POLLER_HOSTS = conf["TCP_POLLER_HOSTS"]
 
 #Supress server output
 SUPRESS_SERVER_OUTPUT = conf["SUPRESS_SERVER_OUTPUT"]
+
+#Set data output to use only SQL or not
+if "USE_SQL_ALWAYS" in conf:
+    USE_SQL_ALWAYS = conf["USE_SQL_ALWAYS"]
+else:
+    USE_SQL_ALWAYS = False
