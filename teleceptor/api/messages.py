@@ -63,9 +63,9 @@ class Messages:
     exposed = True
 
     if USE_DEBUG:
-        logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s',level=logging.DEBUG)
+        logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s', level=logging.DEBUG)
     else:
-        logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s',level=logging.INFO)
+        logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s', level=logging.INFO)
 
     def GET(self, sensor_id=None):
         """
@@ -107,30 +107,27 @@ class Messages:
         data = {}
         statusCode = "200"
 
-
         if sensor_id is not None:
             logging.debug("Request for sensor_id %s", str(sensor_id))
-            with sessionScope() as s:
-                try:
-                    sensor = s.query(Sensor).filter_by(uuid=sensor_id).one()
-                except NoResultFound:
-                    logging.error("Sensor with id %s does not exist.", str(sensor_id))
-                    statusCode = "400"
-                    data['error'] = "Sensor with id %s doesn't exist" % sensor_id
+            try:
+                messages = getMessages(sensor_id)
+            except NoResultFound:
+                logging.error("Sensor with id %s does not exist.", str(sensor_id))
+                statusCode = "400"
+                data['error'] = "Sensor with id %s doesn't exist" % sensor_id
+            else:
+                if messages is not None:
+                    logging.debug("Found message queue for sensor with id %s: %s", str(sensor_id), str(messages))
+                    data['message_queue'] = messages
                 else:
-                    msgQueue = sensor.message_queue
-                    if msgQueue is not None:
-                        logging.debug("Found message queue for sensor with id %s: %s", str(sensor_id), str(msgQueue.to_dict()) )
-                        data['message_queue'] = msgQueue.to_dict()
-                    else:
-                        logging.error("Sensor with id %s does not have a message queue.", str(sensor_id))
-                        statusCode = "400"
-                        data['error'] = "Sensor with id %s doesn't have a message queue" % sensor_id
+                    logging.error("Sensor with id %s does not have a message queue.", str(sensor_id))
+                    statusCode = "400"
+                    data['error'] = "Sensor with id %s doesn't have a message queue" % sensor_id
+
         else:
             logging.debug("Getting message queues for all sensors.")
-            with sessionScope() as s:
-                messageQueues = s.query(MessageQueue).all()
-                data['message_queues'] = [messageQueue.to_dict() for messageQueue in messageQueues]
+            message_queues = getAllMessages()
+            data['message_queues'] = message_queues
 
         logging.debug("Completed GET request to messages.")
         cherrypy.response.status = statusCode
@@ -152,7 +149,7 @@ class Messages:
         return False
 
     @require()
-    def POST(self,sensor_id):
+    def POST(self, sensor_id):
         """
         A POST to this module should include a sensor_id and the
         content of the request should include the data to go in the message.
@@ -165,6 +162,7 @@ class Messages:
         sensor_id: int
             Unique identifier for a sensor.
         """
+        #TODO: Should have a response if everything worked.
         logging.debug("POST request to messages.")
 
         cherrypy.response.headers['Content-Type'] = 'application/json'
@@ -177,13 +175,18 @@ class Messages:
             returnData['error'] = "POST to messages does not contain message data"
             statusCode = "400"
             cherrypy.response.status = statusCode
-            return json.dumps(returnData,indent=4)
+            return json.dumps(returnData, indent=4)
         if "duration" not in data:
             logging.error("POST request to messages has no duration data.")
             returnData['error'] = "POST to messages does not contain duration data"
             statusCode = "400"
             cherrypy.response.status = statusCode
-            return json.dumps(returnData,indent=4)
+            return json.dumps(returnData, indent=4)
+
+        try:
+            msg = addMessage(sensor_id, data['message'], data['duration'])
+        except NoResultFound:
+
 
         with sessionScope() as s:
             try:
@@ -337,3 +340,36 @@ class Messages:
         logging.debug("Finished PURGE request to messages.")
         cherrypy.response.status = statusCode
         return json.dumps(returnData,indent=4)
+
+
+def getMessages(sensor_id):
+    """
+    Returns a list of all messages (read and not read) for the sensor with id `sensor_id`
+    :param sensor_id: int
+        The id of the sensor to get all messages for.
+    :return: The list of messages for the sensor with id `sensor_id`, or None if sensor doesn't have a message queue.
+    :raises NoResultFound: If sensor_id is None or no Sensor found with id `sensor_id`
+    """
+    with sessionScope() as session:
+        sensor = session.query(Sensor).filter_by(uuid=sensor_id).one()
+        msgQueue = sensor.message_queue
+        return msgQueue.to_dict() if msgQueue is not None else None
+
+def getAllMessages():
+    """
+    Returns a list of message queues for all sensors.
+    :return:
+    """
+    with sessionScope() as session:
+        message_queues = session.query(MessageQueue).all()
+        return [message_queue.to_dict() for message_queue in message_queues]
+
+def addMessage(sensor_id, message, duration):
+    """
+    Creates a new Message from `message` and `duration` and appends it to the msgQueue of the sensor with id `sensor_id`.
+    If the requested sensor does not have a message queue yet, this function creates one.
+    :param sensor_id:
+    :param message:
+    :param duration:
+    :return:
+    """

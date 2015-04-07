@@ -35,6 +35,14 @@
                 'sensor':   The updated sensor
             }
 
+        DELETE /api/sensors/<sensor_id>/
+            Delete an existing sensor.
+            Returns:
+            {
+                'error': <error str if applicable>
+                'sensor': The deleted sensor.
+            }
+
         TODO:
         POST /api/sensors/  -  Create a new Sensor.
 
@@ -76,10 +84,9 @@ class Sensors:
     exposed = True
 
     if USE_DEBUG:
-        logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s',level=logging.DEBUG)
+        logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s', level=logging.DEBUG)
     else:
-        logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s',level=logging.INFO)
-
+        logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s', level=logging.INFO)
 
     # @require()
     def GET(self, sensor_id=None):
@@ -108,29 +115,22 @@ class Sensors:
         statusCode = "200"
 
         if sensor_id is not None:
-            logging.debug("Request for sensor %s", str(sensor_id))
-            with sessionScope() as s:
-                try:
-                    sensor = s.query(Sensor).filter_by(uuid = sensor_id).one()
-                except NoResultFound:
-                    logging.error("Requested sensor %s does not exist.", str(sensor_id))
-                    data['error'] = "Sensor with id %s doesn't exist." % sensor_id
-                    statusCode = "400"
-                else:
-                    data['sensor'] = sensor.toDict()
-                    logging.debug("Sensor info: %s", str(data['sensor']))
-
+            logging.debug("Getting single sensor with id %s", str(sensor_id))
+            try:
+                sensor = getSensor(sensor_id)
+                data['sensor'] = sensor
+            except NoResultFound:
+                logging.error("Requested sensor %s does not exist.", str(sensor_id))
+                data['error'] = "Sensor with id %s doesn't exist." % sensor_id
+                statusCode = "400"
         else:
-            logging.debug("Request for all sensors.")
-            with sessionScope() as s:
-                sensors = s.query(Sensor).all()
-                data['sensors'] = [sensor.toDict() for sensor in sensors]
-                logging.debug("Got sensors: %s", str(data['sensors']))
+            logging.debug("Getting all sensors.")
+            sensors = getAllSensors()
+            data['sensors'] = sensors
 
         cherrypy.response.status = statusCode
         logging.info("Finished GET request to sensors.")
         return json.dumps(data, indent=4)
-
 
     @require()
     def POST(self, sensor_id=None):
@@ -167,26 +167,23 @@ class Sensors:
             data = json.loads(cherrypy.request.body.read())
         except ValueError:
             #no json object to decode, just use an empty dictionary
+            #TODO: Decide on new behaviour if no json object so we don't incur an extra db lookup.
             data = {}
 
         logging.debug("Request body: %s", data)
 
-        with sessionScope() as s:
-            try:
-                sensor = s.query(Sensor).filter_by(uuid = sensor_id).one()
-            except NoResultFound:
-                logging.error("Sensor with id %s doesn't exist.", str(sensor_id))
-                returnData['error'] = "Sensor with id %s doesn't exist." % sensor_id
-                statusCode = "400"
-            else:
-                logging.debug("Updating sensor.")
-                sensor = Sensors.updateSensor(s,sensor,data)
-                returnData['sensor'] = sensor.toDict()
+        try:
+            sensor = Sensors.updateSensor(sensor_id, data)
+            returnData['sensor'] = sensor
+        except NoResultFound:
+            logging.error("Sensor with id %s doesn't exist.", str(sensor_id))
+            returnData['error'] = "Sensor with id %s doesn't exist." % sensor_id
+            statusCode = "400"
 
         cherrypy.response.status = statusCode
 
         logging.debug("Finished PUT request to sensors.")
-        return json.dumps(returnData,indent=4)
+        return json.dumps(returnData, indent=4)
 
     @require()
     def DELETE(self, sensor_id):
@@ -215,14 +212,12 @@ class Sensors:
         statusCode = "200"
         cherrypy.response.headers['Content-Type'] = 'application/json'
 
-        with sessionScope() as s:
-            deletedSensor = deleteSensor(s, sensor_id)
-
-            if deletedSensor is None:
-                returnData['error'] = "Sensor with id %s could not be deleted." % sensor_id
-                statusCode = "400"
-            else:
-                returnData['sensor'] = deletedSensor
+        deleted_sensor = deleteSensor(sensor_id)
+        if deleted_sensor is None:
+            returnData['error'] = "Sensor with id %s could not be deleted." % sensor_id
+            statusCode = "400"
+        else:
+            returnData['sensor'] = deleted_sensor
 
         cherrypy.response.status = statusCode
         logging.debug("Finished DELETE request to sensors.")
@@ -252,22 +247,20 @@ class Sensors:
             session.add(sensor)
 
     @staticmethod
-    def updateSensor(session, sensor, data):
+    def updateSensor(sensor_id, data):
         """
-        Updates `sensor` with new key/values in `data`
+        Updates sensor with id `sensor_id` with new key/values in `data`. Note that this function will incur a db lookup.
 
         Parameters
         ----------
-        session : sessionScope() context
-            The context for accessing the database.
-        sensor : model.Sensor
-            The Sensor to modify.
+        sensor_id : str
+            The id of the Sensor to modify.
         data : dictionary
             The new data to update `sensor` with.
 
         Returns
         -------
-        The updated sensor.
+        The dictionary view of the updated sensor.
 
         See Also
         --------
@@ -282,31 +275,33 @@ class Sensors:
         whitelist = ["sensor_IOtype", "sensor_type", "name", "units", ""]
         """
 
-        logging.debug("Updating sensor %s with data %s", str(sensor), str(data))
-        blacklist = ["uuid","message"]
-        for key,value in data.iteritems():
-            if key in blacklist:
-                logging.error("Request to updateSensor included blacklisted key %s", str(key))
-                continue
-            if key == "last_calibration":
-                if type(value['coefficients']) is not type(str()):
-                    value['coefficients'] = json.dumps(value['coefficients'])
+        logging.debug("Updating sensor with id %s with data %s", str(sensor_id), str(data))
+        blacklist = ("uuid","message")
+        with sessionScope() as session:
+            sensor = session.query(Sensor).filter_by(uuid=sensor_id).one()
+            for key,value in data.iteritems():
+                if key in blacklist:
+                    logging.error("Request to updateSensor included blacklisted key %s", str(key))
+                    continue
+                if key == "last_calibration":
+                    if type(value['coefficients']) is not type(str()):
+                        value['coefficients'] = json.dumps(value['coefficients'])
 
-                #if no timestamp, create timestamp
-                if 'timestamp' not in value or value['timestamp'] is None or value['timestamp'] == 0:
+                    #if no timestamp, create timestamp
+                    if 'timestamp' not in value or value['timestamp'] is None or value['timestamp'] == 0:
 
-                    logging.debug("No timestamp provided. Using current time %s", str(time.time()))
-                    value['timestamp'] = time.time()
+                        logging.debug("No timestamp provided. Using current time %s", str(time.time()))
+                        value['timestamp'] = time.time()
 
-                Sensors.updateCalibration(session,sensor,value['coefficients'],value['timestamp'])
-            elif key in models.SENSORWHITELIST:
-                setattr(sensor,key,value)
+                    Sensors.updateCalibration(session, sensor, value['coefficients'], value['timestamp'])
+                elif key in models.SENSORWHITELIST:
+                    setattr(sensor, key, value)
 
-        session.add(sensor)
-        session.commit()
+            session.add(sensor)
 
-        logging.debug("Finished updating sensor.")
-        return sensor
+
+            logging.debug("Finished updating sensor.")
+            return sensor.toDict()
 
     @staticmethod
     def updateCalibration(session, sensor, coefficients, timestamp):
@@ -402,7 +397,7 @@ class Sensors:
             sensor.last_calibration = Cal
             session.commit()
 
-def deleteSensor(session, sensor_id):
+def deleteSensor(sensor_id):
     """
     Deletes the sensor with given uuid.
 
@@ -422,16 +417,40 @@ def deleteSensor(session, sensor_id):
     """
     logging.info("Deleting sensor %s", sensor_id)
 
-    try:
-        sensor = session.query(Sensor).filter_by(uuid = sensor_id).one()
-    except NoResultFound:
-        logging.error("Requested sensor %s does not exist.", str(sensor_id))
-        return None
-    else:
-        logging.debug("Got Sensor.")
-        sensorDict = sensor.toDict()
-        session.delete(sensor)
-        session.commit()
-        return sensorDict
+    with sessionScope() as session:
+        try:
+            sensor = session.query(Sensor).filter_by(uuid = sensor_id).one()
+        except NoResultFound:
+            logging.error("Requested sensor %s does not exist.", str(sensor_id))
+            return None
+        else:
+            logging.debug("Got Sensor.")
+            sensor_dict = sensor.toDict()
+            session.delete(sensor)
+            return sensor_dict
     return None
 
+
+def getSensor(sensor_id):
+    """
+    :param sensor_id: The id of the sensor to query on
+    :return: A dictionary representing the sensor (as described in Models.Sensor) if found, else None
+    :raises NoResultFound: If a sensor with id sensor_id was not found.
+    """
+
+    logging.debug("Getting Sensor %s", str(sensor_id))
+
+    with sessionScope() as session:
+        sensor = session.query(Sensor).filter_by(uuid=sensor_id).one()
+        return sensor.toDict()
+    return None
+
+def getAllSensors():
+    """
+    Returns the view of every sensor in the database.
+    :return: A list of dictionaries representing all sensors in the database.
+    """
+    logging.debug("Getting all sensors.")
+    with sessionScope() as session:
+        sensors = session.query(Sensor).all()
+        return [s.toDict() for s in sensors]
