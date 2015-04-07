@@ -3,6 +3,7 @@
 	<li class="tab active" data-tab="sensor-config"><a href="#">Configuration</a></li>
 	<li class="tab" data-tab="sensor-metadata"><a href="#">Metadata</a></li>
 	<li class="tab" data-tab="sensor-command"><a href="#">Command</a></li>
+	<li class="tab" data-tab="post-data"><a href="#">Manual Entry</a></li>
 </ul>
 
 <div id="sensor-config" data-bind="with: activeSensor">
@@ -140,5 +141,28 @@
 
 
 	</div>
+	
+
+<div id="post-data" class="hidden" data-bind="with: activeSensor">
+		<!-- ko if: updateError -->
+		<div class="alert alert-danger" data-bind="text: updateError"></div>
+		<!-- /ko -->
+		<form class = "form-horizontal" role="form">
+		<div class = "form-group form-group-sm">
+			<label class="col-md-2 data-label">New Data:</label>
+			<div class="col-md-4">
+				<input class="form-control" data-bind="value: new_data_value">
+				<p class="text-danger" data-bind="text: temp_command_value.validationMessage, if: temp_command_value.hasError"></p>
+				<button type="button" class="btn btn-primary btn-sm" data-bind="click: sendData">
+					<span class="glyphicon glyphicon-send"></span> Send
+				</button>
+
+			</div>
+
+
+		</div>
+
+		</form>
+
 </div>
 

@@ -293,7 +293,10 @@ class Station:
                 with sessionScope() as s:
 
                     for reading in mote['readings']:
+                        logging.debug("mote['info'['uuid']: %s", mote['info']['uuid'])
+                        logging.debug("reading[0]: %s", reading[0])
                         sensorUuid = mote['info']['uuid']+reading[0]
+                        logging.debug("Filtering Sensor by uuid %s", sensorUuid)
                         sensor = s.query(Sensor).filter_by(uuid=sensorUuid).one()
                         sensor.last_value = reading[1]
                         reading[0] = foundds[reading[0]]
