@@ -133,8 +133,8 @@ class Messages:
         cherrypy.response.status = statusCode
         return json.dumps(data, indent=4)
 
-
-    def is_valid_type(self,message,sensor_type):
+    @staticmethod
+    def is_valid_type(message,sensor_type):
         """
         This function validates that the message type matches with the sensor type.
         Returns True or False
@@ -153,6 +153,7 @@ class Messages:
         """
         A POST to this module should include a sensor_id and the
         content of the request should include the data to go in the message.
+        Returns the message that was created.
         Content form should be
         content = {
                 "message": message_value
@@ -162,7 +163,6 @@ class Messages:
         sensor_id: int
             Unique identifier for a sensor.
         """
-        #TODO: Should have a response if everything worked.
         logging.debug("POST request to messages.")
 
         cherrypy.response.headers['Content-Type'] = 'application/json'
@@ -185,48 +185,18 @@ class Messages:
 
         try:
             msg = addMessage(sensor_id, data['message'], data['duration'])
-        except NoResultFound:
+        except NoResultFound as e:
+            returnData['error'] = e.message
+            statusCode = "400"
+        except ValueError as e:
+            returnData['error'] = e.message
+            statusCode = "400"
+        else:
+            returnData['message'] = msg
 
-
-        with sessionScope() as s:
-            try:
-                sensor = s.query(Sensor).filter_by(uuid=sensor_id).one()
-            except NoResultFound:
-                logging.error("Sensor with id %s does not exist.", str(sensor_id))
-                returnData['error'] = "Sensor with id %s doesn't exist" % sensor_id
-                statusCode = "400"
-            else:
-                msgQueue = sensor.message_queue
-                if msgQueue is None:
-                    logging.debug("Sensor has no message queue. Creating one...")
-                    sensor.message_queue = MessageQueue(sensor_id=sensor.uuid)
-                    s.commit()
-                    logging.debug("Completed message queue creation.")
-                    msgQueue = sensor.message_queue
-
-                msg = Message()
-                logging.debug("Sensor's type is %s", str(sensor.sensor_type))
-                if not self.is_valid_type(data['message'], sensor.sensor_type):
-                    logging.error("Message type %s does not match sensor type %s", str(type(data['message'])), str(sensor.sensor_type))
-                    returnData['error'] = "Message type does not match sensor type"
-                    statusCode = "400"
-                    cherrypy.response.status = statusCode
-                    return json.dumps(returnData,indent=4)
-
-                msg.message = json.dumps(data['message'])
-                msg.timeout = time.time() + data['duration']
-                logging.debug("Adding message to database: %s", str(msg.to_dict()))
-                s.add(msg)
-                s.commit()
-
-                logging.debug("Adding message to message queue...")
-                msgQueue.messages.append(msg)
-                s.commit()
-                logging.debug("Completed adding message.")
-
-            logging.debug("Finished POST request to messages.")
-            cherrypy.response.status = statusCode
-            return json.dumps(returnData,indent=4)
+        logging.debug("Finished POST request to messages.")
+        cherrypy.response.status = statusCode
+        return json.dumps(returnData, indent=4)
 
 
     def DELETE(self, sensor_id, message_id):
@@ -364,6 +334,7 @@ def getAllMessages():
         message_queues = session.query(MessageQueue).all()
         return [message_queue.to_dict() for message_queue in message_queues]
 
+
 def addMessage(sensor_id, message, duration):
     """
     Creates a new Message from `message` and `duration` and appends it to the msgQueue of the sensor with id `sensor_id`.
@@ -371,5 +342,40 @@ def addMessage(sensor_id, message, duration):
     :param sensor_id:
     :param message:
     :param duration:
-    :return:
+    :return: A dictionary representing the added message.
+    :raises NoResultFound: If sensor_id is None or no Sensor found with id `sensor_id`
+    :raises ValueError: If type of message is not valid for sensor with id `sensor_id`
     """
+    with sessionScope() as s:
+        try:
+            sensor = s.query(Sensor).filter_by(uuid=sensor_id).one()
+        except NoResultFound:
+            raise NoResultFound("No such Sensor with id %s" % str(sensor_id))
+        else:
+            msg_queue = sensor.message_queue
+            if msg_queue is None:
+                logging.debug("Sensor has no message queue. Creating one...")
+                sensor.message_queue = MessageQueue(sensor_id=sensor.uuid)
+                s.commit()
+                logging.debug("Completed message queue creation.")
+                msg_queue = sensor.message_queue
+
+            msg = Message()
+            logging.debug("Sensor's type is %s", str(sensor.sensor_type))
+
+            if not Messages.is_valid_type(message, sensor.sensor_type):
+                logging.error("Message type %s does not match sensor type %s", str(type(message)), str(sensor.sensor_type))
+                raise ValueError("Message type does not match sensor type")
+
+            msg.message = json.dumps(message)
+            msg.timeout = time.time() + duration
+            logging.debug("Adding message to database: %s", str(msg.to_dict()))
+            s.add(msg)
+            s.commit()
+
+            logging.debug("Adding message to message queue...")
+            msg_queue.messages.append(msg)
+            s.commit()
+            logging.debug("Completed adding message.")
+
+            return msg.to_dict()
