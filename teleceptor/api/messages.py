@@ -217,48 +217,20 @@ class Messages:
         statusCode = "200"
         returnData = {}
 
-        with sessionScope() as s:
-            try:
-                sensor = s.query(Sensor).filter_by(uuid=sensor_id).one()
-            except NoResultFound:
-                logging.error("Sensor with id %s does not exist", str(sensor_id))
-                returnData['error'] = "Sensor with id %s doesn't exist" % sensor_id
-                statusCode = "400"
-            msgQueue = sensor.message_queue
+        try:
+            msg = deleteMessage(sensor_id, message_id)
+        except NoResultFound as e:
+            returnData['error'] = e.message
+            statusCode = "400"
+        except ValueError as e:
+            returnData['error'] = e.message
+            statusCode = "400"
+        else:
+            returnData['message'] = msg
 
-            if msgQueue is None:
-                logging.error("Sensor with id %s has no message queue to DELETE from.", str(sensor_id))
-                returnData['error'] = "DELETE to messages does not contain message data"
-                statusCode = "400"
-                cherrypy.response.status = statusCode
-                return json.dumps(returnData,indent=4)
-
-            try:
-                msgToDel = s.query(Message).filter_by(id=message_id).one()
-            except NoResultFound:
-                logging.error("Message with id %s does not exist.", str(message_id))
-                returnData['error'] = "Message with id %s doesn't exist" % message_id
-                statusCode = "400"
-                cherrypy.response.status = statusCode
-                return json.dumps(returnData,indent=4)
-
-            if msgToDel not in msgQueue.messages:
-                logging.error("Message with id %s does not belong to sensor with id %s", str(message_id), str(sensor_id))
-                returnData['error'] = "Message with id %(m_id)s doesn't belong to Sensor with id %(sens_id)s" % {"m_id":message_id, "sens_id":sensor_id}
-                statusCode = "400"
-                cherrypy.response.status = statusCode
-                return json.dumps(returnData,indent=4)
-
-            logging.debug("Removing message...")
-            msgQueue.messages.remove(msgToDel)
-            returnData['message'] = msgToDel.to_dict()
-            s.delete(msgToDel)
-            s.commit()
-            logging.debug("Finished removing message.")
-
-            logging.debug("Finished DELETE request to messages.")
-            cherrypy.response.status = statusCode
-            return json.dumps(returnData, indent=4)
+        logging.debug("Finished DELETE request to messages.")
+        cherrypy.response.status = statusCode
+        return json.dumps(returnData, indent=4)
 
     @cherrypy.expose
     def PURGE(self, sensor_id, timeout):
@@ -278,38 +250,23 @@ class Messages:
         logging.debug("PURGE request to messages.")
 
         cherrypy.response.headers['Content-Type'] = 'application/json'
-        statusCode="200"
+        statusCode = "200"
         returnData = {}
-        rowsDeleted = 0
 
-        with sessionScope() as s:
-            try:
-                sensor = s.query(Sensor).filter_by(uuid=sensor_id).one()
-            except NoResultFound:
-                logging.error("Sensor with id %s does not exist", str(sensor_id))
-                returnData['error'] = "Sensor with id %s doesn't exist" % sensor_id
-                statusCode = "400"
-                cherrypy.response.status = statusCode
-            msgQueue = sensor.message_queue
-
-            if msgQueue is None:
-                logging.error("Sensor with id %s has no message queue.", str(sensor_id))
-                returnData['error'] = "Sensor with id %s has no messages" % sensor_id
-                statusCode = "400"
-                cherrypy.response.status = statusCode
-                return json.dumps(returnData,indent=4)
-            #actually delete
-            logging.debug("Deleting message queue for sensor with id %s...", str(sensor_id))
-            rowsDeleted = s.query(Message).\
-            filter(Message.message_queue_id==msgQueue.id, Message.timeout <= timeout).delete()
-            logging.debug("Finished deleting message queue.")
-
-        returnData['success'] = "Deleted %s messages" % rowsDeleted
-        logging.debug("Deleted %s messages", rowsDeleted)
+        try:
+            rows_deleted = deleteAllMessages(sensor_id, timeout)
+        except NoResultFound as e:
+            returnData['error'] = e.message
+            statusCode = "400"
+        except ValueError as e:
+            returnData['error'] = e.message
+            statusCode = "400"
+        else:
+            returnData['success'] = "Deleted %s messages" % rows_deleted
 
         logging.debug("Finished PURGE request to messages.")
         cherrypy.response.status = statusCode
-        return json.dumps(returnData,indent=4)
+        return json.dumps(returnData, indent=4)
 
 
 def getMessages(sensor_id):
@@ -379,3 +336,61 @@ def addMessage(sensor_id, message, duration):
             logging.debug("Completed adding message.")
 
             return msg.to_dict()
+
+def deleteMessage(sensor_id, message_id):
+    with sessionScope() as session:
+        try:
+            sensor = session.query(Sensor).filter_by(uuid=sensor_id).one()
+        except NoResultFound as e:
+            logging.error("Sensor with id %s does not exist", str(sensor_id))
+            raise NoResultFound("Sensor with id %s does not exist", str(sensor_id))
+        else:
+            msgQueue = sensor.message_queue
+
+            if msgQueue is None:
+                logging.error("Sensor with id %s has no message queue to DELETE from.", str(sensor_id))
+                raise ValueError("Sensor with id %s has no message queue to DELETE from.", str(sensor_id))
+
+            try:
+                msgToDel = session.query(Message).filter_by(id=message_id).one()
+            except NoResultFound:
+                logging.error("Message with id %s does not exist.", str(message_id))
+                raise NoResultFound("Message with id %s does not exist.", str(message_id))
+
+            if msgToDel not in msgQueue.messages:
+                logging.error("Message with id %s does not belong to sensor with id %s", str(message_id), str(sensor_id))
+                raise ValueError("Message with id %s does not belong to sensor with id %s", str(message_id), str(sensor_id))
+
+            logging.debug("Removing message...")
+            msgQueue.messages.remove(msgToDel)
+            msg = msgToDel.to_dict()
+            session.delete(msgToDel)
+            session.commit()
+            logging.debug("Finished removing message.")
+            return msg
+    return None
+
+
+def deleteAllMessages(sensor_id, timeout):
+    rows_deleted = None
+    with sessionScope() as session:
+        try:
+            sensor = session.query(Sensor).filter_by(uuid=sensor_id).one()
+        except NoResultFound:
+            logging.error("Sensor with id %s does not exist", str(sensor_id))
+            raise NoResultFound("Sensor with id %s doesn't exist" % sensor_id)
+
+        msgQueue = sensor.message_queue
+
+        if msgQueue is None:
+            logging.error("Sensor with id %s has no message queue.", str(sensor_id))
+            raise ValueError("Sensor with id %s has no messages" % sensor_id)
+
+        # actually delete
+        logging.debug("Deleting message queue for sensor with id %s...", str(sensor_id))
+        rows_deleted = session.query(Message).\
+            filter(Message.message_queue_id == msgQueue.id, Message.timeout <= timeout).delete()
+        logging.debug("Finished deleting message queue.")
+        logging.debug("Deleted %s messages", rows_deleted)
+
+    return rows_deleted
