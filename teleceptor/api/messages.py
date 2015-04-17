@@ -105,7 +105,7 @@ class Messages:
 
         cherrypy.response.headers['Content-Type'] = 'application/json'
         data = {}
-        statusCode = "200"
+        status_code = "200"
 
         if sensor_id is not None:
             logging.debug("Request for sensor_id %s", str(sensor_id))
@@ -113,7 +113,7 @@ class Messages:
                 messages = getMessages(sensor_id)
             except NoResultFound:
                 logging.error("Sensor with id %s does not exist.", str(sensor_id))
-                statusCode = "400"
+                status_code = "400"
                 data['error'] = "Sensor with id %s doesn't exist" % sensor_id
             else:
                 if messages is not None:
@@ -121,7 +121,7 @@ class Messages:
                     data['message_queue'] = messages
                 else:
                     logging.error("Sensor with id %s does not have a message queue.", str(sensor_id))
-                    statusCode = "400"
+                    status_code = "400"
                     data['error'] = "Sensor with id %s doesn't have a message queue" % sensor_id
 
         else:
@@ -130,7 +130,7 @@ class Messages:
             data['message_queues'] = message_queues
 
         logging.debug("Completed GET request to messages.")
-        cherrypy.response.status = statusCode
+        cherrypy.response.status = status_code
         return json.dumps(data, indent=4)
 
     @staticmethod
@@ -166,37 +166,37 @@ class Messages:
         logging.debug("POST request to messages.")
 
         cherrypy.response.headers['Content-Type'] = 'application/json'
-        statusCode = "200"
-        returnData = {}
+        status_code = "200"
+        return_data = {}
 
         data = json.loads(cherrypy.request.body.read())
         if "message" not in data:
             logging.error("POST request to messages has no message data.")
-            returnData['error'] = "POST to messages does not contain message data"
-            statusCode = "400"
-            cherrypy.response.status = statusCode
-            return json.dumps(returnData, indent=4)
+            return_data['error'] = "POST to messages does not contain message data"
+            status_code = "400"
+            cherrypy.response.status = status_code
+            return json.dumps(return_data, indent=4)
         if "duration" not in data:
             logging.error("POST request to messages has no duration data.")
-            returnData['error'] = "POST to messages does not contain duration data"
-            statusCode = "400"
-            cherrypy.response.status = statusCode
-            return json.dumps(returnData, indent=4)
+            return_data['error'] = "POST to messages does not contain duration data"
+            status_code = "400"
+            cherrypy.response.status = status_code
+            return json.dumps(return_data, indent=4)
 
         try:
             msg = addMessage(sensor_id, data['message'], data['duration'])
         except NoResultFound as e:
-            returnData['error'] = e.message
-            statusCode = "400"
+            return_data['error'] = e.message
+            status_code = "400"
         except ValueError as e:
-            returnData['error'] = e.message
-            statusCode = "400"
+            return_data['error'] = e.message
+            status_code = "400"
         else:
-            returnData['message'] = msg
+            return_data['message'] = msg
 
         logging.debug("Finished POST request to messages.")
-        cherrypy.response.status = statusCode
-        return json.dumps(returnData, indent=4)
+        cherrypy.response.status = status_code
+        return json.dumps(return_data, indent=4)
 
 
     def DELETE(self, sensor_id, message_id):
@@ -214,23 +214,23 @@ class Messages:
 
         logging.debug("DELETE request to messages.")
         cherrypy.response.headers['Content-Type'] = 'application/json'
-        statusCode = "200"
-        returnData = {}
+        status_code = "200"
+        return_data = {}
 
         try:
             msg = deleteMessage(sensor_id, message_id)
         except NoResultFound as e:
-            returnData['error'] = e.message
-            statusCode = "400"
+            return_data['error'] = e.message
+            status_code = "400"
         except ValueError as e:
-            returnData['error'] = e.message
-            statusCode = "400"
+            return_data['error'] = e.message
+            status_code = "400"
         else:
-            returnData['message'] = msg
+            return_data['message'] = msg
 
         logging.debug("Finished DELETE request to messages.")
-        cherrypy.response.status = statusCode
-        return json.dumps(returnData, indent=4)
+        cherrypy.response.status = status_code
+        return json.dumps(return_data, indent=4)
 
     @cherrypy.expose
     def PURGE(self, sensor_id, timeout):
@@ -250,23 +250,23 @@ class Messages:
         logging.debug("PURGE request to messages.")
 
         cherrypy.response.headers['Content-Type'] = 'application/json'
-        statusCode = "200"
-        returnData = {}
+        status_code = "200"
+        return_data = {}
 
         try:
             rows_deleted = deleteAllMessages(sensor_id, timeout)
         except NoResultFound as e:
-            returnData['error'] = e.message
-            statusCode = "400"
+            return_data['error'] = e.message
+            status_code = "400"
         except ValueError as e:
-            returnData['error'] = e.message
-            statusCode = "400"
+            return_data['error'] = e.message
+            status_code = "400"
         else:
-            returnData['success'] = "Deleted %s messages" % rows_deleted
+            return_data['success'] = "Deleted %s messages" % rows_deleted
 
         logging.debug("Finished PURGE request to messages.")
-        cherrypy.response.status = statusCode
-        return json.dumps(returnData, indent=4)
+        cherrypy.response.status = status_code
+        return json.dumps(return_data, indent=4)
 
 
 def getMessages(sensor_id):
@@ -279,8 +279,8 @@ def getMessages(sensor_id):
     """
     with sessionScope() as session:
         sensor = session.query(Sensor).filter_by(uuid=sensor_id).one()
-        msgQueue = sensor.message_queue
-        return msgQueue.to_dict() if msgQueue is not None else None
+        msg_queue = sensor.message_queue
+        return msg_queue.to_dict() if msg_queue is not None else None
 
 def getAllMessages():
     """

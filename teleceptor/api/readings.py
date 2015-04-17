@@ -67,19 +67,19 @@ class SensorReadings:
     exposed = True
 
     if USE_DEBUG:
-        logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s',level=logging.DEBUG)
+        logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s', level=logging.DEBUG)
     else:
-        logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s',level=logging.INFO)
+        logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s', level=logging.INFO)
 
     validFilterArgs = {
-         'datastream': '^\d+$'
-        ,'start':      '^\d+$'
-        ,'end':        '^\d+$'
+        'datastream': '^\d+$',
+        'start':      '^\d+$',
+        'end':        '^\d+$'
     }
 
     validOperatorArgs = {
-         'condense':    '^true|false$'
-        ,'granularity': '^\d+$'
+        'condense':    '^true|false$',
+        'granularity': '^\d+$'
     }
 
     @staticmethod
@@ -162,7 +162,7 @@ class SensorReadings:
 
         #Seperate out filter arguments first
         for key, value in paramsCopy.iteritems():
-            if  key in self.validFilterArgs:
+            if key in self.validFilterArgs:
                 if key == "start":
                     start = value
                     query = query.filter(SensorReading.timestamp >= value)
@@ -174,7 +174,6 @@ class SensorReadings:
                     filterArgs['datastream'] = value
                 else:
                     filterArgs[key] = value
-                    #pass
 
                 del params[key]
 
@@ -183,11 +182,10 @@ class SensorReadings:
             logging.debug("Request time %s less than SQLREADTIME %s. Getting high-resolution data.", str((int(end) - int(start))), str(SQLREADTIME))
 
             readings = query.filter_by(**filterArgs).order_by('timestamp').all()
-            readings = [(reading.timestamp,reading.value) for reading in readings]
+            readings = [(reading.timestamp, reading.value) for reading in readings]
         else:
             logging.debug("Getting low resolution data.")
             readings = getReadings(uuid, start, end)
-        encodeReady = False
 
         return readings
 
@@ -205,7 +203,7 @@ class SensorReadings:
         GET /api/readings/?arg1=value&arg2=value...
             Obtain a list of available SensorReadings filtered by url arguments.
 
-            Valid Aruments:
+            Valid Arguments:
                 NOTE: Unless otherwise specified all filter arguments accept the value null.
 
                 Filter Arguments:
@@ -227,7 +225,7 @@ class SensorReadings:
         logging.info("GET request to readings.")
 
         cherrypy.response.headers['Content-Type'] = 'application/json'
-        statusCode = "200"
+        status_code = "200"
         data = {}
         inputs = self.cleanInputs(kwargs)
         logging.debug("Got clean input arguments %s", str(inputs))
@@ -235,12 +233,12 @@ class SensorReadings:
         if len(kwargs) > 0 and inputs is None:
             logging.error("Got invalid url parameters %s", str(kwargs))
             data['error'] = "Invalid url parameters"
-            statusCode = "400"
+            status_code = "400"
         else:
             with sessionScope() as s:
                 data['readings'] = self.filterReadings(s, inputs)
 
-        cherrypy.response.status = statusCode
+        cherrypy.response.status = status_code
         logging.info("Finished GET request to readings.")
         return json.dumps(data, indent=4)
 
@@ -259,98 +257,97 @@ class SensorReadings:
 
         cherrypy.response.headers['Content-Type'] = 'application/json'
         data = {}
-        statusCode = "200"
+        status_code = "200"
 
         try:
-            readingData = json.load(cherrypy.request.body)
+            reading_data = json.load(cherrypy.request.body)
         except (ValueError, TypeError):
             logging.error("Request body is not in JSON format.")
             data['error'] = "Bad json"
-            statusCode = "400"
-            cherrypy.response.status = statusCode
+            status_code = "400"
+            cherrypy.response.status = status_code
             return json.dumps(data, indent=4)
 
-        logging.debug("Request body: %s", str(readingData))
+        logging.debug("Request body: %s", str(reading_data))
 
-        if 'readings' not in readingData:
+        try:
+            data = insertReadings(reading_data['readings'])
+        except KeyError:
             logging.error("No readings in request body to insert.")
             data['error'] = "No readings to insert"
-            statusCode = "400"
-            cherrypy.response.status = statusCode
-            return json.dumps(data, indent=4)
+            status_code = "400"
 
-        with sessionScope() as s:
-            data = insertReadings(s, readingData['readings'])
-
-        cherrypy.response.status = statusCode
+        cherrypy.response.status = status_code
         logging.info("Finished POST request to readings.")
         return json.dumps(data, indent=4)
 
-def insertReadings(session, readings):
+def insertReadings(readings):
+    """
+    Tries to insert the readings provided into whisper database, and optionally into the SQL database if SQLDATA is set.
+    :param readings: List of reading tuples of the form (datastreamid, value, timestamp)
+    :return: A dict with keywords "insertions_attempted", "successfull_insertions", and "failed_insertions"
+    """
 
     logging.debug("Inserting readings.")
 
     data = {
         "insertions_attempted":    0
-        ,"successfull_insertions": 0
-        ,"failed_insertions":      0
+        , "successfull_insertions": 0
+        , "failed_insertions":      0
     }
 
-    DS   = 0
-    VAL  = 1
+    DS = 0
+    VAL = 1
     TIME = 2
 
-    for reading in readings:
-        logging.debug("Looking at reading %s", str(reading))
-        data['insertions_attempted'] += 1
+    with sessionScope() as session:
+        for reading in readings:
+            logging.debug("Looking at reading %s", str(reading))
+            data['insertions_attempted'] += 1
 
-        streamId  = None
-        rawVal    = None
-        timestamp = None
+            try:
+                streamId = reading[DS]
+                rawVal = reading[VAL]
+                timestamp = reading[TIME]
+            except:
+                logging.error("Error separating %s into streamId, rawVal, and timestamp.", str(reading))
+                continue
 
-        try:
-            streamId  = reading[DS]
-            rawVal    = reading[VAL]
-            timestamp = reading[TIME]
-        except:
-            logging.error("Error separating %s into streamId, rawVal, and timestamp.", str(reading))
-            continue
+            # If no sensor value then skip this reading
+            if rawVal is None or rawVal == "":
+                logging.error("Provided rawVal is invalid: %s", str(rawVal))
+                continue
 
-        #If no sensor value then skip this reading
-        if(rawVal is None or rawVal == ""):
-            logging.error("Provided rawVal is invalid: %s", str(rawVal))
-            continue
+            # TODO: handle errors better
+            # Get the datastream, if possible
+            try:
+                # TODO: will need to validate retrieved ds
+                logging.debug("Looking up datastream with id %s", str(streamId))
+                ds = session.query(DataStream).filter_by(id=streamId).one()
+            except NoResultFound:
+                logging.error("No datastream with id %s exists.", str(streamId))
+                continue
 
-        #TODO: handle errors better
-        # Get the datastream, if possible
-        try:
-            #TODO: will need to validate retrieved ds
-            logging.debug("Looking up datastream with id %s", str(streamId))
-            ds = session.query(DataStream).filter_by(id = streamId).one()
-        except NoResultFound:
-            logging.error("No datastream with id %s exists.", str(streamId))
-            continue
+            try:
+                logging.debug("Inserting into whisper database with streamId %s, rawVal %s, and timestamp %s", str(streamId), str(rawVal), str(timestamp))
+                whisperInsert(streamId, rawVal, timestamp)
+                if SQLDATA:
+                    logging.debug("Creating new sensor reading in SQL database...")
+                    new_reading = SensorReading()
+                    new_reading.datastream = streamId
+                    new_reading.value = rawVal
+                    new_reading.timestamp = timestamp
+                    logging.debug("Adding new_reading...")
+                    session.add(new_reading)
+                    logging.debug("Added new_reading.")
 
-        try:
-            logging.debug("Inserting into whisper database with streamId %s, rawVal %s, and timestamp %s", str(streamId), str(rawVal), str(timestamp))
-            whisperInsert(streamId, rawVal, timestamp)
-            if SQLDATA:
-                logging.debug("Creating new sensor reading in SQL database...")
-                newReading = SensorReading()
-                newReading.datastream = streamId
-                newReading.value = rawVal
-                newReading.timestamp = timestamp
-                logging.debug("Adding newReading...")
-                session.add(newReading)
-                logging.debug("Added newReading.")
-
-            data['successfull_insertions'] += 1
-        except IOError:
-            logging.error("Failed to insert reading into whisper %s", str(streamId))
-            continue
-        except WhisperException:
-            logging.error("Failed to insert reading into whisper %s", str(streamId))
-            continue
+                data['successfull_insertions'] += 1
+            except IOError:
+                logging.error("Failed to insert reading into whisper %s", str(streamId))
+                continue
+            except WhisperException:
+                logging.error("Failed to insert reading into whisper %s", str(streamId))
+                continue
 
     data['failed_insertions'] = data['insertions_attempted'] - data['successfull_insertions']
 
@@ -358,7 +355,7 @@ def insertReadings(session, readings):
     return data
 
 
-def reduceData(readings, granularity, red = 'mean'):
+def reduceData(readings, granularity, reduction_method='mean'):
     """
     Take a a list of tuples containing at [0] a timeStamp and at [1] a raw data value from a sensor reading, and reduce this list to about granularity datapoints, using different methods.
 
@@ -367,20 +364,20 @@ def reduceData(readings, granularity, red = 'mean'):
         Tuples are (SensorReading.timestamp, SensorReading.sensorValue)
       granularity : int
         The number of datapoints to which to reduce the list. (will not be exact)
-      red : str
+      reduction_method : str
         The reduction method.  Can be 'mean', 'sample', etc.
     """
 
-    logging.debug("Reducing data with granularity %s and method %s", str(granularity), str(red))
+    logging.debug("Reducing data with granularity %s and method %s", str(granularity), str(reduction_method))
 
-    if red not in reductMethods:
-        logging.error("Method %s not a valid reduction method.")
+    if reduction_method not in reductMethods:
+        logging.error("Method %s not a valid reduction method.", str(reduction_method))
         return []
 
     increment = len(readings)/granularity
     data = []
     for i in range(0, len(readings), increment):
-        data.append(reductMethods[red](readings[i:i+increment]))
+        data.append(reductMethods[reduction_method](readings[i:i+increment]))
 
     logging.debug("Finished reducing data.")
     return data
