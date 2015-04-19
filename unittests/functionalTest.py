@@ -171,10 +171,12 @@ class TestTeleceptor(AbstractTeleceptorTest):
         self.assertTrue('newValues' in data)
 
     def test13_station_post_has_messages(self):
-        r = requests.post(URL + "api/messages/volts", data=json.dumps({"message": True, "duration": 30000}))
+        r = requests.post(URL + "api/messages/volts", data=json.dumps({"message": 1.0, "duration": 30000}))
 
         self.assertTrue(r.status_code == requests.codes.ok)
         self.assertTrue('error' not in r.json())
+
+        print "Posted message for volts."
 
         caltime = time.time()
         examplevalue = 22
@@ -185,7 +187,7 @@ class TestTeleceptor(AbstractTeleceptorTest):
         r = requests.post(URL + "/api/station", data=json.dumps(jsonExample))
         self.assertTrue(r.status_code == requests.codes.ok)
         data = r.json()
-
+        print "Test 13 reponse data: %s" % str(data)
         self.assertFalse('error' in data)
         self.assertTrue('info' in data)
         self.assertTrue(len(data['info']) > 0)
@@ -265,7 +267,7 @@ class TestTeleceptor(AbstractTeleceptorTest):
         self.assertTrue('info' in data)
         self.assertTrue(len(data['info']) > 0)
 
-        self.assertTrue('1' == json.loads(data['info'][0])['uuid'])
+        self.assertTrue('1' == data['info'][0]['uuid'])
 
         #check that the number of sensors has increased
         r = requests.get(URL + "/api/sensors")
@@ -305,11 +307,14 @@ class TestTeleceptor(AbstractTeleceptorTest):
         self.assertTrue(r.status_code == requests.codes.ok)
         data = r.json()
 
+        print "Test 18 response data %s" % str(data)
+        print "data['info'][0]['last_calibration']: %s" % str(data['info'][0]['last_calibration'])
+
         self.assertFalse('error' in data)
         self.assertTrue('info' in data)
         self.assertTrue(len(data['info']) > 0)
 
-        self.assertTrue(json.loads(data['info'][0])['last_calibration']['coefficients'] == newCalibration)
+        self.assertTrue(data['info'][0]['last_calibration']['coefficients'] == newCalibration)
 
 
     """

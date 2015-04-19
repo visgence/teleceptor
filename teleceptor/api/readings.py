@@ -281,7 +281,7 @@ class SensorReadings:
         logging.info("Finished POST request to readings.")
         return json.dumps(data, indent=4)
 
-def insertReadings(readings):
+def insertReadings(readings, session=None):
     """
     Tries to insert the readings provided into whisper database, and optionally into the SQL database if SQLDATA is set.
     :param readings: List of reading tuples of the form (datastreamid, value, timestamp)
@@ -289,7 +289,21 @@ def insertReadings(readings):
     """
 
     logging.debug("Inserting readings.")
+    if session is None:
+        with sessionScope() as session:
+            data = _insertReadings(readings, session)
+    else:
+        data = _insertReadings(readings, session)
 
+    logging.debug("Stats from attempted insertions: %s", str(data))
+    return data
+
+def _insertReadings(readings, session=None):
+    """
+    Tries to insert the readings provided into whisper database, and optionally into the SQL database if SQLDATA is set.
+    :param readings: List of reading tuples of the form (datastreamid, value, timestamp)
+    :return: A dict with keywords "insertions_attempted", "successfull_insertions", and "failed_insertions"
+    """
     data = {
         "insertions_attempted":    0
         , "successfull_insertions": 0
@@ -300,58 +314,55 @@ def insertReadings(readings):
     VAL = 1
     TIME = 2
 
-    with sessionScope() as session:
-        for reading in readings:
-            logging.debug("Looking at reading %s", str(reading))
-            data['insertions_attempted'] += 1
+    for reading in readings:
+        logging.debug("Looking at reading %s", str(reading))
+        data['insertions_attempted'] += 1
 
-            try:
-                streamId = reading[DS]
-                rawVal = reading[VAL]
-                timestamp = reading[TIME]
-            except:
-                logging.error("Error separating %s into streamId, rawVal, and timestamp.", str(reading))
-                continue
+        try:
+            streamId = reading[DS]
+            rawVal = reading[VAL]
+            timestamp = reading[TIME]
+        except:
+            logging.error("Error separating %s into streamId, rawVal, and timestamp.", str(reading))
+            continue
 
-            # If no sensor value then skip this reading
-            if rawVal is None or rawVal == "":
-                logging.error("Provided rawVal is invalid: %s", str(rawVal))
-                continue
+        # If no sensor value then skip this reading
+        if rawVal is None or rawVal == "":
+            logging.error("Provided rawVal is invalid: %s", str(rawVal))
+            continue
 
-            # TODO: handle errors better
-            # Get the datastream, if possible
-            try:
-                # TODO: will need to validate retrieved ds
-                logging.debug("Looking up datastream with id %s", str(streamId))
-                ds = session.query(DataStream).filter_by(id=streamId).one()
-            except NoResultFound:
-                logging.error("No datastream with id %s exists.", str(streamId))
-                continue
+        # TODO: handle errors better
+        # Get the datastream, if possible
+        try:
+            # TODO: will need to validate retrieved ds
+            logging.debug("Looking up datastream with id %s", str(streamId))
+            ds = session.query(DataStream).filter_by(id=streamId).one()
+        except NoResultFound:
+            logging.error("No datastream with id %s exists.", str(streamId))
+            continue
 
-            try:
-                logging.debug("Inserting into whisper database with streamId %s, rawVal %s, and timestamp %s", str(streamId), str(rawVal), str(timestamp))
-                whisperInsert(streamId, rawVal, timestamp)
-                if SQLDATA:
-                    logging.debug("Creating new sensor reading in SQL database...")
-                    new_reading = SensorReading()
-                    new_reading.datastream = streamId
-                    new_reading.value = rawVal
-                    new_reading.timestamp = timestamp
-                    logging.debug("Adding new_reading...")
-                    session.add(new_reading)
-                    logging.debug("Added new_reading.")
+        try:
+            logging.debug("Inserting into whisper database with streamId %s, rawVal %s, and timestamp %s", str(streamId), str(rawVal), str(timestamp))
+            whisperInsert(streamId, rawVal, timestamp)
+            if SQLDATA:
+                logging.debug("Creating new sensor reading in SQL database...")
+                new_reading = SensorReading()
+                new_reading.datastream = streamId
+                new_reading.value = rawVal
+                new_reading.timestamp = timestamp
+                logging.debug("Adding new_reading...")
+                session.add(new_reading)
+                logging.debug("Added new_reading.")
 
-                data['successfull_insertions'] += 1
-            except IOError:
-                logging.error("Failed to insert reading into whisper %s", str(streamId))
-                continue
-            except WhisperException:
-                logging.error("Failed to insert reading into whisper %s", str(streamId))
-                continue
+            data['successfull_insertions'] += 1
+        except IOError:
+            logging.error("Failed to insert reading into whisper %s", str(streamId))
+            continue
+        except WhisperException:
+            logging.error("Failed to insert reading into whisper %s", str(streamId))
+            continue
 
     data['failed_insertions'] = data['insertions_attempted'] - data['successfull_insertions']
-
-    logging.debug("Stats from attempted insertions: %s", str(data))
     return data
 
 

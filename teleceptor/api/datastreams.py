@@ -72,7 +72,7 @@ import logging
 # Local Imports
 from teleceptor.models import DataStream
 from teleceptor.sessionManager import sessionScope
-from teleceptor import  whisperUtils
+from teleceptor import whisperUtils
 from teleceptor import USE_DEBUG
 
 
@@ -80,53 +80,22 @@ class DataStreams:
     exposed = True
 
     if USE_DEBUG:
-        logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s',level=logging.DEBUG)
+        logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s', level=logging.DEBUG)
     else:
-        logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s',level=logging.INFO)
-
-    def cleanInputs(self, inputs):
-        """
-            Checks that the supplied inputs only contains valid parameters for filtering Datadatastreams.
-
-            Returns: True if supplied inputs checks out and False if one or more parameters was invalid.
-        """
-
-        validInputs = {
-            'sensor': '^\w+$'
-        }
-
-        valueConversions = {
-            'null': None
-        }
+        logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s', level=logging.INFO)
 
 
-        safeInputs = {}
-
-        for key, value in inputs.iteritems():
-            if not key in validInputs:
-                return None
-
-            if value in valueConversions:
-                value = valueConversions[value]
-            elif re.match(validInputs[key], value) is None:
-                return None
-
-            safeInputs[key] = value
-
-        return safeInputs
-
-
-    def GET(self, stream_id=None, *args, **kwargs):
+    def GET(self, stream_id=None, *args, **filter_arguments):
         """ Gets a specified datastream or list of datastreams filtered by keyword arguments.
 
 
         Parameters
         ----------
         stream_id : int, optional
-            The `stream_id` of the datastream to get or None to select datastreams based on filter arguments in `args` and `kwargs`.
+            The `stream_id` of the datastream to get or None to select datastreams based on filter arguments in `args` and `filter_arguments`.
         args : list, optional
             Unused list of arguments
-        kwargs : dictionary, optional
+        filter_arguments : dictionary, optional
             Keyword arguments to filter the datastream query.
 
         Returns
@@ -137,7 +106,7 @@ class DataStreams:
 
         See Also
         --------
-        cleanInputs : Checks that kwargs only contains valid parameters for filtering datastreams.
+        cleanInputs : Checks that filter_arguments only contains valid parameters for filtering datastreams.
 
 
         GET /api/datastreams/
@@ -191,13 +160,11 @@ class DataStreams:
                 else:
                     logging.debug("Found stream with id %s: %s", str(stream_id), str(stream.toDict()))
                     data['stream'] = stream.toDict()
-
-            return json.dumps(data, indent=4)
         else:
-            logging.debug("Request for all datastreams with parameters %s", str(kwargs))
-            inputs = self.cleanInputs(kwargs)
-            if len(kwargs) > 0 and inputs is None:
-                logging.error("Provided url parameters are invalid: %s", str(kwargs))
+            logging.debug("Request for all datastreams with parameters %s", str(filter_arguments))
+            inputs = clean_inputs(filter_arguments)
+            if len(filter_arguments) > 0 and inputs is None:
+                logging.error("Provided url parameters are invalid: %s", str(filter_arguments))
                 data['error'] = "Invalid url parameters"
                 statusCode = "400"
             else:
@@ -206,8 +173,8 @@ class DataStreams:
                     datastreams = s.query(DataStream).filter_by(**inputs).all()
                     data['datastreams'] = [stream.toDict() for stream in datastreams]
 
-            cherrypy.response.status = statusCode
-            return json.dumps(data, indent=4)
+        cherrypy.response.status = statusCode
+        return json.dumps(data, indent=4)
 
     def POST(self, stream_id=None):
         #TODO: Implement this for datastream creation
@@ -248,3 +215,85 @@ class DataStreams:
             logging.error("Provided datastream to createDatastream method is None.")
 
 
+def clean_inputs(inputs):
+        """
+            Checks that the supplied inputs only contains valid parameters for filtering Datadatastreams.
+
+            Returns: Dictionary with valid parameters taken from provided inputs.
+        """
+
+        validInputs = {
+            'sensor': '^\w+$'
+        }
+
+        valueConversions = {
+            'null': None
+        }
+
+
+        safeInputs = {}
+
+        for key, value in inputs.iteritems():
+            if not key in validInputs:
+                return None
+
+            if value in valueConversions:
+                value = valueConversions[value]
+            elif re.match(validInputs[key], value) is None:
+                return None
+
+            safeInputs[key] = value
+
+        return safeInputs
+
+
+def get_datastream(datastream_id, session=None):
+    """
+    Tries to get a datastream from the database with the provided datastream_id.
+    Optionally uses a provided session context to interact with the database.
+    :param datastream_id: ID of the datastream.
+    :param session:
+    :return: The dictionary view of the datastream.
+    :raises NoResultFound: If no datastream matches the datastream_id.
+    """
+    if session is None:
+        with sessionScope() as session:
+            stream = session.query(DataStream).filter_by(id=datastream_id).one()
+            return stream.toDict()
+    else:
+        stream = session.query(DataStream).filter_by(id=datastream_id).one()
+        return stream.toDict()
+
+def get_datastream_by_sensorid(sensor_id, session=None):
+    """
+    Tries to get a datastream from the database with the provided sensor_id.
+    Optionally uses a provided session context to interact with the database.
+    :param sensor_id: ID of the sensor to retrieve the datastream for.
+    :param session:
+    :return: The dictionary view of the datastream.
+    :raises NoResultFound: If no datastream matches the datastream_id.
+    """
+    if session is None:
+        with sessionScope() as session:
+            stream = session.query(DataStream).filter_by(sensor=sensor_id).one()
+            return stream.toDict()
+    else:
+        stream = session.query(DataStream).filter_by(sensor=sensor_id).one()
+        return stream.toDict()
+
+
+def filter_datastreams(session=None, **filter_args):
+    """
+    Tries to get all datastreams from the database.
+    Optionally uses a provided session context to interact with the database.
+    :param session:
+    :return: A list of dictionary views of the datastreams currently in the database.
+    """
+    inputs = clean_inputs(filter_args)
+    if session is None:
+        with sessionScope() as session:
+            streams = session.query(DataStream).filter_by(inputs).all()
+            return [stream.toDict() for stream in streams]
+    else:
+        streams = session.query(DataStream).filter_by(inputs).all()
+        return [stream.toDict() for stream in streams]

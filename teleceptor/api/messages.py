@@ -44,7 +44,7 @@ Dependencies:
 
 # System Imports
 import cherrypy
-import time
+from time import time
 from sqlalchemy.orm.exc import NoResultFound
 try:
     import simplejson as json
@@ -118,7 +118,8 @@ class Messages:
             else:
                 if messages is not None:
                     logging.debug("Found message queue for sensor with id %s: %s", str(sensor_id), str(messages))
-                    data['message_queue'] = messages
+                    data['message_queue'] = {}
+                    data['message_queue']['messages'] = messages
                 else:
                     logging.error("Sensor with id %s does not have a message queue.", str(sensor_id))
                     status_code = "400"
@@ -269,18 +270,50 @@ class Messages:
         return json.dumps(return_data, indent=4)
 
 
-def getMessages(sensor_id):
+def getMessages(sensor_id, by_timestamp=False, unread_only=False):
     """
     Returns a list of all messages (read and not read) for the sensor with id `sensor_id`
     :param sensor_id: int
         The id of the sensor to get all messages for.
+    :param by_timestamp: boolean
+        Gets only messages that have not timed out (i.e. timeout for message is greater than current time) if True
+    :param unread_only: boolean
+        Gets only messages that are unread if True.
     :return: The list of messages for the sensor with id `sensor_id`, or None if sensor doesn't have a message queue.
     :raises NoResultFound: If sensor_id is None or no Sensor found with id `sensor_id`
     """
     with sessionScope() as session:
-        sensor = session.query(Sensor).filter_by(uuid=sensor_id).one()
-        msg_queue = sensor.message_queue
-        return msg_queue.to_dict() if msg_queue is not None else None
+        sensor_queue = session.query(MessageQueue).filter_by(sensor_id=sensor_id).one()
+        logging.info("Got sensor_queue.")
+        if unread_only:
+            if by_timestamp:
+                logging.info("Getting by timestamp and unread...")
+                messages = session.query(Message).filter(Message.message_queue_id==sensor_queue.id,
+                                                    Message.timeout >= time(),
+                                                    Message.read != True)
+            else:
+                messages = session.query(Message).filter(Message.message_queue_id==sensor_queue.id,
+                                                    Message.timeout >= 0,
+                                                    Message.read != True)
+        else:
+            if by_timestamp:
+                messages = session.query(Message).filter(Message.message_queue_id==sensor_queue.id,
+                                                    Message.timeout >= time())
+            else:
+                messages = session.query(Message).filter(Message.message_queue_id==sensor_queue.id,
+                                                    Message.timeout >= 0)
+        messages_view = []
+        if unread_only:
+            logging.info("Got messages: %s", str([msg.to_dict() for msg in messages]))
+            logging.info("Setting messages as read.")
+            for msg in messages:
+                msg.read = True
+                # if we don't directly append here, python decides to not include the messages in the list comprehension
+                messages_view.append(msg.to_dict())
+        else:
+            messages_view = [msg.to_dict() for msg in messages]
+
+    return messages_view
 
 def getAllMessages():
     """
@@ -318,6 +351,7 @@ def addMessage(sensor_id, message, duration):
                 msg_queue = sensor.message_queue
 
             msg = Message()
+            msg.read = False
             logging.debug("Sensor's type is %s", str(sensor.sensor_type))
 
             if not Messages.is_valid_type(message, sensor.sensor_type):
@@ -325,7 +359,7 @@ def addMessage(sensor_id, message, duration):
                 raise ValueError("Message type does not match sensor type")
 
             msg.message = json.dumps(message)
-            msg.timeout = time.time() + duration
+            msg.timeout = time() + duration
             logging.debug("Adding message to database: %s", str(msg.to_dict()))
             s.add(msg)
             s.commit()
@@ -334,7 +368,7 @@ def addMessage(sensor_id, message, duration):
             msg_queue.messages.append(msg)
             s.commit()
             logging.debug("Completed adding message.")
-
+            logging.info("Returning added message: %s", str(msg.to_dict()))
             return msg.to_dict()
 
 def deleteMessage(sensor_id, message_id):
