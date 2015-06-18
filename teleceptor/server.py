@@ -25,8 +25,9 @@ from teleceptor import WEBROOT,PORT, SUPRESS_SERVER_OUTPUT
 from teleceptor.auth import AuthController, require, member_of, name_is
 from teleceptor.pages import Root
 
-def runserver():
-    cherrypy.tree.mount(Root(), '/', config = {
+
+def get_cp_config():
+    config = {
         '/': {
              'tools.staticdir.on': True
             ,'tools.staticdir.dir': WEBROOT
@@ -36,7 +37,10 @@ def runserver():
         '/api': {
             'request.dispatch': cherrypy.dispatch.MethodDispatcher()
         }
-    })
+    }
+
+def runserver(config):
+    cherrypy.tree.mount(Root(), '/',config)
 
     if SUPRESS_SERVER_OUTPUT:
         cherrypy.config.update({ "environment": "embedded" })
@@ -47,4 +51,7 @@ def runserver():
     cherrypy.engine.block()
 
 if __name__ == "__main__":
-    runserver()
+    runserver(get_cp_config())
+else:
+    cherrypy.config.update({'environment': 'embedded'})
+    application = cherrypy.Application(Root(), script_name=None, config=get_cp_config())

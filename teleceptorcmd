@@ -41,7 +41,7 @@ def runserver(*args):
     Programming in the UNIX Environment" for details (ISBN 0201563177)
     http://www.erlenstar.demon.co.uk/unix/faq_2.html#SEC16
     """        
-    server.runserver()
+    server.runserver(server.get_cp_config())
 
 def btcmote(*args):
     btcmotecmd = os.path.join(teleceptor.__path__[0],'softSensors','BitcoinSensor','BTCMote.py')
