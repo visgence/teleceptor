@@ -38,7 +38,8 @@ def get_cp_config():
             'request.dispatch': cherrypy.dispatch.MethodDispatcher()
         }
     }
-
+    return config
+    
 def runserver(config):
     cherrypy.tree.mount(Root(), '/',config)
 
