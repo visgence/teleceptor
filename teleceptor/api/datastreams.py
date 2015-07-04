@@ -223,7 +223,7 @@ def clean_inputs(inputs):
         """
 
         validInputs = {
-            'sensor': '^\w+$'
+            'sensor': '^[a-zA-Z0-9_.]+$'
         }
 
         valueConversions = {
