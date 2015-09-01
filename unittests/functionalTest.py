@@ -27,6 +27,8 @@ class TestTeleceptor(AbstractTeleceptorTest):
         Assumes a sensor with uuid volts does exist.
         """
         r = requests.get(URL + "/api/sensors/volts")
+        print r.json()
+        print r.status_code
         self.assertTrue(r.status_code == requests.codes.ok)
         sensors = r.json()
         self.assertTrue('sensor' in sensors)
@@ -38,6 +40,7 @@ class TestTeleceptor(AbstractTeleceptorTest):
         r = requests.get(URL + "/api/sensors/1")
         self.assertFalse(r.status_code == requests.codes.ok)
         sensors = r.json()
+        print r.json()
         self.assertTrue('error' in sensors)
 
     def test04_sensor_put_correct_sensor_empty_data(self):

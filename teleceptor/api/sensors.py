@@ -408,31 +408,33 @@ def _updateSensor(sensor_id, data, session):
     blacklist = ("uuid","message")
     sensor = session.query(Sensor).filter_by(uuid=sensor_id).one()
     for key,value in data.iteritems():
+        logging.debug("Key: {}, Value: {}".format(key, value))
         if key in blacklist:
             logging.error("Request to updateSensor included blacklisted key %s", str(key))
             continue
-        if key == "last_calibration":
-            continue
+        if 'last_calibration' in key:
+            logging.debug("value: {} and type: {}".format(value, type(value)))
+            if type(value['coefficients']) is not type(str()):
+                    value['coefficients'] = json.dumps(value['coefficients'])
+
+            #if no timestamp, create timestamp
+            logging.debug("value: {}".format(value))
+            if 'timestamp' not in value or value['timestamp'] is None or value['timestamp'] == 0:
+
+                logging.debug("No timestamp provided. Using current time %s", str(time.time()))
+                value['timestamp'] = time.time()
+
+            sensor = Sensors.updateCalibration(sensor.toDict(), value['coefficients'], value['timestamp'], session)
+            #we want to keep using a Sensor, not the dict, so look it up
+            # TODO: This is pretty smelly, but should work for now. Maybe in the future we want updateCalibration and _updateCalibration return a Sensor, or find some other way to update it.
+            sensor = session.query(Sensor).filter_by(uuid=sensor_id).one()
+            logging.info("Back from updateCalibration. Sensor: {}".format(sensor))
         elif key in models.SENSORWHITELIST:
             setattr(sensor, key, value)
     session.add(sensor)
-    if 'last_calibration' in data:
-        if type(value['coefficients']) is not type(str()):
-                value['coefficients'] = json.dumps(value['coefficients'])
-
-        #if no timestamp, create timestamp
-        if 'timestamp' not in value or value['timestamp'] is None or value['timestamp'] == 0:
-
-            logging.debug("No timestamp provided. Using current time %s", str(time.time()))
-            value['timestamp'] = time.time()
-
-        sensor = Sensors.updateCalibration(sensor.toDict(), value['coefficients'], value['timestamp'], session)
-        logging.info("Back from updateCalibration. Sensor: %s", str(sensor))
-    else:
-        sensor = sensor.toDict()
 
     logging.debug("Finished updating sensor.")
-    return sensor
+    return sensor.toDict()
 
 def _updateCalibration(sensor, coefficients, timestamp, session):
     updateNeeded = False

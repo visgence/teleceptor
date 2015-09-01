@@ -75,6 +75,7 @@ def loadSensors(session):
 
     sensors = [Sensor(**sensor1), Sensor(**sensor2)]
     for sensor in sensors:
+        print "Adding sensor %s to db" % str(sensor.toDict())
         sensor.message_queue = MessageQueue(sensor_id=sensor.uuid)
     session.add_all(sensors)
 
