@@ -11,7 +11,7 @@ RUN apt-get -y install --no-install-recommends bash sudo cron vim git python2.7 
 #pip dependicies
 RUN pip install sqlalchemy cherrypy requests whisper pySerial jinja2
 
-RUN apt-get -y install vim && apt-get clean
+RUN apt-get -y install vim curl && apt-get clean
 #Install teleceptor software as teleceptor user
 RUN adduser --disabled-password --gecos "" teleceptor
 USER teleceptor
