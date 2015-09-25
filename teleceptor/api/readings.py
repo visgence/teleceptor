@@ -60,7 +60,13 @@ import logging
 from teleceptor import SQLDATA,SQLREADTIME, USE_DEBUG, USE_SQL_ALWAYS
 from teleceptor.models import SensorReading, DataStream
 from teleceptor.sessionManager import sessionScope
-from teleceptor.whisperUtils import getReadings, insertReading as whisperInsert
+from teleceptor import USE_ELASTICSEARCH
+if USE_ELASTICSEARCH:
+    from teleceptor.elasticsearchUtils import getReadings as esGetReadings
+    from teleceptor.elasticsearchUtils import insertReading as esInsert
+
+else:
+    from teleceptor.whisperUtils import getReadings, insertReading as whisperInsert
 
 
 class SensorReadings:
@@ -177,7 +183,7 @@ class SensorReadings:
 
                 del params[key]
 
-        if USE_SQL_ALWAYS or (SQLDATA and (int(end) - int(start) < SQLREADTIME)):
+        if USE_SQL_ALWAYS or (SQLDATA and (int(end) - int(start) < SQLREADTIME)) or USE_ELASTICSEARCH:
 
             logging.debug("Request time %s less than SQLREADTIME %s. Getting high-resolution data.", str((int(end) - int(start))), str(SQLREADTIME))
 
@@ -343,7 +349,10 @@ def _insertReadings(readings, session=None):
 
         try:
             logging.debug("Inserting into whisper database with streamId %s, rawVal %s, and timestamp %s", str(streamId), str(rawVal), str(timestamp))
-            whisperInsert(streamId, rawVal, timestamp)
+            if USE_ELASTICSEARCH:
+                esInsert(streamId, rawVal, timestamp)
+            else:
+                whisperInsert(streamId, rawVal, timestamp)
             if SQLDATA:
                 logging.debug("Creating new sensor reading in SQL database...")
                 new_reading = SensorReading()

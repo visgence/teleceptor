@@ -94,3 +94,16 @@ if "USE_SQL_ALWAYS" in conf:
     USE_SQL_ALWAYS = conf["USE_SQL_ALWAYS"]
 else:
     USE_SQL_ALWAYS = False
+
+#Use elasticserach instead of whisper
+if "USE_ELASTICSEARCH" in conf:
+    USE_ELASTICSEARCH = conf["USE_ELASTICSEARCH"]
+    if  USE_ELASTICSEARCH:
+        ELASTICSEARCH_URI = conf["ELASTICSEARCH_URI"]
+        ELASTICSEARCH_INDEX =  conf["ELASTICSEARCH_INDEX"]
+        ELASTICSEARCH_DOC = conf["ELASTICSEARCH_DOC"]
+else:
+    USE_ELASTICSEARCH = False
+
+
+

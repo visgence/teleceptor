@@ -18,12 +18,17 @@
 #! /usr/bin/env python
 
 from sessionManager import sessionScope
-import whisperUtils
 from models import *
 import sys
 import random
 from time import time
 from teleceptor.models import MessageQueue
+from teleceptor import USE_ELASTICSEARCH
+if USE_ELASTICSEARCH:
+    import elasticsearchUtils 
+else:
+    import whisperUtils
+
 
 def loadAdmin(session):
     kwargs = {
@@ -113,8 +118,9 @@ def loadDatastreams(session):
 
     streams = [DataStream(**datastream1), DataStream(**datastream2)]
     session.add_all(streams)
-    whisperUtils.createDs(1)
-    whisperUtils.createDs(2)
+    if not USE_ELASTICSEARCH:
+        whisperUtils.createDs(1)
+        whisperUtils.createDs(2)
 
 
 def loadReadings(session, range=None, interval=None):
@@ -148,8 +154,13 @@ def loadReadings(session, range=None, interval=None):
         }
 
         now -= 60
-        whisperUtils.insertReading('1', voltReading['value'], voltReading['timestamp'])
-        whisperUtils.insertReading('2', ampReading['value'], ampReading['timestamp'])
+        
+        if USE_ELASTICSEARCH:
+            elasticsearchUtils.insertReading('1', voltReading['value'], voltReading['timestamp'])
+            elasticsearchUtils.insertReading('2', ampReading['value'], ampReading['timestamp'])
+        else:
+            whisperUtils.insertReading('1', voltReading['value'], voltReading['timestamp'])
+            whisperUtils.insertReading('2', ampReading['value'], ampReading['timestamp'])
 
         volt = SensorReading(**voltReading)
         amp = SensorReading(**ampReading)

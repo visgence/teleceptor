@@ -72,7 +72,11 @@ import logging
 # Local Imports
 from teleceptor.models import DataStream
 from teleceptor.sessionManager import sessionScope
-from teleceptor import whisperUtils
+from teleceptor import USE_ELASTICSEARCH
+if USE_ELASTICSEARCH:
+    from teleceptor import elasticsearchUtils as esUtils
+else:
+    from teleceptor import whisperUtils
 from teleceptor import USE_DEBUG
 
 
@@ -208,9 +212,10 @@ class DataStreams:
             logging.debug("Creating datastream with options: %s", str(datastream.toDict()))
             session.add(datastream)
             session.commit()
-            logging.debug("Creating whisper database with id %s", str(datastream.id))
-            whisperUtils.createDs(datastream.id)
-            logging.debug("Done making datastream and whisper database.")
+            if not USE_ELASTICSEARCH:    
+                logging.debug("Creating whisper database with id %s", str(datastream.id))
+                whisperUtils.createDs(datastream.id)
+                logging.debug("Done making datastream and whisper database.")
         else:
             logging.error("Provided datastream to createDatastream method is None.")
 
