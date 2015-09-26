@@ -9,7 +9,7 @@ RUN apt-get update && apt-get -y upgrade && apt-get clean
 RUN apt-get -y install --no-install-recommends bash sudo cron vim git python2.7 python-pip sqlite3 ca-certificates  python-sqlite && apt-get clean
 
 #pip dependicies
-RUN pip install sqlalchemy cherrypy requests whisper pySerial jinja2
+RUN pip install sqlalchemy cherrypy requests whisper pySerial jinja2 pyelasticsearch
 
 RUN apt-get -y install vim curl && apt-get clean
 #Install teleceptor software as teleceptor user

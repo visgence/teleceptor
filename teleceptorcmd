@@ -23,6 +23,8 @@ import sys, os, glob, atexit
 import argparse
 import shutil
 import platform
+import json
+import requests
 from sqlalchemy import create_engine
 import teleceptor
 from  teleceptor import models
@@ -128,6 +130,12 @@ def setup(*args):
 
     print "Initializing database tables..."
     models.Base.metadata.create_all(db)
+
+    if teleceptor.USE_ELASTICSEARCH:
+        #TODO: Use index and doc from config
+        conf = json.load(open(os.path.join(teleceptor.PATH,'config','es_template.json')))
+        r= requests.put(teleceptor.ELASTICSEARCH_URI+'/_template/teleceptor',json=conf)
+        print r
     
     print "Run teleceptorcmd loadfixtures for example data"
 
