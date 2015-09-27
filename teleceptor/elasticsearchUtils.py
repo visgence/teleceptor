@@ -14,6 +14,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>
 """
+import json
 import sys
 import os
 import csv
@@ -58,7 +59,50 @@ def insertReading(ds,value,timestamp=None):
     insert_elastic([data])
 
 def getReadings(ds,start,end):
-    pass 
+    """
+    Get the readings from elastic search for datastream `ds` between dates `start` and `end`.
+
+    Args:
+        ds (int): The datastream id
+        start (float): The time in seconds since UNIX epoch to start the query from.
+        end (float): The time in seconds since UNIX epoch to end the query at.
+
+    Note:
+        We return data points at `start` and `end`. That is, this function is inclusive of the end points.
+
+    Returns:
+        list[(float,float)]: pairs of the form (timestamp, value) for all data in datastream `ds` between dates `start` and `end`.
+    """
+    query = {}
+
+    #first we will match on datastream
+    query['match'] = {'ds':ds}
+
+    #then we filter on dates starting with start and ending with end.
+    query['range'] = {'@timestamp': {'gte': start, 'lte': end}}
+
+    #TODO: Add aggregation option. Look into the Date Histogram Aggregation
+
+    query_string = json.loads(query)
+    return get_elastic(elastic_buffer=query_string)
+
+def get_elastic(elastic_buffer: str):
+    """
+    Make a query to elasticsearch with args in `elastic_buffer`
+
+    Args:
+        elastic_buffer (str): The query json to provide to elastic search.
+
+    Returns:
+        list[(float,float)]: pairs of the form (timestamp, value) for all data that matches the query in `elastic_buffer`
+    """
+
+    es = ElasticSearch(ELASTICSEARCH_URI)
+
+    # we actually use filter instead of query, since we want exact results
+    result = es.search(index=ELASTICSEARCH_INDEX, body={'filter': elastic_buffer, '_source': ['@timestamp', 'value']})
+
+    return [(hit['_source']['@timestamp'], hit['_source']['value']) for hit in result['hits']['hits']]
 
 #Generate a simple sine wave
 if __name__ == "__main__":
