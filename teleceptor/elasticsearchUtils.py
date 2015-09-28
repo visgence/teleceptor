@@ -22,7 +22,7 @@ import time
 import math
 import logging
 from datetime import datetime
-from pyelasticsearch import ElasticSearch
+from elasticsearch import Elasticsearch
 from teleceptor import ELASTICSEARCH_URI# = "http://192.168.99.100:9200/"
 from teleceptor import ELASTICSEARCH_INDEX# = 'teleceptor'
 from teleceptor import ELASTICSEARCH_DOC# = 'teledata'
@@ -36,7 +36,7 @@ else:
 
 def insert_elastic(elastic_buffer):
 
-    es = ElasticSearch(ELASTICSEARCH_URI)
+    es = Elasticsearch(ELASTICSEARCH_URI)
 
     docs = []
     for doc in elastic_buffer:
@@ -73,36 +73,51 @@ def getReadings(ds,start,end):
     Returns:
         list[(float,float)]: pairs of the form (timestamp, value) for all data in datastream `ds` between dates `start` and `end`.
     """
+    #need to scale incoming start and end, since elasticsearch keeps the timestamp in ms
+    start = str(int(start) * 1000)
+    end = str(int(end) * 1000)
+
     query = {}
 
     #first we will match on datastream
     query['match'] = {'ds':ds}
 
     #then we filter on dates starting with start and ending with end.
+    logging.info("Querying on timestamp range {} - {}".format(start, end))
     query['range'] = {'@timestamp': {'gte': start, 'lte': end}}
 
     #TODO: Add aggregation option. Look into the Date Histogram Aggregation
 
-    query_string = json.loads(query)
-    return get_elastic(elastic_buffer=query_string)
+    #TODO: Should we do some calculation for the aggregation time here, or have it passed in as a parameter?
 
-def get_elastic(elastic_buffer: str):
+    #query['aggs'] = {'values': {'date_histogram': {'field': '@timestamp', 'interval': '1m'}}}
+
+    final_query = {'filter': {'and': [
+        {key: query[key]} for key in query
+    ]}}
+    #final_query['aggs'] = {'values': {'date_histogram': {'field': '@timestamp', 'interval': '1m', 'min_doc_count': 1}}}
+    logging.debug("Built query: {}".format(final_query))
+    return get_elastic(elastic_buffer=final_query)
+
+
+def get_elastic(elastic_buffer):
     """
     Make a query to elasticsearch with args in `elastic_buffer`
 
     Args:
-        elastic_buffer (str): The query json to provide to elastic search.
+        elastic_buffer (dict): The query json to provide to elastic search.
 
     Returns:
         list[(float,float)]: pairs of the form (timestamp, value) for all data that matches the query in `elastic_buffer`
     """
 
-    es = ElasticSearch(ELASTICSEARCH_URI)
-
+    es = Elasticsearch(ELASTICSEARCH_URI)
     # we actually use filter instead of query, since we want exact results
-    result = es.search(index=ELASTICSEARCH_INDEX, body={'filter': elastic_buffer, '_source': ['@timestamp', 'value']})
+    result = es.search(body=elastic_buffer)#{'filter': elastic_buffer, '_source': ['@timestamp', 'value']})
 
-    return [(hit['_source']['@timestamp'], hit['_source']['value']) for hit in result['hits']['hits']]
+    logging.debug("Got elasticsearch results: {}".format(result))
+
+    return [(hit['_source']['@timestamp']/1000, hit['_source']['value']) for hit in result['hits']['hits']]
 
 #Generate a simple sine wave
 if __name__ == "__main__":

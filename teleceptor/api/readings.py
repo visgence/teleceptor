@@ -184,11 +184,14 @@ class SensorReadings:
                 del params[key]
 
         if USE_SQL_ALWAYS or (SQLDATA and (int(end) - int(start) < SQLREADTIME)) or USE_ELASTICSEARCH:
+            if USE_ELASTICSEARCH:
+                logging.debug('Getting Elasticsearch data.')
+                readings = esGetReadings(ds=uuid, start=start, end=end)
+            else:
+                logging.debug("Request time %s less than SQLREADTIME %s. Getting high-resolution data.", str((int(end) - int(start))), str(SQLREADTIME))
 
-            logging.debug("Request time %s less than SQLREADTIME %s. Getting high-resolution data.", str((int(end) - int(start))), str(SQLREADTIME))
-
-            readings = query.filter_by(**filterArgs).order_by('timestamp').all()
-            readings = [(reading.timestamp, reading.value) for reading in readings]
+                readings = query.filter_by(**filterArgs).order_by('timestamp').all()
+                readings = [(reading.timestamp, reading.value) for reading in readings]
         else:
             logging.debug("Getting low resolution data.")
             readings = getReadings(uuid, start, end)
