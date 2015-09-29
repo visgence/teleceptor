@@ -129,7 +129,7 @@ def loadReadings(session, range=None, interval=None):
         ,"week": 604800
     }
 
-    defaultRange = timeRanges['week']
+    defaultRange = timeRanges['day']
     now = time()
     lastWeek = now - defaultRange
     if range is not None and range in timeRanges:

@@ -22,7 +22,7 @@ import time
 import math
 import logging
 from datetime import datetime
-from elasticsearch import Elasticsearch
+from pyelasticsearch import ElasticSearch
 from teleceptor import ELASTICSEARCH_URI# = "http://192.168.99.100:9200/"
 from teleceptor import ELASTICSEARCH_INDEX# = 'teleceptor'
 from teleceptor import ELASTICSEARCH_DOC# = 'teledata'
@@ -36,7 +36,7 @@ else:
 
 def insert_elastic(elastic_buffer):
 
-    es = Elasticsearch(ELASTICSEARCH_URI)
+    es = ElasticSearch(ELASTICSEARCH_URI)
 
     docs = []
     for doc in elastic_buffer:
@@ -79,6 +79,10 @@ def getReadings(ds,start,end):
 
     query = {}
 
+    #Example kibana query: {"index":["teleceptor-2015.09.28","teleceptor-2015.09.29"],"search_type":"count","ignore_unavailable":True}
+    # {"size":0,"query":{"filtered":{"query":{"query_string":{"analyze_wildcard":true,"query":"ds:1"}},"filter":{"bool":{"must":[{"range":{"@timestamp":{"gte":1443407578481,"lte":1443493978481,"format":"epoch_millis"}}}],"must_not":[]}}}},"aggs":{"2":{"date_histogram":{"field":"@timestamp","interval":"1m","time_zone":"America/Denver","min_doc_count":1,"extended_bounds":{"min":1443407578481,"max":1443493978481}},"aggs":{"1":{"avg":{"field":"value"}}}}}}
+
+
     #first we will match on datastream
     query['match'] = {'ds':ds}
 
@@ -95,7 +99,21 @@ def getReadings(ds,start,end):
     final_query = {'filter': {'and': [
         {key: query[key]} for key in query
     ]}}
-    #final_query['aggs'] = {'values': {'date_histogram': {'field': '@timestamp', 'interval': '1m', 'min_doc_count': 1}}}
+    #final_query['sort'] = [{'@timestamp': {'order': 'asc'}}]
+    '''
+    final_query['aggs'] = {
+                           'values':
+                               {'date_histogram':
+                                    {'field': '@timestamp', 'interval': '1m', 'min_doc_count': 1},
+                                'aggs':
+                               {'avg_value':
+                                    {'avg':
+                                         {'field': 'value'}
+                                     }
+                                }
+                                }
+                           }
+    '''
     logging.debug("Built query: {}".format(final_query))
     return get_elastic(elastic_buffer=final_query)
 
@@ -110,12 +128,13 @@ def get_elastic(elastic_buffer):
     Returns:
         list[(float,float)]: pairs of the form (timestamp, value) for all data that matches the query in `elastic_buffer`
     """
+    #TODO: May want to pass in a list of indicies to search on
 
-    es = Elasticsearch(ELASTICSEARCH_URI)
+    es = ElasticSearch(ELASTICSEARCH_URI)
     # we actually use filter instead of query, since we want exact results
-    result = es.search(body=elastic_buffer)#{'filter': elastic_buffer, '_source': ['@timestamp', 'value']})
+    result = es.search(elastic_buffer)#{'filter': elastic_buffer, '_source': ['@timestamp', 'value']})
 
-    logging.debug("Got elasticsearch results: {}".format(result))
+    logging.info("Got elasticsearch results: {}".format(result))
 
     return [(hit['_source']['@timestamp']/1000, hit['_source']['value']) for hit in result['hits']['hits']]
 
