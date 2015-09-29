@@ -125,7 +125,7 @@ def loadDatastreams(session):
 
 def loadReadings(session, range=None, interval=None):
     timeRanges = {
-        '2hour': 2880,
+        '2hour': 7200,
         "day":  86400
         ,"week": 604800
     }
