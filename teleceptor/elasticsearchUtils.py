@@ -74,21 +74,44 @@ def getReadings(ds,start,end):
         list[(float,float)]: pairs of the form (timestamp, value) for all data in datastream `ds` between dates `start` and `end`.
     """
     #need to scale incoming start and end, since elasticsearch keeps the timestamp in ms
-    start = str(int(start) * 1000)
-    end = str(int(end) * 1000)
-
-    query = {}
+    start = int(start) * 1000
+    end = int(end) * 1000
 
     #Example kibana query: {"index":["teleceptor-2015.09.28","teleceptor-2015.09.29"],"search_type":"count","ignore_unavailable":True}
     # {"size":0,"query":{"filtered":{"query":{"query_string":{"analyze_wildcard":true,"query":"ds:1"}},"filter":{"bool":{"must":[{"range":{"@timestamp":{"gte":1443407578481,"lte":1443493978481,"format":"epoch_millis"}}}],"must_not":[]}}}},"aggs":{"2":{"date_histogram":{"field":"@timestamp","interval":"1m","time_zone":"America/Denver","min_doc_count":1,"extended_bounds":{"min":1443407578481,"max":1443493978481}},"aggs":{"1":{"avg":{"field":"value"}}}}}}
 
+    #index_query = {"search_type": "count", "ignore_unavailable": True}
+    index_query = None
+    query = {"size": 0, "query":
+        {"filtered":
+             {"query":
+                  {"query_string": {"analyze_wildcard": True, "query": "ds:{}".format(ds)}
+                   }, "filter":
+                 {"bool":
+                      {"must": [{"range":
+                                    {"@timestamp":
+                                         {"gte": start, "lte": end, "format": "epoch_millis"}
+                                     }
+                                }],"must_not":[]}
+                  }
+              }
+         }, "aggs":
+        {"2": {"date_histogram":
+                  {"field": "@timestamp", "interval": "1m", "min_doc_count": 1, "extended_bounds":
+                      {"min": start, "max": end}}, "aggs":
+            {"1": {"avg": {"field": "value"}
+                  }
+             }
+              }
+         }
+             }
 
     #first we will match on datastream
-    query['match'] = {'ds':ds}
+    #query['match'] = {'ds':ds}
 
     #then we filter on dates starting with start and ending with end.
-    logging.info("Querying on timestamp range {} - {}".format(start, end))
-    query['range'] = {'@timestamp': {'gte': start, 'lte': end}}
+    #logging.info("Querying on timestamp range {} - {}".format(start, end))
+    #query['range'] = {'@timestamp': {'gte': start, 'lte': end}}
 
     #TODO: Add aggregation option. Look into the Date Histogram Aggregation
 
@@ -96,9 +119,9 @@ def getReadings(ds,start,end):
 
     #query['aggs'] = {'values': {'date_histogram': {'field': '@timestamp', 'interval': '1m'}}}
 
-    final_query = {'filter': {'and': [
-        {key: query[key]} for key in query
-    ]}}
+    #final_query = {'filter': {'and': [
+        #{key: query[key]} for key in query
+    #]}}
     #final_query['sort'] = [{'@timestamp': {'order': 'asc'}}]
     '''
     final_query['aggs'] = {
@@ -114,11 +137,13 @@ def getReadings(ds,start,end):
                                 }
                            }
     '''
-    logging.debug("Built query: {}".format(final_query))
-    return get_elastic(elastic_buffer=final_query)
+    #logging.debug("Built query: {}".format(final_query))
+    #return get_elastic(elastic_buffer=final_query)
+    logging.debug("Built query: {}".format(query))
+    return get_elastic(elastic_buffer=query, index_info=index_query)
 
 
-def get_elastic(elastic_buffer):
+def get_elastic(elastic_buffer, index_info=None):
     """
     Make a query to elasticsearch with args in `elastic_buffer`
 
@@ -132,11 +157,11 @@ def get_elastic(elastic_buffer):
 
     es = ElasticSearch(ELASTICSEARCH_URI)
     # we actually use filter instead of query, since we want exact results
-    result = es.search(elastic_buffer)#{'filter': elastic_buffer, '_source': ['@timestamp', 'value']})
+    result = es.search(elastic_buffer, index=index_info)#{'filter': elastic_buffer, '_source': ['@timestamp', 'value']})
 
-    logging.info("Got elasticsearch results: {}".format(result))
+    logging.debug("Got elasticsearch results: {}".format(result))
 
-    return [(hit['_source']['@timestamp']/1000, hit['_source']['value']) for hit in result['hits']['hits']]
+    return [(bucket['key']/1000, bucket['1']['value']) for bucket in result['aggregations']['2']['buckets']]
 
 #Generate a simple sine wave
 if __name__ == "__main__":

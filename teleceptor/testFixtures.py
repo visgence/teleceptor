@@ -125,11 +125,12 @@ def loadDatastreams(session):
 
 def loadReadings(session, range=None, interval=None):
     timeRanges = {
+        '2hour': 2880,
         "day":  86400
         ,"week": 604800
     }
 
-    defaultRange = timeRanges['day']
+    defaultRange = timeRanges['2hour']
     now = time()
     lastWeek = now - defaultRange
     if range is not None and range in timeRanges:
