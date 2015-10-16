@@ -80,7 +80,8 @@ class SensorReadings:
     validFilterArgs = {
         'datastream': '^\d+$',
         'start':      '^\d+$',
-        'end':        '^\d+$'
+        'end':        '^\d+$',
+        'points':     '^\d+$'
     }
 
     validOperatorArgs = {
@@ -165,6 +166,7 @@ class SensorReadings:
         end = time()
         start = end - 25200
         uuid = '1'
+        points = None
 
         #Seperate out filter arguments first
         for key, value in paramsCopy.iteritems():
@@ -178,6 +180,8 @@ class SensorReadings:
                 elif key == "datastream":
                     uuid = value
                     filterArgs['datastream'] = value
+                elif key == "points":
+                    points = value
                 else:
                     filterArgs[key] = value
 
@@ -186,7 +190,7 @@ class SensorReadings:
         if USE_SQL_ALWAYS or (SQLDATA and (int(end) - int(start) < SQLREADTIME)) or USE_ELASTICSEARCH:
             if USE_ELASTICSEARCH:
                 logging.debug('Getting Elasticsearch data.')
-                readings = esGetReadings(ds=uuid, start=start, end=end)
+                readings = esGetReadings(ds=uuid, start=start, end=end, points=points)
             else:
                 logging.debug("Request time %s less than SQLREADTIME %s. Getting high-resolution data.", str((int(end) - int(start))), str(SQLREADTIME))
 

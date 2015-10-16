@@ -296,6 +296,9 @@ $(function($) {
         if (range.hasOwnProperty('end') && range['end'])
             url += "&end=" + range['end']
 
+        //points TEST. Remove after test.
+        //url += "&points=5"
+
         return url;
     };
 

@@ -58,7 +58,7 @@ def insertReading(ds,value,timestamp=None):
     data = {"@timestamp":int(timestamp*1000),"value":value,"ds":ds}
     insert_elastic([data])
 
-def getReadings(ds,start,end):
+def getReadings(ds,start,end,points=None):
     """
     Get the readings from elastic search for datastream `ds` between dates `start` and `end`.
 
@@ -66,16 +66,34 @@ def getReadings(ds,start,end):
         ds (int): The datastream id
         start (float): The time in seconds since UNIX epoch to start the query from.
         end (float): The time in seconds since UNIX epoch to end the query at.
+        points optional(int): The number of points to retrieve. This affects the level of aggregation when combined with the start and end times.
 
     Note:
         We return data points at `start` and `end`. That is, this function is inclusive of the end points.
 
+    Note:
+        If `points` is None, we use the default aggregation of 1 minute.
+
     Returns:
         list[(float,float)]: pairs of the form (timestamp, value) for all data in datastream `ds` between dates `start` and `end`.
     """
+    #calculate the aggregation period from the time frame and number of points
+    aggregation_period = 60
+
+    if points is not None:
+        #end-start gives us the total number of seconds, then we just divide by the number of points to get seconds/point
+        aggregation_period = (float(end)-float(start))/(int(points))
+
+    aggregation_string = "{}s".format(aggregation_period)
+
+    logging.info("Aggregating on every {}".format(aggregation_string))
+
+
     #need to scale incoming start and end, since elasticsearch keeps the timestamp in ms
     start = int(start) * 1000
     end = int(end) * 1000
+
+
 
     #Example kibana query: {"index":["teleceptor-2015.09.28","teleceptor-2015.09.29"],"search_type":"count","ignore_unavailable":True}
     # {"size":0,"query":{"filtered":{"query":{"query_string":{"analyze_wildcard":true,"query":"ds:1"}},"filter":{"bool":{"must":[{"range":{"@timestamp":{"gte":1443407578481,"lte":1443493978481,"format":"epoch_millis"}}}],"must_not":[]}}}},"aggs":{"2":{"date_histogram":{"field":"@timestamp","interval":"1m","time_zone":"America/Denver","min_doc_count":1,"extended_bounds":{"min":1443407578481,"max":1443493978481}},"aggs":{"1":{"avg":{"field":"value"}}}}}}
@@ -97,7 +115,7 @@ def getReadings(ds,start,end):
               }
          }, "aggs":
         {"2": {"date_histogram":
-                  {"field": "@timestamp", "interval": "1m", "min_doc_count": 1, "extended_bounds":
+                  {"field": "@timestamp", "interval": aggregation_string,  "min_doc_count": 1, "extended_bounds":
                       {"min": start, "max": end}}, "aggs":
             {"1": {"avg": {"field": "value"}
                   }
