@@ -283,7 +283,11 @@ def getMessages(sensor_id, by_timestamp=False, unread_only=False):
     :raises NoResultFound: If sensor_id is None or no Sensor found with id `sensor_id`
     """
     with sessionScope() as session:
-        sensor_queue = session.query(MessageQueue).filter_by(sensor_id=sensor_id).one()
+        try:
+            sensor_queue = session.query(MessageQueue).filter_by(sensor_id=sensor_id).one()
+        except NoResultFound:
+            logging.info("Sensor %s has no message queue." % str(sensor_id))
+            return None
         logging.info("Got sensor_queue.")
         if unread_only:
             if by_timestamp:
