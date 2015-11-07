@@ -27,6 +27,7 @@ from teleceptor import ELASTICSEARCH_URI# = "http://192.168.99.100:9200/"
 from teleceptor import ELASTICSEARCH_INDEX# = 'teleceptor'
 from teleceptor import ELASTICSEARCH_DOC# = 'teledata'
 from teleceptor import USE_DEBUG
+from teleceptor.timeAggregationUtils import getElasticSearchAggregationLevel
 
 if USE_DEBUG:
     logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s',level=logging.DEBUG)
@@ -77,14 +78,7 @@ def getReadings(ds,start,end,points=None):
     Returns:
         list[(float,float)]: pairs of the form (timestamp, value) for all data in datastream `ds` between dates `start` and `end`.
     """
-    #calculate the aggregation period from the time frame and number of points
-    aggregation_period = 60
-
-    if points is not None:
-        #end-start gives us the total number of seconds, then we just divide by the number of points to get seconds/point
-        aggregation_period = (float(end)-float(start))/(int(points))
-
-    aggregation_string = "{}s".format(aggregation_period)
+    aggregation_string = getElasticSearchAggregationLevel(int(start), int(end))
 
     logging.info("Aggregating on every {}".format(aggregation_string))
 

@@ -20,7 +20,7 @@ aggregation_levels = {(0, 120): 1,
  """
 
 
-def getAggregationLevel(start: int, end: int):
+def getAggregationLevel(start, end):
     """
     Get the appropriate aggregation level for the time period `start` - `end`.
 
@@ -41,7 +41,7 @@ def getAggregationLevel(start: int, end: int):
     raise LookupError("Period {} is out of aggregation range.".format(period))
 
 
-def getElasticSearchAggregationLevel(start: int, end: int):
+def getElasticSearchAggregationLevel(start, end):
     """
     Get the appropriate aggregation level for the time period `start` - `end`, in EalsticSearch format.
 
