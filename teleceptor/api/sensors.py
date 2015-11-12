@@ -400,7 +400,7 @@ def getAllSensors():
     """
     logging.debug("Getting all sensors.")
     with sessionScope() as session:
-        sensors = session.query(Sensor).all()
+        sensors = session.query(Sensor).order_by(Sensor.name).all()
         return [s.toDict() for s in sensors]
 
 
