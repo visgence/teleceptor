@@ -1,1 +1,2 @@
-docker build -t teleceptor .
+#!/bin/bash
+docker build -t teleceptor/app --rm .

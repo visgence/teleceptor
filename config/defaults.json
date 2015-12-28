@@ -1,5 +1,11 @@
 {
     "DBFILE": "database/base_station.db",
+    "USEPG": true,
+    "PGSQLDBHOST": "pg",
+    "PGSQLDBNAME": "tele",
+    "PGSQLDBUSERNAME": "tele",
+    "PGSQLDBPORT": 5432,
+    "PASSWORD": "password",
     "WHISPER_DATA": "whisperData",
     "WHISPER_ARCHIVES": ["60:1440", "15m:14d", "6h:1y"],
     "SQLDATA": true,
