@@ -62,7 +62,7 @@ else:
 if "USEPG" in conf:
     USEPG = conf["USEPG"]
 else:
-    USEPG = True
+    USEPG = False
 
 if "PGSQLDBHOST" in conf:
     PGSQLDBHOST = conf['PGSQLDBHOST']
