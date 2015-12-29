@@ -26,6 +26,15 @@ import platform
 import json
 import requests
 from sqlalchemy import create_engine
+from sqlalchemy.engine.url import URL
+from sqlalchemy.engine import reflection
+from sqlalchemy.schema import (
+    MetaData,
+    Table,
+    DropTable,
+    ForeignKeyConstraint,
+    DropConstraint,
+)
 import teleceptor
 from  teleceptor import models
 from  teleceptor import testFixtures
@@ -42,7 +51,7 @@ def runserver(*args):
     do the UNIX double-fork magic, see Stevens' "Advanced
     Programming in the UNIX Environment" for details (ISBN 0201563177)
     http://www.erlenstar.demon.co.uk/unix/faq_2.html#SEC16
-    """        
+    """
     server.runserver(server.get_cp_config())
 
 def btcmote(*args):
@@ -65,24 +74,25 @@ def copyConfig(*args):
         appdata = os.path.join(os.getenv("APPDATA"),"teleceptor")
     else:
         appdata = os.path.join(os.getenv("HOME"),".config","teleceptor")
-    
+
     #Check if file exists
     if os.path.exists(os.path.join(appdata,'config.json')):
         print "Config Exists at: " + str(os.path.join(appdata,'config.json'))
         return
-    
+
     if not os.path.exists(appdata):
         os.makedirs(appdata)
-    
+
     fromfile = os.path.join(teleceptor.PATH,'config',"defaults.json")
     tofile = os.path.join(appdata,"config.json")
     shutil.copy2(fromfile,tofile)
-    
+
     print "Config installed at:" + str(tofile)
-    
+
 
 def displayVersion(*args):
     print "teleceptor Version: " + teleceptor.__version__
+
 
 def rebuild(*args):
 
@@ -99,34 +109,106 @@ def rebuild(*args):
 
     assert user_resp == 'Y', 'Something Bad Happened!'
 
-    print "Deleting base_station.db..."
+    if teleceptor.USEPG:
+        rebuild_postgres()
+    else:
+        rebuild_sqlite()
+
+    print "Runing setup."
+    setup()
+
+
+def rebuild_sqlite():
+    """
+    Handles rebuilding sqlite db.
+    """
+    print("Deleting " + str(teleceptor.DBFILE) + " ...")
     try:
         os.remove(teleceptor.DBFILE)
         print teleceptor.DBFILE + " deleted."
     except OSError:
         print('base_station.db does not exist.  Creating new db.')
-        
-    print "Deleting whisper files"
-    for g in glob.glob(os.path.join(teleceptor.WHISPER_DATA,"*.wsp")):
-        try:
-            os.remove(g)
-            print g + " deleted."
-        except:
-            print "Could not delete " + g
-            
 
-    print "Runing setup."
-    setup()
+
+def rebuild_postgres():
+    """
+    Handles rebuilding postgres db. Drops all tables in the postgres db.
+
+    The following receipe is taken from Atlassian for dropping all tables even if there are cyclical dependencies.
+    See https://bitbucket.org/zzzeek/sqlalchemy/wiki/UsageRecipes/DropEverything
+    """
+
+    #Get a connection to the postgres db
+    dboptions = {}
+    dboptions['drivername'] = 'postgres'
+    dboptions['host'] = teleceptor.PGSQLDBHOST
+    dboptions['port'] = teleceptor.PGSQLDBPORT
+    dboptions['username'] = teleceptor.PGSQLDBUSERNAME
+    dboptions['password'] = teleceptor.PASSWORD
+    dboptions['database'] = teleceptor.PGSQLDBNAME
+    dbURL = URL(**dboptions)
+    engine = create_engine(dbURL)
+
+    print("Dropping all tables from " + str(dbURL) + " ...")
+
+    conn = engine.connect()
+
+    # the transaction only applies if the DB supports
+    # transactional DDL, i.e. Postgresql, MS SQL Server
+    trans = conn.begin()
+
+    inspector = reflection.Inspector.from_engine(engine)
+
+    # gather all data first before dropping anything.
+    # some DBs lock after things have been dropped in
+    # a transaction.
+
+    metadata = MetaData()
+
+    tbs = []
+    all_fks = []
+
+    for table_name in inspector.get_table_names():
+        fks = []
+        for fk in inspector.get_foreign_keys(table_name):
+            if not fk['name']:
+                continue
+            fks.append(
+                ForeignKeyConstraint((), (), name=fk['name'])
+            )
+        t = Table(table_name, metadata, *fks)
+        tbs.append(t)
+        all_fks.extend(fks)
+
+    for fkc in all_fks:
+        conn.execute(DropConstraint(fkc))
+
+    for table in tbs:
+        conn.execute(DropTable(table))
+
+    trans.commit()
+    print("Done dropping tables for " + str(dbURL))
+
 
 def setup(*args):
+    if not teleceptor.USEPG:
+        print "Creating new base_station.db file..."
+        if not os.path.exists(os.path.dirname(teleceptor.DBFILE)):
+            os.makedirs(os.path.dirname(teleceptor.DBFILE))
+        open(teleceptor.DBFILE, 'a').close()
+        print teleceptor.DBFILE + " created."
+        dbURL = 'sqlite:///' + teleceptor.DBFILE
+    else:
+        dboptions = {}
+        dboptions['drivername'] = 'postgres'
+        dboptions['host'] = teleceptor.PGSQLDBHOST
+        dboptions['port'] = teleceptor.PGSQLDBPORT
+        dboptions['username'] = teleceptor.PGSQLDBUSERNAME
+        dboptions['password'] = teleceptor.PASSWORD
+        dboptions['database'] = teleceptor.PGSQLDBNAME
+        dbURL = URL(**dboptions)
 
-    print "Creating new base_station.db file..."
-    if not os.path.exists(os.path.dirname(teleceptor.DBFILE)):
-        os.makedirs(os.path.dirname(teleceptor.DBFILE))
-    open(teleceptor.DBFILE, 'a').close()
-    print teleceptor.DBFILE + " created."
-
-    db = create_engine('sqlite:///' + teleceptor.DBFILE)
+    db = create_engine(dbURL)
 
     print "Initializing database tables..."
     models.Base.metadata.create_all(db)
@@ -136,7 +218,7 @@ def setup(*args):
         conf = json.load(open(os.path.join(teleceptor.PATH,'config','es_template.json')))
         r= requests.put(teleceptor.ELASTICSEARCH_URI+'/_template/teleceptor',json=conf)
         print r
-    
+
     print "Run teleceptorcmd loadfixtures for example data"
 
 def loadfixtures(*args):
@@ -160,7 +242,7 @@ if __name__ == "__main__":
 
     args = sys.argv
     if len(args) > 1 and args[1].lower() in cmds:
-        
+
         if len(args) > 2 and args[2] == "-d":
             print "Starting process %s as daemon..." % args[1].lower()
             pidfilename = "/tmp/teleceptor-" + args[1].lower() + '.pid'
@@ -190,7 +272,7 @@ if __name__ == "__main__":
 
             print "pid: %s" % os.getpid()
             # redirect standard file descriptors
-            
+
             sys.stdout.flush()
             sys.stderr.flush()
             si = file(Stdin, 'r')
@@ -199,7 +281,7 @@ if __name__ == "__main__":
             os.dup2(si.fileno(), sys.stdin.fileno())
             os.dup2(so.fileno(), sys.stdout.fileno())
             os.dup2(se.fileno(), sys.stderr.fileno())
-            
+
 
             # write pidfile
             atexit.register(delpid)
@@ -214,5 +296,5 @@ if __name__ == "__main__":
         print "Commands Are:"
         for c in sorted(cmds):
             print "    %s : %s" % (c,cmds[c][1])
-        
-        
+
+

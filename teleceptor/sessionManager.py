@@ -41,7 +41,6 @@ def sessionScope():
     """Provide a transactional scope around a series of operations."""
 
     db = create_engine(engine)
-    models.Base.metadata.create_all(db, checkfirst=True)
     Session = sessionmaker(bind=db)
     session = Session()
 

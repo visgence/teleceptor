@@ -28,6 +28,7 @@ docker run -t -i -P \
     --rm=true \
     --name $CONTAINERNAME \
     --link tele_postgres:pg \
+    --link tele_es:elasticsearch \
     -e TELEUID=$TELEUID \
     -e TELEGID="$TELEGID" \
     -e TELEOSTYPE=$OSTYPE \

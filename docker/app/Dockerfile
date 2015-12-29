@@ -3,7 +3,6 @@ FROM debian:wheezy
 
 # Environment variables
 ENV DEBIAN_FRONTEND noninteractive
-RUN echo "hi"
 #Base Debian Install
 RUN apt-get update && apt-get -y upgrade && apt-get clean
 RUN apt-get -y install --no-install-recommends bash sudo cron vim git python2.7 python-pip sqlite3 ca-certificates  python-sqlite && apt-get clean
