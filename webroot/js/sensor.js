@@ -92,6 +92,17 @@
             this.post_value(parseFloat(this.new_data_value()));
         };
 
+
+
+        this.exportData = function(){
+            //Use jQuery to get graph script's variables
+            console.log($(SensorsIndex));
+            console.log($(graph));
+            var start_time = $(document).graph.rangeStart();
+            var end_time = $(document).graph.rangeEnd();
+            this.export_data(start_time, end_time);
+        };
+
         this.post_value.subscribe(function (newValue){
             var id = __this.uuid();
             if (!id || !__this.validate())

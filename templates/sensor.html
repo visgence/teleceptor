@@ -4,6 +4,7 @@
 	<li class="tab" data-tab="sensor-metadata"><a href="#">Metadata</a></li>
 	<li class="tab" data-tab="sensor-command"><a href="#">Command</a></li>
 	<li class="tab" data-tab="post-data"><a href="#">Manual Entry</a></li>
+	<li class="tab" data-tab="export-data"><a href="#">Export</a></li>
 </ul>
 
 <div id="sensor-config" data-bind="with: activeSensor">
@@ -141,7 +142,7 @@
 
 
 	</div>
-	
+
 
 <div id="post-data" class="hidden" data-bind="with: activeSensor">
 		<!-- ko if: updateError -->
@@ -166,3 +167,32 @@
 
 </div>
 
+<div id="export-data" class="hidden" data-bind="with: activeSensor">
+		<!-- ko if: updateError -->
+		<div class="alert alert-danger" data-bind="text: updateError"></div>
+		<!-- /ko -->
+		<form class="form-horizontal" role="form">
+			<div class="form-group form-group-sm">
+				<label class="col-md-2 data-label">Source</label>
+			</div>
+			<div class="form-group form-group-sm" data-bind="with: $root.graph">
+				<div class="col-md-2"> <!-- dropdown -->
+					<div class="dropdown">
+						<button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">
+						<span data-bind="text: exportSource"></span><span> </span><span class="caret"></span></button>
+						<ul id="sourceDropdown" class="dropdown-menu">
+							<li><a href="#">SQL</a></li>
+							<li><a href="#">ElasticSearch</a></li>
+						</ul>
+					</div>
+				</div>
+				<div class="col-md-2">
+					<button type="button" class="btn btn-primary btn-sm" data-bind="click: function(data, event) { export_data($parent.name(), 'SQL', data, event) }">
+						<span class="glyphicon glyphicon-send"></span> Send
+					</button>
+				</div>
+			</div>
+		</form>
+</div>
+
+<iframe id="download_iframe" style="display:none;"></iframe>
