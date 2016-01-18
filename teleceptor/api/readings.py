@@ -81,7 +81,8 @@ class SensorReadings:
         'datastream': '^\d+$',
         'start':      '^\d+$',
         'end':        '^\d+$',
-        'points':     '^\d+$'
+        'points':     '^\d+$',
+        'source':    '^SQL|ElasticSearch$'
     }
 
     validOperatorArgs = {
@@ -167,6 +168,7 @@ class SensorReadings:
         start = end - 25200
         uuid = '1'
         points = None
+        source = None
 
         #Seperate out filter arguments first
         for key, value in paramsCopy.iteritems():
@@ -182,15 +184,22 @@ class SensorReadings:
                     filterArgs['datastream'] = value
                 elif key == "points":
                     points = value
+                elif key == "source":
+                    source = value
                 else:
                     filterArgs[key] = value
 
                 del params[key]
 
-        if USE_SQL_ALWAYS or (SQLDATA and (int(end) - int(start) < SQLREADTIME)) or USE_ELASTICSEARCH:
-            if USE_ELASTICSEARCH:
+        if USE_SQL_ALWAYS or (SQLDATA and (int(end) - int(start) < SQLREADTIME)) or USE_ELASTICSEARCH or source is not None:
+            if USE_ELASTICSEARCH or source == "ElasticSearch":
                 logging.debug('Getting Elasticsearch data.')
                 readings = esGetReadings(ds=uuid, start=start, end=end, points=points)
+            elif source == "SQL":
+                logging.debug("Getting SQL high-resolution data.")
+
+                readings = query.filter_by(**filterArgs).order_by('timestamp').all()
+                readings = [(reading.timestamp, reading.value) for reading in readings]
             else:
                 logging.debug("Request time %s less than SQLREADTIME %s. Getting high-resolution data.", str((int(end) - int(start))), str(SQLREADTIME))
 
@@ -221,6 +230,7 @@ class SensorReadings:
 
                 Filter Arguments:
                 'stream' (Numeric) - id of DataStream
+                'source' (String) - one of SQL or ElasticSearch. Selects data source to pull from (overrides any server-side source selection)
 
                 Operator Arguments:
                 'condense' (String)  - If value is 'true' then the readings returned will
