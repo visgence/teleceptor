@@ -15,6 +15,8 @@ Return:
 import argparse
 import requests
 import logging
+import time
+import json
 
 logger = logging.getLogger(__name__)
 
@@ -43,7 +45,7 @@ def run_check(datastream_id, teleceptorURI, useSQL, minutes):
     request_data = {'stream': datastream_id, 'start': time.time() - int(round(minutes * 60))}
 
     try:
-        response = request.get(request_url, data=json.dumps(request_data))
+        response = requests.get(request_url, data=json.dumps(request_data))
         print(response)
     except:
         logger.exception("Got an exception during request.")
