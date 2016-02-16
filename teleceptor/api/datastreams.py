@@ -263,38 +263,37 @@ class DataStreams:
         else:
             logging.error("Provided datastream to createDatastream method is None.")
 
-    @staticmethod
-    def deleteDatastream(session, datastream_id):
-        """ Deletes a datastream with the given `datastream_id`
+def deleteDatastream(session, datastream_id):
+    """ Deletes a datastream with the given `datastream_id`
 
-        Parameters
-        ----------
-        session : context object from `sessionScope()`
-            Existing context into a sqlalchemy database session. Can be created by a call to `sessionScope()`
-        datastream_id : int
-            id of the datastream to delete.
+    Parameters
+    ----------
+    session : context object from `sessionScope()`
+        Existing context into a sqlalchemy database session. Can be created by a call to `sessionScope()`
+    datastream_id : int
+        id of the datastream to delete.
 
-        Returns
-        -------
-        The dictionary representation of the datastream that was deleted if successful; otherwise None.
+    Returns
+    -------
+    The dictionary representation of the datastream that was deleted if successful; otherwise None.
 
-        See Also
-        --------
-        `models.DataStream`
-        `datastreams.DELETE`
-        """
+    See Also
+    --------
+    `models.DataStream`
+    `datastreams.DELETE`
+    """
 
-        try:
-            stream = session.query(DataStream).filter_by(id=datastream_id).one()
-        except NoResultFound:
-            logging.error("Requested datastream {} does not exist.".format(datastream_id))
-        else:
-            logging.debug("Deleting datastream...")
-            stream_dict = steam.toDict()
-            session.delete(stream)
-            session.commit()
-            return stream_dict
-        return None
+    try:
+        stream = session.query(DataStream).filter_by(id=datastream_id).one()
+    except NoResultFound:
+        logging.error("Requested datastream {} does not exist.".format(datastream_id))
+    else:
+        logging.debug("Deleting datastream...")
+        stream_dict = steam.toDict()
+        session.delete(stream)
+        session.commit()
+        return stream_dict
+    return None
 
 def clean_inputs(inputs):
         """
