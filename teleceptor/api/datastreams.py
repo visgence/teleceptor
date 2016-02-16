@@ -219,6 +219,50 @@ class DataStreams:
         logging.error("PUT request to datastreams. This API end point is not implemented.")
         pass
 
+    def DELETE(self, stream_id):
+        """
+        Deletes the DataStream with id `stream_id`.
+
+        This function cannot be undone, but the stream may be created again
+        in a separate transaction.
+
+        Parameters
+        ----------
+        stream_id : int
+            The id of a DataStream
+
+        Returns
+        -------
+        A JSON object with an 'error' key if an error occured or 'datastream' key if update succeeded. If 'error', the value is an error string. If 'datastream', the value is a JSON object representing the deleted DataStream in the database.
+
+        See Also
+        --------
+        `models.DataStream`
+        """
+        logging.info("DELETE request to datastreams for stream with id {}".format(stream_id))
+
+        cherrypy.response.headers['Content-Type'] = 'application/json'
+        data = {}
+
+        statusCode = "200"
+
+        with sessionScope() as s:
+            try:
+                deletedStream = DataStream.deleteDatastream(s, stream_id)
+
+                if deletedStream is None:
+                    data['error'] = "Datastream with id {} could not be deleted.".format(stream_id)
+                    statusCode = "400"
+                else:
+                    data['datastream'] = deletedStream
+            except Exception as e:
+                logging.exception("Unexpected error while deleting datastream {}".format(stream_id))
+                data['error'] = "Unexpected error occurred while deleting datastream {}: {}".format(stream_id, e)
+        cherrypy.response.status = statusCode
+        logging.info("Finished DELETE request to datastreams.")
+        return json.dumps(data, indent=4)
+
+
     #expects datastream to be a DataStream() from model
     @staticmethod
     def createDatastream(session, datastream=None):
@@ -247,4 +291,36 @@ class DataStreams:
         else:
             logging.error("Provided datastream to createDatastream method is None.")
 
+    @staticmethod
+    def deleteDatastream(session, datastream_id):
+        """ Deletes a datastream with the given `datastream_id`
+
+        Parameters
+        ----------
+        session : context object from `sessionScope()`
+            Existing context into a sqlalchemy database session. Can be created by a call to `sessionScope()`
+        datastream_id : int
+            id of the datastream to delete.
+
+        Returns
+        -------
+        The dictionary representation of the datastream that was deleted if successful; otherwise None.
+
+        See Also
+        --------
+        `models.DataStream`
+        `datastreams.DELETE`
+        """
+
+        try:
+            stream = session.query(DataStream).filter_by(id=datastream_id).one()
+        except NoResultFound:
+            logging.error("Requested datastream {} does not exist.".format(datastream_id))
+        else:
+            logging.debug("Deleting datastream...")
+            stream_dict = steam.toDict()
+            session.delete(stream)
+            session.commit()
+            return stream_dict
+        return None
 
