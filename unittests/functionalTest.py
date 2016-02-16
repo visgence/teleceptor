@@ -27,6 +27,8 @@ class TestTeleceptor(AbstractTeleceptorTest):
         Assumes a sensor with uuid volts does exist.
         """
         r = requests.get(URL + "/api/sensors/volts")
+        print r.json()
+        print r.status_code
         self.assertTrue(r.status_code == requests.codes.ok)
         sensors = r.json()
         self.assertTrue('sensor' in sensors)
@@ -38,6 +40,7 @@ class TestTeleceptor(AbstractTeleceptorTest):
         r = requests.get(URL + "/api/sensors/1")
         self.assertFalse(r.status_code == requests.codes.ok)
         sensors = r.json()
+        print r.json()
         self.assertTrue('error' in sensors)
 
     def test04_sensor_put_correct_sensor_empty_data(self):
@@ -171,10 +174,12 @@ class TestTeleceptor(AbstractTeleceptorTest):
         self.assertTrue('newValues' in data)
 
     def test13_station_post_has_messages(self):
-        r = requests.post(URL + "api/messages/volts", data=json.dumps({"message": True, "duration": 30000}))
+        r = requests.post(URL + "api/messages/volts", data=json.dumps({"message": 1.0, "duration": 30000}))
 
         self.assertTrue(r.status_code == requests.codes.ok)
         self.assertTrue('error' not in r.json())
+
+        print "Posted message for volts."
 
         caltime = time.time()
         examplevalue = 22
@@ -185,7 +190,7 @@ class TestTeleceptor(AbstractTeleceptorTest):
         r = requests.post(URL + "/api/station", data=json.dumps(jsonExample))
         self.assertTrue(r.status_code == requests.codes.ok)
         data = r.json()
-
+        print "Test 13 reponse data: %s" % str(data)
         self.assertFalse('error' in data)
         self.assertTrue('info' in data)
         self.assertTrue(len(data['info']) > 0)
@@ -265,7 +270,7 @@ class TestTeleceptor(AbstractTeleceptorTest):
         self.assertTrue('info' in data)
         self.assertTrue(len(data['info']) > 0)
 
-        self.assertTrue('1' == json.loads(data['info'][0])['uuid'])
+        self.assertTrue('1' == data['info'][0]['uuid'])
 
         #check that the number of sensors has increased
         r = requests.get(URL + "/api/sensors")
@@ -305,11 +310,14 @@ class TestTeleceptor(AbstractTeleceptorTest):
         self.assertTrue(r.status_code == requests.codes.ok)
         data = r.json()
 
+        print "Test 18 response data %s" % str(data)
+        print "data['info'][0]['last_calibration']: %s" % str(data['info'][0]['last_calibration'])
+
         self.assertFalse('error' in data)
         self.assertTrue('info' in data)
         self.assertTrue(len(data['info']) > 0)
 
-        self.assertTrue(json.loads(data['info'][0])['last_calibration']['coefficients'] == newCalibration)
+        self.assertTrue(data['info'][0]['last_calibration']['coefficients'] == newCalibration)
 
 
     """
@@ -413,10 +421,11 @@ class TestTeleceptor(AbstractTeleceptorTest):
         self.assertTrue('readings' in data)
         self.assertTrue(len(data['readings']) > 0)
 
-        #test that every reading only has two integer elements
+        #test that every reading only has two elements. 
+        #First element is either int or float, second is always float.
         for reading in data['readings']:
             self.assertTrue(len(reading) == 2)
-            self.assertTrue(isinstance(reading[0],int))
+            self.assertTrue(isinstance(reading[0],int) or isinstance(reading[0],float))
             self.assertTrue(isinstance(reading[1],float))
 
 

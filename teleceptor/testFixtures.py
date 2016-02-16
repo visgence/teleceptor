@@ -18,12 +18,17 @@
 #! /usr/bin/env python
 
 from sessionManager import sessionScope
-import whisperUtils
 from models import *
 import sys
 import random
 from time import time
 from teleceptor.models import MessageQueue
+from teleceptor import USE_ELASTICSEARCH
+if USE_ELASTICSEARCH:
+    import elasticsearchUtils 
+else:
+    import whisperUtils
+
 
 def loadAdmin(session):
     kwargs = {
@@ -75,6 +80,7 @@ def loadSensors(session):
 
     sensors = [Sensor(**sensor1), Sensor(**sensor2)]
     for sensor in sensors:
+        print "Adding sensor %s to db" % str(sensor.toDict())
         sensor.message_queue = MessageQueue(sensor_id=sensor.uuid)
     session.add_all(sensors)
 
@@ -112,17 +118,19 @@ def loadDatastreams(session):
 
     streams = [DataStream(**datastream1), DataStream(**datastream2)]
     session.add_all(streams)
-    whisperUtils.createDs(1)
-    whisperUtils.createDs(2)
+    if not USE_ELASTICSEARCH:
+        whisperUtils.createDs(1)
+        whisperUtils.createDs(2)
 
 
 def loadReadings(session, range=None, interval=None):
     timeRanges = {
+        '2hour': 7200,
         "day":  86400
         ,"week": 604800
     }
 
-    defaultRange = timeRanges['week']
+    defaultRange = timeRanges['2hour']
     now = time()
     lastWeek = now - defaultRange
     if range is not None and range in timeRanges:
@@ -147,8 +155,13 @@ def loadReadings(session, range=None, interval=None):
         }
 
         now -= 60
-        whisperUtils.insertReading('1', voltReading['value'], voltReading['timestamp'])
-        whisperUtils.insertReading('2', ampReading['value'], ampReading['timestamp'])
+        
+        if USE_ELASTICSEARCH:
+            elasticsearchUtils.insertReading('1', voltReading['value'], voltReading['timestamp'])
+            elasticsearchUtils.insertReading('2', ampReading['value'], ampReading['timestamp'])
+        else:
+            whisperUtils.insertReading('1', voltReading['value'], voltReading['timestamp'])
+            whisperUtils.insertReading('2', ampReading['value'], ampReading['timestamp'])
 
         volt = SensorReading(**voltReading)
         amp = SensorReading(**ampReading)

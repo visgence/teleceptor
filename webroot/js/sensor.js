@@ -19,6 +19,7 @@
     Sensor = function(vars) {
         var __this = this;
         var __datacache = {};
+        var __firstrun = true;
 
         this.uuid             = ko.observable();
         this.sensor_type      = ko.observable();
@@ -30,12 +31,15 @@
         this.meta_data        = ko.observable();
         this.isInput = ko.observable();
         this.temp_command_value = ko.observable()
+        this.new_data_value = ko.observable()
 
         this.coefficients = ko.observable(); //used to buffer between this.last_calibration.coefficients and view's JSON
 
         this.editing = ko.observable(false);
 
         this.command_value = ko.observable(true); //value to command this sensor to.
+
+        this.post_value = ko.observable();
 
 
 
@@ -49,6 +53,11 @@
         this.commandSuccessCb = function(resp){
             __this.rebuild(resp.sensor);
             __this.editing(false);
+            __this.updateError(null);
+        }
+
+        this.sendSuccessCb = function(resp){
+            __this.rebuild(resp.sensor);
             __this.updateError(null);
         }
 
@@ -79,7 +88,50 @@
             this.command_value(parseFloat(this.temp_command_value()));
         };
 
+        this.sendData = function(){
+            this.post_value(parseFloat(this.new_data_value()));
+        };
+
+
+
+        this.exportData = function(){
+            //Use jQuery to get graph script's variables
+            console.log($(SensorsIndex));
+            console.log($(graph));
+            var start_time = $(document).graph.rangeStart();
+            var end_time = $(document).graph.rangeEnd();
+            this.export_data(start_time, end_time);
+        };
+
+        this.post_value.subscribe(function (newValue){
+            var id = __this.uuid();
+            if (!id || !__this.validate())
+                return $.Deferred().reject().promise();
+
+            var time = (new Date()).getTime() / 1000;
+            sensorReading = {"name": id, "sensor_type": __this.sensor_type(),
+             "timestamp": time, "meta_data":{}};
+            payload = [{
+                "info":{"uuid": "", "name":__this.name(), "description": __this.description(), "out": (__this.isInput() ? [] : [sensorReading]),
+                "in": (__this.isInput() ? [sensorReading] : [])}, "readings": [[id, newValue, time]]
+            }];
+            console.log(payload);
+            return $.ajax({
+               url: "/api/station/",
+               method: "POST",
+               data: ko.toJSON(payload),
+               dataType: "json",
+               contentType: "application/json",
+               processData: false
+            }).then(__this.sendSuccessCb.bind(__this),__this.updateFailCb.bind(__this));
+
+        });
+
         this.command_value.subscribe(function (newValue) {
+            if (__firstrun){
+                __firstrun = false;
+                return;
+            }
             //post new value to commands api
             payload = {
                 "message": __this.command_value()

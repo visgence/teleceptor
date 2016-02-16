@@ -82,7 +82,7 @@ from teleceptor.models import DataStream, Sensor, Message, MessageQueue
 from teleceptor.sessionManager import sessionScope
 from teleceptor.api.sensors import Sensors
 from teleceptor.api.datastreams import DataStreams
-from teleceptor.api import readings
+from teleceptor.api import readings, datastreams, sensors, messages
 from teleceptor.api.readings import SensorReadings
 from teleceptor import USE_DEBUG
 
@@ -184,129 +184,137 @@ class Station:
             return json.dumps(data, indent=4)
 
 
-        foundds = {}
-        for mote in readingData:
+        try:
+            new_values, sensor_info = update_motes(readingData)
 
-            if 'info' not in mote:
-                logging.error("Mote %s did not report its info", str(mote))
-                data['error'] = "No info for this mote"
-                statusCode = "400"
-            logging.debug("mote: %s", str(mote))
+            data['newValues'] = new_values
+            data['info'] = sensor_info
+        except Exception as e:
+            logging.error("%s: %s", str(e.__class__), e.message)
+            data['error'] = e.message
+            statusCode = "400"
 
-            sensors = []
-            if 'out' in mote['info']:
-                sensors = mote['info']['out']
-            if 'in' in mote['info']:
-                sensors = sensors + mote['info']['in']
-
-            logging.debug("Motes in request: %s", str(sensors))
-
-            for sensor in sensors:
-                sensorUuid = mote['info']['uuid']+sensor['name']
-
-                coefficients = None
-                if 'scale' not in sensor:
-                    logging.debug("Sensor did not report a scaling function. Using identity function.")
-                    coefficients = json.dumps([1, 0])
-                else:
-                    coefficients = json.dumps(sensor['scale'])
-                    del sensor['scale']
-                #check if the sensor exists
-                try:
-                    with sessionScope() as s:
-                        foundSensor = s.query(Sensor).filter_by(uuid=sensorUuid).one()
-                        logging.debug("Found sensor in database.")
-
-                        #update metadata in sensor
-                        foundSensor.meta_data = sensor['meta_data']
-
-                        #get any new messages for input sensors
-                        if 'in' in mote['info'] and sensor in mote['info']['in']:
-                            if foundSensor.message_queue is not None:
-                                msgList = []
-                                #only send messages with a valid timestamp and haven't expired
-                                msgs = s.query(Message).\
-                                filter(Message.message_queue_id==foundSensor.message_queue.id, Message.timeout >= time(), Message.read != True)
-                                #mark each unread message as read
-                                for msg in msgs:
-                                    msg.read = True
-                                    msgList.append(msg.to_dict())
-
-                                logging.debug("Got unread messages: %s", str(msgList))
-                                data['newValues'][sensor['name']] = msgList
-
-
-
-                except NoResultFound:
-                    logging.debug("Sensor with uuid %s not found. Creating new entry in database.", str(sensorUuid))
-                    #no sensor, so make one and try to find a datastream for it to claim (using the user+name combo)
-
-                    sensor['uuid'] = sensorUuid
-                    if 'in' in mote['info'] and sensor in mote['info']['in']:
-                        sensor['sensor_IOtype'] = True
-                    else:
-                        sensor['sensor_IOtype'] = False
-
-                    timestamp = sensor['timestamp']
-                    del sensor['timestamp']
-
-                    newSensor = Sensor(**sensor)
-                    newSensor.message_queue = MessageQueue(sensor_id=newSensor.uuid)
-
-                    with sessionScope() as s:
-                        Sensors.createSensor(s, newSensor)
-                    logging.debug("Added sensor to database.")
-
-                    #restore timestamp
-                    sensor['timestamp'] = timestamp
-                with sessionScope() as s:
-                    newSensor = s.query(Sensor).filter_by(uuid=sensorUuid).one()
-
-                    logging.debug("Updating calibration...")
-                    Sensors.updateCalibration(s, newSensor, coefficients, sensor['timestamp'])
-                    data['info'].append(json.dumps(newSensor.toDict()))
-
-                ds = None
-                #check if the data stream exists
-                try:
-                    with sessionScope() as s:
-                        ds = s.query(DataStream).filter_by(sensor=sensorUuid).one()
-
-                        logging.debug("Found datastream associated with sensor.")
-                        foundds[sensor['name']] = ds.id
-                #no data stream, so we need to make one
-                except NoResultFound:
-                    logging.debug("Sensor has no datastream. Creating one...")
-                    ds = DataStream(sensor=sensorUuid)
-
-                    with sessionScope() as s:
-                        logging.debug(str(ds.toDict()))
-                        DataStreams.createDatastream(s, ds)
-                        foundds[sensor['name']] = ds.id
-
-                    logging.debug("Created datastream.")
-
-            if 'readings' not in mote:
-                data['error'] = "No readings key provided."
-                statusCode = "400"
-            else:
-                with sessionScope() as s:
-
-                    for reading in mote['readings']:
-                        sensorUuid = mote['info']['uuid']+reading[0]
-                        sensor = s.query(Sensor).filter_by(uuid=sensorUuid).one()
-                        sensor.last_value = reading[1]
-                        reading[0] = foundds[reading[0]]
-                        logging.debug(str(reading))
-
-                with sessionScope() as s:
-                    logging.debug("Inserting new readings from mote into database: %s", str(mote['readings']))
-
-                    readings.insertReadings(s, mote['readings'])
 
         logging.debug("Finished POST request to delegation.")
         cherrypy.response.status = statusCode
         return json.dumps(data, indent=4)
 
 
+def update_motes(mote_datas=[]):
+    logging.debug("Updating motes %s", str(mote_datas))
+    new_values = {}
+    for mote in mote_datas:
+        if 'info' not in mote:
+            logging.error("Mote %s did not report its info", str(mote))
+            continue
+
+        sensor_list = []
+        if 'out' in mote['info']:
+            sensor_list = mote['info']['out']
+        if 'in' in mote['info']:
+            sensor_list = sensor_list + mote['info']['in']
+        logging.info("Sensor_list: %s", str(sensor_list))
+        sensor_datastream_ids = {}
+        for sensor in sensor_list:
+            sensor_datastream_ids[mote['info']['uuid'] + sensor['name']] = None
+
+        updated_sensors = []
+        with sessionScope() as session:
+            for sensor in sensor_list:
+
+                if 'in' in mote['info'] and sensor in mote['info']['in']:
+                    sensor['sensor_IOtype'] = True
+                else:
+                    sensor['sensor_IOtype'] = False
+
+                # update data in db
+                simple_name = sensor['name']
+                sensor['name'] = mote['info']['uuid'] + sensor['name']
+                sensor['uuid'] = sensor['name']
+                sensorUuid = sensor['name']
+                logging.info("Updating sensor %s", str(sensor))
+                sensor_info = update_sensor_data(sensor, session)
+                logging.info("Sensor_info after update: %s", str(sensor_info))
+                updated_sensors.append(sensor_info)
+
+                # Get message queue for input sensors
+                if 'in' in mote['info'] and sensor in mote['info']['in']:
+                    logging.info("Getting messages for sensor %s", sensorUuid)
+                    message_list = messages.getMessages(sensorUuid, by_timestamp=True, unread_only=True)
+                    logging.info("Got unread messages: %s", str(message_list))
+                    new_values[sensor['name']] = message_list
+
+                # get datastream to pass to insertReadings
+                try:
+                    logging.info("Getting datastream.")
+                    datastream = datastreams.get_datastream_by_sensorid(sensorUuid, session)
+                except NoResultFound:
+                    logging.info("No datastream. Making one for sensor %s", sensorUuid)
+                    datastream = DataStream(sensor=sensorUuid)
+                    DataStreams.createDatastream(session, datastream)
+                    datastream = datastream.toDict()
+                logging.info("Got datastream id %s", str(datastream['id']))
+                sensor_datastream_ids[sensorUuid] = datastream['id']
+
+            # Swap sensorname in readings with datastream id.
+            logging.info("Inserting readings...")
+
+            for reading in mote['readings']:
+                reading[0] = sensor_datastream_ids[mote['info']['uuid'] + reading[0]]
+
+            readings.insertReadings(mote['readings'], session=session)
+    logging.info("Done updating mote info.")
+    return new_values, updated_sensors
+
+
+def update_sensor_data(sensor_data=None, session=None):
+    uuid = sensor_data['uuid']
+
+    if 'scale' not in sensor_data:
+        logging.debug("Sensor did not report a scaling function. Using identity function.")
+        coefficients = json.dumps([1, 0])
+    else:
+        coefficients = json.dumps(sensor_data['scale'])
+        del sensor_data['scale']
+
+    # TODO: Put code in other function
+    if session is None:
+        with sessionScope() as session:
+            # Update sensors (and create if needed)
+            try:
+                sensor_info = Sensors.updateSensor(sensor_id=uuid, data=sensor_data, session=session)
+            except NoResultFound:
+                timestamp = sensor_data['timestamp']
+                del sensor_data['timestamp']
+
+                sensor = Sensor(**sensor_data)
+                Sensors.createSensor(sensor=sensor, session=session)
+
+                sensor_data['timestamp'] = timestamp
+
+            sensor = sensors.getSensor(uuid, session=session)
+            logging.info("Got sensor %s", str(sensor))
+            logging.debug("Updating calibration...")
+            sensor_info = Sensors.updateCalibration(sensor, coefficients, sensor_data['timestamp'], session=session)
+            logging.info("Updated calibration.")
+    else:
+        # Update sensors (and create if needed)
+        try:
+            sensor_info = Sensors.updateSensor(sensor_id=uuid, data=sensor_data, session=session)
+        except NoResultFound:
+            timestamp = sensor_data['timestamp']
+            del sensor_data['timestamp']
+
+            sensor = Sensor(**sensor_data)
+            Sensors.createSensor(sensor, session)
+
+            sensor_data['timestamp'] = timestamp
+
+        sensor = sensors.getSensor(uuid, session=session)
+        logging.info("Got sensor %s", str(sensor))
+        logging.debug("Updating calibration...")
+        sensor_info = Sensors.updateCalibration(sensor, coefficients, sensor_data['timestamp'], session=session)
+        logging.info("Updated calibration")
+
+    return sensor_info
 

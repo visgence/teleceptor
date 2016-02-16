@@ -44,6 +44,13 @@ $(function($) {
             return false;
         }, this);
 
+        this.exportSource = ko.observable('SQL');
+
+        $('#sourceDropdown li').on('click', function(){
+            __this.exportSource($(this).text());
+            console.log("Selected source ", $(this).text());
+        });
+
         /*********************************************************************************
                                        Privilaged Methods
         **********************************************************************************/
@@ -63,6 +70,62 @@ $(function($) {
             if (zoomRange && zoomRange.hasOwnProperty('start') && zoomRange.hasOwnProperty('end'))
                 return true;
             return false;
+        };
+
+        this.export_data = function(name, source, data, event){
+            var time_start = null;
+            var time_end = null;
+            if(__this.shouldZoom()){
+                time_start = __this.zoomRange().start;
+                time_end = __this.zoomRange().end;
+            }
+            else{
+                time_start = __this.rangeStart();
+                time_end = __this.rangeEnd();
+            }
+            console.log("name: ", name);
+            console.log("startTime: ", time_start);
+            console.log("endTime: ", time_end);
+            console.log("source: ", source);
+
+            __this.fetchData({"start": time_start, "end": time_end}, source, false).then(function(readings){
+                //export readings to csv
+                console.log(readings);
+                var scaledReadings = __this.scaleData(readings, __this.sensor().last_calibration().coefficients);
+
+                // actual delimiter characters for CSV format
+                var colDelim = ',';
+                var rowDelim = '\r\n';
+
+                //build csv string
+                var csv = "";
+
+                var uuid = __this.sensor().uuid();
+                var units = __this.sensor().units();
+
+                csv += "timestamp" + colDelim + "UUID" + colDelim + "value" + colDelim + "scaled value" + colDelim + "units" + rowDelim;
+                for(var i=0; i < readings.length; i++){
+                    csv += readings[i][0] + colDelim + uuid + colDelim + readings[i][1] + colDelim + scaledReadings[i][1] + colDelim + units + rowDelim;
+                }
+
+                // Data URI
+                var csvData = 'data:application/csv;charset=utf-8,' + encodeURIComponent(csv);
+
+                var today = new Date();
+                var year = today.getFullYear();
+                var month = today.getMonth() +1; //getMonth() returns a value from 0 to 11
+                var day = today.getDate();
+                var hour = today.getHours();
+                var minute = today.getMinutes();
+
+                var downloadFilename = __this.sensor().uuid() + "_" + month + "-" + day + "-" + year + "_" + hour + ":" + minute + ".csv";
+                //actually download
+                //window.location.assign(csvData);
+                var link = document.createElement("a");
+                link.download = downloadFilename;
+                link.href = csvData;
+                link.click();
+            });
         };
 
 
@@ -217,14 +280,14 @@ $(function($) {
     };
 
 
-    Graph.prototype.fetchData = function(range) {
+    Graph.prototype.fetchData = function(range, source, shouldScale) {
         var __this = this;
         var dsId = this.datastream().id;
 
         if (!dsId)
             return $.Deferred().reject().promise();
 
-        var url = getGraphDataUrl(dsId, range);
+        var url = getGraphDataUrl(dsId, range, source);
         var coefficients = [];
         if (this.sensor().last_calibration())
             coefficients = this.sensor().last_calibration().coefficients;
@@ -233,7 +296,10 @@ $(function($) {
         var promise = $.get(url).then(function(resp) {
             __this.isLoading(false);
             //activeSensor().command_value(resp.readings[resp.readings.length -1]);
-            return scaleData(resp.readings, coefficients);
+            if( shouldScale === false){
+                return resp.readings;
+            }
+            return __this.scaleData(resp.readings, coefficients);
         });
 
         this.dataPromise(promise);
@@ -257,8 +323,8 @@ $(function($) {
         return result;
     };
 
-
-    var scaleData = function(data, coefficients) {
+    //added scaleData as prototype function to access it from other functions
+    Graph.prototype.scaleData = function(data, coefficients) {
 
         var tmpData    = [];
         var avg_t_diff = 0;
@@ -285,16 +351,22 @@ $(function($) {
         return tmpData;
     };
 
-    var getGraphDataUrl = function(dsId, range) {
+    var getGraphDataUrl = function(dsId, range, source) {
         var url = '/api/readings/';
         var granularity = 300;
 
         url += "?datastream=" + dsId + "&granularity=" + granularity;
 
         if (range.hasOwnProperty('start') && range['start'])
-            url += "&start=" + range['start']
+            url += "&start=" + range['start'];
         if (range.hasOwnProperty('end') && range['end'])
-            url += "&end=" + range['end']
+            url += "&end=" + range['end'];
+        if (source){
+            url += "&source=" + source;
+        }
+
+        //points TEST. Remove after test.
+        //url += "&points=5"
 
         return url;
     };

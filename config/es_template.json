@@ -1,0 +1,14 @@
+{
+    "template" : "teleceptor-*",
+    "mappings" : {
+        "teledata" : {
+           "properties": {
+                "@timestamp": {
+                        "type": "date",
+                        "format":"epoch_millis"
+                        }
+                }
+        }
+    }
+}
+

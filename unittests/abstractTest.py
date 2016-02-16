@@ -43,7 +43,8 @@ def build_config():
             "LOG": "teleceptor.log",
             "TCP_POLLER_HOSTS": [],
             "USE_DEBUG": False,
-            "SUPRESS_SERVER_OUTPUT": True}
+            "SUPRESS_SERVER_OUTPUT": True,
+            "USE_SQL_ALWAYS": False}
 
     conf = open(os.path.join(DATAPATH, 'config.json'), "w")
     json.dump(data,conf,indent=4)
