@@ -209,7 +209,7 @@ class Sensors:
         --------
         `models.Sensor`
         """
-        logging.debug("DELETE request to sensors.")
+        logging.info("DELETE request to sensors.")
 
         returnData = {}
         statusCode = "200"
@@ -225,7 +225,7 @@ class Sensors:
                 returnData['sensor'] = deletedSensor
 
         cherrypy.response.status = statusCode
-        logging.debug("Finished DELETE request to sensors.")
+        logging.info("Finished DELETE request to sensors.")
         return json.dumps(returnData, indent=4)
 
 
