@@ -70,7 +70,7 @@ import re
 import logging
 
 # Local Imports
-from teleceptor.models import DataStream
+from teleceptor.models import DataStream, Sensor
 from teleceptor.sessionManager import sessionScope
 from teleceptor import USE_ELASTICSEARCH
 if USE_ELASTICSEARCH:
@@ -264,7 +264,7 @@ class DataStreams:
             logging.error("Provided datastream to createDatastream method is None.")
 
 def deleteDatastream(session, datastream_id):
-    """ Deletes a datastream with the given `datastream_id`
+    """ Deletes a datastream with the given `datastream_id` and its associated sensor.
 
     Parameters
     ----------
@@ -285,12 +285,14 @@ def deleteDatastream(session, datastream_id):
 
     try:
         stream = session.query(DataStream).filter_by(id=datastream_id).one()
+        sensor = session.query(Sensor).filter_by(uuid=stream.sensor).one()
     except NoResultFound:
         logging.error("Requested datastream {} does not exist.".format(datastream_id))
     else:
         logging.debug("Deleting datastream...")
         stream_dict = stream.toDict()
         session.delete(stream)
+        session.delete(sensor)
         session.commit()
         return stream_dict
     return None
