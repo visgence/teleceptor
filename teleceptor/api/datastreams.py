@@ -289,7 +289,7 @@ def deleteDatastream(session, datastream_id):
         logging.error("Requested datastream {} does not exist.".format(datastream_id))
     else:
         logging.debug("Deleting datastream...")
-        stream_dict = steam.toDict()
+        stream_dict = stream.toDict()
         session.delete(stream)
         session.commit()
         return stream_dict
