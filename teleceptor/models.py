@@ -273,7 +273,7 @@ class DataStream(Base):
 
     id = Column(Integer, primary_key=True)
     sensor = Column(Text, ForeignKey('sensor.uuid', ondelete='CASCADE'), unique=True, index=True)
-    owner = Column(Integer, ForeignKey('user.id'))
+    owner = Column(Integer, ForeignKey('user.id', ondelete='CASCADE'))
     min_value = Column(Float)
     max_value = Column(Float)
     name = Column(Text)
