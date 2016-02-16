@@ -304,6 +304,36 @@ class SensorReadings:
         logging.info("Finished POST request to readings.")
         return json.dumps(data, indent=4)
 
+    def DELETE(self, reading_id=None, datastream_id=None):
+        """
+        Deletes a sensor reading or all sensor readings for a given datastream.
+
+        Returns
+        -------
+        A JSON object with an 'error' key if an error occured or 'readings' key if delete was successful.
+        """
+        logging.info("DELETE request to readings with reading_id {} and datastream_id {}".format(reading_id, datastream_id))
+
+        cherrypy.response.headers['Content-Type'] = 'application/json'
+        data = {}
+
+        statusCode = "200"
+
+        if datastream_id is not None:
+            try:
+                deleted_readings = deleteReadingsByDatastream(datastream_id)
+                data['readings'] = deleted_readings
+            except Exception as e:
+                error_string = "Unexpected error while deleting readings by datastream: {}".format(e)
+                logging.exception(error_string)
+                data['error'] = error_string
+                statusCode = "400"
+
+        cherrypy.response.status = statusCode
+        logging.info("Finished DELETE request to datastreams.")
+        return json.dumps(data, indent=4)
+
+
 def insertReadings(readings, session=None):
     """
     Tries to insert the readings provided into whisper database, and optionally into the SQL database if SQLDATA is set.
@@ -320,6 +350,7 @@ def insertReadings(readings, session=None):
 
     logging.debug("Stats from attempted insertions: %s", str(data))
     return data
+
 
 def _insertReadings(readings, session=None):
     """
@@ -390,6 +421,69 @@ def _insertReadings(readings, session=None):
 
     data['failed_insertions'] = data['insertions_attempted'] - data['successfull_insertions']
     return data
+
+
+def deleteReadingsByDatastream(datastream_id, session=None):
+    """Deletes all readings with the datastream id `datastream_id`.
+
+    Parameters
+    ----------
+    datastream_id : int
+        id of the datastream to delete all of the readings for
+    session :context object from `sessionScope()`
+        Existing context into a sqlalchemy database session. Can be created by a call to `sessionScope()`
+
+    Returns
+    -------
+    A list of the deleted readings
+
+    See Also
+    --------
+    `models.DataStream`
+    `models.SensorReading`
+    `readings.DELETE`
+    """
+
+    if session is None:
+        with sessionScope() as s:
+            return _deleteReadingsByDatastream(datastream_id, s)
+    return _deleteReadingsByDatastream(datastream_id, session)
+
+
+def _deleteReadingsByDatastream(datastream_id, session):
+    """Deletes all readings with the datastream id `datastream_id`.
+
+    Parameters
+    ----------
+    datastream_id : int
+        id of the datastream to delete all of the readings for
+    session :context object from `sessionScope()`
+        Existing context into a sqlalchemy database session. Can be created by a call to `sessionScope()`
+
+    Returns
+    -------
+    A list of the deleted readings
+
+    See Also
+    --------
+    `models.DataStream`
+    `models.SensorReading`
+    `readings.DELETE`
+    """
+    try:
+        readings = session.query(SensorReading).filter_by(datastream=datastream_id).all()
+    except NoResultFound:
+        logging.debug("No readings found to delete for datastream {}".format(datastream_id))
+        return []
+    else:
+        logging.debug("Deleting sensor readings for datastream {}".format(datastream_id))
+        deleted_readings = []
+        for reading in readings:
+            deleted_readings.append(reading.toDict())
+            session.delete(reading)
+        session.commit()
+        return deleted_readings
+    return []
 
 
 def reduceData(readings, granularity, reduction_method='mean'):
