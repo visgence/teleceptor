@@ -127,7 +127,7 @@ class MessageQueue(Base):
 
     id = Column(Integer, primary_key=True)
     #last_message_id = Column(Integer, ForeignKey('message.id'))
-    messages = relationship('Message',order_by='Message.id',backref='messagequeue',lazy='dynamic',uselist=True)
+    messages = relationship('Message',order_by='Message.id',backref='messagequeue',lazy='dynamic',uselist=True, cascade='delete')
     sensor_id = Column(Text)
 
     def to_dict(self):
@@ -213,9 +213,9 @@ class Sensor(Base):
     units = Column(String(32))
     model = Column(Text)
     description = Column(Text)
-    last_calibration_id = Column(Integer, ForeignKey('calibration.id'))
+    last_calibration_id = Column(Integer, ForeignKey('calibration.id', ondelete='CASCADE'))
     last_calibration = relationship('Calibration')
-    message_queue_id = Column(Integer, ForeignKey('messagequeue.id'))
+    message_queue_id = Column(Integer, ForeignKey('messagequeue.id', ondelete='CASCADE'))
     message_queue = relationship('MessageQueue')
     _meta_data = Column("meta_data", Text)
 
@@ -272,7 +272,7 @@ class DataStream(Base):
     __tablename__ = "datastream"
 
     id = Column(Integer, primary_key=True)
-    sensor = Column(Text, ForeignKey('sensor.uuid'), unique=True, index=True)
+    sensor = Column(Text, ForeignKey('sensor.uuid', ondelete='CASCADE'), unique=True, index=True)
     owner = Column(Integer, ForeignKey('user.id'))
     min_value = Column(Float)
     max_value = Column(Float)
