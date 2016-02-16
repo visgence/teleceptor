@@ -219,7 +219,7 @@ class DataStreams:
 
         with sessionScope() as s:
             try:
-                deletedStream = DataStream.deleteDatastream(s, stream_id)
+                deletedStream = deleteDatastream(s, stream_id)
 
                 if deletedStream is None:
                     data['error'] = "Datastream with id {} could not be deleted.".format(stream_id)
