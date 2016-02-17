@@ -103,7 +103,7 @@ def run_check(datastream_id, teleceptorURI, useSQL, minutes, sensor_uuid=None):
         return_code = 3
         return return_code
 
-    logger.info("OK - datastream {} has data in the last {} minutes.".format(datastream_id, minutes))
+    logger.info("OK - datastream {} has {} datapoints in the last {} minutes.".format(datastream_id, len(response.json()['readings']), minutes))
     return return_code
 
 
