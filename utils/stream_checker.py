@@ -21,15 +21,8 @@ Return:
 
 import argparse
 import requests
-import logging
 import time
-import json
 import sys
-
-FORMAT = '%(message)s'
-logging.basicConfig(format=FORMAT)
-logger = logging.getLogger("stream_checker")
-logger.setLevel(logging.INFO)
 
 
 def run_check(datastream_id, teleceptorURI, useSQL, minutes, sensor_uuid=None):
@@ -63,18 +56,17 @@ def run_check(datastream_id, teleceptorURI, useSQL, minutes, sensor_uuid=None):
 
             datastream_id = response.json()['datastreams'][0]['id']
         except requests.exceptions.ConnectionError:
-            logger.error("CRITICAL - Could not connect to teleceptor at URI {}".format(teleceptorURI))
+            print("CRITICAL - Could not connect to teleceptor at URI {}".format(teleceptorURI))
             return_code = 2
             return return_code
         except requests.exceptions.HTTPError:
-            logger.error("CRITICAL - {}".format(response.json()['error']))
+            print("CRITICAL - {}".format(response.json()['error']))
             return_code = 2
             return return_code
         except KeyError:
-            logger.error("CRITICAL - response for uuid did not contain appropriate data: {}".format(response.json()))
+            print("CRITICAL - response for uuid did not contain appropriate data: {}".format(response.json()))
             return_code = 2
             return return_code
-
 
     readings_request_url = teleceptorURI + 'api/readings/'
 
@@ -86,24 +78,24 @@ def run_check(datastream_id, teleceptorURI, useSQL, minutes, sensor_uuid=None):
         response.raise_for_status()
 
         if len(response.json()['readings']) == 0:
-            logger.error("CRITICAL - Got no data for datastream {} for the last {} minutes.".format(datastream_id, minutes))
+            print("CRITICAL - Got no data for datastream {} for the last {} minutes.".format(datastream_id, minutes))
             return_code = 2
             return return_code
 
     except requests.exceptions.HTTPError:
-        logger.error("CRITICAL - Error getting data for datastream {}. Maybe this stream is not formatted properly?".format(datastream_id))
+        print("CRITICAL - Error getting data for datastream {}. Maybe this stream is not formatted properly?".format(datastream_id))
         return_code = 2
         return return_code
     except requests.exceptions.ConnectionError:
-        logger.error("CRITICAL - Could not connect to teleceptor at URI {}".format(teleceptorURI))
+        print("CRITICAL - Could not connect to teleceptor at URI {}".format(teleceptorURI))
         return_code = 2
         return return_code
     except:
-        logger.error("UNKNOWN - Got an unexpected exception during request.")
+        print("UNKNOWN - Got an unexpected exception during request.")
         return_code = 3
         return return_code
 
-    logger.info("OK - datastream {} has {} datapoints in the last {} minutes.".format(datastream_id, len(response.json()['readings']), minutes))
+    print("OK - datastream {} has {} datapoints in the last {} minutes.".format(datastream_id, len(response.json()['readings']), minutes))
     return return_code
 
 
@@ -115,7 +107,5 @@ if __name__ == "__main__":
     parser.add_argument('-m', '--minutes', type=float, help='The number of minutes in the past from now to request data for.', default=30.0)
     parser.add_argument('--uuid', type=str, help='The uuid of the sensor. If present, overrides the --id, if --id is present.')
     args = parser.parse_args()
-
-    logger.debug("Testing with arguments {}".format(args))
 
     sys.exit(run_check(args.id, args.teleceptorURI, args.useSQL, args.minutes, args.uuid))
