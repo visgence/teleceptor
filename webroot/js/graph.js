@@ -105,7 +105,21 @@ $(function($) {
 
                 csv += "timestamp" + colDelim + "UUID" + colDelim + "value" + colDelim + "scaled value" + colDelim + "units" + rowDelim;
                 for(var i=0; i < readings.length; i++){
-                    csv += readings[i][0] + colDelim + uuid + colDelim + readings[i][1] + colDelim + scaledReadings[i][1] + colDelim + units + rowDelim;
+                    csv += readings[i][0] + colDelim + uuid + colDelim;
+                    if(readings[i][1]){
+                        csv += readings[i][1];
+                    }
+                    else{
+                        csv += "null";
+                    }
+                    csv += colDelim;
+                    if(scaledReadings[i][1]){
+                        csv += scaledReadings[i][1];
+                    }
+                    else{
+                        csv += "null";
+                    } 
+                    csv += colDelim + units + rowDelim;
                 }
 
                 // Data URI
