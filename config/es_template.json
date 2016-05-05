@@ -1,14 +1,20 @@
 {
-    "template" : "teleceptor-*",
-    "mappings" : {
-        "teledata" : {
-           "properties": {
+    "template": "teleceptor-*",
+    "mappings": {
+        "teledata": {
+            "properties": {
                 "@timestamp": {
-                        "type": "date",
-                        "format":"epoch_millis"
-                        }
+                    "type": "date",
+                    "format": "epoch_millis"
+                },
+
+                "ds": {
+                    "type": "long"
+                },
+                "value": {
+                    "type": "double"
                 }
+            }
         }
     }
 }
-
