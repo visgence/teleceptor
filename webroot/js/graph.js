@@ -114,7 +114,7 @@ $(function($) {
                             csv += "null";
                         }
                         csv += colDelim;
-                        if(scaledReadings[i][1]){
+                        if(scaledReadings[i] && scaledReadings[i][1]){
                             csv += scaledReadings[i][1];
                         }
                         else{
