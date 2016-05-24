@@ -191,25 +191,37 @@ class SensorReadings:
 
                 del params[key]
 
-        if USE_SQL_ALWAYS or (SQLDATA and (int(end) - int(start) < SQLREADTIME)) or USE_ELASTICSEARCH or source is not None:
-            if USE_ELASTICSEARCH or source == "ElasticSearch":
+        data_source = "None"
+        if source is not None:
+            if USE_ELASTICSEARCH and source == "ElasticSearch":
                 logging.debug('Getting Elasticsearch data.')
-                readings = esGetReadings(ds=uuid, start=start, end=end, points=points)
+                data_source = source
             elif source == "SQL":
                 logging.debug("Getting SQL high-resolution data.")
-
-                readings = query.filter_by(**filterArgs).order_by('timestamp').all()
-                readings = [(reading.timestamp, reading.value) for reading in readings]
+                data_source = source
             else:
-                logging.debug("Request time %s less than SQLREADTIME %s. Getting high-resolution data.", str((int(end) - int(start))), str(SQLREADTIME))
-
-                readings = query.filter_by(**filterArgs).order_by('timestamp').all()
-                readings = [(reading.timestamp, reading.value) for reading in readings]
+                raise ValueError("Selected source {} is incompatible with USE_ELASTICSEARCH setting {}".format(source, USE_ELASTICSEARCH))
         else:
-            logging.debug("Getting low resolution data.")
-            readings = getReadings(uuid, start, end)
+            if SQLDATA and (int(end) - int(start) < SQLREADTIME):
+                logging.debug("Request time %s less than SQLREADTIME %s. Getting high-resolution data.", str((int(end) - int(start))), str(SQLREADTIME))
+                data_source = "SQL"
+            elif USE_ELASTICSEARCH and (int(end) - int(start) > SQLREADTIME):
+                logging.debug('Getting Elasticsearch data.')
+                data_source = "ElasticSearch"
+            else:
+                logging.debug("Getting SQL high-resolution data.")
+                data_source = "SQL" # default case, use SQL
 
-        return readings
+        if data_source == "ElasticSearch":
+            readings = esGetReadings(ds=uuid, start=start, end=end, points=points)
+            data_source = "ElasticSearch"
+        elif data_source == "SQL":
+            readings = query.filter_by(**filterArgs).order_by('timestamp').all()
+            readings = [(reading.timestamp, reading.value) for reading in readings]
+        else:
+            raise ValueError("No valid data source selected.")
+
+        return readings, data_source
 
     def GET(self, **kwargs):
         """
@@ -259,7 +271,10 @@ class SensorReadings:
             status_code = "400"
         else:
             with sessionScope() as s:
-                data['readings'] = self.filterReadings(s, inputs)
+                try:
+                    data['readings'], data['source'] = self.filterReadings(s, inputs)
+                except ValueError as e:
+                    data['error'] = str(e)
 
         cherrypy.response.status = status_code
         logging.info("Finished GET request to readings.")
