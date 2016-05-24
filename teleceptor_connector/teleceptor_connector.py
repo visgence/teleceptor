@@ -75,7 +75,9 @@ class Teleceptor(object):
             datastream_id = datastream_response.json()['datastreams'][0]['id']
 
             #now get readings
-            readings_response = requests.get(self.teleceptor_uri + self.READINGSPATH + "?datastream={}&source={}&start={}&end={}".format(datastream_id, source, int(time.mktime(start.timetuple())), int(time.mktime(end.timetuple()))))
+            readings_request = self.teleceptor_uri + self.READINGSPATH + "?datastream={}&source={}&start={}&end={}".format(datastream_id, source, int(time.mktime(start.timetuple())), int(time.mktime(end.timetuple())))
+            print(readings_request)
+            readings_response = requests.get(readings_request)
             if readings_response.status_code != requests.codes.ok:
                 print(readings_response)
                 print(readings_response.text)
@@ -112,3 +114,4 @@ if __name__ == "__main__":
     df_es = tc.fetch('particle_1temp', 'mfi_mfi01temp', source="ElasticSearch", start=datetime.fromtimestamp(1462122000))
     df_sql = tc.fetch('particle_1temp', 'mfi_mfi01temp', source="SQL", start=datetime.fromtimestamp(1462122000))
     print("Elasticsearch: \n{}\nSQL:\n{}".format(df_es, df_sql))
+    df_sql.plot()
