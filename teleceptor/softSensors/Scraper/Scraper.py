@@ -4,10 +4,15 @@ from bs4 import BeautifulSoup as bs
 import json
 import requests
 import time
+import argparse
+parser = argparse.ArgumentParser()
+parser.add_argument("-h, --host", help="The host where the data will be scraped from. Ex: 192.168.0.1")
+parser.add_argument("-t, --teleceptor", help="The location of the teleceptor server. Ex: http://localhost:8080/teleceptor")
+args = parser.parse_args()
 
 
 def getPageData(ip):
-    url = ""join(["http://", ip, "/top.cgi?xsrf=&1"])
+    url = "".join(["http://", ip, "/top.cgi?xsrf=&1"])
     newObj = {
         "TransmitPower": 0,
         "ReceivePower": 0,
@@ -77,14 +82,12 @@ def sendData(obj, url):
 
 
 if __name__ == "__main__":
-    ip = '0.0.0.0'
-    myObj = getPageData(ip)
-    # print "myObj:"
-    # print json.dumps(myObj, indent=2)
-    returnObj = formatData(myObj)
-    # print"\n\n\n"
-    # print "returnObj:"
-    # print json.dumps(returnObj, indent=2)
-    teleceptorURL = "localhost:8080"
-    response = sendData(returnObj, teleceptorURL)
-    # print "\nThe response is: {}".format(response)
+    if args.host:
+        myObj = getPageData(args.host)
+        returnObj = formatData(myObj)
+        if args.teleceptor:
+            response = sendData(returnObj, args.teleceptor)
+        else:
+            print "Cound not complete request, a teleceptor url is needed. Use --help for usage."
+    else:
+        print "Could not complete request, a host ip number is needed. Use --help for usage."
