@@ -19,7 +19,6 @@ readings.py
 
 # System Imports
 import cherrypy
-from whisper import WhisperException
 from time import time
 from sqlalchemy.orm.exc import NoResultFound
 try:
@@ -38,9 +37,6 @@ from teleceptor import USE_ELASTICSEARCH
 if USE_ELASTICSEARCH:
     from teleceptor.elasticsearchUtils import getReadings as esGetReadings
     from teleceptor.elasticsearchUtils import insertReading as esInsert
-
-else:
-    from teleceptor.whisperUtils import getReadings, insertReading as whisperInsert
 
 
 class SensorReadings:
@@ -317,7 +313,7 @@ class SensorReadings:
 
 def insertReadings(readings, session=None):
     """
-    Tries to insert the readings provided into whisper database, and optionally into the SQL database if SQLDATA is set.
+    Tries to insert the readings provided into database, and optionally into the SQL database if SQLDATA is set.
 
     :param readings: List of reading tuples of the form (datastreamid, value, timestamp)
 
@@ -337,7 +333,7 @@ def insertReadings(readings, session=None):
 
 def _insertReadings(readings, session=None):
     """
-    Tries to insert the readings provided into whisper database, and optionally into the SQL database if SQLDATA is set.
+    Tries to insert the readings provided into database, and optionally into the SQL database if SQLDATA is set.
 
     :param readings: List of reading tuples of the form (datastreamid, value, timestamp)
 
@@ -385,11 +381,9 @@ def _insertReadings(readings, session=None):
             continue
 
         try:
-            logging.debug("Inserting into whisper database with streamId %s, rawVal %s, and timestamp %s", str(streamId), str(rawVal), str(timestamp))
-            if USE_ELASTICSEARCH:
-                esInsert(streamId, rawVal, timestamp)
-            else:
-                whisperInsert(streamId, rawVal, timestamp)
+            logging.debug("Inserting into database with streamId %s, rawVal %s, and timestamp %s", str(streamId), str(rawVal), str(timestamp))
+            esInsert(streamId, rawVal, timestamp)
+
             if SQLDATA:
                 logging.debug("Creating new sensor reading in SQL database...")
                 new_reading = SensorReading()
@@ -402,10 +396,7 @@ def _insertReadings(readings, session=None):
 
             data['successfull_insertions'] += 1
         except IOError:
-            logging.error("Failed to insert reading into whisper %s", str(streamId))
-            continue
-        except WhisperException:
-            logging.error("Failed to insert reading into whisper %s", str(streamId))
+            logging.error("Failed to insert reading into database %s", str(streamId))
             continue
 
     data['failed_insertions'] = data['insertions_attempted'] - data['successfull_insertions']

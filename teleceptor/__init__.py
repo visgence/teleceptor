@@ -77,20 +77,11 @@ if "PASSWORD" in conf:
 else:
     PASSWORD = "password"
 
-# Set Whisper Data folder
-if os.path.isabs(conf['WHISPER_DATA']):
-    WHISPER_DATA = conf['WHISPER_DATA']
-else:
-    WHISPER_DATA = os.path.join(DATAPATH, conf['WHISPER_DATA'])
-
 # Set Logfile
 if os.path.isabs(conf['LOG']):
     LOG = conf['LOG']
 else:
     LOG = os.path.join(DATAPATH, conf['LOG'])
-
-# Whisper Archives
-WHISPER_ARCHIVES = conf["WHISPER_ARCHIVES"]
 
 # SAVE DATA TO SQL DB
 SQLDATA = conf["SQLDATA"]

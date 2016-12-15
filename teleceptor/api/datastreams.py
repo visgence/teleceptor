@@ -59,10 +59,7 @@ import logging
 from teleceptor.models import DataStream, Sensor
 from teleceptor.sessionManager import sessionScope
 from teleceptor import USE_ELASTICSEARCH, USE_DEBUG
-if USE_ELASTICSEARCH:
-    from teleceptor import elasticsearchUtils as esUtils
-else:
-    from teleceptor import whisperUtils
+from teleceptor import elasticsearchUtils as esUtils
 
 
 class DataStreams:
@@ -209,26 +206,22 @@ class DataStreams:
     @staticmethod
     def createDatastream(session, datastream=None):
         """
-        Creates a datastream with given options and binds a new whisper file to it.
-        Convience function that adds the given `datastream` to the database in `session` and creates a whisper database file using this datastream's id. If `datastream` is None, this function does nothing.
+        Creates a datastream with given options.
+        Convience function that adds the given `datastream` to the database in `session`. If `datastream` is None, this function does nothing.
         expects datastream to be a DataStream() from models
 
         :param session: Existing context into a sqlalchemy database session. Can be created by a call to `sessionScope()`
         :type session: context object from `sessionScope()`
-        :param datastream: `DataStream` object to add to the database and create a whisper file for.
+        :param datastream: `DataStream` object to add to the database.
         :type datastream: DataStream, optional
 
         .. note:
-            This function is *not* idempotent. That is, multiple calls to this function with the same input `datastream` will create multiple `DataStream` objects in the database, each with its own whisper file.
+            This function is *not* idempotent. That is, multiple calls to this function with the same input `datastream` will create multiple `DataStream` objects in the database.
         """
         if datastream is not None:
             logging.debug("Creating datastream with options: %s", str(datastream.toDict()))
             session.add(datastream)
             session.commit()
-            if not USE_ELASTICSEARCH:
-                logging.debug("Creating whisper database with id %s", str(datastream.id))
-                whisperUtils.createDs(datastream.id)
-                logging.debug("Done making datastream and whisper database.")
         else:
             logging.error("Provided datastream to createDatastream method is None.")
 

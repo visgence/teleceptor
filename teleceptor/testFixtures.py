@@ -104,9 +104,6 @@ def loadDatastreams(session):
 
     streams = [DataStream(**datastream1), DataStream(**datastream2)]
     session.add_all(streams)
-    if not USE_ELASTICSEARCH:
-        whisperUtils.createDs(1)
-        whisperUtils.createDs(2)
 
 
 def loadReadings(session, range=None, interval=None):
@@ -145,9 +142,6 @@ def loadReadings(session, range=None, interval=None):
         if USE_ELASTICSEARCH:
             elasticsearchUtils.insertReading('1', voltReading['value'], voltReading['timestamp'])
             elasticsearchUtils.insertReading('2', ampReading['value'], ampReading['timestamp'])
-        else:
-            whisperUtils.insertReading('1', voltReading['value'], voltReading['timestamp'])
-            whisperUtils.insertReading('2', ampReading['value'], ampReading['timestamp'])
 
         volt = SensorReading(**voltReading)
         amp = SensorReading(**ampReading)
