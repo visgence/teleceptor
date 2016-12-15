@@ -1,21 +1,9 @@
 """
-    (c) 2014 Visgence, Inc.
+testFixtures.py
 
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+Authors: Victor Szczepanski
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>
 """
-
-#! /usr/bin/env python
 
 from sessionManager import sessionScope
 from models import *
@@ -25,18 +13,18 @@ from time import time
 from teleceptor.models import MessageQueue
 from teleceptor import USE_ELASTICSEARCH
 if USE_ELASTICSEARCH:
-    import elasticsearchUtils 
+    import elasticsearchUtils
 else:
     import whisperUtils
 
 
 def loadAdmin(session):
     kwargs = {
-        "email": "admin@visgence.com"
-        ,"firstname": "Admin"
-        ,"lastname": "Developer"
-        ,"active": True
-        ,"password": "password"
+        "email": "admin@visgence.com",
+        "firstname": "Admin",
+        "lastname": "Developer",
+        "active": True,
+        "password": "password"
     }
     admin = User(**kwargs)
     session.add(admin)
@@ -53,29 +41,29 @@ def loadAdmin(session):
 
 def loadSensors(session):
     sensor1 = {
-        "uuid": "volts"
-        ,"name": "Volts Sensor"
-        ,"units": "V"
-        ,"model": "003-SP1001"
-        ,"description": "Volts of shivaplug"
-        ,"last_calibration_id": 1
-        ,"meta_data": {
-            "metafield": 5
-            ,"metalist": ["one", "two", "three"]
-            ,"metadict": {
-                "hue": "fue"
-                ,"boo": "foo"
+        "uuid": "volts",
+        "name": "Volts Sensor",
+        "units": "V",
+        "model": "003-SP1001",
+        "description": "Volts of shivaplug",
+        "last_calibration_id": 1,
+        "meta_data": {
+            "metafield": 5,
+            "metalist": ["one", "two", "three"],
+            "metadict": {
+                "hue": "fue",
+                "boo": "foo"
             }
         }
     }
 
     sensor2 = {
-        "uuid": "amps"
-        ,"name": "Amperes Sensor"
-        ,"units": "A"
-        ,"model": "003-SP1001"
-        ,"description": "Amperes of shivaplug"
-        ,"last_calibration_id": 2
+        "uuid": "amps",
+        "name": "Amperes Sensor",
+        "units": "A",
+        "model": "003-SP1001",
+        "description": "Amperes of shivaplug",
+        "last_calibration_id": 2
     }
 
     sensors = [Sensor(**sensor1), Sensor(**sensor2)]
@@ -87,17 +75,16 @@ def loadSensors(session):
 
 def loadCalibrations(session):
     calibration1 = {
-        "sensor_id": "volts"
-        ,"coefficients": "[0.128755, -65.794]"
-        ,"timestamp": time()
+        "sensor_id": "volts",
+        "coefficients": "[0.128755, -65.794]",
+        "timestamp": time()
     }
 
     calibration2 = {
-        "sensor_id": "amps"
-        ,"coefficients": "[0.048828, -25.0]"
-        ,"timestamp": time()
+        "sensor_id": "amps",
+        "coefficients": "[0.048828, -25.0]",
+        "timestamp": time()
     }
-
 
     cals = [Calibration(**calibration1), Calibration(**calibration2)]
     session.add_all(cals)
@@ -105,14 +92,14 @@ def loadCalibrations(session):
 
 def loadDatastreams(session):
     datastream1 = {
-        "sensor": "volts"
-        ,"owner": 1
+        "sensor": "volts",
+        "owner": 1
         # ,"scaling_function": "Identity"
     }
 
     datastream2 = {
-        "sensor": "amps"
-        ,"owner": 1
+        "sensor": "amps",
+        "owner": 1
         # ,"scaling_function": "Identity"
     }
 
@@ -126,8 +113,8 @@ def loadDatastreams(session):
 def loadReadings(session, range=None, interval=None):
     timeRanges = {
         '2hour': 7200,
-        "day":  86400
-        ,"week": 604800
+        "day":  86400,
+        "week": 604800
     }
 
     defaultRange = timeRanges['2hour']
@@ -141,21 +128,21 @@ def loadReadings(session, range=None, interval=None):
     readings = []
     while now >= lastWeek:
         voltReading = {
-            "datastream": 1
-            ,"sensor": "volts"
-            ,"value": random.randint(550, 600)
-            ,"timestamp": now
+            "datastream": 1,
+            "sensor": "volts",
+            "value": random.randint(550, 600),
+            "timestamp": now
         }
 
         ampReading = {
-            "datastream": 2
-            ,"sensor": "amps"
-            ,"value": random.randint(550, 600)
-            ,"timestamp": now
+            "datastream": 2,
+            "sensor": "amps",
+            "value": random.randint(550, 600),
+            "timestamp": now
         }
 
         now -= 60
-        
+
         if USE_ELASTICSEARCH:
             elasticsearchUtils.insertReading('1', voltReading['value'], voltReading['timestamp'])
             elasticsearchUtils.insertReading('2', ampReading['value'], ampReading['timestamp'])
