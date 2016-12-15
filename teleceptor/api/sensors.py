@@ -1,65 +1,14 @@
 """
-    Contributing Authors:
-        Bretton Murphy (Visgence, Inc.)
-        Victor Szczepanski (Visgence, Inc.)
-        Jessica Greenling (Visgence, Inc.)
+    Authors: Bretton Murphy (Visgence, Inc.)
+             Victor Szczepanski (Visgence, Inc.)
+             Jessica Greenling (Visgence, Inc.)
 
     Resource endpoint for Sensors that is used as part of the RESTful api.  Handles
     the creation, updating, and retrieval of Sensors.
 
-    API:
-        Unless otherwise noted api will return data as JSON.
-
-        GET /api/sensors/
-            Obtain a list of available Sensors.
-            Returns:
-            {
-                'error':   <error str if applicable>
-                'sensors': [List of sensors]
-            }
-
-        GET /api/sensors/<sensor_id>/
-            Obtain a single Sensor for the id parameter.
-            Returns:
-            {
-                'error':   <error str if applicable>
-                'sensor':  A single sensor
-            }
-
-
-        PUT /api/sensors/<sensor_id>/
-            Update an existing sensor.
-            Returns:
-            {
-                'error':    <error str if applicable>
-                'sensor':   The updated sensor
-            }
-
-        DELETE /api/sensors/<sensor_id>/
-            Delete an existing sensor.
-            Returns:
-            {
-                'error': <error str if applicable>
-                'sensor': The deleted sensor.
-            }
-
-        TODO:
+    TODO:
         POST /api/sensors/  -  Create a new Sensor.
 
-    (c) 2013 Visgence, Inc.
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>
 """
 
 # System Imports
@@ -79,7 +28,6 @@ from teleceptor.auth import require
 from teleceptor import USE_DEBUG
 
 
-
 class Sensors:
     exposed = True
 
@@ -93,20 +41,12 @@ class Sensors:
         """
         Gets a sensor's or all sensor's information.
 
-        Parameters
-        ----------
-        sensor_id : str, optional
-            The UUID of a sensor, or None
+        :param sensor_id: The UUID of a sensor
+        :type sensor_id: str
 
+        :returns: JSON -- If a valid `sensor_id` is given, returns the information stored in the database for the sensor with uuid `sensor_id`. If `sensor_id` does not refer to a sensor in the database, an error string will be returned. If `sensor_id` is None, returns a list of all sensors in the database.
 
-        Returns
-        -------
-        If a valid `sensor_id` is given, returns the information stored in the database for the sensor with uuid `sensor_id`. If `sensor_id` does not refer to a sensor in the database, an error string will be returned.
-        If `sensor_id` is None, returns a list of all sensors in the database.
-
-        See Also
-        --------
-        `models.Sensor`
+        .. seealso:: `models.Sensor`
         """
         logging.debug("GET request to sensors.")
 
@@ -135,7 +75,7 @@ class Sensors:
     @require()
     def POST(self, sensor_id=None):
         logging.error("POST request to sensors. This API end point is not implemented.")
-        #TODO: Implement this for sensor creation
+        # TODO: Implement this for sensor creation
         pass
 
     @require()
@@ -145,18 +85,14 @@ class Sensors:
 
         Using the JSON formatted data in the HTTP request body, updates the sensor information in the database. Valid key/value pairs correspond to the columns in `models.Sensor`.
 
-        Parameters
-        ----------
-        sensor_id : str
-            The UUID of a sensor
+        :param sensor_id: The UUID of a sensor
+        :type sensor_id: str
 
-        Returns
-        -------
-        A JSON object with an 'error' key if an error occured or 'sensor' key if update succeeded. If 'error', the value is an error string. If 'sensor', the value is a JSON object representing the updated sensor in the database.
+        :returns: Dictionary -- A JSON object with an 'error' key if an error occured or 'sensor' key if update succeeded. If 'error', the value is an error string. If 'sensor', the value is a JSON object representing the updated sensor in the database.
 
-        See Also
-        --------
-        `models.Sensor`
+        .. seealso:: `models.Sensor`
+
+        .. todo:: Decide on new behaviour if no json object so we don't incur an extra db lookup.
         """
         logging.debug("PUT request to sensors.")
 
@@ -166,8 +102,7 @@ class Sensors:
         try:
             data = json.loads(cherrypy.request.body.read())
         except ValueError:
-            #no json object to decode, just use an empty dictionary
-            #TODO: Decide on new behaviour if no json object so we don't incur an extra db lookup.
+            # no json object to decode, just use an empty dictionary
             data = {}
 
         logging.debug("Request body: %s", data)
@@ -193,18 +128,12 @@ class Sensors:
         This function cannot be undone, but the sensor may be created again
         in a separate transaction.
 
-        Parameters
-        ----------
-        sensor_id : str
-            The UUID of a sensor
+        :param sensor_id: The UUID of a sensor
+        :type sensor_id: str
 
-        Returns
-        -------
-        A JSON object with an 'error' key if an error occured or 'sensor' key if update succeeded. If 'error', the value is an error string. If 'sensor', the value is a JSON object representing the deleted sensor in the database.
+        :returns: Dictionary -- A JSON object with an 'error' key if an error occured or 'sensor' key if update succeeded. If 'error', the value is an error string. If 'sensor', the value is a JSON object representing the deleted sensor in the database.
 
-        See Also
-        --------
-        `models.Sensor`
+        .. seealso:: `models.Sensor`
         """
         logging.info("DELETE request to sensors.")
 
@@ -223,23 +152,18 @@ class Sensors:
         logging.info("Finished DELETE request to sensors.")
         return json.dumps(returnData, indent=4)
 
-
-    #expects sensor to be a Sensor() from model
+    # expects sensor to be a Sensor() from model
     @staticmethod
     def createSensor(sensor=None, session=None):
         """
         Adds `sensor` to the database.
 
-        Parameters
-        ----------
-        session : sessionScope() context
-            The context for accessing the database.
-        sensor : model.Sensor
-            The Sensor to add to the database.
+        :param session: The context for accessing the database.
+        :type session: sessionScope() context
+        :param sensor: The Sensor to add to the database.
+        :type sensor: model.Sensor
 
-        See Also
-        --------
-        `models.Sensor`
+        .. seealso:: `models.Sensor`
         """
         logging.debug("Creating sensor %s", str(sensor))
         if session is None:
@@ -255,28 +179,18 @@ class Sensors:
         """
         Updates sensor with id `sensor_id` with new key/values in `data`. Note that this function will incur a db lookup.
 
-        Parameters
-        ----------
-        sensor_id : str
-            The id of the Sensor to modify.
-        data : dictionary
-            The new data to update `sensor` with.
+        :param sensor_id: The id of the Sensor to modify.
+        :type sensor_id: str
+        :param data: The new data to update `sensor` with.
+        :type data: dictionary
 
-        Returns
-        -------
-        The dictionary view of the updated sensor.
+        :returns: Dictionary -- The dictionary view of the updated sensor.
 
-        See Also
-        --------
-        `models.Sensor`
+        .. seealso:: `models.Sensor`
 
-        Notes
-        -----
-        This function contains a blacklist of keys that may not be updated. If `data` contains these keys, they are ignored.
-        This documentation should contain the full blacklist:
-
-        blacklist = ["uuid","message"]
-        whitelist = ["sensor_IOtype", "sensor_type", "name", "units", ""]
+        .. note:: This function contains a blacklist of keys that may not be updated. If `data` contains these keys, they are ignored. This documentation should contain the full blacklist:
+            blacklist = ["uuid","message"]
+            whitelist = ["sensor_IOtype", "sensor_type", "name", "units", ""]
         """
 
         logging.debug("Updating sensor with id %s with data %s", str(sensor_id), str(data))
@@ -286,7 +200,6 @@ class Sensors:
             return sensor_info
         return _updateSensor(sensor_id, data, session)
 
-
     @staticmethod
     def updateCalibration(sensor, coefficients, timestamp, session=None):
         """
@@ -294,21 +207,17 @@ class Sensors:
 
         Using `coefficients` and `timestamp`, creates a new Calibration for `sensor` if `timestamp` is newer than `sensor`'s timestamp and `coefficients` is different from `sensor`'s coefficients.
 
-        Parameters
-        ----------
-        session : sessionScope() context
-            The context for accessing the database.
-        sensor : model.Sensor
-            The Sensor to update.
-        coefficients : iterable of float
-            The new coefficients of the Calibration function.
-        timestamp : int
-            The timestamp for `coefficients`
+        :param session: The context for accessing the database.
+        :type session: sessionScope() context
+        :param sensor: The Sensor to update.
+        :type sensor: model.Sensor
+        :param coefficients: The new coefficients of the Calibration function.
+        :param timestamp: The timestamp for `coefficients`
+        :type timestamp: int
 
-        See Also
-        --------
-        `models.Sensor`
-        `models.Calibration`
+        See Also:
+            `models.Sensor`
+            `models.Calibration`
         """
         logging.debug("Updating calibration of sensor %s with coefficients %s and timestamp %s", str(sensor), str(coefficients), str(timestamp))
 
@@ -329,24 +238,18 @@ class Sensors:
         return sensor
 
 
-
 def deleteSensor(sensor_id, session=None):
     """
     Deletes the sensor with given uuid.
 
-    Parameters
-    ----------
-    sensor_id : str
-        The UUID of a sensor
+    :param sensor_id: The UUID of a sensor.
+    :type sensor_id: str.
 
-    Returns
-    -------
-    The dictionary representation of the sensor that was deleted if successful; otherwise None.
+    :returns: Dictionary -- The dictionary representation of the sensor that was deleted if successful; otherwise None.
 
-    See Also
-    --------
-    `models.Sensor`
-    `sensors.DELETE`
+    See Also:
+        `models.Sensor`
+        `sensors.DELETE`
     """
     logging.info("Deleting sensor %s", sensor_id)
 
@@ -380,9 +283,11 @@ def deleteSensor(sensor_id, session=None):
 def getSensor(sensor_id, session=None):
     """
     :param sensor_id: The id of the sensor to query on
-    :param session: Optional session context. If None, this function creates its own context. Otherwise, uses this context.
-    :return: A dictionary representing the sensor (as described in Models.Sensor) if found, else None
-    :raises NoResultFound: If a sensor with id sensor_id was not found.
+    "param session: Optional session context. If None, this function creates its own context. Otherwise, uses this context.
+
+    :returns: Dictionary -- A dictionary representing the sensor (as described in Models.Sensor) if found, else None
+
+    :raises: NoResultFound -- If a sensor with id sensor_id was not found.
     """
 
     logging.debug("Getting Sensor %s", str(sensor_id))
@@ -393,10 +298,12 @@ def getSensor(sensor_id, session=None):
 
     return session.query(Sensor).filter_by(uuid=sensor_id).one().toDict()
 
+
 def getAllSensors():
     """
     Returns the view of every sensor in the database.
-    :return: A list of dictionaries representing all sensors in the database.
+
+    :returns: Dictionary -- A list of dictionaries representing all sensors in the database.
     """
     logging.debug("Getting all sensors.")
     with sessionScope() as session:
@@ -405,9 +312,9 @@ def getAllSensors():
 
 
 def _updateSensor(sensor_id, data, session):
-    blacklist = ("uuid","message")
+    blacklist = ("uuid", "message")
     sensor = session.query(Sensor).filter_by(uuid=sensor_id).one()
-    for key,value in data.iteritems():
+    for key, value in data.iteritems():
         logging.debug("Key: {}, Value: {}".format(key, value))
         if key in blacklist:
             logging.error("Request to updateSensor included blacklisted key %s", str(key))
@@ -417,7 +324,7 @@ def _updateSensor(sensor_id, data, session):
             if type(value['coefficients']) is not type(str()):
                     value['coefficients'] = json.dumps(value['coefficients'])
 
-            #if no timestamp, create timestamp
+            # if no timestamp, create timestamp
             logging.debug("value: {}".format(value))
             if 'timestamp' not in value or value['timestamp'] is None or value['timestamp'] == 0:
 
@@ -425,7 +332,7 @@ def _updateSensor(sensor_id, data, session):
                 value['timestamp'] = time.time()
 
             sensor = Sensors.updateCalibration(sensor.toDict(), value['coefficients'], value['timestamp'], session)
-            #we want to keep using a Sensor, not the dict, so look it up
+            # we want to keep using a Sensor, not the dict, so look it up
             # TODO: This is pretty smelly, but should work for now. Maybe in the future we want updateCalibration and _updateCalibration return a Sensor, or find some other way to update it.
             sensor = session.query(Sensor).filter_by(uuid=sensor_id).one()
             logging.info("Back from updateCalibration. Sensor: {}".format(sensor))
@@ -436,12 +343,13 @@ def _updateSensor(sensor_id, data, session):
     logging.debug("Finished updating sensor.")
     return sensor.toDict()
 
+
 def _updateCalibration(sensor, coefficients, timestamp, session):
     updateNeeded = False
-    #logging.info("Trying to update sensor %s with coefficiencts %s with new coefficients %s", str(sensor['uuid']), str(sensor['last_calibration']['coefficients']), str(coefficients))
+    # logging.info("Trying to update sensor %s with coefficiencts %s with new coefficients %s", str(sensor['uuid']), str(sensor['last_calibration']['coefficients']), str(coefficients))
 
     if 'last_calibration' not in sensor or 'id' not in sensor['last_calibration'] or sensor['last_calibration']['id'] is None:
-        #sensor doesn't have a calibration id, so we need to make a new calibration
+        # sensor doesn't have a calibration id, so we need to make a new calibration
         Cal = Calibration(coefficients=coefficients, timestamp=timestamp, sensor_id=sensor['uuid'])
         session.add(Cal)
         session.commit()
@@ -449,7 +357,7 @@ def _updateCalibration(sensor, coefficients, timestamp, session):
     else:
         try:
             Cal = session.query(Calibration).filter_by(id=sensor['last_calibration']['id']).one()
-            #update calibration based on timestamps
+            # update calibration based on timestamps
             currentTimestamp = timestamp
             oldTimestamp = Cal.timestamp
 
@@ -458,7 +366,7 @@ def _updateCalibration(sensor, coefficients, timestamp, session):
             if currentTimestamp > oldTimestamp:
                 logging.info("Comparing coefficients.")
 
-                #check if coefficients are different
+                # check if coefficients are different
                 if Cal.coefficients != coefficients:
                     logging.info("Coefficients are different, updating...")
 
@@ -478,23 +386,23 @@ def _updateCalibration(sensor, coefficients, timestamp, session):
 
             updateNeeded = True
         if sensor['uuid'] != Cal.sensor_id:
-            #sensor thinks the calibration it has belongs to it, but it doesn't (may belong to another sensor). Make a new calibration.
+            # sensor thinks the calibration it has belongs to it, but it doesn't (may belong to another sensor). Make a new calibration.
             logging.error("Calibration has different sensor foreign key %s than input sensor uuid %s", Cal.sensor_id, sensor['uuid'])
 
-            Cal = Calibration(coefficients=coefficients,timestamp=timestamp,sensor_id=sensor['uuid'])
+            Cal = Calibration(coefficients=coefficients, timestamp=timestamp, sensor_id=sensor['uuid'])
             session.add(Cal)
             session.commit()
             logging.debug("Created new Calibration for input sensor.")
 
             updateNeeded = True
 
-    #update sensor model with calibration
+    # update sensor model with calibration
     if updateNeeded:
         logging.info("Updating sensor with new calibration.")
 
         sensor = session.query(Sensor).filter_by(uuid=sensor['uuid']).one()
         logging.info("Got sensor %s", str(sensor.toDict()))
-        Cal = session.query(Calibration).filter_by(sensor_id=sensor.uuid)[-1] #Gets most recent (by id) calibration
+        Cal = session.query(Calibration).filter_by(sensor_id=sensor.uuid)[-1] # Gets most recent (by id) calibration
         logging.info("Got calibration %s", str(Cal.toDict()))
 
         sensor.last_calibration_id = Cal.id

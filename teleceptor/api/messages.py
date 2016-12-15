@@ -1,9 +1,8 @@
 """
-Contributing Authors:
-        Victor Szczepanski (Visgence, Inc.)
-        Jessica Greenling (Visgence, Inc.)
+messages.py
 
-
+    Authors: Victor Szczepanski
+             Jessica Greenling
 
     This module handles message sending, receiving, and deleting.
 
@@ -11,36 +10,8 @@ Contributing Authors:
         Unless otherwise noted api will return data as JSON.
 
         Functions include GET, POST, DELETE, and PURGE.
-
-
-Dependencies:
-    global:
-    cherrypy
-    sqlalchemy
-    (optional) simplejson
-
-    local:
-    teleceptor.models
-    teleceptor.sessionManager
-    teleceptor.auth
-
-
-
-    (c) 2014 Visgence, Inc.
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>
 """
+
 
 # System Imports
 import cherrypy
@@ -73,32 +44,33 @@ class Messages:
         needed.
         All message queues are returned if sensor_id is not given (is None)
 
-        Returns a json object with the form
-        data = {
-                'message_queue': [
-                Message,
-                Message,
-                ...
-                ]
-        }
-        if the sensor_id is given.
+        :return:
+            a json object with the form
+            data = {
+                    'message_queue': [
+                    Message,
+                    Message,
+                    ...
+                    ]
+            }
+            if the sensor_id is given.
 
-        If no sensor_id is given, returns a json object with the form
-        data = {
-                'message_queues' :[
-                MessageQueue,
-                MessageQueue,
-                ...
-                ]
-        }
+            If no sensor_id is given, returns a json object with the form
+            data = {
+                    'message_queues' :[
+                    MessageQueue,
+                    MessageQueue,
+                    ...
+                    ]
+            }
 
-        If the sensor_id is not found, returns an error json of the form
-        data = {
-                'error' : "Sensor with id __ doesn't exist"
-        }
+            If the sensor_id is not found, returns an error json of the form
+            data = {
+                    'error' : "Sensor with id __ doesn't exist"
+            }
 
-        sensor_id: int
-            Unique identifier for a sensor.
+        :param sensor_id: Unique identifier for a sensor.
+        :type sensor_id: int
         """
 
         logging.debug("GET request to messages.")
@@ -135,10 +107,11 @@ class Messages:
         return json.dumps(data, indent=4)
 
     @staticmethod
-    def is_valid_type(message,sensor_type):
+    def is_valid_type(message, sensor_type):
         """
         This function validates that the message type matches with the sensor type.
-        Returns True or False
+
+        :returns: bool
         """
         if type(message) == int:
             message = float(message)
@@ -154,15 +127,16 @@ class Messages:
         """
         A POST to this module should include a sensor_id and the
         content of the request should include the data to go in the message.
-        Returns the message that was created.
-        Content form should be
-        content = {
-                "message": message_value
-               ,"duration:" duration_value
-        }
+        :returns:
+            the message that was created.
+            Content form should be
+            content = {
+                    "message": message_value
+                   ,"duration:" duration_value
+            }
 
-        sensor_id: int
-            Unique identifier for a sensor.
+        :param sensor_id: Unique identifier for a sensor.
+        :type sensor_id: int
         """
         logging.debug("POST request to messages.")
 
@@ -199,18 +173,17 @@ class Messages:
         cherrypy.response.status = status_code
         return json.dumps(return_data, indent=4)
 
-
     def DELETE(self, sensor_id, message_id):
         """
         A DELETE to this module should remove one message (based on its id)
         from the message queue it is stored in.
 
-        Returns the deleted message as confirmation that the message was deleted.
+        :returns: the deleted message as confirmation that the message was deleted.
 
-        sensor_id: int
-            Unique identifier for a sensor.
-        message_id: int
-            Unique identifier for a message.
+        :param sensor_id: Unique identifier for a sensor.
+        :type sensor_id: int
+        :param message_id: Unique identifier for a message.
+        :type message_id: int
         """
 
         logging.debug("DELETE request to messages.")
@@ -240,13 +213,12 @@ class Messages:
         queue that belongs to the sensor with uuid sensor_id with
         timeout <= timeout.
 
-        Returns an error message if an error occurred or a success message
-        if no error occurred.
+        :returns: an error message if an error occurred or a success message if no error occurred.
 
-        sensor_id: int
-            Unique identifier for a sensor.
-        timeout : float
-            The time at which the message(s) will expire.
+        :param sensor_id: Unique identifier for a sensor.
+        :type sensor_id: int
+        :param timeout: The time at which the message(s) will expire.
+        :type timeout: float
         """
         logging.debug("PURGE request to messages.")
 
@@ -273,14 +245,17 @@ class Messages:
 def getMessages(sensor_id, by_timestamp=False, unread_only=False):
     """
     Returns a list of all messages (read and not read) for the sensor with id `sensor_id`
-    :param sensor_id: int
-        The id of the sensor to get all messages for.
-    :param by_timestamp: boolean
-        Gets only messages that have not timed out (i.e. timeout for message is greater than current time) if True
-    :param unread_only: boolean
-        Gets only messages that are unread if True.
-    :return: The list of messages for the sensor with id `sensor_id`, or None if sensor doesn't have a message queue.
-    :raises NoResultFound: If sensor_id is None or no Sensor found with id `sensor_id`
+
+    :param sensor_id: The id of the sensor to get all messages for.
+    :type sensor_id: int
+    :param by_timestamp: Gets only messages that have not timed out (i.e. timeout for message is greater than current time) if True
+    :type by_timestamp: boolean
+    :param unread_only: Gets only messages that are unread if True.
+    :type unread_only: boolean
+
+    :returns: The list of messages for the sensor with id `sensor_id`, or None if sensor doesn't have a message queue.
+
+    :raises: NoResultFound if sensor_id is None or no Sensor found with id `sensor_id`
     """
     with sessionScope() as session:
         try:
@@ -292,20 +267,20 @@ def getMessages(sensor_id, by_timestamp=False, unread_only=False):
         if unread_only:
             if by_timestamp:
                 logging.info("Getting by timestamp and unread...")
-                messages = session.query(Message).filter(Message.message_queue_id==sensor_queue.id,
-                                                    Message.timeout >= time(),
-                                                    Message.read != True)
+                messages = session.query(Message).filter(Message.message_queue_id == sensor_queue.id,
+                                                         Message.timeout >= time(),
+                                                         Message.read is not True)
             else:
-                messages = session.query(Message).filter(Message.message_queue_id==sensor_queue.id,
-                                                    Message.timeout >= 0,
-                                                    Message.read != True)
+                messages = session.query(Message).filter(Message.message_queue_id == sensor_queue.id,
+                                                         Message.timeout >= 0,
+                                                         Message.read is not True)
         else:
             if by_timestamp:
-                messages = session.query(Message).filter(Message.message_queue_id==sensor_queue.id,
-                                                    Message.timeout >= time())
+                messages = session.query(Message).filter(Message.message_queue_id == sensor_queue.id,
+                                                         Message.timeout >= time())
             else:
-                messages = session.query(Message).filter(Message.message_queue_id==sensor_queue.id,
-                                                    Message.timeout >= 0)
+                messages = session.query(Message).filter(Message.message_queue_id == sensor_queue.id,
+                                                         Message.timeout >= 0)
         messages_view = []
         if unread_only:
             logging.info("Got messages: %s", str([msg.to_dict() for msg in messages]))
@@ -319,10 +294,10 @@ def getMessages(sensor_id, by_timestamp=False, unread_only=False):
 
     return messages_view
 
+
 def getAllMessages():
     """
     Returns a list of message queues for all sensors.
-    :return:
     """
     with sessionScope() as session:
         message_queues = session.query(MessageQueue).all()
@@ -333,12 +308,17 @@ def addMessage(sensor_id, message, duration):
     """
     Creates a new Message from `message` and `duration` and appends it to the msgQueue of the sensor with id `sensor_id`.
     If the requested sensor does not have a message queue yet, this function creates one.
+
     :param sensor_id:
     :param message:
     :param duration:
-    :return: A dictionary representing the added message.
-    :raises NoResultFound: If sensor_id is None or no Sensor found with id `sensor_id`
-    :raises ValueError: If type of message is not valid for sensor with id `sensor_id`
+
+    :returns:
+        A dictionary representing the added message.
+
+    :raises:
+        NoResultFound: If sensor_id is None or no Sensor found with id `sensor_id`
+        ValueError: If type of message is not valid for sensor with id `sensor_id`
     """
     with sessionScope() as s:
         try:
@@ -374,6 +354,7 @@ def addMessage(sensor_id, message, duration):
             logging.debug("Completed adding message.")
             logging.info("Returning added message: %s", str(msg.to_dict()))
             return msg.to_dict()
+
 
 def deleteMessage(sensor_id, message_id):
     with sessionScope() as session:
