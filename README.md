@@ -25,21 +25,22 @@ whisper
 pip
 cherrypy (pip install --no-use-wheel cherrypy on windows)
 requests
+psycopg2
+pyserial
 ```
 ##Setting Up Teleceptor
 1. Pull the latest version of Teleceptor from GitHub.
-2. To insatll a local config customizable first run ```./teleceptor copyconfig``` app will print path
-3. In teleceptor folder, run command ```./teleceptorcmd setup``` and wait until _Done!_ is printed.
+2. To install a local config customizable first run ```./teleceptorcmd copyconfig``` app will print path
+3. Start up Elastic Search, Kibana, and Postgres and in your config, make sure they Everything is pointing to the correct destination.
+4. In teleceptor folder, run command ```./teleceptorcmd setup``` and wait until _Done!_ is printed.
   * **Note:** All commands should be run in the teleceptor folder unless installed with pip or setuptools
-4. Run command ```./teleceptorcmd runserver```. You will now be running teleceptor as a local host.
-5. Open up either a Chrome or Mozilla Firefox browser and go to page [http://0.0.0.0:8000/] (http://0.0.0.0:8000/)
+5. Run command ```./teleceptorcmd runserver```. You will now be running teleceptor as a local host.
+6. Open up either a Chrome or Mozilla Firefox browser and go to page [http://0.0.0.0:8000/] (http://0.0.0.0:8000/)
   * If you do not have any sensors connected, you should see two default sensors producing a graph per tab with random data.
-6. Set up desired sensors and start collecting data.(_See below for setting up sensors_)
+7. Set up desired sensors and start collecting data.(_See below for setting up sensors_)
 
-##Setting Up Sensors
-1. Run command ```./teleceptorcmd poller```. This will begin to look for sensors via USB ports.
-2. Plug in your sensor through a USB port.
-  * Make sure you have the most current firmware for your sensor. (_See **Sensor Firmware**._)
+##Example Sensor
+The ```./teleceptorcmd btcmote``` command will run a program that requests data from http://blockchain.info/ticker and sends the data to teleceptor.
 
 
 #Sensor Firmware
@@ -49,6 +50,10 @@ Sensor firmware can be found in the [firmware](https://github.com/visgence/telec
 * You will need to download aJSON and add it to your adruino IDE.
 * In the .ino file that you download for your firmware, change the uuid found in _static const char jsonData[ ]_ to be a unique name of your choosing.
 
+##Setting Up Sensors
+1. Run command ```./teleceptorcmd poller```. This will begin to look for sensors via USB ports.
+2. Plug in your sensor through a USB port.
+  * Make sure you have the most current firmware for your sensor. (_See **Sensor Firmware**._)
 
 #Teleceptor Front-End Usage
 * To view sensor data that has been collected, click on a sensor under the _Sensors_ tab.
