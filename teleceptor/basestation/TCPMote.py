@@ -1,8 +1,6 @@
 """
-Contributing Authors:
+Authors:
     Victor Szczepanski (Visgence, Inc)
-
-TCPMote.py
 
 Encapsulates a TCP socket connection and provides several
 methods used by the Teleceptor Basestation software.
@@ -18,8 +16,9 @@ from requests import ConnectionError
 import json
 import logging
 
+
 class TCPMote():
-    def __init__(self,host,port,timeout=3, debug=False):
+    def __init__(self, host, port, timeout=3, debug=False):
         """
         Initializes the TCP socket connection. Required arguments are host and port
         host -- The IP address of the Teleimperium-like device as a string. For example 192.168.55.12
@@ -29,9 +28,9 @@ class TCPMote():
 
         """
         if debug:
-            logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s',level=logging.DEBUG)
+            logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s', level=logging.DEBUG)
         else:
-            logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s',level=logging.INFO)
+            logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s', level=logging.INFO)
 
         logging.debug("Creating socket connection to host %s and port %s", str(host), str(port))
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -41,7 +40,7 @@ class TCPMote():
         s.settimeout(timeout)
 
         self._device = s.makefile()
-        self.metadata = {'host':host,'port':port}
+        self.metadata = {'host': host, 'port': port}
 
         logging.info("Created mote with metadata %s", str(self.metadata))
 
@@ -51,7 +50,6 @@ class TCPMote():
 
         except socket.timeout as e:
             logging.debug("No Hello Line")
-
 
     def getReadings(self):
         """
@@ -63,8 +61,10 @@ class TCPMote():
         >>> json.loads(info)
         >>> json.loads(readings)
 
+        .. todo::
+            Raise generic timeout exception if we get a sockettimeout.
+
         """
-        #TODO: Raise generic timeout exception if we get a sockettimeout.
         info = None
         readings = None
         try:
@@ -80,7 +80,7 @@ class TCPMote():
             readings = self._device.readline()
             logging.debug("Read line %s.", readings)
         except socket.timeout as e:
-            #try again
+            # try again
             logging.debug("Timed out trying to read from device. Trying again...")
             try:
                 logging.debug("Writing %...")
@@ -102,18 +102,17 @@ class TCPMote():
 
         return info, readings
 
-    def updateValues(self,newValues={}):
+    def updateValues(self, newValues={}):
         """
         Sends values to update this mote's input sensors. The format should be a dictionary with key/value pairs in the form sensorName: value.
 
-        newValues -- The dictionary of sensorName: value pairs.
-
-        newValues =
-                    {
-                        "in1": true,
-                        "in2": false,
-                        "in3": 70.0
-                    }
+        :param newValues: The dictionary of sensorName: value pairs.
+            newValues =
+                {
+                    "in1": true,
+                    "in2": false,
+                    "in3": 70.0
+                }
 
         >>> info, readings = this.updateValues()
         >>> json.loads(info)
@@ -124,11 +123,11 @@ class TCPMote():
             logging.debug("Sending new Values: %s", json.dumps(newValues))
 
             logging.debug("Writing @")
-            self._device.write('@') #TODO: Check if this is correct code.
+            self._device.write('@') # TODO: Check if this is correct code.
             self._device.flush()
 
             logging.debug("Writing new values.")
             self._device.write(json.dumps(newValues))
             self._device.flush()
-        #get values from sensor
+        # get values from sensor
         return self.getReadings()

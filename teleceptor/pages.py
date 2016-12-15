@@ -1,6 +1,5 @@
 """
-pages.py
-    Sets up webpage and displays current sensor readings.
+Sets up webpage and displays current sensor readings.
 
 Authors: Victor Szczepanski
 

@@ -1,8 +1,6 @@
 """
-auth.py
 
 Authors: Victor Szczepanski
-
 
 """
 
@@ -23,7 +21,7 @@ PATH = os.path.abspath(os.path.dirname(__file__))
 def check_credentials(username, password, session):
     """
     Verifies credentials for username and password.
-    Returns None on success or a string describing the error on failure
+    :returns: None on success or a string describing the error on failure
     """
 
     try:
@@ -92,7 +90,7 @@ def name_is(reqd_username):
 
 def any_of(*conditions):
     """
-    Returns True if any of the conditions match
+    :returns: True if any of the conditions match
     """
     def check():
         for c in conditions:
@@ -104,7 +102,7 @@ def any_of(*conditions):
 
 def all_of(*conditions):
     """
-    Returns True if all of the conditions match
+    :returns: True if all of the conditions match
 
     By default all conditions are required, but this might still be
     needed if you want to use it inside of an any_of(...) condition

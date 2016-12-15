@@ -1,6 +1,4 @@
 """
-__init__.py
-
 
 Authors: Victor Szczepanski
 

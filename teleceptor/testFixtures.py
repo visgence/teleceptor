@@ -1,5 +1,4 @@
 """
-testFixtures.py
 
 Authors: Victor Szczepanski
 

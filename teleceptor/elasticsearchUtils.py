@@ -1,6 +1,4 @@
 """
-elasticsearchUtils.py
-
 
 Authors: Victor Szczepanski
 
@@ -57,20 +55,23 @@ def getReadings(ds, start, end, points=None):
     """
     Get the readings from elastic search for datastream `ds` between dates `start` and `end`.
 
-    Args:
-        ds (int): The datastream id
-        start (float): The time in seconds since UNIX epoch to start the query from.
-        end (float): The time in seconds since UNIX epoch to end the query at.
-        points optional(int): The number of points to retrieve. This affects the level of aggregation when combined with the start and end times.
+    :param ds: The datastream id
+    :type ds: int
+    :param start: The time in seconds since UNIX epoch to start the query from.
+    :type start: float
+    :param end: The time in seconds since UNIX epoch to end the query at.
+    :type end: float
+    :param points:The number of points to retrieve. This affects the level of aggregation when combined with the start and end times.
+    :type points: optional int
 
-    Note:
+    .. note::
         We return data points at `start` and `end`. That is, this function is inclusive of the end points.
 
-    Note:
+    .. note::
         If `points` is None, we use the default aggregation of 1 minute.
 
-    Returns:
-        list[(float,float)]: pairs of the form (timestamp, value) for all data in datastream `ds` between dates `start` and `end`.
+    :returns:
+        list[(float,float)] -- pairs of the form (timestamp, value) for all data in datastream `ds` between dates `start` and `end`.
     """
     aggregation_string = getElasticSearchAggregationLevel(int(start), int(end))
 
@@ -192,14 +193,16 @@ def get_elastic(elastic_buffer, index_info=None):
     """
     Make a query to elasticsearch with args in `elastic_buffer`
 
-    Args:
-        elastic_buffer (dict): The query json to provide to elastic search.
+    :parma elastic_buffer: The query json to provide to elastic search.
+    :type elastic_buffer: dictionary
 
-    Returns:
-        list[(float,float)]: pairs of the form (timestamp, value) for all data that matches the query in `elastic_buffer`
+    :returns:
+        list[(float,float)] -- pairs of the form (timestamp, value) for all data that matches the query in `elastic_buffer`
+
+    .. todo::
+        May want to pass in a list of indicies to search on
+
     """
-    # TODO: May want to pass in a list of indicies to search on
-
     es = ElasticSearch(ELASTICSEARCH_URI)
     # we actually use filter instead of query, since we want exact results
     result = es.search(elastic_buffer, index=index_info)#{'filter': elastic_buffer, '_source': ['@timestamp', 'value']})

@@ -215,7 +215,7 @@ class Sensors:
         :param timestamp: The timestamp for `coefficients`
         :type timestamp: int
 
-        See Also:
+        .. seealso::
             `models.Sensor`
             `models.Calibration`
         """
@@ -247,7 +247,7 @@ def deleteSensor(sensor_id, session=None):
 
     :returns: Dictionary -- The dictionary representation of the sensor that was deleted if successful; otherwise None.
 
-    See Also:
+    .. seealso::
         `models.Sensor`
         `sensors.DELETE`
     """

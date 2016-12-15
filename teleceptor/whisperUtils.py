@@ -1,6 +1,5 @@
 """
-whisperUtils.py
-   Utilites for using whisper
+Utilites for using whisper
 
 Authors: Evan Salazar
 

@@ -1,6 +1,4 @@
 """
-sessionManager.py
-
 Authors: Victor Szczepanski
 
 """

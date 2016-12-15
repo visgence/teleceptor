@@ -1,6 +1,5 @@
 """
-version.py
-   Holds the version number
+Holds the version number
 
 Authors: Evan Salazar
 

@@ -107,7 +107,7 @@ class DataStreams:
             Obtain a list of available Datastreams filtered by url arguments.
 
             Valid Aruments:
-                NOTE: Unless otherwise specified all arguments accept the value null.
+                ..note:: Unless otherwise specified all arguments accept the value null.
 
                 'sensor' (Alphanumeric) - uuid of the Sensor
 
@@ -174,16 +174,14 @@ class DataStreams:
         This function cannot be undone, but the stream may be created again
         in a separate transaction.
 
-        Args:
-            stream_id : int
-                The id of a DataStream
+        :param stream_id: The id of a DataStream
+        :type stream_id: int
 
-        Returns:
+        :returns:
             A JSON object with an 'error' key if an error occured or 'datastream' key if update succeeded. If 'error', the value is an error string. If 'datastream', the value is a JSON object representing the deleted DataStream in the database.
 
-        See Also
-        --------
-        `models.DataStream`
+        .. seealso::
+            `models.DataStream`
         """
         logging.info("DELETE request to datastreams for stream with id {}".format(stream_id))
 
@@ -215,15 +213,13 @@ class DataStreams:
         Convience function that adds the given `datastream` to the database in `session` and creates a whisper database file using this datastream's id. If `datastream` is None, this function does nothing.
         expects datastream to be a DataStream() from models
 
-        Args:
-            session : context object from `sessionScope()`
-                Existing context into a sqlalchemy database session. Can be created by a call to `sessionScope()`
-            datastream : DataStream, optional
-                `DataStream` object to add to the database and create a whisper file for.
+        :param session: Existing context into a sqlalchemy database session. Can be created by a call to `sessionScope()`
+        :type session: context object from `sessionScope()`
+        :param datastream: `DataStream` object to add to the database and create a whisper file for.
+        :type datastream: DataStream, optional
 
-        Notes
-        -----
-        This function is *not* idempotent. That is, multiple calls to this function with the same input `datastream` will create multiple `DataStream` objects in the database, each with its own whisper file.
+        .. note:
+            This function is *not* idempotent. That is, multiple calls to this function with the same input `datastream` will create multiple `DataStream` objects in the database, each with its own whisper file.
         """
         if datastream is not None:
             logging.debug("Creating datastream with options: %s", str(datastream.toDict()))
@@ -240,19 +236,18 @@ class DataStreams:
 def deleteDatastream(session, datastream_id):
     """ Deletes a datastream with the given `datastream_id` and its associated sensor.
 
-    Args:
-        session : context object from `sessionScope()`
-            Existing context into a sqlalchemy database session. Can be created by a call to `sessionScope()`
-        datastream_id : int
-            id of the datastream to delete.
 
-    Returns:
+    :param session: Existing context into a sqlalchemy database session. Can be created by a call to `sessionScope()`
+    :type session: context object from `sessionScope()`
+    :param datastream_id: id of the datastream to delete.
+    :type datastrea,_id: int
+
+    :returns:
         The dictionary representation of the datastream that was deleted if successful; otherwise None.
 
-    See Also
-    --------
-    `models.DataStream`
-    `datastreams.DELETE`
+    .. seealso::
+        `models.DataStream`
+        `datastreams.DELETE`
     """
 
     try:
@@ -274,7 +269,7 @@ def clean_inputs(inputs):
         """
             Checks that the supplied inputs only contains valid parameters for filtering Datadatastreams.
 
-            Returns:
+            :returns:
                 Dictionary with valid parameters taken from provided inputs.
         """
 
@@ -307,14 +302,13 @@ def get_datastream(datastream_id, session=None):
     Tries to get a datastream from the database with the provided datastream_id.
     Optionally uses a provided session context to interact with the database.
 
-    Args:
-        datastream_id: ID of the datastream.
-        session:
+    :param datastream_id: ID of the datastream.
+    :param session:
 
-    Returns:
+    :returns:
         The dictionary view of the datastream.
 
-    Raises:
+    :raises:
         noResultFound: If no datastream matches the datastream_id.
     """
     if session is None:
@@ -331,14 +325,13 @@ def get_datastream_by_sensorid(sensor_id, session=None):
     Tries to get a datastream from the database with the provided sensor_id.
     Optionally uses a provided session context to interact with the database.
 
-    Args:
-        sensor_id: ID of the sensor to retrieve the datastream for.
-        session:
+    :param sensor_id: ID of the sensor to retrieve the datastream for.
+    :param session:
 
-    Returns:
+    :returns:
         The dictionary view of the datastream.
 
-    Raises:
+    :raises:
         NoResultFound: If no datastream matches the datastream_id.
     """
     if session is None:
@@ -355,9 +348,9 @@ def filter_datastreams(session=None, **filter_args):
     Tries to get all datastreams from the database.
     Optionally uses a provided session context to interact with the database.
 
-    Args:
-        session:
-    Returns:
+    :param session:
+
+    "returns:
         A list of dictionary views of the datastreams currently in the database.
     """
     inputs = clean_inputs(filter_args)

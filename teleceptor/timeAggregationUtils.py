@@ -1,7 +1,5 @@
 """
-timeAggregationUtils.py
-    Defines high level functions for retrieving Teleceptor aggregation
-    levels.
+Defines high level functions for retrieving Teleceptor aggregation levels.
 
 Authors: Victor Szczepanski
 
@@ -26,15 +24,16 @@ def getAggregationLevel(start, end):
     """
     Get the appropriate aggregation level for the time period `start` - `end`.
 
-    Notes:
+    .. note::
         Uses the aggregation_levels dictionary for lookup. We assume the keys
         in aggregation_levels are non-overlapping - undefined behaviour may occur if this is not true.
 
-    Args:
-        start (int): The start time in seconds.
-        end (int): The end time in seconds.
-    Returns:
-        int: The number of seconds to aggregate on.
+    :params start: The start time in seconds.
+    :type start: int
+    :param end: The end time in seconds.
+    :type end: int
+
+    :returns: int -- The number of seconds to aggregate on.
     """
     period = end - start
     for (period_start, period_end), aggregation_level in aggregation_levels.items():
@@ -57,12 +56,12 @@ def getElasticSearchAggregationLevel(start, end):
         time_frame = getElasticSearchAggregationLevel(0,120*60 + 1)
         assert(time_frame is "10s")
 
-    Args:
-        start (int): The start time in seconds.
-        end (int): The end time in seconds.
-    :param end:
-    Returns:
-        str: The aggregation period in ElasticSearch format, in the lowest common division.
+    :params start: The start time in seconds.
+    :type start: int
+    :param end: The end time in seconds.
+    :type end: int
+
+    :returns: str -- The aggregation period in ElasticSearch format, in the lowest common division.
     """
     aggregation_period = getAggregationLevel(start, end)
     if aggregation_period < 60:

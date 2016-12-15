@@ -1,6 +1,5 @@
 """
-server.py
-   The server that runs Teleceptor
+The server that runs Teleceptor
 
 Authors: Evan Salazar
 
@@ -24,7 +23,7 @@ sys.path.append(PATH)
 def get_cp_config():
     """Creates config file for server
 
-    Returns:
+    :returns:
         a dictionary with the server settings
 
     """
@@ -45,8 +44,7 @@ def get_cp_config():
 def runserver(config):
     """Runs a cherrypy server
 
-    Args:
-        server configuration file
+    :param server: configuration file
 
     """
 

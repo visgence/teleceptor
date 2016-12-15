@@ -1,8 +1,6 @@
 """
-Contributing Authors:
+Authors:
     Victor Szczepanski (Visgence, Inc)
-
-SerialMote.py
 
 Encapsulates a Serial connection and provides several
 methods used by the Teleceptor Basestation software.
@@ -32,44 +30,44 @@ class SerialMote(serial.Serial):
     def __init__(self, deviceName, timeout=3, baudRate=9600, debug=False):
         """
         Initializes the mote. Required arguments are deviceName and timeout.
-        deviceName -- The path to the serial device as a string. For example: /dev/ttyUSB0
-        timeout -- The timeout, in seconds, to wait for serial reads.
-        baudRate -- The baud rate for the serial device. (default 9600)
-        debug -- Whether to display debug messages.
+        :param deviceName: The path to the serial device as a string. For example: /dev/ttyUSB0
+        :param timeout: The timeout, in seconds, to wait for serial reads.
+        :param baudRate: The baud rate for the serial device. (default 9600)
+        :param debug: Whether to display debug messages.
 
         Additional Serial settings can be configured after creating the mote.
         """
         if debug:
-            logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s',level=logging.DEBUG)
+            logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s', level=logging.DEBUG)
         else:
-            logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s',level=logging.INFO)
+            logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s', level=logging.INFO)
 
         logging.debug("Calling serial.Serial...")
-        super(serial.Serial, self).__init__(deviceName,timeout=timeout,baudrate=baudRate)
-        #wait 5 seconds to allow mote time to boot
+        super(serial.Serial, self).__init__(deviceName, timeout=timeout, baudrate=baudRate)
+        # wait 5 seconds to allow mote time to boot
         time.sleep(5)
 
         logging.debug("Finished creating serial object as self")
         logging.info("Created mote %s with timeout %s seconds and baudrate %s", deviceName, str(timeout), str(baudRate))
 
-        #get reading to make sure device is alive
+        # get reading to make sure device is alive
         info = ""
-        #get a reading to make sure device is alive.
+        # get a reading to make sure device is alive.
         try:
             info, readings = self.getReadings()
         except SerialTimeoutException, ste:
-            #device may not be ready yet. Try again.
+            # device may not be ready yet. Try again.
             logging.error("Serial Timeout Exception, device may not be ready yet. \n %s", str(ste))
             raise ste
         except SerialException, se:
-            #failed device
+            # failed device
             logging.error("Serial Exception, device may not be connected or has failed. \n %s", str(se))
             raise se
 
         info = json.loads(info)
         self.uuid = info['uuid']
         self.deviceurl = deviceName
-        self.metadata = {"deviceurl":deviceName}
+        self.metadata = {"deviceurl": deviceName}
 
         logging.debug("Finished creating SerialMote, uuid: %s, metadata: %s.", str(self.uuid), str(metadata))
 
@@ -117,7 +115,7 @@ class SerialMote(serial.Serial):
         """
         if newValues:
             logging.debug("Sending new Values: %s", json.dumps(newValues))
-            self.write('@') #TODO: Check if this is correct code.
+            self.write('@') # TODO: Check if this is correct code.
             self.write(json.dumps(newValues))
-        #get values from sensor
+        # get values from sensor
         return self.getReadings()

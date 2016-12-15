@@ -209,7 +209,7 @@ class SensorReadings:
             Obtain a list of available SensorReadings filtered by url arguments.
 
             Args:
-                NOTE: Unless otherwise specified all filter arguments accept the value null.
+                .. note:: Unless otherwise specified all filter arguments accept the value null.
 
                 Filter Arguments:
                 'stream' (Numeric) - id of DataStream
