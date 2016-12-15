@@ -1,0 +1,454 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>teleceptor.api.datastreams &mdash; teleceptor 1 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="teleceptor 1 documentation" href="../../../index.html" />
+    <link rel="up" title="teleceptor.api" href="../api.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">teleceptor 1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../api.html" accesskey="U">teleceptor.api</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for teleceptor.api.datastreams</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">datastreams.py</span>
+
+<span class="sd">Authors: Victor Szczepanski</span>
+<span class="sd">         Bretton Murphy</span>
+<span class="sd">         Jessica Greenling</span>
+
+<span class="sd"> Resource endpoint for DataStreams that is used as part of the RESTful api.  Handles</span>
+<span class="sd">    the creation, updating, and retrieval of Datastreams.</span>
+
+<span class="sd">    API:</span>
+<span class="sd">        Unless otherwise noted api will return data as JSON.</span>
+
+<span class="sd">        GET /api/datastreams/</span>
+<span class="sd">            Obtain a list of available Datastreams.</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">            {</span>
+<span class="sd">                &#39;error&#39;:   &lt;error str if applicable&gt;</span>
+<span class="sd">                &#39;datastreams&#39;: [List of datastreams]</span>
+<span class="sd">            }</span>
+
+<span class="sd">        GET /api/datastreams/?arg1=value&amp;arg2=value...</span>
+<span class="sd">            Obtain a list of available Datastreams filtered by url arguments.</span>
+
+<span class="sd">            Valid Aruments:</span>
+<span class="sd">                NOTE: Unless otherwise specified all arguments accept the value null.</span>
+
+<span class="sd">                &#39;sensor&#39; (Alphanumeric) - uuid of the Sensor</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">            {</span>
+<span class="sd">                &#39;error&#39;:   &lt;error str if applicable&gt;</span>
+<span class="sd">                &#39;datastreams&#39;: [List of datastreams]</span>
+<span class="sd">            }</span>
+
+<span class="sd">        GET /api/datastreams/&lt;stream_id&gt;/</span>
+<span class="sd">            Obtain a single Datastreams for the given stream_id.</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">            {</span>
+<span class="sd">                &#39;error&#39;:   &lt;error str if applicable&gt;</span>
+<span class="sd">                &#39;stream&#39;:  A single stream</span>
+<span class="sd">            }</span>
+
+<span class="sd">        TODO:</span>
+<span class="sd">        POST /api/datastreams/  -  Create a new Datastreams.</span>
+<span class="sd">        PUT /api/datastreams/&lt;stream_id&gt;/  -  Update an existing stream.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c1"># System Imports</span>
+<span class="kn">import</span> <span class="nn">cherrypy</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy.orm.exc</span> <span class="kn">import</span> <span class="n">NoResultFound</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="c1"># Local Imports</span>
+<span class="kn">from</span> <span class="nn">teleceptor.models</span> <span class="kn">import</span> <span class="n">DataStream</span><span class="p">,</span> <span class="n">Sensor</span>
+<span class="kn">from</span> <span class="nn">teleceptor.sessionManager</span> <span class="kn">import</span> <span class="n">sessionScope</span>
+<span class="kn">from</span> <span class="nn">teleceptor</span> <span class="kn">import</span> <span class="n">USE_ELASTICSEARCH</span><span class="p">,</span> <span class="n">USE_DEBUG</span>
+<span class="k">if</span> <span class="n">USE_ELASTICSEARCH</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">teleceptor</span> <span class="kn">import</span> <span class="n">elasticsearchUtils</span> <span class="k">as</span> <span class="n">esUtils</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">teleceptor</span> <span class="kn">import</span> <span class="n">whisperUtils</span>
+
+
+<div class="viewcode-block" id="DataStreams"><a class="viewcode-back" href="../../../teleceptor.api.html#teleceptor.api.datastreams.DataStreams">[docs]</a><span class="k">class</span> <span class="nc">DataStreams</span><span class="p">:</span>
+    <span class="n">exposed</span> <span class="o">=</span> <span class="bp">True</span>
+
+    <span class="k">if</span> <span class="n">USE_DEBUG</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">format</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%(levelname)s</span><span class="s1">:</span><span class="si">%(asctime)s</span><span class="s1"> </span><span class="si">%(message)s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">format</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%(levelname)s</span><span class="s1">:</span><span class="si">%(asctime)s</span><span class="s1"> </span><span class="si">%(message)s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+
+<div class="viewcode-block" id="DataStreams.GET"><a class="viewcode-back" href="../../../teleceptor.api.html#teleceptor.api.datastreams.DataStreams.GET">[docs]</a>    <span class="k">def</span> <span class="nf">GET</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stream_id</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">filter_arguments</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Gets a specified datastream or list of datastreams filtered by keyword arguments.</span>
+
+<span class="sd">        :param stream_id: The `stream_id` of the datastream to get or None to select datastreams based on filter arguments in `args` and `filter_arguments`.</span>
+<span class="sd">        :type stream_id: int, optional</span>
+
+<span class="sd">        :param args: Unused list of arguments</span>
+<span class="sd">        :type args: list, optional</span>
+
+<span class="sd">        :param filter_arguments: Keyword arguments to filter the datastream query.</span>
+<span class="sd">        :type filter_arguments: dictionary, optional</span>
+
+<span class="sd">        :returns:</span>
+<span class="sd">            data : dictionary</span>
+<span class="sd">                Contains an &#39;error&#39; key if an error occurred with the value being a string containing the error message. Contains a &#39;datastreams&#39; key if multiple datastreams are selected with the value being a list of datastreams. Contains a &#39;stream&#39; key if `stream_id` selects a unique datastream with the value being the selected stream.</span>
+<span class="sd">                `data` is returned in the `response.text` section of the HTTP response, if this function is called through the cherrypy API.</span>
+
+<span class="sd">        .. seealso::</span>
+<span class="sd">            cleanInputs : Checks that filter_arguments only contains valid parameters for filtering datastreams.</span>
+
+
+<span class="sd">        GET /api/datastreams/</span>
+<span class="sd">            Obtain a list of available Datastreams.</span>
+
+<span class="sd">            :returns:</span>
+<span class="sd">                &#39;error&#39;:   &lt;error str if applicable&gt;</span>
+<span class="sd">                &#39;datastreams&#39;: [List of datastreams]</span>
+
+
+<span class="sd">        GET /api/datastreams/?arg1=value&amp;arg2=value...</span>
+<span class="sd">            Obtain a list of available Datastreams filtered by url arguments.</span>
+
+<span class="sd">            Valid Aruments:</span>
+<span class="sd">                ..note:: Unless otherwise specified all arguments accept the value null.</span>
+
+<span class="sd">                &#39;sensor&#39; (Alphanumeric) - uuid of the Sensor</span>
+
+<span class="sd">            :returns:</span>
+<span class="sd">                &#39;error&#39;:   &lt;error str if applicable&gt;</span>
+<span class="sd">                &#39;datastreams&#39;: [List of datastreams]</span>
+
+<span class="sd">        GET /api/datastreams/&lt;stream_id&gt;/</span>
+<span class="sd">            Obtain a single Datastreams for the given stream_id.</span>
+
+<span class="sd">            :returns:</span>
+<span class="sd">                &#39;error&#39;:   &lt;error str if applicable&gt;</span>
+<span class="sd">                &#39;stream&#39;:  A single stream</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;GET request to datastreams.&quot;</span><span class="p">)</span>
+
+        <span class="n">cherrypy</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="s1">&#39;Content-Type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;application/json&#39;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="n">statusCode</span> <span class="o">=</span> <span class="s2">&quot;200&quot;</span>
+
+        <span class="k">if</span> <span class="n">stream_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Request for datastream with id </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">stream_id</span><span class="p">))</span>
+            <span class="k">with</span> <span class="n">sessionScope</span><span class="p">()</span> <span class="k">as</span> <span class="n">s</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">stream</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">DataStream</span><span class="p">)</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="n">stream_id</span><span class="p">)</span><span class="o">.</span><span class="n">one</span><span class="p">()</span>
+                <span class="k">except</span> <span class="n">NoResultFound</span><span class="p">:</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Stream with id </span><span class="si">%s</span><span class="s2"> does not exist.&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">stream_id</span><span class="p">))</span>
+                    <span class="n">data</span><span class="p">[</span><span class="s1">&#39;error&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;Stream with id </span><span class="si">%s</span><span class="s2"> doesn&#39;t exist.&quot;</span> <span class="o">%</span> <span class="n">stream_id</span>
+                    <span class="n">statusCode</span> <span class="o">=</span> <span class="s2">&quot;400&quot;</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Found stream with id </span><span class="si">%s</span><span class="s2">: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">stream_id</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">stream</span><span class="o">.</span><span class="n">toDict</span><span class="p">()))</span>
+                    <span class="n">data</span><span class="p">[</span><span class="s1">&#39;stream&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">stream</span><span class="o">.</span><span class="n">toDict</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Request for all datastreams with parameters </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">filter_arguments</span><span class="p">))</span>
+            <span class="n">inputs</span> <span class="o">=</span> <span class="n">clean_inputs</span><span class="p">(</span><span class="n">filter_arguments</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">filter_arguments</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">inputs</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Provided url parameters are invalid: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">filter_arguments</span><span class="p">))</span>
+                <span class="n">data</span><span class="p">[</span><span class="s1">&#39;error&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;Invalid url parameters&quot;</span>
+                <span class="n">statusCode</span> <span class="o">=</span> <span class="s2">&quot;400&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Parameters are valid.&quot;</span><span class="p">)</span>
+                <span class="k">with</span> <span class="n">sessionScope</span><span class="p">()</span> <span class="k">as</span> <span class="n">s</span><span class="p">:</span>
+                    <span class="n">datastreams</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">DataStream</span><span class="p">)</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="o">**</span><span class="n">inputs</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+                    <span class="n">data</span><span class="p">[</span><span class="s1">&#39;datastreams&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">stream</span><span class="o">.</span><span class="n">toDict</span><span class="p">()</span> <span class="k">for</span> <span class="n">stream</span> <span class="ow">in</span> <span class="n">datastreams</span><span class="p">]</span>
+
+        <span class="n">cherrypy</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="n">statusCode</span>
+        <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DataStreams.POST"><a class="viewcode-back" href="../../../teleceptor.api.html#teleceptor.api.datastreams.DataStreams.POST">[docs]</a>    <span class="k">def</span> <span class="nf">POST</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stream_id</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="c1"># TODO: Implement this for datastream creation</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;POST request to datastreams. This API end point is not implemented.&quot;</span><span class="p">)</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="DataStreams.PUT"><a class="viewcode-back" href="../../../teleceptor.api.html#teleceptor.api.datastreams.DataStreams.PUT">[docs]</a>    <span class="k">def</span> <span class="nf">PUT</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">streamid</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="c1"># TODO: Implement this for datastream update</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;PUT request to datastreams. This API end point is not implemented.&quot;</span><span class="p">)</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="DataStreams.DELETE"><a class="viewcode-back" href="../../../teleceptor.api.html#teleceptor.api.datastreams.DataStreams.DELETE">[docs]</a>    <span class="k">def</span> <span class="nf">DELETE</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stream_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Deletes the DataStream with id `stream_id`.</span>
+
+<span class="sd">        This function cannot be undone, but the stream may be created again</span>
+<span class="sd">        in a separate transaction.</span>
+
+<span class="sd">        :param stream_id: The id of a DataStream</span>
+<span class="sd">        :type stream_id: int</span>
+
+<span class="sd">        :returns:</span>
+<span class="sd">            A JSON object with an &#39;error&#39; key if an error occured or &#39;datastream&#39; key if update succeeded. If &#39;error&#39;, the value is an error string. If &#39;datastream&#39;, the value is a JSON object representing the deleted DataStream in the database.</span>
+
+<span class="sd">        .. seealso::</span>
+<span class="sd">            `models.DataStream`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;DELETE request to datastreams for stream with id {}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">stream_id</span><span class="p">))</span>
+
+        <span class="n">cherrypy</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="s1">&#39;Content-Type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;application/json&#39;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="n">statusCode</span> <span class="o">=</span> <span class="s2">&quot;200&quot;</span>
+
+        <span class="k">with</span> <span class="n">sessionScope</span><span class="p">()</span> <span class="k">as</span> <span class="n">s</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">deletedStream</span> <span class="o">=</span> <span class="n">deleteDatastream</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">stream_id</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">deletedStream</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                    <span class="n">data</span><span class="p">[</span><span class="s1">&#39;error&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;Datastream with id {} could not be deleted.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">stream_id</span><span class="p">)</span>
+                    <span class="n">statusCode</span> <span class="o">=</span> <span class="s2">&quot;400&quot;</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">data</span><span class="p">[</span><span class="s1">&#39;datastream&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">deletedStream</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">&quot;Unexpected error while deleting datastream {}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">stream_id</span><span class="p">))</span>
+                <span class="n">data</span><span class="p">[</span><span class="s1">&#39;error&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;Unexpected error occurred while deleting datastream {}: {}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">stream_id</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+        <span class="n">cherrypy</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="n">statusCode</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Finished DELETE request to datastreams.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span></div>
+
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="DataStreams.createDatastream"><a class="viewcode-back" href="../../../teleceptor.api.html#teleceptor.api.datastreams.DataStreams.createDatastream">[docs]</a>    <span class="k">def</span> <span class="nf">createDatastream</span><span class="p">(</span><span class="n">session</span><span class="p">,</span> <span class="n">datastream</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Creates a datastream with given options and binds a new whisper file to it.</span>
+<span class="sd">        Convience function that adds the given `datastream` to the database in `session` and creates a whisper database file using this datastream&#39;s id. If `datastream` is None, this function does nothing.</span>
+<span class="sd">        expects datastream to be a DataStream() from models</span>
+
+<span class="sd">        :param session: Existing context into a sqlalchemy database session. Can be created by a call to `sessionScope()`</span>
+<span class="sd">        :type session: context object from `sessionScope()`</span>
+<span class="sd">        :param datastream: `DataStream` object to add to the database and create a whisper file for.</span>
+<span class="sd">        :type datastream: DataStream, optional</span>
+
+<span class="sd">        .. note:</span>
+<span class="sd">            This function is *not* idempotent. That is, multiple calls to this function with the same input `datastream` will create multiple `DataStream` objects in the database, each with its own whisper file.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">datastream</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Creating datastream with options: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">datastream</span><span class="o">.</span><span class="n">toDict</span><span class="p">()))</span>
+            <span class="n">session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">datastream</span><span class="p">)</span>
+            <span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">USE_ELASTICSEARCH</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Creating whisper database with id </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">datastream</span><span class="o">.</span><span class="n">id</span><span class="p">))</span>
+                <span class="n">whisperUtils</span><span class="o">.</span><span class="n">createDs</span><span class="p">(</span><span class="n">datastream</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Done making datastream and whisper database.&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Provided datastream to createDatastream method is None.&quot;</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="deleteDatastream"><a class="viewcode-back" href="../../../teleceptor.api.html#teleceptor.api.datastreams.deleteDatastream">[docs]</a><span class="k">def</span> <span class="nf">deleteDatastream</span><span class="p">(</span><span class="n">session</span><span class="p">,</span> <span class="n">datastream_id</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Deletes a datastream with the given `datastream_id` and its associated sensor.</span>
+
+
+<span class="sd">    :param session: Existing context into a sqlalchemy database session. Can be created by a call to `sessionScope()`</span>
+<span class="sd">    :type session: context object from `sessionScope()`</span>
+<span class="sd">    :param datastream_id: id of the datastream to delete.</span>
+<span class="sd">    :type datastrea,_id: int</span>
+
+<span class="sd">    :returns:</span>
+<span class="sd">        The dictionary representation of the datastream that was deleted if successful; otherwise None.</span>
+
+<span class="sd">    .. seealso::</span>
+<span class="sd">        `models.DataStream`</span>
+<span class="sd">        `datastreams.DELETE`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">stream</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">DataStream</span><span class="p">)</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="n">datastream_id</span><span class="p">)</span><span class="o">.</span><span class="n">one</span><span class="p">()</span>
+        <span class="n">sensor</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Sensor</span><span class="p">)</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">uuid</span><span class="o">=</span><span class="n">stream</span><span class="o">.</span><span class="n">sensor</span><span class="p">)</span><span class="o">.</span><span class="n">one</span><span class="p">()</span>
+    <span class="k">except</span> <span class="n">NoResultFound</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Requested datastream {} does not exist.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">datastream_id</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Deleting datastream...&quot;</span><span class="p">)</span>
+        <span class="n">stream_dict</span> <span class="o">=</span> <span class="n">stream</span><span class="o">.</span><span class="n">toDict</span><span class="p">()</span>
+        <span class="n">session</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">stream</span><span class="p">)</span>
+        <span class="n">session</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">sensor</span><span class="p">)</span>
+        <span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">stream_dict</span>
+    <span class="k">return</span> <span class="bp">None</span></div>
+
+
+<div class="viewcode-block" id="clean_inputs"><a class="viewcode-back" href="../../../teleceptor.api.html#teleceptor.api.datastreams.clean_inputs">[docs]</a><span class="k">def</span> <span class="nf">clean_inputs</span><span class="p">(</span><span class="n">inputs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Checks that the supplied inputs only contains valid parameters for filtering Datadatastreams.</span>
+
+<span class="sd">            :returns:</span>
+<span class="sd">                Dictionary with valid parameters taken from provided inputs.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">validInputs</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;sensor&#39;</span><span class="p">:</span> <span class="s1">&#39;^[a-zA-Z0-9_.]+$&#39;</span>
+        <span class="p">}</span>
+
+        <span class="n">valueConversions</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;null&#39;</span><span class="p">:</span> <span class="bp">None</span>
+        <span class="p">}</span>
+
+        <span class="n">safeInputs</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">inputs</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">validInputs</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">None</span>
+
+            <span class="k">if</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">valueConversions</span><span class="p">:</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="n">valueConversions</span><span class="p">[</span><span class="n">value</span><span class="p">]</span>
+            <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">validInputs</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">value</span><span class="p">)</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">None</span>
+
+            <span class="n">safeInputs</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+
+        <span class="k">return</span> <span class="n">safeInputs</span></div>
+
+
+<div class="viewcode-block" id="get_datastream"><a class="viewcode-back" href="../../../teleceptor.api.html#teleceptor.api.datastreams.get_datastream">[docs]</a><span class="k">def</span> <span class="nf">get_datastream</span><span class="p">(</span><span class="n">datastream_id</span><span class="p">,</span> <span class="n">session</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Tries to get a datastream from the database with the provided datastream_id.</span>
+<span class="sd">    Optionally uses a provided session context to interact with the database.</span>
+
+<span class="sd">    :param datastream_id: ID of the datastream.</span>
+<span class="sd">    :param session:</span>
+
+<span class="sd">    :returns:</span>
+<span class="sd">        The dictionary view of the datastream.</span>
+
+<span class="sd">    :raises:</span>
+<span class="sd">        noResultFound: If no datastream matches the datastream_id.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">session</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">sessionScope</span><span class="p">()</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
+            <span class="n">stream</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">DataStream</span><span class="p">)</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="n">datastream_id</span><span class="p">)</span><span class="o">.</span><span class="n">one</span><span class="p">()</span>
+            <span class="k">return</span> <span class="n">stream</span><span class="o">.</span><span class="n">toDict</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">stream</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">DataStream</span><span class="p">)</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="n">datastream_id</span><span class="p">)</span><span class="o">.</span><span class="n">one</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">stream</span><span class="o">.</span><span class="n">toDict</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="get_datastream_by_sensorid"><a class="viewcode-back" href="../../../teleceptor.api.html#teleceptor.api.datastreams.get_datastream_by_sensorid">[docs]</a><span class="k">def</span> <span class="nf">get_datastream_by_sensorid</span><span class="p">(</span><span class="n">sensor_id</span><span class="p">,</span> <span class="n">session</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Tries to get a datastream from the database with the provided sensor_id.</span>
+<span class="sd">    Optionally uses a provided session context to interact with the database.</span>
+
+<span class="sd">    :param sensor_id: ID of the sensor to retrieve the datastream for.</span>
+<span class="sd">    :param session:</span>
+
+<span class="sd">    :returns:</span>
+<span class="sd">        The dictionary view of the datastream.</span>
+
+<span class="sd">    :raises:</span>
+<span class="sd">        NoResultFound: If no datastream matches the datastream_id.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">session</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">sessionScope</span><span class="p">()</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
+            <span class="n">stream</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">DataStream</span><span class="p">)</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">sensor</span><span class="o">=</span><span class="n">sensor_id</span><span class="p">)</span><span class="o">.</span><span class="n">one</span><span class="p">()</span>
+            <span class="k">return</span> <span class="n">stream</span><span class="o">.</span><span class="n">toDict</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">stream</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">DataStream</span><span class="p">)</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">sensor</span><span class="o">=</span><span class="n">sensor_id</span><span class="p">)</span><span class="o">.</span><span class="n">one</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">stream</span><span class="o">.</span><span class="n">toDict</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="filter_datastreams"><a class="viewcode-back" href="../../../teleceptor.api.html#teleceptor.api.datastreams.filter_datastreams">[docs]</a><span class="k">def</span> <span class="nf">filter_datastreams</span><span class="p">(</span><span class="n">session</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">**</span><span class="n">filter_args</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Tries to get all datastreams from the database.</span>
+<span class="sd">    Optionally uses a provided session context to interact with the database.</span>
+
+<span class="sd">    :param session:</span>
+
+<span class="sd">    &quot;returns:</span>
+<span class="sd">        A list of dictionary views of the datastreams currently in the database.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">inputs</span> <span class="o">=</span> <span class="n">clean_inputs</span><span class="p">(</span><span class="n">filter_args</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">session</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">sessionScope</span><span class="p">()</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
+            <span class="n">streams</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">DataStream</span><span class="p">)</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">stream</span><span class="o">.</span><span class="n">toDict</span><span class="p">()</span> <span class="k">for</span> <span class="n">stream</span> <span class="ow">in</span> <span class="n">streams</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">streams</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">DataStream</span><span class="p">)</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">stream</span><span class="o">.</span><span class="n">toDict</span><span class="p">()</span> <span class="k">for</span> <span class="n">stream</span> <span class="ow">in</span> <span class="n">streams</span><span class="p">]</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">teleceptor 1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../api.html" >teleceptor.api</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2016, Visgence Inc..
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+    </div>
+  </body>
+</html>

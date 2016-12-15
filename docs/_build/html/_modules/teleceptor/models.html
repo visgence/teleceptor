@@ -1,0 +1,401 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>teleceptor.models &mdash; teleceptor 1 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="teleceptor 1 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">teleceptor 1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for teleceptor.models</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Models contains what information will be stored in the database for each component of the project (such as the necessary attributes to be stored for a sensor).  Not all classes will have a toDict()/to_dict() function.</span>
+<span class="sd">This module cannot be run independently as it just describes the structure of the database.</span>
+
+<span class="sd">Authors: Bretton Murphy</span>
+<span class="sd">         Victor Szczepanski</span>
+<span class="sd">         Jessica Greenling</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">Column</span><span class="p">,</span> <span class="n">Integer</span><span class="p">,</span> <span class="n">Text</span><span class="p">,</span> <span class="n">Boolean</span><span class="p">,</span> <span class="n">BigInteger</span><span class="p">,</span> <span class="n">ForeignKey</span><span class="p">,</span> <span class="n">Float</span><span class="p">,</span> <span class="n">String</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy.ext.declarative</span> <span class="kn">import</span> <span class="n">declarative_base</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy.orm</span> <span class="kn">import</span> <span class="n">relationship</span><span class="p">,</span> <span class="n">synonym</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">simplejson</span> <span class="kn">as</span> <span class="nn">json</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">json</span>
+
+<span class="n">Base</span> <span class="o">=</span> <span class="n">declarative_base</span><span class="p">()</span>
+
+<span class="c1"># Used for other modules to know what attributes are changeable for a sensor row.</span>
+<span class="n">SENSORWHITELIST</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;sensor_IOtype&quot;</span><span class="p">,</span> <span class="s2">&quot;sensor_type&quot;</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="s2">&quot;units&quot;</span><span class="p">,</span> <span class="s2">&quot;model&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">,</span> <span class="s2">&quot;meta_data&quot;</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="User"><a class="viewcode-back" href="../../teleceptor.html#teleceptor.models.User">[docs]</a><span class="k">class</span> <span class="nc">User</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Information that identifies the user.  Currently unused.</span>
+
+<span class="sd">    id : int</span>
+<span class="sd">    email : str</span>
+<span class="sd">    firstname : str</span>
+<span class="sd">    lastname : str</span>
+<span class="sd">    active : bool</span>
+<span class="sd">    password : str</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s2">&quot;user&quot;</span>
+
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">email</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Text</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">firstname</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Text</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">lastname</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Text</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">active</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Boolean</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">password</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Text</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">firstname</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">lastname</span></div>
+
+
+<div class="viewcode-block" id="Session"><a class="viewcode-back" href="../../teleceptor.html#teleceptor.models.Session">[docs]</a><span class="k">class</span> <span class="nc">Session</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Currently unused.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s2">&quot;session&quot;</span>
+
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">key</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Text</span><span class="p">,</span> <span class="n">unique</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">expiration</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">BigInteger</span><span class="p">)</span>
+    <span class="n">user</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">ForeignKey</span><span class="p">(</span><span class="s1">&#39;user.id&#39;</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="SensorReading"><a class="viewcode-back" href="../../teleceptor.html#teleceptor.models.SensorReading">[docs]</a><span class="k">class</span> <span class="nc">SensorReading</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    id : int</span>
+<span class="sd">        Uniquely identifies the SensorReading.</span>
+<span class="sd">    datastream : int</span>
+<span class="sd">        Used to identify a SensorReading to a DataStream.</span>
+<span class="sd">    sensor : str</span>
+<span class="sd">        Used to identify a SensorReading to a Sensor.</span>
+<span class="sd">    value : float</span>
+<span class="sd">        The value read from the sensor.</span>
+<span class="sd">    timestamp : BigInt</span>
+<span class="sd">        The time that the reading was taken.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s2">&quot;sensorreading&quot;</span>
+
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">datastream</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">ForeignKey</span><span class="p">(</span><span class="s1">&#39;datastream.id&#39;</span><span class="p">),</span> <span class="n">index</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">sensor</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Text</span><span class="p">,</span> <span class="n">ForeignKey</span><span class="p">(</span><span class="s1">&#39;sensor.uuid&#39;</span><span class="p">),</span> <span class="n">index</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Float</span><span class="p">)</span>
+    <span class="n">timestamp</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">BigInteger</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SensorReading.toDict"><a class="viewcode-back" href="../../teleceptor.html#teleceptor.models.SensorReading.toDict">[docs]</a>    <span class="k">def</span> <span class="nf">toDict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+            <span class="s1">&#39;datastream&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">datastream</span><span class="p">,</span>
+            <span class="s1">&#39;sensor&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">sensor</span><span class="p">,</span>
+            <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+            <span class="s1">&#39;timestamp&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">timestamp</span>
+        <span class="p">}</span></div></div>
+
+
+<div class="viewcode-block" id="MessageQueue"><a class="viewcode-back" href="../../teleceptor.html#teleceptor.models.MessageQueue">[docs]</a><span class="k">class</span> <span class="nc">MessageQueue</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Each sensor will have it&#39;s own unique message queue with its own identification number. The message queue can contain many messages.  Message handling can be found in messages.</span>
+
+<span class="sd">    id : int</span>
+<span class="sd">        Uniquely identifies the MessageQueue.</span>
+<span class="sd">    messages : list of Message</span>
+<span class="sd">        Can be an empty list or have many elements. Used to store pending messages for sensor.</span>
+<span class="sd">    sensor_id : str</span>
+<span class="sd">        Used to identify a MessageQueue to a Sensor.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s2">&quot;messagequeue&quot;</span>
+
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="c1"># last_message_id = Column(Integer, ForeignKey(&#39;message.id&#39;))</span>
+    <span class="n">messages</span> <span class="o">=</span> <span class="n">relationship</span><span class="p">(</span><span class="s1">&#39;Message&#39;</span><span class="p">,</span> <span class="n">order_by</span><span class="o">=</span><span class="s1">&#39;Message.id&#39;</span><span class="p">,</span> <span class="n">backref</span><span class="o">=</span><span class="s1">&#39;messagequeue&#39;</span><span class="p">,</span> <span class="n">lazy</span><span class="o">=</span><span class="s1">&#39;dynamic&#39;</span><span class="p">,</span> <span class="n">uselist</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">cascade</span><span class="o">=</span><span class="s1">&#39;delete&#39;</span><span class="p">)</span>
+    <span class="n">sensor_id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Text</span><span class="p">)</span>
+
+<div class="viewcode-block" id="MessageQueue.to_dict"><a class="viewcode-back" href="../../teleceptor.html#teleceptor.models.MessageQueue.to_dict">[docs]</a>    <span class="k">def</span> <span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+            <span class="s1">&#39;sensor_id&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">sensor_id</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">messages</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">data</span><span class="p">[</span><span class="s1">&#39;messages&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">m</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">messages</span><span class="p">]</span>
+            <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+                <span class="n">data</span><span class="p">[</span><span class="s1">&#39;messages&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">messages</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">data</span></div></div>
+
+
+<div class="viewcode-block" id="Message"><a class="viewcode-back" href="../../teleceptor.html#teleceptor.models.Message">[docs]</a><span class="k">class</span> <span class="nc">Message</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A message contains instructions for the sensor.</span>
+
+<span class="sd">    id : int</span>
+<span class="sd">        Uniquely identifies a Message.</span>
+<span class="sd">    message : str</span>
+<span class="sd">        Instructions for the sensor to perform some action that corresponds with the sensors capabilities.</span>
+<span class="sd">    message_queue_id : int</span>
+<span class="sd">        Used to identify a Message to a MessageQueue.</span>
+<span class="sd">    timeout : float</span>
+<span class="sd">        The expiration time for a Message. Old messages should not be used by the sensor.</span>
+<span class="sd">    read : bool</span>
+<span class="sd">        Indicates whether the Message as been sent to the basestation or read/acknowledged in some other way.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s2">&quot;message&quot;</span>
+
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">message</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Text</span><span class="p">)</span>
+    <span class="n">message_queue_id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">ForeignKey</span><span class="p">(</span><span class="s1">&#39;messagequeue.id&#39;</span><span class="p">))</span>
+    <span class="n">timeout</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Float</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mf">30000.0</span><span class="p">)</span>
+    <span class="n">read</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Boolean</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Message.to_dict"><a class="viewcode-back" href="../../teleceptor.html#teleceptor.models.Message.to_dict">[docs]</a>    <span class="k">def</span> <span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+            <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">message</span><span class="p">),</span>
+            <span class="s1">&#39;timeout&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">timeout</span><span class="p">,</span>
+            <span class="s1">&#39;read&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">read</span>
+        <span class="p">}</span>
+
+        <span class="k">return</span> <span class="n">data</span></div></div>
+
+
+<div class="viewcode-block" id="Sensor"><a class="viewcode-back" href="../../teleceptor.html#teleceptor.models.Sensor">[docs]</a><span class="k">class</span> <span class="nc">Sensor</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    uuid : str</span>
+<span class="sd">        Unique identifier of this sensor.</span>
+<span class="sd">    sensor_IOtype : bool</span>
+<span class="sd">        True indicates that the sensor takes input.  False indicates that the sensor is only for output.</span>
+<span class="sd">    sensor_type : str</span>
+<span class="sd">        Indicates the type of sensor.  Used in conjunction with message to check that the message is valid for this type of sensor.</span>
+<span class="sd">    name : str</span>
+<span class="sd">        User-friendly (human-readable) name.</span>
+<span class="sd">    units : str</span>
+<span class="sd">        Identifies the type of data gathered from the sensor.</span>
+<span class="sd">    model : str</span>
+<span class="sd">        Identifies the model of the sensor.</span>
+<span class="sd">    description : str</span>
+<span class="sd">        Some information that describes the sensor. Meant for the user&#39;s purposes.</span>
+<span class="sd">    last_calibration_id : int</span>
+<span class="sd">        Used to identify a Sensor to a Calibration.</span>
+<span class="sd">    last_calibration : Calibration</span>
+<span class="sd">        Has the current calibration data for the sensor.</span>
+<span class="sd">    message_queue: MessageQueue</span>
+<span class="sd">        Message queue that contains message for the sensor.</span>
+<span class="sd">    _meta_data : str</span>
+<span class="sd">        Any extra information about the sensor.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s2">&quot;sensor&quot;</span>
+
+    <span class="n">uuid</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Text</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">sensor_IOtype</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Boolean</span><span class="p">)</span>
+    <span class="n">sensor_type</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Text</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="n">last_value</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Text</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Text</span><span class="p">)</span>
+    <span class="n">units</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">(</span><span class="mi">32</span><span class="p">))</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Text</span><span class="p">)</span>
+    <span class="n">description</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Text</span><span class="p">)</span>
+    <span class="n">last_calibration_id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">ForeignKey</span><span class="p">(</span><span class="s1">&#39;calibration.id&#39;</span><span class="p">,</span> <span class="n">ondelete</span><span class="o">=</span><span class="s1">&#39;CASCADE&#39;</span><span class="p">))</span>
+    <span class="n">last_calibration</span> <span class="o">=</span> <span class="n">relationship</span><span class="p">(</span><span class="s1">&#39;Calibration&#39;</span><span class="p">)</span>
+    <span class="n">message_queue_id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">ForeignKey</span><span class="p">(</span><span class="s1">&#39;messagequeue.id&#39;</span><span class="p">,</span> <span class="n">ondelete</span><span class="o">=</span><span class="s1">&#39;CASCADE&#39;</span><span class="p">))</span>
+    <span class="n">message_queue</span> <span class="o">=</span> <span class="n">relationship</span><span class="p">(</span><span class="s1">&#39;MessageQueue&#39;</span><span class="p">)</span>
+    <span class="n">_meta_data</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="s2">&quot;meta_data&quot;</span><span class="p">,</span> <span class="n">Text</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Sensor.toDict"><a class="viewcode-back" href="../../teleceptor.html#teleceptor.models.Sensor.toDict">[docs]</a>    <span class="k">def</span> <span class="nf">toDict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;uuid&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">uuid</span><span class="p">,</span>
+            <span class="s1">&#39;sensor_type&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">sensor_type</span><span class="p">,</span>
+            <span class="s1">&#39;units&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">units</span><span class="p">,</span>
+            <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">description</span><span class="p">,</span>
+            <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+            <span class="s1">&#39;model&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
+            <span class="s1">&#39;last_value&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_value</span><span class="p">,</span>
+            <span class="s1">&#39;sensor_IOtype&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">sensor_IOtype</span><span class="p">,</span>
+            <span class="s1">&#39;meta_data&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">meta_data</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_calibration</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">data</span><span class="p">[</span><span class="s1">&#39;last_calibration&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_calibration</span><span class="o">.</span><span class="n">toDict</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">data</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">meta_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_meta_data</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_meta_data</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{}</span>
+        <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_meta_data</span><span class="p">)</span>
+
+    <span class="nd">@meta_data.setter</span>
+    <span class="k">def</span> <span class="nf">meta_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">data</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span> <span class="ow">or</span> <span class="n">data</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_meta_data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+    <span class="n">meta_data</span> <span class="o">=</span> <span class="n">synonym</span><span class="p">(</span><span class="s1">&#39;_meta_data&#39;</span><span class="p">,</span> <span class="n">descriptor</span><span class="o">=</span><span class="n">meta_data</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DataStream"><a class="viewcode-back" href="../../teleceptor.html#teleceptor.models.DataStream">[docs]</a><span class="k">class</span> <span class="nc">DataStream</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    id : int</span>
+<span class="sd">        Unique identifier of this DataStream.</span>
+<span class="sd">    sensor : str</span>
+<span class="sd">        Used to identify a DataStream to a Sensor.</span>
+<span class="sd">    owner : int</span>
+<span class="sd">        Identifies the user for the datastream.  Currently unused.</span>
+<span class="sd">    min_value : float</span>
+<span class="sd">    max_value : float</span>
+<span class="sd">    name : str</span>
+<span class="sd">        User-friendly (human-readable) name.  Currently unused.</span>
+<span class="sd">    description : str</span>
+<span class="sd">        Some information that describes the datastream.  Currently unused.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s2">&quot;datastream&quot;</span>
+
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">sensor</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Text</span><span class="p">,</span> <span class="n">ForeignKey</span><span class="p">(</span><span class="s1">&#39;sensor.uuid&#39;</span><span class="p">,</span> <span class="n">ondelete</span><span class="o">=</span><span class="s1">&#39;CASCADE&#39;</span><span class="p">),</span> <span class="n">unique</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">owner</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">ForeignKey</span><span class="p">(</span><span class="s1">&#39;user.id&#39;</span><span class="p">,</span> <span class="n">ondelete</span><span class="o">=</span><span class="s1">&#39;CASCADE&#39;</span><span class="p">))</span>
+    <span class="n">min_value</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Float</span><span class="p">)</span>
+    <span class="n">max_value</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Float</span><span class="p">)</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Text</span><span class="p">)</span>
+    <span class="n">description</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Text</span><span class="p">)</span>
+    <span class="c1"># scaling_function = Column(String, ForeignKey(&#39;scalingfunction.name&#39;))</span>
+    <span class="c1"># reduction_type = Column.CharField(max_length=32, default=&#39;sample&#39;, choices=reduction_type_choices())</span>
+    <span class="c1"># is_public = Column.BooleanField(default=False)</span>
+    <span class="c1"># units = Column.CharField(max_length=32, blank=True)</span>
+    <span class="c1"># created = Column.BigIntegerField(default=time.time(), editable=False)</span>
+    <span class="c1"># _metadata = Column.TextField(blank=True)</span>
+
+<div class="viewcode-block" id="DataStream.toDict"><a class="viewcode-back" href="../../teleceptor.html#teleceptor.models.DataStream.toDict">[docs]</a>    <span class="k">def</span> <span class="nf">toDict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+            <span class="s1">&#39;min_value&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_value</span><span class="p">,</span>
+            <span class="s1">&#39;max_value&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_value</span><span class="p">,</span>
+            <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+            <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">description</span><span class="p">,</span>
+            <span class="s1">&#39;owner&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">owner</span><span class="p">,</span>
+            <span class="s1">&#39;sensor&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">sensor</span>
+        <span class="p">}</span></div></div>
+
+
+<div class="viewcode-block" id="Calibration"><a class="viewcode-back" href="../../teleceptor.html#teleceptor.models.Calibration">[docs]</a><span class="k">class</span> <span class="nc">Calibration</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    id : int</span>
+<span class="sd">        Unique identifier of this Calibration.</span>
+<span class="sd">    sensor_id : str</span>
+<span class="sd">        Used to identify a Calibration to a Sensor.</span>
+<span class="sd">    timestamp : BigInt</span>
+<span class="sd">        Indentifies the time in miliseconds when the calibration was stored.</span>
+<span class="sd">    user : str</span>
+<span class="sd">        Currently unused.</span>
+<span class="sd">    coefficients: str</span>
+<span class="sd">        Describes the coefficients of a polynomial function to a apply to the readings.  Order of coefficients is in decreasing polynomial degree (e.g. [1, 0] represents the polynomial 1*x + 0)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s2">&quot;calibration&quot;</span>
+
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">sensor_id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Text</span><span class="p">)</span>
+    <span class="n">timestamp</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">BigInteger</span><span class="p">)</span>
+    <span class="n">user</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Text</span><span class="p">)</span>
+    <span class="n">coefficients</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Text</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Calibration.toDict"><a class="viewcode-back" href="../../teleceptor.html#teleceptor.models.Calibration.toDict">[docs]</a>    <span class="k">def</span> <span class="nf">toDict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+            <span class="s1">&#39;sensor_id&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">sensor_id</span><span class="p">,</span>
+            <span class="s1">&#39;timestamp&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">timestamp</span><span class="p">,</span>
+            <span class="s1">&#39;user&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="p">,</span>
+            <span class="s1">&#39;coefficients&#39;</span><span class="p">:</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">coefficients</span><span class="p">)</span>
+        <span class="p">}</span></div></div>
+
+
+<span class="c1"># class ScalingFunction(Base):</span>
+<span class="c1">#     __tablename__ = &quot;scalingfunction&quot;</span>
+
+<span class="c1">#     name = Column(String(32), primary_key=True)</span>
+<span class="c1">#     definition = Column(Text)</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">teleceptor 1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2016, Visgence Inc..
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+    </div>
+  </body>
+</html>

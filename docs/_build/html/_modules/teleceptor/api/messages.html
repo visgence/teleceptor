@@ -1,0 +1,506 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>teleceptor.api.messages &mdash; teleceptor 1 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="teleceptor 1 documentation" href="../../../index.html" />
+    <link rel="up" title="teleceptor.api" href="../api.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">teleceptor 1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../api.html" accesskey="U">teleceptor.api</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for teleceptor.api.messages</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">messages.py</span>
+
+<span class="sd">    Authors: Victor Szczepanski</span>
+<span class="sd">             Jessica Greenling</span>
+
+<span class="sd">    This module handles message sending, receiving, and deleting.</span>
+
+<span class="sd">    API:</span>
+<span class="sd">        Unless otherwise noted api will return data as JSON.</span>
+
+<span class="sd">        Functions include GET, POST, DELETE, and PURGE.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<span class="c1"># System Imports</span>
+<span class="kn">import</span> <span class="nn">cherrypy</span>
+<span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">time</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy.orm.exc</span> <span class="kn">import</span> <span class="n">NoResultFound</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">simplejson</span> <span class="kn">as</span> <span class="nn">json</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="c1"># Local Imports</span>
+<span class="kn">from</span> <span class="nn">teleceptor.models</span> <span class="kn">import</span> <span class="n">Sensor</span><span class="p">,</span> <span class="n">MessageQueue</span><span class="p">,</span> <span class="n">Message</span>
+<span class="kn">from</span> <span class="nn">teleceptor.sessionManager</span> <span class="kn">import</span> <span class="n">sessionScope</span>
+<span class="kn">from</span> <span class="nn">teleceptor.auth</span> <span class="kn">import</span> <span class="n">require</span>
+<span class="kn">from</span> <span class="nn">teleceptor</span> <span class="kn">import</span> <span class="n">USE_DEBUG</span>
+
+
+<div class="viewcode-block" id="Messages"><a class="viewcode-back" href="../../../teleceptor.api.html#teleceptor.api.messages.Messages">[docs]</a><span class="k">class</span> <span class="nc">Messages</span><span class="p">:</span>
+    <span class="n">exposed</span> <span class="o">=</span> <span class="bp">True</span>
+
+    <span class="k">if</span> <span class="n">USE_DEBUG</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">format</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%(levelname)s</span><span class="s1">:</span><span class="si">%(asctime)s</span><span class="s1"> </span><span class="si">%(message)s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">format</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%(levelname)s</span><span class="s1">:</span><span class="si">%(asctime)s</span><span class="s1"> </span><span class="si">%(message)s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Messages.GET"><a class="viewcode-back" href="../../../teleceptor.api.html#teleceptor.api.messages.Messages.GET">[docs]</a>    <span class="k">def</span> <span class="nf">GET</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sensor_id</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A GET to this module should include the sensor_id. No content is</span>
+<span class="sd">        needed.</span>
+<span class="sd">        All message queues are returned if sensor_id is not given (is None)</span>
+
+<span class="sd">        :return:</span>
+<span class="sd">            a json object with the form</span>
+<span class="sd">            data = {</span>
+<span class="sd">                    &#39;message_queue&#39;: [</span>
+<span class="sd">                    Message,</span>
+<span class="sd">                    Message,</span>
+<span class="sd">                    ...</span>
+<span class="sd">                    ]</span>
+<span class="sd">            }</span>
+<span class="sd">            if the sensor_id is given.</span>
+
+<span class="sd">            If no sensor_id is given, returns a json object with the form</span>
+<span class="sd">            data = {</span>
+<span class="sd">                    &#39;message_queues&#39; :[</span>
+<span class="sd">                    MessageQueue,</span>
+<span class="sd">                    MessageQueue,</span>
+<span class="sd">                    ...</span>
+<span class="sd">                    ]</span>
+<span class="sd">            }</span>
+
+<span class="sd">            If the sensor_id is not found, returns an error json of the form</span>
+<span class="sd">            data = {</span>
+<span class="sd">                    &#39;error&#39; : &quot;Sensor with id __ doesn&#39;t exist&quot;</span>
+<span class="sd">            }</span>
+
+<span class="sd">        :param sensor_id: Unique identifier for a sensor.</span>
+<span class="sd">        :type sensor_id: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;GET request to messages.&quot;</span><span class="p">)</span>
+
+        <span class="n">cherrypy</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="s1">&#39;Content-Type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;application/json&#39;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">status_code</span> <span class="o">=</span> <span class="s2">&quot;200&quot;</span>
+
+        <span class="k">if</span> <span class="n">sensor_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Request for sensor_id </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">sensor_id</span><span class="p">))</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">messages</span> <span class="o">=</span> <span class="n">getMessages</span><span class="p">(</span><span class="n">sensor_id</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">NoResultFound</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Sensor with id </span><span class="si">%s</span><span class="s2"> does not exist.&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">sensor_id</span><span class="p">))</span>
+                <span class="n">status_code</span> <span class="o">=</span> <span class="s2">&quot;400&quot;</span>
+                <span class="n">data</span><span class="p">[</span><span class="s1">&#39;error&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;Sensor with id </span><span class="si">%s</span><span class="s2"> doesn&#39;t exist&quot;</span> <span class="o">%</span> <span class="n">sensor_id</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">messages</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Found message queue for sensor with id </span><span class="si">%s</span><span class="s2">: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">sensor_id</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">messages</span><span class="p">))</span>
+                    <span class="n">data</span><span class="p">[</span><span class="s1">&#39;message_queue&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+                    <span class="n">data</span><span class="p">[</span><span class="s1">&#39;message_queue&#39;</span><span class="p">][</span><span class="s1">&#39;messages&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">messages</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Sensor with id </span><span class="si">%s</span><span class="s2"> does not have a message queue.&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">sensor_id</span><span class="p">))</span>
+                    <span class="n">status_code</span> <span class="o">=</span> <span class="s2">&quot;400&quot;</span>
+                    <span class="n">data</span><span class="p">[</span><span class="s1">&#39;error&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;Sensor with id </span><span class="si">%s</span><span class="s2"> doesn&#39;t have a message queue&quot;</span> <span class="o">%</span> <span class="n">sensor_id</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Getting message queues for all sensors.&quot;</span><span class="p">)</span>
+            <span class="n">message_queues</span> <span class="o">=</span> <span class="n">getAllMessages</span><span class="p">()</span>
+            <span class="n">data</span><span class="p">[</span><span class="s1">&#39;message_queues&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">message_queues</span>
+
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Completed GET request to messages.&quot;</span><span class="p">)</span>
+        <span class="n">cherrypy</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="n">status_code</span>
+        <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span></div>
+
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="Messages.is_valid_type"><a class="viewcode-back" href="../../../teleceptor.api.html#teleceptor.api.messages.Messages.is_valid_type">[docs]</a>    <span class="k">def</span> <span class="nf">is_valid_type</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">sensor_type</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This function validates that the message type matches with the sensor type.</span>
+
+<span class="sd">        :returns: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">message</span><span class="p">)</span> <span class="o">==</span> <span class="nb">int</span><span class="p">:</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">sensor_type</span> <span class="o">==</span> <span class="s2">&quot;bool&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="n">message</span><span class="p">)</span> <span class="o">==</span> <span class="nb">bool</span>
+        <span class="k">elif</span> <span class="n">sensor_type</span> <span class="o">==</span> <span class="s2">&quot;float&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="n">message</span><span class="p">)</span> <span class="o">==</span> <span class="nb">float</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Provided sensor type </span><span class="si">%s</span><span class="s2"> does not match int, bool, or float&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">False</span></div>
+
+    <span class="nd">@require</span><span class="p">()</span>
+<div class="viewcode-block" id="Messages.POST"><a class="viewcode-back" href="../../../teleceptor.api.html#teleceptor.api.messages.Messages.POST">[docs]</a>    <span class="k">def</span> <span class="nf">POST</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sensor_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A POST to this module should include a sensor_id and the</span>
+<span class="sd">        content of the request should include the data to go in the message.</span>
+<span class="sd">        :returns:</span>
+<span class="sd">            the message that was created.</span>
+<span class="sd">            Content form should be</span>
+<span class="sd">            content = {</span>
+<span class="sd">                    &quot;message&quot;: message_value</span>
+<span class="sd">                   ,&quot;duration:&quot; duration_value</span>
+<span class="sd">            }</span>
+
+<span class="sd">        :param sensor_id: Unique identifier for a sensor.</span>
+<span class="sd">        :type sensor_id: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;POST request to messages.&quot;</span><span class="p">)</span>
+
+        <span class="n">cherrypy</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="s1">&#39;Content-Type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;application/json&#39;</span>
+        <span class="n">status_code</span> <span class="o">=</span> <span class="s2">&quot;200&quot;</span>
+        <span class="n">return_data</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">cherrypy</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">body</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
+        <span class="k">if</span> <span class="s2">&quot;message&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;POST request to messages has no message data.&quot;</span><span class="p">)</span>
+            <span class="n">return_data</span><span class="p">[</span><span class="s1">&#39;error&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;POST to messages does not contain message data&quot;</span>
+            <span class="n">status_code</span> <span class="o">=</span> <span class="s2">&quot;400&quot;</span>
+            <span class="n">cherrypy</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="n">status_code</span>
+            <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">return_data</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s2">&quot;duration&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;POST request to messages has no duration data.&quot;</span><span class="p">)</span>
+            <span class="n">return_data</span><span class="p">[</span><span class="s1">&#39;error&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;POST to messages does not contain duration data&quot;</span>
+            <span class="n">status_code</span> <span class="o">=</span> <span class="s2">&quot;400&quot;</span>
+            <span class="n">cherrypy</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="n">status_code</span>
+            <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">return_data</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">addMessage</span><span class="p">(</span><span class="n">sensor_id</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;message&#39;</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;duration&#39;</span><span class="p">])</span>
+        <span class="k">except</span> <span class="n">NoResultFound</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">return_data</span><span class="p">[</span><span class="s1">&#39;error&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="n">message</span>
+            <span class="n">status_code</span> <span class="o">=</span> <span class="s2">&quot;400&quot;</span>
+        <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">return_data</span><span class="p">[</span><span class="s1">&#39;error&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="n">message</span>
+            <span class="n">status_code</span> <span class="o">=</span> <span class="s2">&quot;400&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">return_data</span><span class="p">[</span><span class="s1">&#39;message&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">msg</span>
+
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Finished POST request to messages.&quot;</span><span class="p">)</span>
+        <span class="n">cherrypy</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="n">status_code</span>
+        <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">return_data</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Messages.DELETE"><a class="viewcode-back" href="../../../teleceptor.api.html#teleceptor.api.messages.Messages.DELETE">[docs]</a>    <span class="k">def</span> <span class="nf">DELETE</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sensor_id</span><span class="p">,</span> <span class="n">message_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A DELETE to this module should remove one message (based on its id)</span>
+<span class="sd">        from the message queue it is stored in.</span>
+
+<span class="sd">        :returns: the deleted message as confirmation that the message was deleted.</span>
+
+<span class="sd">        :param sensor_id: Unique identifier for a sensor.</span>
+<span class="sd">        :type sensor_id: int</span>
+<span class="sd">        :param message_id: Unique identifier for a message.</span>
+<span class="sd">        :type message_id: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;DELETE request to messages.&quot;</span><span class="p">)</span>
+        <span class="n">cherrypy</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="s1">&#39;Content-Type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;application/json&#39;</span>
+        <span class="n">status_code</span> <span class="o">=</span> <span class="s2">&quot;200&quot;</span>
+        <span class="n">return_data</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">deleteMessage</span><span class="p">(</span><span class="n">sensor_id</span><span class="p">,</span> <span class="n">message_id</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">NoResultFound</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">return_data</span><span class="p">[</span><span class="s1">&#39;error&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="n">message</span>
+            <span class="n">status_code</span> <span class="o">=</span> <span class="s2">&quot;400&quot;</span>
+        <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">return_data</span><span class="p">[</span><span class="s1">&#39;error&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="n">message</span>
+            <span class="n">status_code</span> <span class="o">=</span> <span class="s2">&quot;400&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">return_data</span><span class="p">[</span><span class="s1">&#39;message&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">msg</span>
+
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Finished DELETE request to messages.&quot;</span><span class="p">)</span>
+        <span class="n">cherrypy</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="n">status_code</span>
+        <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">return_data</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span></div>
+
+    <span class="nd">@cherrypy.expose</span>
+<div class="viewcode-block" id="Messages.PURGE"><a class="viewcode-back" href="../../../teleceptor.api.html#teleceptor.api.messages.Messages.PURGE">[docs]</a>    <span class="k">def</span> <span class="nf">PURGE</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sensor_id</span><span class="p">,</span> <span class="n">timeout</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A PURGE to this module should delete all messages from the message</span>
+<span class="sd">        queue that belongs to the sensor with uuid sensor_id with</span>
+<span class="sd">        timeout &lt;= timeout.</span>
+
+<span class="sd">        :returns: an error message if an error occurred or a success message if no error occurred.</span>
+
+<span class="sd">        :param sensor_id: Unique identifier for a sensor.</span>
+<span class="sd">        :type sensor_id: int</span>
+<span class="sd">        :param timeout: The time at which the message(s) will expire.</span>
+<span class="sd">        :type timeout: float</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;PURGE request to messages.&quot;</span><span class="p">)</span>
+
+        <span class="n">cherrypy</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="s1">&#39;Content-Type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;application/json&#39;</span>
+        <span class="n">status_code</span> <span class="o">=</span> <span class="s2">&quot;200&quot;</span>
+        <span class="n">return_data</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">rows_deleted</span> <span class="o">=</span> <span class="n">deleteAllMessages</span><span class="p">(</span><span class="n">sensor_id</span><span class="p">,</span> <span class="n">timeout</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">NoResultFound</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">return_data</span><span class="p">[</span><span class="s1">&#39;error&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="n">message</span>
+            <span class="n">status_code</span> <span class="o">=</span> <span class="s2">&quot;400&quot;</span>
+        <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">return_data</span><span class="p">[</span><span class="s1">&#39;error&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="n">message</span>
+            <span class="n">status_code</span> <span class="o">=</span> <span class="s2">&quot;400&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">return_data</span><span class="p">[</span><span class="s1">&#39;success&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;Deleted </span><span class="si">%s</span><span class="s2"> messages&quot;</span> <span class="o">%</span> <span class="n">rows_deleted</span>
+
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Finished PURGE request to messages.&quot;</span><span class="p">)</span>
+        <span class="n">cherrypy</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="n">status_code</span>
+        <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">return_data</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="getMessages"><a class="viewcode-back" href="../../../teleceptor.api.html#teleceptor.api.messages.getMessages">[docs]</a><span class="k">def</span> <span class="nf">getMessages</span><span class="p">(</span><span class="n">sensor_id</span><span class="p">,</span> <span class="n">by_timestamp</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">unread_only</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns a list of all messages (read and not read) for the sensor with id `sensor_id`</span>
+
+<span class="sd">    :param sensor_id: The id of the sensor to get all messages for.</span>
+<span class="sd">    :type sensor_id: int</span>
+<span class="sd">    :param by_timestamp: Gets only messages that have not timed out (i.e. timeout for message is greater than current time) if True</span>
+<span class="sd">    :type by_timestamp: boolean</span>
+<span class="sd">    :param unread_only: Gets only messages that are unread if True.</span>
+<span class="sd">    :type unread_only: boolean</span>
+
+<span class="sd">    :returns: The list of messages for the sensor with id `sensor_id`, or None if sensor doesn&#39;t have a message queue.</span>
+
+<span class="sd">    :raises: NoResultFound if sensor_id is None or no Sensor found with id `sensor_id`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">with</span> <span class="n">sessionScope</span><span class="p">()</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">sensor_queue</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">MessageQueue</span><span class="p">)</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">sensor_id</span><span class="o">=</span><span class="n">sensor_id</span><span class="p">)</span><span class="o">.</span><span class="n">one</span><span class="p">()</span>
+        <span class="k">except</span> <span class="n">NoResultFound</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Sensor </span><span class="si">%s</span><span class="s2"> has no message queue.&quot;</span> <span class="o">%</span> <span class="nb">str</span><span class="p">(</span><span class="n">sensor_id</span><span class="p">))</span>
+            <span class="k">return</span> <span class="bp">None</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Got sensor_queue.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">unread_only</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">by_timestamp</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Getting by timestamp and unread...&quot;</span><span class="p">)</span>
+                <span class="n">messages</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Message</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">Message</span><span class="o">.</span><span class="n">message_queue_id</span> <span class="o">==</span> <span class="n">sensor_queue</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                                                         <span class="n">Message</span><span class="o">.</span><span class="n">timeout</span> <span class="o">&gt;=</span> <span class="n">time</span><span class="p">(),</span>
+                                                         <span class="n">Message</span><span class="o">.</span><span class="n">read</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">True</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">messages</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Message</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">Message</span><span class="o">.</span><span class="n">message_queue_id</span> <span class="o">==</span> <span class="n">sensor_queue</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                                                         <span class="n">Message</span><span class="o">.</span><span class="n">timeout</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">,</span>
+                                                         <span class="n">Message</span><span class="o">.</span><span class="n">read</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">True</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">by_timestamp</span><span class="p">:</span>
+                <span class="n">messages</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Message</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">Message</span><span class="o">.</span><span class="n">message_queue_id</span> <span class="o">==</span> <span class="n">sensor_queue</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                                                         <span class="n">Message</span><span class="o">.</span><span class="n">timeout</span> <span class="o">&gt;=</span> <span class="n">time</span><span class="p">())</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">messages</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Message</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">Message</span><span class="o">.</span><span class="n">message_queue_id</span> <span class="o">==</span> <span class="n">sensor_queue</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                                                         <span class="n">Message</span><span class="o">.</span><span class="n">timeout</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">messages_view</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">unread_only</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Got messages: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">([</span><span class="n">msg</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span> <span class="k">for</span> <span class="n">msg</span> <span class="ow">in</span> <span class="n">messages</span><span class="p">]))</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Setting messages as read.&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">msg</span> <span class="ow">in</span> <span class="n">messages</span><span class="p">:</span>
+                <span class="n">msg</span><span class="o">.</span><span class="n">read</span> <span class="o">=</span> <span class="bp">True</span>
+                <span class="c1"># if we don&#39;t directly append here, python decides to not include the messages in the list comprehension</span>
+                <span class="n">messages_view</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">to_dict</span><span class="p">())</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">messages_view</span> <span class="o">=</span> <span class="p">[</span><span class="n">msg</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span> <span class="k">for</span> <span class="n">msg</span> <span class="ow">in</span> <span class="n">messages</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">messages_view</span></div>
+
+
+<div class="viewcode-block" id="getAllMessages"><a class="viewcode-back" href="../../../teleceptor.api.html#teleceptor.api.messages.getAllMessages">[docs]</a><span class="k">def</span> <span class="nf">getAllMessages</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns a list of message queues for all sensors.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">with</span> <span class="n">sessionScope</span><span class="p">()</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
+        <span class="n">message_queues</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">MessageQueue</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">message_queue</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span> <span class="k">for</span> <span class="n">message_queue</span> <span class="ow">in</span> <span class="n">message_queues</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="addMessage"><a class="viewcode-back" href="../../../teleceptor.api.html#teleceptor.api.messages.addMessage">[docs]</a><span class="k">def</span> <span class="nf">addMessage</span><span class="p">(</span><span class="n">sensor_id</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">duration</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Creates a new Message from `message` and `duration` and appends it to the msgQueue of the sensor with id `sensor_id`.</span>
+<span class="sd">    If the requested sensor does not have a message queue yet, this function creates one.</span>
+
+<span class="sd">    :param sensor_id:</span>
+<span class="sd">    :param message:</span>
+<span class="sd">    :param duration:</span>
+
+<span class="sd">    :returns:</span>
+<span class="sd">        A dictionary representing the added message.</span>
+
+<span class="sd">    :raises:</span>
+<span class="sd">        NoResultFound: If sensor_id is None or no Sensor found with id `sensor_id`</span>
+<span class="sd">        ValueError: If type of message is not valid for sensor with id `sensor_id`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">with</span> <span class="n">sessionScope</span><span class="p">()</span> <span class="k">as</span> <span class="n">s</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">sensor</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Sensor</span><span class="p">)</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">uuid</span><span class="o">=</span><span class="n">sensor_id</span><span class="p">)</span><span class="o">.</span><span class="n">one</span><span class="p">()</span>
+        <span class="k">except</span> <span class="n">NoResultFound</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">NoResultFound</span><span class="p">(</span><span class="s2">&quot;No such Sensor with id </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="nb">str</span><span class="p">(</span><span class="n">sensor_id</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">msg_queue</span> <span class="o">=</span> <span class="n">sensor</span><span class="o">.</span><span class="n">message_queue</span>
+            <span class="k">if</span> <span class="n">msg_queue</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Sensor has no message queue. Creating one...&quot;</span><span class="p">)</span>
+                <span class="n">sensor</span><span class="o">.</span><span class="n">message_queue</span> <span class="o">=</span> <span class="n">MessageQueue</span><span class="p">(</span><span class="n">sensor_id</span><span class="o">=</span><span class="n">sensor</span><span class="o">.</span><span class="n">uuid</span><span class="p">)</span>
+                <span class="n">s</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Completed message queue creation.&quot;</span><span class="p">)</span>
+                <span class="n">msg_queue</span> <span class="o">=</span> <span class="n">sensor</span><span class="o">.</span><span class="n">message_queue</span>
+
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">Message</span><span class="p">()</span>
+            <span class="n">msg</span><span class="o">.</span><span class="n">read</span> <span class="o">=</span> <span class="bp">False</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Sensor&#39;s type is </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">sensor</span><span class="o">.</span><span class="n">sensor_type</span><span class="p">))</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">Messages</span><span class="o">.</span><span class="n">is_valid_type</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">sensor</span><span class="o">.</span><span class="n">sensor_type</span><span class="p">):</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Message type </span><span class="si">%s</span><span class="s2"> does not match sensor type </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">message</span><span class="p">)),</span> <span class="nb">str</span><span class="p">(</span><span class="n">sensor</span><span class="o">.</span><span class="n">sensor_type</span><span class="p">))</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Message type does not match sensor type&quot;</span><span class="p">)</span>
+
+            <span class="n">msg</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+            <span class="n">msg</span><span class="o">.</span><span class="n">timeout</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span> <span class="o">+</span> <span class="n">duration</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Adding message to database: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()))</span>
+            <span class="n">s</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="n">s</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Adding message to message queue...&quot;</span><span class="p">)</span>
+            <span class="n">msg_queue</span><span class="o">.</span><span class="n">messages</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="n">s</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Completed adding message.&quot;</span><span class="p">)</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Returning added message: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()))</span>
+            <span class="k">return</span> <span class="n">msg</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="deleteMessage"><a class="viewcode-back" href="../../../teleceptor.api.html#teleceptor.api.messages.deleteMessage">[docs]</a><span class="k">def</span> <span class="nf">deleteMessage</span><span class="p">(</span><span class="n">sensor_id</span><span class="p">,</span> <span class="n">message_id</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">sessionScope</span><span class="p">()</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">sensor</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Sensor</span><span class="p">)</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">uuid</span><span class="o">=</span><span class="n">sensor_id</span><span class="p">)</span><span class="o">.</span><span class="n">one</span><span class="p">()</span>
+        <span class="k">except</span> <span class="n">NoResultFound</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Sensor with id </span><span class="si">%s</span><span class="s2"> does not exist&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">sensor_id</span><span class="p">))</span>
+            <span class="k">raise</span> <span class="n">NoResultFound</span><span class="p">(</span><span class="s2">&quot;Sensor with id </span><span class="si">%s</span><span class="s2"> does not exist&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">sensor_id</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">msgQueue</span> <span class="o">=</span> <span class="n">sensor</span><span class="o">.</span><span class="n">message_queue</span>
+
+            <span class="k">if</span> <span class="n">msgQueue</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Sensor with id </span><span class="si">%s</span><span class="s2"> has no message queue to DELETE from.&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">sensor_id</span><span class="p">))</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Sensor with id </span><span class="si">%s</span><span class="s2"> has no message queue to DELETE from.&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">sensor_id</span><span class="p">))</span>
+
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">msgToDel</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Message</span><span class="p">)</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="n">message_id</span><span class="p">)</span><span class="o">.</span><span class="n">one</span><span class="p">()</span>
+            <span class="k">except</span> <span class="n">NoResultFound</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Message with id </span><span class="si">%s</span><span class="s2"> does not exist.&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">message_id</span><span class="p">))</span>
+                <span class="k">raise</span> <span class="n">NoResultFound</span><span class="p">(</span><span class="s2">&quot;Message with id </span><span class="si">%s</span><span class="s2"> does not exist.&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">message_id</span><span class="p">))</span>
+
+            <span class="k">if</span> <span class="n">msgToDel</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">msgQueue</span><span class="o">.</span><span class="n">messages</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Message with id </span><span class="si">%s</span><span class="s2"> does not belong to sensor with id </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">message_id</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">sensor_id</span><span class="p">))</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Message with id </span><span class="si">%s</span><span class="s2"> does not belong to sensor with id </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">message_id</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">sensor_id</span><span class="p">))</span>
+
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Removing message...&quot;</span><span class="p">)</span>
+            <span class="n">msgQueue</span><span class="o">.</span><span class="n">messages</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">msgToDel</span><span class="p">)</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">msgToDel</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+            <span class="n">session</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">msgToDel</span><span class="p">)</span>
+            <span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Finished removing message.&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">msg</span>
+    <span class="k">return</span> <span class="bp">None</span></div>
+
+
+<div class="viewcode-block" id="deleteAllMessages"><a class="viewcode-back" href="../../../teleceptor.api.html#teleceptor.api.messages.deleteAllMessages">[docs]</a><span class="k">def</span> <span class="nf">deleteAllMessages</span><span class="p">(</span><span class="n">sensor_id</span><span class="p">,</span> <span class="n">timeout</span><span class="p">):</span>
+    <span class="n">rows_deleted</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="k">with</span> <span class="n">sessionScope</span><span class="p">()</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">sensor</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Sensor</span><span class="p">)</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">uuid</span><span class="o">=</span><span class="n">sensor_id</span><span class="p">)</span><span class="o">.</span><span class="n">one</span><span class="p">()</span>
+        <span class="k">except</span> <span class="n">NoResultFound</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Sensor with id </span><span class="si">%s</span><span class="s2"> does not exist&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">sensor_id</span><span class="p">))</span>
+            <span class="k">raise</span> <span class="n">NoResultFound</span><span class="p">(</span><span class="s2">&quot;Sensor with id </span><span class="si">%s</span><span class="s2"> doesn&#39;t exist&quot;</span> <span class="o">%</span> <span class="n">sensor_id</span><span class="p">)</span>
+
+        <span class="n">msgQueue</span> <span class="o">=</span> <span class="n">sensor</span><span class="o">.</span><span class="n">message_queue</span>
+
+        <span class="k">if</span> <span class="n">msgQueue</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Sensor with id </span><span class="si">%s</span><span class="s2"> has no message queue.&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">sensor_id</span><span class="p">))</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Sensor with id </span><span class="si">%s</span><span class="s2"> has no messages&quot;</span> <span class="o">%</span> <span class="n">sensor_id</span><span class="p">)</span>
+
+        <span class="c1"># actually delete</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Deleting message queue for sensor with id </span><span class="si">%s</span><span class="s2">...&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">sensor_id</span><span class="p">))</span>
+        <span class="n">rows_deleted</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Message</span><span class="p">)</span><span class="o">.</span>\
+            <span class="nb">filter</span><span class="p">(</span><span class="n">Message</span><span class="o">.</span><span class="n">message_queue_id</span> <span class="o">==</span> <span class="n">msgQueue</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">Message</span><span class="o">.</span><span class="n">timeout</span> <span class="o">&lt;=</span> <span class="n">timeout</span><span class="p">)</span><span class="o">.</span><span class="n">delete</span><span class="p">()</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Finished deleting message queue.&quot;</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Deleted </span><span class="si">%s</span><span class="s2"> messages&quot;</span><span class="p">,</span> <span class="n">rows_deleted</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">rows_deleted</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">teleceptor 1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../api.html" >teleceptor.api</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2016, Visgence Inc..
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+    </div>
+  </body>
+</html>

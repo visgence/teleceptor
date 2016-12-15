@@ -1,0 +1,124 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>teleceptor.api &mdash; teleceptor 1 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="teleceptor 1 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">teleceptor 1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for teleceptor.api</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">__init__.py</span>
+
+<span class="sd">Authors: Victor Szczepanski</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">cherrypy</span>
+<span class="kn">import</span> <span class="nn">json</span>
+
+<span class="c1"># Local Imports</span>
+<span class="kn">from</span> <span class="nn">teleceptor</span> <span class="kn">import</span> <span class="n">__version__</span>
+<span class="kn">from</span> <span class="nn">datastreams</span> <span class="kn">import</span> <span class="n">DataStreams</span>
+<span class="kn">from</span> <span class="nn">sensors</span> <span class="kn">import</span> <span class="n">Sensors</span>
+<span class="kn">from</span> <span class="nn">readings</span> <span class="kn">import</span> <span class="n">SensorReadings</span>
+<span class="kn">from</span> <span class="nn">station</span> <span class="kn">import</span> <span class="n">Station</span>
+<span class="kn">from</span> <span class="nn">messages</span> <span class="kn">import</span> <span class="n">Messages</span>
+
+
+<div class="viewcode-block" id="SysData"><a class="viewcode-back" href="../../teleceptor.api.html#teleceptor.pages.SysData">[docs]</a><span class="k">class</span> <span class="nc">SysData</span><span class="p">:</span>
+    <span class="n">exposed</span> <span class="o">=</span> <span class="bp">True</span>
+
+    <span class="c1"># @require()</span>
+<div class="viewcode-block" id="SysData.GET"><a class="viewcode-back" href="../../teleceptor.api.html#teleceptor.pages.SysData.GET">[docs]</a>    <span class="k">def</span> <span class="nf">GET</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sensor_id</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="n">cherrypy</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="s1">&#39;Content-Type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;application/json&#39;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;version&#39;</span><span class="p">:</span> <span class="n">__version__</span><span class="p">}</span>
+        <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="ResourceApi"><a class="viewcode-back" href="../../teleceptor.api.html#teleceptor.pages.ResourceApi">[docs]</a><span class="k">class</span> <span class="nc">ResourceApi</span><span class="p">:</span>
+
+    <span class="n">sysdata</span> <span class="o">=</span> <span class="n">SysData</span><span class="p">()</span>
+    <span class="n">datastreams</span> <span class="o">=</span> <span class="n">DataStreams</span><span class="p">()</span>
+    <span class="n">sensors</span> <span class="o">=</span> <span class="n">Sensors</span><span class="p">()</span>
+    <span class="n">readings</span> <span class="o">=</span> <span class="n">SensorReadings</span><span class="p">()</span>
+    <span class="n">station</span> <span class="o">=</span> <span class="n">Station</span><span class="p">()</span>
+    <span class="n">messages</span> <span class="o">=</span> <span class="n">Messages</span><span class="p">()</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">teleceptor 1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2016, Visgence Inc..
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+    </div>
+  </body>
+</html>

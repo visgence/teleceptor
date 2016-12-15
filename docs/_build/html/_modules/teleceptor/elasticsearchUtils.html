@@ -1,0 +1,322 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>teleceptor.elasticsearchUtils &mdash; teleceptor 1 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="teleceptor 1 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">teleceptor 1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for teleceptor.elasticsearchUtils</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">Authors: Victor Szczepanski</span>
+
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">csv</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">requests</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">from</span> <span class="nn">pyelasticsearch</span> <span class="kn">import</span> <span class="n">ElasticSearch</span>
+<span class="kn">from</span> <span class="nn">teleceptor</span> <span class="kn">import</span> <span class="n">ELASTICSEARCH_URI</span><span class="c1"># = &quot;http://192.168.99.100:9200/&quot;</span>
+<span class="kn">from</span> <span class="nn">teleceptor</span> <span class="kn">import</span> <span class="n">ELASTICSEARCH_INDEX</span><span class="c1"># = &#39;teleceptor&#39;</span>
+<span class="kn">from</span> <span class="nn">teleceptor</span> <span class="kn">import</span> <span class="n">ELASTICSEARCH_DOC</span><span class="c1"># = &#39;teledata&#39;</span>
+<span class="kn">from</span> <span class="nn">teleceptor</span> <span class="kn">import</span> <span class="n">USE_DEBUG</span>
+<span class="kn">from</span> <span class="nn">teleceptor.timeAggregationUtils</span> <span class="kn">import</span> <span class="n">getElasticSearchAggregationLevel</span>
+
+<span class="k">if</span> <span class="n">USE_DEBUG</span><span class="p">:</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">format</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%(levelname)s</span><span class="s1">:</span><span class="si">%(asctime)s</span><span class="s1"> </span><span class="si">%(message)s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">format</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%(levelname)s</span><span class="s1">:</span><span class="si">%(asctime)s</span><span class="s1"> </span><span class="si">%(message)s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="insert_elastic"><a class="viewcode-back" href="../../teleceptor.html#teleceptor.elasticsearchUtils.insert_elastic">[docs]</a><span class="k">def</span> <span class="nf">insert_elastic</span><span class="p">(</span><span class="n">elastic_buffer</span><span class="p">):</span>
+
+    <span class="n">es</span> <span class="o">=</span> <span class="n">ElasticSearch</span><span class="p">(</span><span class="n">ELASTICSEARCH_URI</span><span class="p">)</span>
+
+    <span class="n">docs</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">doc</span> <span class="ow">in</span> <span class="n">elastic_buffer</span><span class="p">:</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">gmtime</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">doc</span><span class="p">[</span><span class="s1">&#39;@timestamp&#39;</span><span class="p">]</span><span class="o">/</span><span class="mi">1000</span><span class="p">))</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="n">ELASTICSEARCH_INDEX</span> <span class="o">+</span> <span class="s2">&quot;-&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">tm_year</span><span class="p">)</span><span class="o">.</span><span class="n">zfill</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;.&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">tm_mon</span><span class="p">)</span><span class="o">.</span><span class="n">zfill</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;.&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">tm_mday</span><span class="p">)</span><span class="o">.</span><span class="n">zfill</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">docs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">es</span><span class="o">.</span><span class="n">index_op</span><span class="p">(</span><span class="n">doc</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">index</span><span class="p">,</span> <span class="n">doc_type</span><span class="o">=</span><span class="n">ELASTICSEARCH_DOC</span><span class="p">))</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">docs</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">es</span><span class="o">.</span><span class="n">bulk</span><span class="p">(</span><span class="n">docs</span><span class="p">)</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;inserted </span><span class="si">%d</span><span class="s2"> records&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">docs</span><span class="p">)))</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Insert Exception &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="insertReading"><a class="viewcode-back" href="../../teleceptor.html#teleceptor.elasticsearchUtils.insertReading">[docs]</a><span class="k">def</span> <span class="nf">insertReading</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">timestamp</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">timestamp</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">timestamp</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">())</span>
+
+    <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;@timestamp&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">timestamp</span><span class="o">*</span><span class="mi">1000</span><span class="p">),</span> <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="n">value</span><span class="p">,</span> <span class="s2">&quot;ds&quot;</span><span class="p">:</span> <span class="n">ds</span><span class="p">}</span>
+    <span class="n">insert_elastic</span><span class="p">([</span><span class="n">data</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="getReadings"><a class="viewcode-back" href="../../teleceptor.html#teleceptor.elasticsearchUtils.getReadings">[docs]</a><span class="k">def</span> <span class="nf">getReadings</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">points</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get the readings from elastic search for datastream `ds` between dates `start` and `end`.</span>
+
+<span class="sd">    :param ds: The datastream id</span>
+<span class="sd">    :type ds: int</span>
+<span class="sd">    :param start: The time in seconds since UNIX epoch to start the query from.</span>
+<span class="sd">    :type start: float</span>
+<span class="sd">    :param end: The time in seconds since UNIX epoch to end the query at.</span>
+<span class="sd">    :type end: float</span>
+<span class="sd">    :param points:The number of points to retrieve. This affects the level of aggregation when combined with the start and end times.</span>
+<span class="sd">    :type points: optional int</span>
+
+<span class="sd">    .. note::</span>
+<span class="sd">        We return data points at `start` and `end`. That is, this function is inclusive of the end points.</span>
+
+<span class="sd">    .. note::</span>
+<span class="sd">        If `points` is None, we use the default aggregation of 1 minute.</span>
+
+<span class="sd">    :returns:</span>
+<span class="sd">        list[(float,float)] -- pairs of the form (timestamp, value) for all data in datastream `ds` between dates `start` and `end`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">aggregation_string</span> <span class="o">=</span> <span class="n">getElasticSearchAggregationLevel</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">start</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">end</span><span class="p">))</span>
+
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Aggregating on every {}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">aggregation_string</span><span class="p">))</span>
+
+    <span class="c1"># need to scale incoming start and end, since elasticsearch keeps the timestamp in ms</span>
+    <span class="n">start</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">start</span><span class="p">)</span> <span class="o">*</span> <span class="mi">1000</span>
+    <span class="n">end</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">end</span><span class="p">)</span> <span class="o">*</span> <span class="mi">1000</span>
+
+    <span class="n">res</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">ELASTICSEARCH_URI</span> <span class="o">+</span> <span class="s1">&#39;/teleceptor-*/_field_stats?level=indices&#39;</span><span class="p">,</span> <span class="n">json</span><span class="o">=</span><span class="p">{</span>
+        <span class="s2">&quot;fields&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;@timestamp&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;index_constraints&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;@timestamp&quot;</span><span class="p">:</span> <span class="p">{</span>
+                 <span class="s2">&quot;min_value&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;lte&quot;</span><span class="p">:</span> <span class="n">end</span><span class="p">,</span>
+                    <span class="c1"># &quot;format&quot;: &quot;epoch_millis&quot;</span>
+                 <span class="p">},</span>
+                 <span class="s2">&quot;max_value&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;gte&quot;</span><span class="p">:</span> <span class="n">start</span><span class="p">,</span>
+                    <span class="c1"># &quot;format&quot;: &quot;epoch_millis&quot;</span>
+                 <span class="p">}</span>
+              <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="p">})</span>
+
+    <span class="c1"># Example kibana query: {&quot;index&quot;:[&quot;teleceptor-2015.09.28&quot;,&quot;teleceptor-2015.09.29&quot;],&quot;search_type&quot;:&quot;count&quot;,&quot;ignore_unavailable&quot;:True}</span>
+    <span class="c1"># {&quot;size&quot;:0,&quot;query&quot;:{&quot;filtered&quot;:{&quot;query&quot;:{&quot;query_string&quot;:{&quot;analyze_wildcard&quot;:true,&quot;query&quot;:&quot;ds:1&quot;}},&quot;filter&quot;:{&quot;bool&quot;:{&quot;must&quot;:[{&quot;range&quot;:{&quot;@timestamp&quot;:{&quot;gte&quot;:1443407578481,&quot;lte&quot;:1443493978481,&quot;format&quot;:&quot;epoch_millis&quot;}}}],&quot;must_not&quot;:[]}}}},&quot;aggs&quot;:{&quot;2&quot;:{&quot;date_histogram&quot;:{&quot;field&quot;:&quot;@timestamp&quot;,&quot;interval&quot;:&quot;1m&quot;,&quot;time_zone&quot;:&quot;America/Denver&quot;,&quot;min_doc_count&quot;:1,&quot;extended_bounds&quot;:{&quot;min&quot;:1443407578481,&quot;max&quot;:1443493978481}},&quot;aggs&quot;:{&quot;1&quot;:{&quot;avg&quot;:{&quot;field&quot;:&quot;value&quot;}}}}}}</span>
+
+    <span class="n">index_query</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s1">&#39;indices&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">index_query</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;No indices found in range ({}, {}), {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">end</span> <span class="o">-</span> <span class="n">start</span><span class="p">))</span>
+
+    <span class="n">query</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;size&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="s2">&quot;query&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;filtered&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;query&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;query_string&quot;</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="s2">&quot;analyze_wildcard&quot;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+                        <span class="s2">&quot;query&quot;</span><span class="p">:</span> <span class="s2">&quot;ds:{}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
+                    <span class="p">}</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;filter&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;bool&quot;</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="s2">&quot;must&quot;</span><span class="p">:</span> <span class="p">[{</span>
+                            <span class="s2">&quot;range&quot;</span><span class="p">:</span> <span class="p">{</span>
+                                <span class="s2">&quot;@timestamp&quot;</span><span class="p">:</span> <span class="p">{</span>
+                                    <span class="s2">&quot;gte&quot;</span><span class="p">:</span> <span class="n">start</span><span class="p">,</span>
+                                    <span class="s2">&quot;lte&quot;</span><span class="p">:</span> <span class="n">end</span><span class="p">,</span>
+                                    <span class="s2">&quot;format&quot;</span><span class="p">:</span> <span class="s2">&quot;epoch_millis&quot;</span>
+                                <span class="p">}</span>
+                            <span class="p">}</span>
+                        <span class="p">}],</span>
+                        <span class="s2">&quot;must_not&quot;</span><span class="p">:</span> <span class="p">[]</span>
+                    <span class="p">}</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="p">},</span> <span class="s2">&quot;aggs&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;2&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;date_histogram&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;field&quot;</span><span class="p">:</span> <span class="s2">&quot;@timestamp&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;interval&quot;</span><span class="p">:</span> <span class="n">aggregation_string</span><span class="p">,</span>
+                    <span class="s2">&quot;min_doc_count&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                    <span class="s2">&quot;extended_bounds&quot;</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="s2">&quot;min&quot;</span><span class="p">:</span> <span class="n">start</span><span class="p">,</span>
+                        <span class="s2">&quot;max&quot;</span><span class="p">:</span> <span class="n">end</span>
+                    <span class="p">}</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;aggs&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;1&quot;</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="s2">&quot;avg&quot;</span><span class="p">:</span> <span class="p">{</span>
+                            <span class="s2">&quot;field&quot;</span><span class="p">:</span> <span class="s2">&quot;value&quot;</span>
+                        <span class="p">}</span>
+                    <span class="p">}</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="c1"># first we will match on datastream</span>
+    <span class="c1"># query[&#39;match&#39;] = {&#39;ds&#39;:ds}</span>
+
+    <span class="c1"># then we filter on dates starting with start and ending with end.</span>
+    <span class="c1"># logging.info(&quot;Querying on timestamp range {} - {}&quot;.format(start, end))</span>
+    <span class="c1"># query[&#39;range&#39;] = {&#39;@timestamp&#39;: {&#39;gte&#39;: start, &#39;lte&#39;: end}}</span>
+
+    <span class="c1"># TODO: Add aggregation option. Look into the Date Histogram Aggregation</span>
+
+    <span class="c1"># TODO: Should we do some calculation for the aggregation time here, or have it passed in as a parameter?</span>
+
+    <span class="c1"># query[&#39;aggs&#39;] = {&#39;values&#39;: {&#39;date_histogram&#39;: {&#39;field&#39;: &#39;@timestamp&#39;, &#39;interval&#39;: &#39;1m&#39;}}}</span>
+
+    <span class="c1"># final_query = {&#39;filter&#39;: {&#39;and&#39;: [</span>
+        <span class="c1"># {key: query[key]} for key in query</span>
+    <span class="c1"># ]}}</span>
+    <span class="c1"># final_query[&#39;sort&#39;] = [{&#39;@timestamp&#39;: {&#39;order&#39;: &#39;asc&#39;}}]</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    final_query[&#39;aggs&#39;] = {</span>
+<span class="sd">                           &#39;values&#39;:</span>
+<span class="sd">                               {&#39;date_histogram&#39;:</span>
+<span class="sd">                                    {&#39;field&#39;: &#39;@timestamp&#39;, &#39;interval&#39;: &#39;1m&#39;, &#39;min_doc_count&#39;: 1},</span>
+<span class="sd">                                &#39;aggs&#39;:</span>
+<span class="sd">                               {&#39;avg_value&#39;:</span>
+<span class="sd">                                    {&#39;avg&#39;:</span>
+<span class="sd">                                         {&#39;field&#39;: &#39;value&#39;}</span>
+<span class="sd">                                     }</span>
+<span class="sd">                                }</span>
+<span class="sd">                                }</span>
+<span class="sd">                           }</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="c1"># logging.debug(&quot;Built query: {}&quot;.format(final_query))</span>
+    <span class="c1"># return get_elastic(elastic_buffer=final_query)</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Built query: {}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">query</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">get_elastic</span><span class="p">(</span><span class="n">elastic_buffer</span><span class="o">=</span><span class="n">query</span><span class="p">,</span> <span class="n">index_info</span><span class="o">=</span><span class="n">index_query</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_elastic"><a class="viewcode-back" href="../../teleceptor.html#teleceptor.elasticsearchUtils.get_elastic">[docs]</a><span class="k">def</span> <span class="nf">get_elastic</span><span class="p">(</span><span class="n">elastic_buffer</span><span class="p">,</span> <span class="n">index_info</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Make a query to elasticsearch with args in `elastic_buffer`</span>
+
+<span class="sd">    :parma elastic_buffer: The query json to provide to elastic search.</span>
+<span class="sd">    :type elastic_buffer: dictionary</span>
+
+<span class="sd">    :returns:</span>
+<span class="sd">        list[(float,float)] -- pairs of the form (timestamp, value) for all data that matches the query in `elastic_buffer`</span>
+
+<span class="sd">    .. todo::</span>
+<span class="sd">        May want to pass in a list of indicies to search on</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">es</span> <span class="o">=</span> <span class="n">ElasticSearch</span><span class="p">(</span><span class="n">ELASTICSEARCH_URI</span><span class="p">)</span>
+    <span class="c1"># we actually use filter instead of query, since we want exact results</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">es</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">elastic_buffer</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">index_info</span><span class="p">)</span><span class="c1">#{&#39;filter&#39;: elastic_buffer, &#39;_source&#39;: [&#39;@timestamp&#39;, &#39;value&#39;]})</span>
+
+    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Got elasticsearch results: {}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">result</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="p">[(</span><span class="n">bucket</span><span class="p">[</span><span class="s1">&#39;key&#39;</span><span class="p">]</span><span class="o">/</span><span class="mi">1000</span><span class="p">,</span> <span class="n">bucket</span><span class="p">[</span><span class="s1">&#39;1&#39;</span><span class="p">][</span><span class="s1">&#39;value&#39;</span><span class="p">])</span> <span class="k">for</span> <span class="n">bucket</span> <span class="ow">in</span> <span class="n">result</span><span class="p">[</span><span class="s1">&#39;aggregations&#39;</span><span class="p">][</span><span class="s1">&#39;2&#39;</span><span class="p">][</span><span class="s1">&#39;buckets&#39;</span><span class="p">]]</span></div>
+
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generate a simple sine wave</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">days</span> <span class="o">=</span> <span class="mi">30</span>
+    <span class="n">period</span> <span class="o">=</span> <span class="mi">12</span><span class="o">*</span><span class="mi">60</span> <span class="c1"># min</span>
+    <span class="nb">max</span> <span class="o">=</span> <span class="mi">1023</span>
+
+    <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="p">(</span><span class="n">days</span><span class="o">*</span><span class="n">period</span><span class="o">*</span><span class="mi">2</span><span class="o">*</span><span class="mi">60</span><span class="p">)</span>
+
+    <span class="n">docs</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">days</span><span class="o">*</span><span class="n">period</span><span class="o">*</span><span class="mi">2</span><span class="p">):</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">i</span><span class="o">*</span><span class="p">(</span><span class="mf">2.0</span><span class="o">*</span><span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="n">period</span><span class="p">))</span><span class="o">*</span><span class="p">(</span><span class="nb">max</span><span class="o">/</span><span class="mf">2.0</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="nb">max</span><span class="o">/</span><span class="mf">2.0</span><span class="p">))</span>
+        <span class="c1"># print str(i) + &quot; : &quot; + str(value)</span>
+        <span class="n">docs</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s1">&#39;@timestamp&#39;</span><span class="p">:</span> <span class="nb">int</span><span class="p">((</span><span class="n">i</span><span class="o">*</span><span class="mi">60</span><span class="o">+</span><span class="n">start</span><span class="p">)</span><span class="o">*</span><span class="mi">1000</span><span class="p">),</span> <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="n">value</span><span class="p">,</span> <span class="s1">&#39;ds&#39;</span><span class="p">:</span> <span class="mi">1000</span><span class="p">})</span>
+
+        <span class="k">if</span><span class="p">(</span><span class="n">i</span> <span class="o">%</span> <span class="mi">500</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
+            <span class="n">insert_elastic</span><span class="p">(</span><span class="n">docs</span><span class="p">)</span>
+            <span class="n">docs</span> <span class="o">=</span> <span class="p">[]</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">teleceptor 1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2016, Visgence Inc..
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+    </div>
+  </body>
+</html>

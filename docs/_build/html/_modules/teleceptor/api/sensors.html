@@ -1,0 +1,505 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>teleceptor.api.sensors &mdash; teleceptor 1 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="teleceptor 1 documentation" href="../../../index.html" />
+    <link rel="up" title="teleceptor.api" href="../api.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">teleceptor 1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../api.html" accesskey="U">teleceptor.api</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for teleceptor.api.sensors</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Authors: Bretton Murphy (Visgence, Inc.)</span>
+<span class="sd">             Victor Szczepanski (Visgence, Inc.)</span>
+<span class="sd">             Jessica Greenling (Visgence, Inc.)</span>
+
+<span class="sd">    Resource endpoint for Sensors that is used as part of the RESTful api.  Handles</span>
+<span class="sd">    the creation, updating, and retrieval of Sensors.</span>
+
+<span class="sd">    TODO:</span>
+<span class="sd">        POST /api/sensors/  -  Create a new Sensor.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c1"># System Imports</span>
+<span class="kn">import</span> <span class="nn">cherrypy</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">create_engine</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy.orm</span> <span class="kn">import</span> <span class="n">sessionmaker</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy.orm.exc</span> <span class="kn">import</span> <span class="n">NoResultFound</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="c1"># Local Imports</span>
+<span class="kn">from</span> <span class="nn">teleceptor</span> <span class="kn">import</span> <span class="n">models</span>
+<span class="kn">from</span> <span class="nn">teleceptor.models</span> <span class="kn">import</span> <span class="n">Sensor</span><span class="p">,</span> <span class="n">Calibration</span>
+<span class="kn">from</span> <span class="nn">teleceptor.sessionManager</span> <span class="kn">import</span> <span class="n">sessionScope</span>
+<span class="kn">from</span> <span class="nn">teleceptor.auth</span> <span class="kn">import</span> <span class="n">require</span>
+<span class="kn">from</span> <span class="nn">teleceptor</span> <span class="kn">import</span> <span class="n">USE_DEBUG</span>
+
+
+<div class="viewcode-block" id="Sensors"><a class="viewcode-back" href="../../../teleceptor.api.html#teleceptor.api.sensors.Sensors">[docs]</a><span class="k">class</span> <span class="nc">Sensors</span><span class="p">:</span>
+    <span class="n">exposed</span> <span class="o">=</span> <span class="bp">True</span>
+
+    <span class="k">if</span> <span class="n">USE_DEBUG</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">format</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%(levelname)s</span><span class="s1">:</span><span class="si">%(asctime)s</span><span class="s1"> </span><span class="si">%(message)s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">format</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%(levelname)s</span><span class="s1">:</span><span class="si">%(asctime)s</span><span class="s1"> </span><span class="si">%(message)s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+
+    <span class="c1"># @require()</span>
+<div class="viewcode-block" id="Sensors.GET"><a class="viewcode-back" href="../../../teleceptor.api.html#teleceptor.api.sensors.Sensors.GET">[docs]</a>    <span class="k">def</span> <span class="nf">GET</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sensor_id</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Gets a sensor&#39;s or all sensor&#39;s information.</span>
+
+<span class="sd">        :param sensor_id: The UUID of a sensor</span>
+<span class="sd">        :type sensor_id: str</span>
+
+<span class="sd">        :returns: JSON -- If a valid `sensor_id` is given, returns the information stored in the database for the sensor with uuid `sensor_id`. If `sensor_id` does not refer to a sensor in the database, an error string will be returned. If `sensor_id` is None, returns a list of all sensors in the database.</span>
+
+<span class="sd">        .. seealso:: `models.Sensor`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;GET request to sensors.&quot;</span><span class="p">)</span>
+
+        <span class="n">cherrypy</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="s1">&#39;Content-Type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;application/json&#39;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">statusCode</span> <span class="o">=</span> <span class="s2">&quot;200&quot;</span>
+
+        <span class="k">if</span> <span class="n">sensor_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Getting single sensor with id </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">sensor_id</span><span class="p">))</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">sensor</span> <span class="o">=</span> <span class="n">getSensor</span><span class="p">(</span><span class="n">sensor_id</span><span class="p">)</span>
+                <span class="n">data</span><span class="p">[</span><span class="s1">&#39;sensor&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sensor</span>
+            <span class="k">except</span> <span class="n">NoResultFound</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Requested sensor </span><span class="si">%s</span><span class="s2"> does not exist.&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">sensor_id</span><span class="p">))</span>
+                <span class="n">data</span><span class="p">[</span><span class="s1">&#39;error&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;Sensor with id </span><span class="si">%s</span><span class="s2"> doesn&#39;t exist.&quot;</span> <span class="o">%</span> <span class="n">sensor_id</span>
+                <span class="n">statusCode</span> <span class="o">=</span> <span class="s2">&quot;400&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Getting all sensors.&quot;</span><span class="p">)</span>
+            <span class="n">sensors</span> <span class="o">=</span> <span class="n">getAllSensors</span><span class="p">()</span>
+            <span class="n">data</span><span class="p">[</span><span class="s1">&#39;sensors&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sensors</span>
+
+        <span class="n">cherrypy</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="n">statusCode</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Finished GET request to sensors.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span></div>
+
+    <span class="nd">@require</span><span class="p">()</span>
+<div class="viewcode-block" id="Sensors.POST"><a class="viewcode-back" href="../../../teleceptor.api.html#teleceptor.api.sensors.Sensors.POST">[docs]</a>    <span class="k">def</span> <span class="nf">POST</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sensor_id</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;POST request to sensors. This API end point is not implemented.&quot;</span><span class="p">)</span>
+        <span class="c1"># TODO: Implement this for sensor creation</span>
+        <span class="k">pass</span></div>
+
+    <span class="nd">@require</span><span class="p">()</span>
+<div class="viewcode-block" id="Sensors.PUT"><a class="viewcode-back" href="../../../teleceptor.api.html#teleceptor.api.sensors.Sensors.PUT">[docs]</a>    <span class="k">def</span> <span class="nf">PUT</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sensor_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Updates the sensor with uuid `sensor_id`.</span>
+
+<span class="sd">        Using the JSON formatted data in the HTTP request body, updates the sensor information in the database. Valid key/value pairs correspond to the columns in `models.Sensor`.</span>
+
+<span class="sd">        :param sensor_id: The UUID of a sensor</span>
+<span class="sd">        :type sensor_id: str</span>
+
+<span class="sd">        :returns: Dictionary -- A JSON object with an &#39;error&#39; key if an error occured or &#39;sensor&#39; key if update succeeded. If &#39;error&#39;, the value is an error string. If &#39;sensor&#39;, the value is a JSON object representing the updated sensor in the database.</span>
+
+<span class="sd">        .. seealso:: `models.Sensor`</span>
+
+<span class="sd">        .. todo:: Decide on new behaviour if no json object so we don&#39;t incur an extra db lookup.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;PUT request to sensors.&quot;</span><span class="p">)</span>
+
+        <span class="n">returnData</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">statusCode</span> <span class="o">=</span> <span class="s2">&quot;200&quot;</span>
+        <span class="n">cherrypy</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="s1">&#39;Content-Type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;application/json&#39;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">cherrypy</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">body</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="c1"># no json object to decode, just use an empty dictionary</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Request body: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">sensor</span> <span class="o">=</span> <span class="n">Sensors</span><span class="o">.</span><span class="n">updateSensor</span><span class="p">(</span><span class="n">sensor_id</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+            <span class="n">returnData</span><span class="p">[</span><span class="s1">&#39;sensor&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sensor</span>
+        <span class="k">except</span> <span class="n">NoResultFound</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Sensor with id </span><span class="si">%s</span><span class="s2"> doesn&#39;t exist.&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">sensor_id</span><span class="p">))</span>
+            <span class="n">returnData</span><span class="p">[</span><span class="s1">&#39;error&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;Sensor with id </span><span class="si">%s</span><span class="s2"> doesn&#39;t exist.&quot;</span> <span class="o">%</span> <span class="n">sensor_id</span>
+            <span class="n">statusCode</span> <span class="o">=</span> <span class="s2">&quot;400&quot;</span>
+
+        <span class="n">cherrypy</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="n">statusCode</span>
+
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Finished PUT request to sensors.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">returnData</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span></div>
+
+    <span class="nd">@require</span><span class="p">()</span>
+<div class="viewcode-block" id="Sensors.DELETE"><a class="viewcode-back" href="../../../teleceptor.api.html#teleceptor.api.sensors.Sensors.DELETE">[docs]</a>    <span class="k">def</span> <span class="nf">DELETE</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sensor_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Deletes the sensor with uuid `sensor_id`.</span>
+
+<span class="sd">        This function cannot be undone, but the sensor may be created again</span>
+<span class="sd">        in a separate transaction.</span>
+
+<span class="sd">        :param sensor_id: The UUID of a sensor</span>
+<span class="sd">        :type sensor_id: str</span>
+
+<span class="sd">        :returns: Dictionary -- A JSON object with an &#39;error&#39; key if an error occured or &#39;sensor&#39; key if update succeeded. If &#39;error&#39;, the value is an error string. If &#39;sensor&#39;, the value is a JSON object representing the deleted sensor in the database.</span>
+
+<span class="sd">        .. seealso:: `models.Sensor`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;DELETE request to sensors.&quot;</span><span class="p">)</span>
+
+        <span class="n">returnData</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">statusCode</span> <span class="o">=</span> <span class="s2">&quot;200&quot;</span>
+        <span class="n">cherrypy</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="s1">&#39;Content-Type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;application/json&#39;</span>
+
+        <span class="n">deleted_sensor</span> <span class="o">=</span> <span class="n">deleteSensor</span><span class="p">(</span><span class="n">sensor_id</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">deleted_sensor</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">returnData</span><span class="p">[</span><span class="s1">&#39;error&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;Sensor with id </span><span class="si">%s</span><span class="s2"> could not be deleted.&quot;</span> <span class="o">%</span> <span class="n">sensor_id</span>
+            <span class="n">statusCode</span> <span class="o">=</span> <span class="s2">&quot;400&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">returnData</span><span class="p">[</span><span class="s1">&#39;sensor&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">deleted_sensor</span>
+
+        <span class="n">cherrypy</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="n">statusCode</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Finished DELETE request to sensors.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">returnData</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span></div>
+
+    <span class="c1"># expects sensor to be a Sensor() from model</span>
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="Sensors.createSensor"><a class="viewcode-back" href="../../../teleceptor.api.html#teleceptor.api.sensors.Sensors.createSensor">[docs]</a>    <span class="k">def</span> <span class="nf">createSensor</span><span class="p">(</span><span class="n">sensor</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">session</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Adds `sensor` to the database.</span>
+
+<span class="sd">        :param session: The context for accessing the database.</span>
+<span class="sd">        :type session: sessionScope() context</span>
+<span class="sd">        :param sensor: The Sensor to add to the database.</span>
+<span class="sd">        :type sensor: model.Sensor</span>
+
+<span class="sd">        .. seealso:: `models.Sensor`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Creating sensor </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">sensor</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">session</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">sessionScope</span><span class="p">()</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">sensor</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                    <span class="n">session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">sensor</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">sensor</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">sensor</span><span class="p">)</span></div>
+
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="Sensors.updateSensor"><a class="viewcode-back" href="../../../teleceptor.api.html#teleceptor.api.sensors.Sensors.updateSensor">[docs]</a>    <span class="k">def</span> <span class="nf">updateSensor</span><span class="p">(</span><span class="n">sensor_id</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">session</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Updates sensor with id `sensor_id` with new key/values in `data`. Note that this function will incur a db lookup.</span>
+
+<span class="sd">        :param sensor_id: The id of the Sensor to modify.</span>
+<span class="sd">        :type sensor_id: str</span>
+<span class="sd">        :param data: The new data to update `sensor` with.</span>
+<span class="sd">        :type data: dictionary</span>
+
+<span class="sd">        :returns: Dictionary -- The dictionary view of the updated sensor.</span>
+
+<span class="sd">        .. seealso:: `models.Sensor`</span>
+
+<span class="sd">        .. note:: This function contains a blacklist of keys that may not be updated. If `data` contains these keys, they are ignored. This documentation should contain the full blacklist:</span>
+<span class="sd">            blacklist = [&quot;uuid&quot;,&quot;message&quot;]</span>
+<span class="sd">            whitelist = [&quot;sensor_IOtype&quot;, &quot;sensor_type&quot;, &quot;name&quot;, &quot;units&quot;, &quot;&quot;]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Updating sensor with id </span><span class="si">%s</span><span class="s2"> with data </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">sensor_id</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">session</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">sessionScope</span><span class="p">()</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
+                <span class="n">sensor_info</span> <span class="o">=</span> <span class="n">_updateSensor</span><span class="p">(</span><span class="n">sensor_id</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">session</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">sensor_info</span>
+        <span class="k">return</span> <span class="n">_updateSensor</span><span class="p">(</span><span class="n">sensor_id</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">session</span><span class="p">)</span></div>
+
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="Sensors.updateCalibration"><a class="viewcode-back" href="../../../teleceptor.api.html#teleceptor.api.sensors.Sensors.updateCalibration">[docs]</a>    <span class="k">def</span> <span class="nf">updateCalibration</span><span class="p">(</span><span class="n">sensor</span><span class="p">,</span> <span class="n">coefficients</span><span class="p">,</span> <span class="n">timestamp</span><span class="p">,</span> <span class="n">session</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Updates the calibration for `sensor`.</span>
+
+<span class="sd">        Using `coefficients` and `timestamp`, creates a new Calibration for `sensor` if `timestamp` is newer than `sensor`&#39;s timestamp and `coefficients` is different from `sensor`&#39;s coefficients.</span>
+
+<span class="sd">        :param session: The context for accessing the database.</span>
+<span class="sd">        :type session: sessionScope() context</span>
+<span class="sd">        :param sensor: The Sensor to update.</span>
+<span class="sd">        :type sensor: model.Sensor</span>
+<span class="sd">        :param coefficients: The new coefficients of the Calibration function.</span>
+<span class="sd">        :param timestamp: The timestamp for `coefficients`</span>
+<span class="sd">        :type timestamp: int</span>
+
+<span class="sd">        .. seealso::</span>
+<span class="sd">            `models.Sensor`</span>
+<span class="sd">            `models.Calibration`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Updating calibration of sensor </span><span class="si">%s</span><span class="s2"> with coefficients </span><span class="si">%s</span><span class="s2"> and timestamp </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">sensor</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">coefficients</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">timestamp</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">sensor</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Input sensor is None.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">coefficients</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Input coefficients is None.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">timestamp</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Input timestamp is None.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">session</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">sessionScope</span><span class="p">()</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
+                <span class="n">sensor</span> <span class="o">=</span> <span class="n">_updateCalibration</span><span class="p">(</span><span class="n">sensor</span><span class="p">,</span> <span class="n">coefficients</span><span class="p">,</span> <span class="n">timestamp</span><span class="p">,</span> <span class="n">session</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">sensor</span> <span class="o">=</span> <span class="n">_updateCalibration</span><span class="p">(</span><span class="n">sensor</span><span class="p">,</span> <span class="n">coefficients</span><span class="p">,</span> <span class="n">timestamp</span><span class="p">,</span> <span class="n">session</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">sensor</span></div></div>
+
+
+<div class="viewcode-block" id="deleteSensor"><a class="viewcode-back" href="../../../teleceptor.api.html#teleceptor.api.sensors.deleteSensor">[docs]</a><span class="k">def</span> <span class="nf">deleteSensor</span><span class="p">(</span><span class="n">sensor_id</span><span class="p">,</span> <span class="n">session</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Deletes the sensor with given uuid.</span>
+
+<span class="sd">    :param sensor_id: The UUID of a sensor.</span>
+<span class="sd">    :type sensor_id: str.</span>
+
+<span class="sd">    :returns: Dictionary -- The dictionary representation of the sensor that was deleted if successful; otherwise None.</span>
+
+<span class="sd">    .. seealso::</span>
+<span class="sd">        `models.Sensor`</span>
+<span class="sd">        `sensors.DELETE`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Deleting sensor </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">sensor_id</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">session</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">sessionScope</span><span class="p">()</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">sensor</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Sensor</span><span class="p">)</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">uuid</span><span class="o">=</span><span class="n">sensor_id</span><span class="p">)</span><span class="o">.</span><span class="n">one</span><span class="p">()</span>
+            <span class="k">except</span> <span class="n">NoResultFound</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Requested sensor </span><span class="si">%s</span><span class="s2"> does not exist.&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">sensor_id</span><span class="p">))</span>
+                <span class="k">return</span> <span class="bp">None</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Got Sensor.&quot;</span><span class="p">)</span>
+                <span class="n">sensor_dict</span> <span class="o">=</span> <span class="n">sensor</span><span class="o">.</span><span class="n">toDict</span><span class="p">()</span>
+                <span class="n">session</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">sensor</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">sensor_dict</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">sensor</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Sensor</span><span class="p">)</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">uuid</span><span class="o">=</span><span class="n">sensor_id</span><span class="p">)</span><span class="o">.</span><span class="n">one</span><span class="p">()</span>
+        <span class="k">except</span> <span class="n">NoResultFound</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Requested sensor </span><span class="si">%s</span><span class="s2"> does not exist.&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">sensor_id</span><span class="p">))</span>
+            <span class="k">return</span> <span class="bp">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Got Sensor.&quot;</span><span class="p">)</span>
+            <span class="n">sensor_dict</span> <span class="o">=</span> <span class="n">sensor</span><span class="o">.</span><span class="n">toDict</span><span class="p">()</span>
+            <span class="n">session</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">sensor</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">sensor_dict</span>
+
+    <span class="k">return</span> <span class="bp">None</span></div>
+
+
+<div class="viewcode-block" id="getSensor"><a class="viewcode-back" href="../../../teleceptor.api.html#teleceptor.api.sensors.getSensor">[docs]</a><span class="k">def</span> <span class="nf">getSensor</span><span class="p">(</span><span class="n">sensor_id</span><span class="p">,</span> <span class="n">session</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    :param sensor_id: The id of the sensor to query on</span>
+<span class="sd">    &quot;param session: Optional session context. If None, this function creates its own context. Otherwise, uses this context.</span>
+
+<span class="sd">    :returns: Dictionary -- A dictionary representing the sensor (as described in Models.Sensor) if found, else None</span>
+
+<span class="sd">    :raises: NoResultFound -- If a sensor with id sensor_id was not found.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Getting Sensor </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">sensor_id</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">session</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">sessionScope</span><span class="p">()</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
+            <span class="n">sensor</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Sensor</span><span class="p">)</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">uuid</span><span class="o">=</span><span class="n">sensor_id</span><span class="p">)</span><span class="o">.</span><span class="n">one</span><span class="p">()</span>
+            <span class="k">return</span> <span class="n">sensor</span><span class="o">.</span><span class="n">toDict</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Sensor</span><span class="p">)</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">uuid</span><span class="o">=</span><span class="n">sensor_id</span><span class="p">)</span><span class="o">.</span><span class="n">one</span><span class="p">()</span><span class="o">.</span><span class="n">toDict</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="getAllSensors"><a class="viewcode-back" href="../../../teleceptor.api.html#teleceptor.api.sensors.getAllSensors">[docs]</a><span class="k">def</span> <span class="nf">getAllSensors</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns the view of every sensor in the database.</span>
+
+<span class="sd">    :returns: Dictionary -- A list of dictionaries representing all sensors in the database.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Getting all sensors.&quot;</span><span class="p">)</span>
+    <span class="k">with</span> <span class="n">sessionScope</span><span class="p">()</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
+        <span class="n">sensors</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Sensor</span><span class="p">)</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="n">Sensor</span><span class="o">.</span><span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">s</span><span class="o">.</span><span class="n">toDict</span><span class="p">()</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">sensors</span><span class="p">]</span></div>
+
+
+<span class="k">def</span> <span class="nf">_updateSensor</span><span class="p">(</span><span class="n">sensor_id</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">session</span><span class="p">):</span>
+    <span class="n">blacklist</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;uuid&quot;</span><span class="p">,</span> <span class="s2">&quot;message&quot;</span><span class="p">)</span>
+    <span class="n">sensor</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Sensor</span><span class="p">)</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">uuid</span><span class="o">=</span><span class="n">sensor_id</span><span class="p">)</span><span class="o">.</span><span class="n">one</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Key: {}, Value: {}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">blacklist</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Request to updateSensor included blacklisted key </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">key</span><span class="p">))</span>
+            <span class="k">continue</span>
+        <span class="k">if</span> <span class="s1">&#39;last_calibration&#39;</span> <span class="ow">in</span> <span class="n">key</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;value: {} and type: {}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)))</span>
+            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">[</span><span class="s1">&#39;coefficients&#39;</span><span class="p">])</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">type</span><span class="p">(</span><span class="nb">str</span><span class="p">()):</span>
+                    <span class="n">value</span><span class="p">[</span><span class="s1">&#39;coefficients&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">value</span><span class="p">[</span><span class="s1">&#39;coefficients&#39;</span><span class="p">])</span>
+
+            <span class="c1"># if no timestamp, create timestamp</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;value: {}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
+            <span class="k">if</span> <span class="s1">&#39;timestamp&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">value</span> <span class="ow">or</span> <span class="n">value</span><span class="p">[</span><span class="s1">&#39;timestamp&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">or</span> <span class="n">value</span><span class="p">[</span><span class="s1">&#39;timestamp&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+
+                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;No timestamp provided. Using current time </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()))</span>
+                <span class="n">value</span><span class="p">[</span><span class="s1">&#39;timestamp&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+
+            <span class="n">sensor</span> <span class="o">=</span> <span class="n">Sensors</span><span class="o">.</span><span class="n">updateCalibration</span><span class="p">(</span><span class="n">sensor</span><span class="o">.</span><span class="n">toDict</span><span class="p">(),</span> <span class="n">value</span><span class="p">[</span><span class="s1">&#39;coefficients&#39;</span><span class="p">],</span> <span class="n">value</span><span class="p">[</span><span class="s1">&#39;timestamp&#39;</span><span class="p">],</span> <span class="n">session</span><span class="p">)</span>
+            <span class="c1"># we want to keep using a Sensor, not the dict, so look it up</span>
+            <span class="c1"># TODO: This is pretty smelly, but should work for now. Maybe in the future we want updateCalibration and _updateCalibration return a Sensor, or find some other way to update it.</span>
+            <span class="n">sensor</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Sensor</span><span class="p">)</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">uuid</span><span class="o">=</span><span class="n">sensor_id</span><span class="p">)</span><span class="o">.</span><span class="n">one</span><span class="p">()</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Back from updateCalibration. Sensor: {}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">sensor</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">models</span><span class="o">.</span><span class="n">SENSORWHITELIST</span><span class="p">:</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="n">sensor</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+    <span class="n">session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">sensor</span><span class="p">)</span>
+
+    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Finished updating sensor.&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">sensor</span><span class="o">.</span><span class="n">toDict</span><span class="p">()</span>
+
+
+<span class="k">def</span> <span class="nf">_updateCalibration</span><span class="p">(</span><span class="n">sensor</span><span class="p">,</span> <span class="n">coefficients</span><span class="p">,</span> <span class="n">timestamp</span><span class="p">,</span> <span class="n">session</span><span class="p">):</span>
+    <span class="n">updateNeeded</span> <span class="o">=</span> <span class="bp">False</span>
+    <span class="c1"># logging.info(&quot;Trying to update sensor %s with coefficiencts %s with new coefficients %s&quot;, str(sensor[&#39;uuid&#39;]), str(sensor[&#39;last_calibration&#39;][&#39;coefficients&#39;]), str(coefficients))</span>
+
+    <span class="k">if</span> <span class="s1">&#39;last_calibration&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">sensor</span> <span class="ow">or</span> <span class="s1">&#39;id&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">sensor</span><span class="p">[</span><span class="s1">&#39;last_calibration&#39;</span><span class="p">]</span> <span class="ow">or</span> <span class="n">sensor</span><span class="p">[</span><span class="s1">&#39;last_calibration&#39;</span><span class="p">][</span><span class="s1">&#39;id&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="c1"># sensor doesn&#39;t have a calibration id, so we need to make a new calibration</span>
+        <span class="n">Cal</span> <span class="o">=</span> <span class="n">Calibration</span><span class="p">(</span><span class="n">coefficients</span><span class="o">=</span><span class="n">coefficients</span><span class="p">,</span> <span class="n">timestamp</span><span class="o">=</span><span class="n">timestamp</span><span class="p">,</span> <span class="n">sensor_id</span><span class="o">=</span><span class="n">sensor</span><span class="p">[</span><span class="s1">&#39;uuid&#39;</span><span class="p">])</span>
+        <span class="n">session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Cal</span><span class="p">)</span>
+        <span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+        <span class="n">updateNeeded</span> <span class="o">=</span> <span class="bp">True</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">Cal</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Calibration</span><span class="p">)</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="n">sensor</span><span class="p">[</span><span class="s1">&#39;last_calibration&#39;</span><span class="p">][</span><span class="s1">&#39;id&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">one</span><span class="p">()</span>
+            <span class="c1"># update calibration based on timestamps</span>
+            <span class="n">currentTimestamp</span> <span class="o">=</span> <span class="n">timestamp</span>
+            <span class="n">oldTimestamp</span> <span class="o">=</span> <span class="n">Cal</span><span class="o">.</span><span class="n">timestamp</span>
+
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Request timestamp: </span><span class="si">%s</span><span class="s2">, Database timestamp: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">currentTimestamp</span><span class="p">,</span> <span class="n">oldTimestamp</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">currentTimestamp</span> <span class="o">&gt;</span> <span class="n">oldTimestamp</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Comparing coefficients.&quot;</span><span class="p">)</span>
+
+                <span class="c1"># check if coefficients are different</span>
+                <span class="k">if</span> <span class="n">Cal</span><span class="o">.</span><span class="n">coefficients</span> <span class="o">!=</span> <span class="n">coefficients</span><span class="p">:</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Coefficients are different, updating...&quot;</span><span class="p">)</span>
+
+                    <span class="n">Cal</span> <span class="o">=</span> <span class="n">Calibration</span><span class="p">(</span><span class="n">coefficients</span><span class="o">=</span><span class="n">coefficients</span><span class="p">,</span> <span class="n">timestamp</span><span class="o">=</span><span class="n">timestamp</span><span class="p">,</span> <span class="n">sensor_id</span><span class="o">=</span><span class="n">sensor</span><span class="p">[</span><span class="s1">&#39;uuid&#39;</span><span class="p">])</span>
+                    <span class="n">session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Cal</span><span class="p">)</span>
+                    <span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Added new calibration to database.&quot;</span><span class="p">)</span>
+
+                    <span class="n">updateNeeded</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">NoResultFound</span><span class="p">,</span> <span class="ne">KeyError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;No calibration found for sensor </span><span class="si">%s</span><span class="s2">. Creating new calibration...&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">sensor</span><span class="p">))</span>
+
+            <span class="n">Cal</span> <span class="o">=</span> <span class="n">Calibration</span><span class="p">(</span><span class="n">coefficients</span><span class="o">=</span><span class="n">coefficients</span><span class="p">,</span> <span class="n">timestamp</span><span class="o">=</span><span class="n">timestamp</span><span class="p">,</span> <span class="n">sensor_id</span><span class="o">=</span><span class="n">sensor</span><span class="p">[</span><span class="s1">&#39;uuid&#39;</span><span class="p">])</span>
+            <span class="n">session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Cal</span><span class="p">)</span>
+            <span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Created new calibration.&quot;</span><span class="p">)</span>
+
+            <span class="n">updateNeeded</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="k">if</span> <span class="n">sensor</span><span class="p">[</span><span class="s1">&#39;uuid&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="n">Cal</span><span class="o">.</span><span class="n">sensor_id</span><span class="p">:</span>
+            <span class="c1"># sensor thinks the calibration it has belongs to it, but it doesn&#39;t (may belong to another sensor). Make a new calibration.</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Calibration has different sensor foreign key </span><span class="si">%s</span><span class="s2"> than input sensor uuid </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">Cal</span><span class="o">.</span><span class="n">sensor_id</span><span class="p">,</span> <span class="n">sensor</span><span class="p">[</span><span class="s1">&#39;uuid&#39;</span><span class="p">])</span>
+
+            <span class="n">Cal</span> <span class="o">=</span> <span class="n">Calibration</span><span class="p">(</span><span class="n">coefficients</span><span class="o">=</span><span class="n">coefficients</span><span class="p">,</span> <span class="n">timestamp</span><span class="o">=</span><span class="n">timestamp</span><span class="p">,</span> <span class="n">sensor_id</span><span class="o">=</span><span class="n">sensor</span><span class="p">[</span><span class="s1">&#39;uuid&#39;</span><span class="p">])</span>
+            <span class="n">session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Cal</span><span class="p">)</span>
+            <span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Created new Calibration for input sensor.&quot;</span><span class="p">)</span>
+
+            <span class="n">updateNeeded</span> <span class="o">=</span> <span class="bp">True</span>
+
+    <span class="c1"># update sensor model with calibration</span>
+    <span class="k">if</span> <span class="n">updateNeeded</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Updating sensor with new calibration.&quot;</span><span class="p">)</span>
+
+        <span class="n">sensor</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Sensor</span><span class="p">)</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">uuid</span><span class="o">=</span><span class="n">sensor</span><span class="p">[</span><span class="s1">&#39;uuid&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">one</span><span class="p">()</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Got sensor </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">sensor</span><span class="o">.</span><span class="n">toDict</span><span class="p">()))</span>
+        <span class="n">Cal</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Calibration</span><span class="p">)</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">sensor_id</span><span class="o">=</span><span class="n">sensor</span><span class="o">.</span><span class="n">uuid</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="c1"># Gets most recent (by id) calibration</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Got calibration </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">Cal</span><span class="o">.</span><span class="n">toDict</span><span class="p">()))</span>
+
+        <span class="n">sensor</span><span class="o">.</span><span class="n">last_calibration_id</span> <span class="o">=</span> <span class="n">Cal</span><span class="o">.</span><span class="n">id</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Updated calibration id.&quot;</span><span class="p">)</span>
+        <span class="n">sensor</span><span class="o">.</span><span class="n">last_calibration</span> <span class="o">=</span> <span class="n">Cal</span>
+        <span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+        <span class="n">sensor</span> <span class="o">=</span> <span class="n">sensor</span><span class="o">.</span><span class="n">toDict</span><span class="p">()</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Sensor after updateCalibration: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">sensor</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">sensor</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">teleceptor 1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../api.html" >teleceptor.api</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2016, Visgence Inc..
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+    </div>
+  </body>
+</html>

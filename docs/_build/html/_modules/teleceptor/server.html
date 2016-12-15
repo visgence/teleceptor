@@ -1,0 +1,154 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>teleceptor.server &mdash; teleceptor 1 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="teleceptor 1 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">teleceptor 1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for teleceptor.server</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">The server that runs Teleceptor</span>
+
+<span class="sd">Authors: Evan Salazar</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c1"># System Imports</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">cherrypy</span>
+<span class="kn">from</span> <span class="nn">cherrypy.lib.static</span> <span class="kn">import</span> <span class="n">serve_file</span>
+
+<span class="c1"># Local Imports</span>
+<span class="kn">from</span> <span class="nn">teleceptor</span> <span class="kn">import</span> <span class="n">WEBROOT</span><span class="p">,</span> <span class="n">PORT</span><span class="p">,</span> <span class="n">SUPRESS_SERVER_OUTPUT</span>
+<span class="kn">from</span> <span class="nn">teleceptor.auth</span> <span class="kn">import</span> <span class="n">AuthController</span><span class="p">,</span> <span class="n">require</span><span class="p">,</span> <span class="n">member_of</span><span class="p">,</span> <span class="n">name_is</span>
+<span class="kn">from</span> <span class="nn">teleceptor.pages</span> <span class="kn">import</span> <span class="n">Root</span>
+
+<span class="n">PATH</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">__file__</span><span class="p">),</span> <span class="s1">&#39;..&#39;</span><span class="p">))</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">PATH</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="get_cp_config"><a class="viewcode-back" href="../../teleceptor.html#teleceptor.server.get_cp_config">[docs]</a><span class="k">def</span> <span class="nf">get_cp_config</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Creates config file for server</span>
+
+<span class="sd">    :returns:</span>
+<span class="sd">        a dictionary with the server settings</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">config</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;/&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;tools.staticdir.on&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+            <span class="s1">&#39;tools.staticdir.dir&#39;</span><span class="p">:</span> <span class="n">WEBROOT</span><span class="p">,</span>
+            <span class="c1"># &#39;tools.auth.on&#39;: True,</span>
+            <span class="s1">&#39;tools.sessions.on&#39;</span><span class="p">:</span> <span class="bp">True</span>
+        <span class="p">},</span>
+        <span class="s1">&#39;/api&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;request.dispatch&#39;</span><span class="p">:</span> <span class="n">cherrypy</span><span class="o">.</span><span class="n">dispatch</span><span class="o">.</span><span class="n">MethodDispatcher</span><span class="p">()</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="n">config</span></div>
+
+
+<div class="viewcode-block" id="runserver"><a class="viewcode-back" href="../../teleceptor.html#teleceptor.server.runserver">[docs]</a><span class="k">def</span> <span class="nf">runserver</span><span class="p">(</span><span class="n">config</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Runs a cherrypy server</span>
+
+<span class="sd">    :param server: configuration file</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">cherrypy</span><span class="o">.</span><span class="n">tree</span><span class="o">.</span><span class="n">mount</span><span class="p">(</span><span class="n">Root</span><span class="p">(),</span> <span class="s1">&#39;/&#39;</span><span class="p">,</span> <span class="n">config</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">SUPRESS_SERVER_OUTPUT</span><span class="p">:</span>
+        <span class="n">cherrypy</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;environment&quot;</span><span class="p">:</span> <span class="s2">&quot;embedded&quot;</span><span class="p">})</span>
+
+    <span class="n">cherrypy</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">socket_host</span> <span class="o">=</span> <span class="s2">&quot;0.0.0.0&quot;</span>
+    <span class="n">cherrypy</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">socket_port</span> <span class="o">=</span> <span class="n">PORT</span>
+    <span class="n">cherrypy</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+    <span class="n">cherrypy</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">block</span><span class="p">()</span></div>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">runserver</span><span class="p">(</span><span class="n">get_cp_config</span><span class="p">())</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">cherrypy</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;environment&#39;</span><span class="p">:</span> <span class="s1">&#39;embedded&#39;</span><span class="p">})</span>
+    <span class="n">application</span> <span class="o">=</span> <span class="n">cherrypy</span><span class="o">.</span><span class="n">Application</span><span class="p">(</span><span class="n">Root</span><span class="p">(),</span> <span class="n">script_name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">get_cp_config</span><span class="p">())</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">teleceptor 1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2016, Visgence Inc..
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+    </div>
+  </body>
+</html>

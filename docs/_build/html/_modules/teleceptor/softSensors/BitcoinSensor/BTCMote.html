@@ -1,0 +1,160 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>teleceptor.softSensors.BitcoinSensor.BTCMote &mdash; teleceptor 1 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../',
+        VERSION:     '1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <link rel="top" title="teleceptor 1 documentation" href="../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">teleceptor 1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for teleceptor.softSensors.BitcoinSensor.BTCMote</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">requests</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">time</span>
+
+<span class="kn">import</span> <span class="nn">teleceptor</span>
+
+<span class="n">queryrate</span> <span class="o">=</span> <span class="mi">60</span>
+<span class="n">blockchainURL</span> <span class="o">=</span> <span class="s2">&quot;http://blockchain.info/ticker&quot;</span>
+<span class="n">teleceptorURL</span> <span class="o">=</span> <span class="s2">&quot;http://localhost:&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">teleceptor</span><span class="o">.</span><span class="n">PORT</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;/api/station/&quot;</span>
+<span class="n">caltime</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+
+
+<div class="viewcode-block" id="main"><a class="viewcode-back" href="../../../../teleceptor.softSensors.BitcoinSensor.html#teleceptor.softSensors.BitcoinSensor.BTCMote.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="c1"># loop forever getting 15 minute rate updates</span>
+    <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">getData</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">data</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="c1"># equests failed or JSON was garbled</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">queryrate</span><span class="p">)</span>
+            <span class="k">continue</span>
+        <span class="n">motestring</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;info&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;uuid&quot;</span><span class="p">:</span> <span class="s2">&quot;MyFirstBTCSensor&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;BTCRateSensor&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Gets the 15 minute Bitcoin exchange rate&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;in&quot;</span><span class="p">:</span> <span class="p">[],</span>
+                <span class="s2">&quot;out&quot;</span><span class="p">:</span> <span class="p">[]</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+        <span class="n">readings</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;readings&#39;</span><span class="p">:</span> <span class="p">[]}</span>
+        <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">d</span> <span class="o">==</span> <span class="s2">&quot;symbol&quot;</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">motestring</span><span class="p">[</span><span class="s1">&#39;info&#39;</span><span class="p">][</span><span class="s1">&#39;out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">&quot;units&quot;</span><span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;symbol&#39;</span><span class="p">]})</span>
+            <span class="n">motestring</span><span class="p">[</span><span class="s1">&#39;info&#39;</span><span class="p">][</span><span class="s1">&#39;out&#39;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s2">&quot;model&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;BTCSensor&quot;</span>
+            <span class="n">motestring</span><span class="p">[</span><span class="s1">&#39;info&#39;</span><span class="p">][</span><span class="s1">&#39;out&#39;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">d</span>
+            <span class="n">motestring</span><span class="p">[</span><span class="s1">&#39;info&#39;</span><span class="p">][</span><span class="s1">&#39;out&#39;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s2">&quot;description&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; Sensor&quot;</span>
+            <span class="n">motestring</span><span class="p">[</span><span class="s1">&#39;info&#39;</span><span class="p">][</span><span class="s1">&#39;out&#39;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s2">&quot;timestamp&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">caltime</span>
+            <span class="n">motestring</span><span class="p">[</span><span class="s1">&#39;info&#39;</span><span class="p">][</span><span class="s1">&#39;out&#39;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s2">&quot;sensor_type&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;float&quot;</span>
+            <span class="n">readings</span><span class="p">[</span><span class="s1">&#39;readings&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">d</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="n">d</span><span class="p">],</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()])</span>
+            <span class="k">print</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="n">d</span><span class="p">])</span>
+        <span class="n">postmessage</span> <span class="o">=</span> <span class="p">[{</span><span class="s1">&#39;info&#39;</span><span class="p">:</span> <span class="n">motestring</span><span class="p">[</span><span class="s1">&#39;info&#39;</span><span class="p">],</span> <span class="s1">&#39;readings&#39;</span><span class="p">:</span><span class="n">readings</span><span class="p">[</span><span class="s1">&#39;readings&#39;</span><span class="p">]}]</span>
+
+        <span class="k">for</span> <span class="n">sensor</span> <span class="ow">in</span> <span class="n">postmessage</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;info&#39;</span><span class="p">][</span><span class="s1">&#39;in&#39;</span><span class="p">]:</span>
+            <span class="n">sensor</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;meta_data&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;unixtime&#39;</span><span class="p">:</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">(),</span> <span class="s1">&#39;pid&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;tty&#39;</span><span class="p">:</span> <span class="s2">&quot;Web&quot;</span><span class="p">,</span> <span class="s2">&quot;complex&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;nested&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Hi&quot;</span><span class="p">,</span> <span class="s2">&quot;Bye&quot;</span><span class="p">]}}})</span>
+        <span class="k">for</span> <span class="n">sensor</span> <span class="ow">in</span> <span class="n">postmessage</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;info&#39;</span><span class="p">][</span><span class="s1">&#39;out&#39;</span><span class="p">]:</span>
+            <span class="n">sensor</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;meta_data&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;unixtime&#39;</span><span class="p">:</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">(),</span> <span class="s1">&#39;pid&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;tty&#39;</span><span class="p">:</span> <span class="s2">&quot;Web&quot;</span><span class="p">,</span> <span class="s2">&quot;complex&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;nested&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Hi&quot;</span><span class="p">,</span> <span class="s2">&quot;Bye&quot;</span><span class="p">]}}})</span>
+        <span class="k">print</span><span class="p">(</span><span class="n">postmessage</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">teleceptorURL</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">postmessage</span><span class="p">))</span>
+        <span class="k">print</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">queryrate</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="getData"><a class="viewcode-back" href="../../../../teleceptor.softSensors.BitcoinSensor.html#teleceptor.softSensors.BitcoinSensor.BTCMote.getData">[docs]</a><span class="k">def</span> <span class="nf">getData</span><span class="p">():</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">blockchainURL</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">jdata</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">jdata</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">None</span>
+
+    <span class="k">return</span> <span class="n">jdata</span><span class="p">[</span><span class="s1">&#39;USD&#39;</span><span class="p">]</span></div>
+
+
+<span class="k">if</span> <span class="s2">&quot;__main__&quot;</span> <span class="o">==</span> <span class="n">__name__</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">teleceptor 1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2016, Visgence Inc..
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+    </div>
+  </body>
+</html>

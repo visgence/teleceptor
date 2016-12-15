@@ -1,0 +1,389 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>teleceptor.basestation package &mdash; teleceptor 1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="teleceptor 1 documentation" href="index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">teleceptor 1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="teleceptor-basestation-package">
+<h1>teleceptor.basestation package<a class="headerlink" href="#teleceptor-basestation-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-teleceptor.basestation.GenericQueryer">
+<span id="teleceptor-basestation-genericqueryer-module"></span><h2>teleceptor.basestation.GenericQueryer module<a class="headerlink" href="#module-teleceptor.basestation.GenericQueryer" title="Permalink to this headline">¶</a></h2>
+<p>Authors: Victor Szczepanski</p>
+<p>GenericQueryer handles the main basestation behaviour. It expects
+to receive a device (e.g. SerialMote or TCPMote) that has exposed functions</p>
+<p>getReadings()
+updateValues(newValues)</p>
+<p>See either TCPMote or SerialMote for example usages</p>
+<dl class="function">
+<dt id="teleceptor.basestation.GenericQueryer.main">
+<code class="descclassname">teleceptor.basestation.GenericQueryer.</code><code class="descname">main</code><span class="sig-paren">(</span><em>queryRate=60</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/basestation/GenericQueryer.html#main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.basestation.GenericQueryer.main" title="Permalink to this definition">¶</a></dt>
+<dd><p>Begins a query loop on the device and sends POST requests to
+the server at serverURL.</p>
+<p>queryRate &#8211; The rate to get readings from the mote and POST them.
+kwargs &#8211; the keyword arguments for the device. Currently the GenericQueryer supports two devices - TCPMote and SerialMote. Arguments for TCPMote should be of the form</p>
+<blockquote>
+<div><blockquote>
+<div>host = &#8220;192.168.0.0&#8221;
+port = 5000
+debug = False *</div></blockquote>
+<dl class="docutils">
+<dt>Arguments for SerialMote should be of the form</dt>
+<dd>deviceName = &#8220;/dev/ttyUSB0&#8221;
+timeout = 5
+baudrate = 9600 *
+debug = False *</dd>
+</dl>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">arguments marked with a * are optional. See the documentation for the respective device for default values.</p>
+</div>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="teleceptor.basestation.GenericQueryer.moteFactory">
+<code class="descclassname">teleceptor.basestation.GenericQueryer.</code><code class="descname">moteFactory</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/basestation/GenericQueryer.html#moteFactory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.basestation.GenericQueryer.moteFactory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates a new device based on the input kwargs.
+kwargs &#8211; the keyword arguments for the device. Currently the GenericQueryer supports two devices - TCPMote and SerialMote. Arguments for TCPMote should be of the form</p>
+<blockquote>
+<div><blockquote>
+<div>host = &#8220;192.168.0.0&#8221;
+port = 5000
+debug = False *</div></blockquote>
+<dl class="docutils">
+<dt>Arguments for SerialMote should be of the form</dt>
+<dd>deviceName = &#8220;/dev/ttyUSB0&#8221;
+timeout = 5
+baudrate = 9600 *
+debug = False *</dd>
+</dl>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">arguments marked with a * are optional. See the documentation for the respective device for default values.</p>
+</div>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="teleceptor.basestation.GenericQueryer.updateMote">
+<code class="descclassname">teleceptor.basestation.GenericQueryer.</code><code class="descname">updateMote</code><span class="sig-paren">(</span><em>moteHandle</em>, <em>newValues={}</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/basestation/GenericQueryer.html#updateMote"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.basestation.GenericQueryer.updateMote" title="Permalink to this definition">¶</a></dt>
+<dd><p>Updates the given mote&#8217;s input sensors with the given values.</p>
+<p>moteHandle &#8211; the mote object to update
+newValues &#8211; the dictionary of sensorName: value pairs.</p>
+<dl class="docutils">
+<dt>newValues =</dt>
+<dd><dl class="first docutils">
+<dt>{</dt>
+<dd>&#8220;in1&#8221;: true,
+&#8220;in2&#8221;: false,
+&#8220;in3&#8221;: 70.0</dd>
+</dl>
+<p class="last">}</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="teleceptor.basestation.GenericQueryer.uptime">
+<code class="descclassname">teleceptor.basestation.GenericQueryer.</code><code class="descname">uptime</code><span class="sig-paren">(</span><em>starttime</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/basestation/GenericQueryer.html#uptime"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.basestation.GenericQueryer.uptime" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convience method that returns the time since starttime.</p>
+<p>starttime &#8211; the start time to compare against</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-teleceptor.basestation.SerialMote">
+<span id="teleceptor-basestation-serialmote-module"></span><h2>teleceptor.basestation.SerialMote module<a class="headerlink" href="#module-teleceptor.basestation.SerialMote" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>Authors:</dt>
+<dd>Victor Szczepanski (Visgence, Inc)</dd>
+</dl>
+<p>Encapsulates a Serial connection and provides several
+methods used by the Teleceptor Basestation software.</p>
+<p>Interface functions:
+getReadings() //returns tuple of JSON strings from Teleimperium-like device
+updateValues(newValues) //Accepts a dictionary of sensorName: value pairs. Returns tuple as getReadings()</p>
+<dl class="class">
+<dt id="teleceptor.basestation.SerialMote.SerialMote">
+<em class="property">class </em><code class="descclassname">teleceptor.basestation.SerialMote.</code><code class="descname">SerialMote</code><span class="sig-paren">(</span><em>deviceName</em>, <em>timeout=3</em>, <em>baudRate=9600</em>, <em>debug=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/basestation/SerialMote.html#SerialMote"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.basestation.SerialMote.SerialMote" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">serial.serialposix.Serial</span></code></p>
+<p>This module extends the Serial port with functions to read from Visgence
+sensor motes (or any mote implementing the Visgence mote protocol).</p>
+<p>The module takes arguments for the serial port, timeout, and baudRate.</p>
+<p>All Visgence motes use a baudrate of 9600.</p>
+<dl class="method">
+<dt id="teleceptor.basestation.SerialMote.SerialMote.getReadings">
+<code class="descname">getReadings</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/basestation/SerialMote.html#SerialMote.getReadings"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.basestation.SerialMote.SerialMote.getReadings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the JSON formatted information from the mote on one line and current sensor readings on the next line. Returns two strings: the JSON info and the readings, where the info is a JSON object(dictionary) and readings is a JSON array(list).</p>
+<p>If the mote is configured correctly, it should return two JSON objects.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">info</span><span class="p">,</span> <span class="n">readings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getReadings</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">info</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">readings</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="teleceptor.basestation.SerialMote.SerialMote.updateValues">
+<code class="descname">updateValues</code><span class="sig-paren">(</span><em>newValues={}</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/basestation/SerialMote.html#SerialMote.updateValues"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.basestation.SerialMote.SerialMote.updateValues" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sends values to update this mote&#8217;s input sensors. The format should be a dictionary with key/value pairs in the form sensorName: value.</p>
+<p>newValues &#8211; The dictionary of sensorName: value pairs.</p>
+<dl class="docutils">
+<dt>newValues =</dt>
+<dd><dl class="first docutils">
+<dt>{</dt>
+<dd>&#8220;in1&#8221;: true,
+&#8220;in2&#8221;: false,
+&#8220;in3&#8221;: 70.0</dd>
+</dl>
+<p class="last">}</p>
+</dd>
+</dl>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">info</span><span class="p">,</span> <span class="n">readings</span> <span class="o">=</span> <span class="n">this</span><span class="o">.</span><span class="n">updateValues</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">info</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">readings</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-teleceptor.basestation.TCPMote">
+<span id="teleceptor-basestation-tcpmote-module"></span><h2>teleceptor.basestation.TCPMote module<a class="headerlink" href="#module-teleceptor.basestation.TCPMote" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>Authors:</dt>
+<dd>Victor Szczepanski (Visgence, Inc)</dd>
+</dl>
+<p>Encapsulates a TCP socket connection and provides several
+methods used by the Teleceptor Basestation software.</p>
+<p>Interface functions:
+getReadings() //returns tuple of JSON strings from Teleimperium-like device
+updateValues(newValues) //Accepts a dictionary of sensorName: value pairs. Returns tuple as getReadings()</p>
+<dl class="class">
+<dt id="teleceptor.basestation.TCPMote.TCPMote">
+<em class="property">class </em><code class="descclassname">teleceptor.basestation.TCPMote.</code><code class="descname">TCPMote</code><span class="sig-paren">(</span><em>host</em>, <em>port</em>, <em>timeout=3</em>, <em>debug=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/basestation/TCPMote.html#TCPMote"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.basestation.TCPMote.TCPMote" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="teleceptor.basestation.TCPMote.TCPMote.getReadings">
+<code class="descname">getReadings</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/basestation/TCPMote.html#TCPMote.getReadings"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.basestation.TCPMote.TCPMote.getReadings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the JSON formatted information from the mote on one line and current sensor readings on the next line. Returns two strings: the JSON info and the readings, where the info is a JSON object(dictionary) and readings is a JSON array(list).</p>
+<p>If the mote is configured correctly, it should return two JSON objects.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">info</span><span class="p">,</span> <span class="n">readings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getReadings</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">info</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">readings</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition-todo admonition" id="index-0">
+<p class="first admonition-title">Todo</p>
+<p class="last">Raise generic timeout exception if we get a sockettimeout.</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="teleceptor.basestation.TCPMote.TCPMote.updateValues">
+<code class="descname">updateValues</code><span class="sig-paren">(</span><em>newValues={}</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/basestation/TCPMote.html#TCPMote.updateValues"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.basestation.TCPMote.TCPMote.updateValues" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sends values to update this mote&#8217;s input sensors. The format should be a dictionary with key/value pairs in the form sensorName: value.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>newValues</strong> &#8211; <p>The dictionary of sensorName: value pairs.
+newValues =</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>{</dt>
+<dd>&#8220;in1&#8221;: true,
+&#8220;in2&#8221;: false,
+&#8220;in3&#8221;: 70.0</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">info</span><span class="p">,</span> <span class="n">readings</span> <span class="o">=</span> <span class="n">this</span><span class="o">.</span><span class="n">updateValues</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">info</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">readings</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-teleceptor.basestation.VirtualTCPSensor">
+<span id="teleceptor-basestation-virtualtcpsensor-module"></span><h2>teleceptor.basestation.VirtualTCPSensor module<a class="headerlink" href="#module-teleceptor.basestation.VirtualTCPSensor" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>Contributing Authors:</dt>
+<dd>Victor Szczepanski (Visgence, Inc)</dd>
+</dl>
+<p>Simulates a teleimperium-like TCP sensor.</p>
+<dl class="function">
+<dt id="teleceptor.basestation.VirtualTCPSensor.main">
+<code class="descclassname">teleceptor.basestation.VirtualTCPSensor.</code><code class="descname">main</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/basestation/VirtualTCPSensor.html#main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.basestation.VirtualTCPSensor.main" title="Permalink to this definition">¶</a></dt>
+<dd><p>Simple TCP server that simulates a teleimperium-like sensor that is compatible with GenericQueryer basestation.</p>
+<p>Creates a socket connection with ip and port defined above, then
+waits forever for a connection.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="teleceptor.basestation.VirtualTCPSensor.parseJSON">
+<code class="descclassname">teleceptor.basestation.VirtualTCPSensor.</code><code class="descname">parseJSON</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/basestation/VirtualTCPSensor.html#parseJSON"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.basestation.VirtualTCPSensor.parseJSON" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parses incoming update data and tries to update any input sensors
+given in the data.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-teleceptor.basestation.poller">
+<span id="teleceptor-basestation-poller-module"></span><h2>teleceptor.basestation.poller module<a class="headerlink" href="#module-teleceptor.basestation.poller" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>Authors:</dt>
+<dd>Victor Szczepanski (Visgence, Inc)
+Jessica Greenling (Visgence, Inc)</dd>
+</dl>
+<p>Poller actively searches for newly connected motes.  Each new mote found is sent as a new process to queryer.  Previously found motes are still returned in the list of active processes.  If a mote is disconnected, it is not returned in the list.</p>
+<p>Poller can be run with or without the server.</p>
+<p>Example usage:
+python poller.py</p>
+<p>or</p>
+<p>./teleceptorcmd poller</p>
+<dl class="function">
+<dt id="teleceptor.basestation.poller.grepfinddevices">
+<code class="descclassname">teleceptor.basestation.poller.</code><code class="descname">grepfinddevices</code><span class="sig-paren">(</span><em>previousDevices=[]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/basestation/poller.html#grepfinddevices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.basestation.poller.grepfinddevices" title="Permalink to this definition">¶</a></dt>
+<dd><p>Searches for a mote connected through a USB port.
+Gathers info about all ports from /dev/, splits each item by a newline character, and a process is created for each new mote found. A mote is described by having these two properties in the /dev/ folder: &#8216;    DRIVERS==&#8221;ftdi_sio&#8221; and &#8216;    ATTRS{product}==&#8221;FT232R USB UART&#8221;</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>previousDevices</strong> &#8211; a list of process names
+Refers to previously found motes that were stored to this list via their process name.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-teleceptor.basestation.tcpPoller">
+<span id="teleceptor-basestation-tcppoller-module"></span><h2>teleceptor.basestation.tcpPoller module<a class="headerlink" href="#module-teleceptor.basestation.tcpPoller" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>Authors:</dt>
+<dd>Evan Salazar (Visgence, Inc)
+Victor Szczepanski (Visgence, Inc)
+Jessica Greenling (Visgence, Inc)</dd>
+</dl>
+<p>Poller can be run with or without the server.</p>
+<dl class="function">
+<dt id="teleceptor.basestation.tcpPoller.tcpDevices">
+<code class="descclassname">teleceptor.basestation.tcpPoller.</code><code class="descname">tcpDevices</code><span class="sig-paren">(</span><em>previousDevices</em>, <em>devices</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/basestation/tcpPoller.html#tcpDevices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.basestation.tcpPoller.tcpDevices" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-teleceptor.basestation">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-teleceptor.basestation" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">teleceptor.basestation package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-teleceptor.basestation.GenericQueryer">teleceptor.basestation.GenericQueryer module</a></li>
+<li><a class="reference internal" href="#module-teleceptor.basestation.SerialMote">teleceptor.basestation.SerialMote module</a></li>
+<li><a class="reference internal" href="#module-teleceptor.basestation.TCPMote">teleceptor.basestation.TCPMote module</a></li>
+<li><a class="reference internal" href="#module-teleceptor.basestation.VirtualTCPSensor">teleceptor.basestation.VirtualTCPSensor module</a></li>
+<li><a class="reference internal" href="#module-teleceptor.basestation.poller">teleceptor.basestation.poller module</a></li>
+<li><a class="reference internal" href="#module-teleceptor.basestation.tcpPoller">teleceptor.basestation.tcpPoller module</a></li>
+<li><a class="reference internal" href="#module-teleceptor.basestation">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/teleceptor.basestation.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">teleceptor 1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2016, Visgence Inc..
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+    </div>
+  </body>
+</html>

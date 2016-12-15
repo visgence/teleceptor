@@ -1,0 +1,964 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>teleceptor package &mdash; teleceptor 1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="teleceptor 1 documentation" href="index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">teleceptor 1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="teleceptor-package">
+<h1>teleceptor package<a class="headerlink" href="#teleceptor-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="teleceptor.api.html">teleceptor.api package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="teleceptor.api.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="teleceptor.api.html#module-teleceptor.api.datastreams">teleceptor.api.datastreams module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="teleceptor.api.html#module-teleceptor.api.messages">teleceptor.api.messages module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="teleceptor.api.html#module-teleceptor.api.readings">teleceptor.api.readings module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="teleceptor.api.html#module-teleceptor.api.sensors">teleceptor.api.sensors module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="teleceptor.api.html#module-teleceptor.api.station">teleceptor.api.station module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="teleceptor.api.html#module-teleceptor.api">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="teleceptor.basestation.html">teleceptor.basestation package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="teleceptor.basestation.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="teleceptor.basestation.html#module-teleceptor.basestation.GenericQueryer">teleceptor.basestation.GenericQueryer module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="teleceptor.basestation.html#module-teleceptor.basestation.SerialMote">teleceptor.basestation.SerialMote module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="teleceptor.basestation.html#module-teleceptor.basestation.TCPMote">teleceptor.basestation.TCPMote module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="teleceptor.basestation.html#module-teleceptor.basestation.VirtualTCPSensor">teleceptor.basestation.VirtualTCPSensor module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="teleceptor.basestation.html#module-teleceptor.basestation.poller">teleceptor.basestation.poller module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="teleceptor.basestation.html#module-teleceptor.basestation.tcpPoller">teleceptor.basestation.tcpPoller module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="teleceptor.basestation.html#module-teleceptor.basestation">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="teleceptor.softSensors.html">teleceptor.softSensors package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="teleceptor.softSensors.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="teleceptor.softSensors.BitcoinSensor.html">teleceptor.softSensors.BitcoinSensor package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="teleceptor.softSensors.BitcoinSensor.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="teleceptor.softSensors.BitcoinSensor.html#module-teleceptor.softSensors.BitcoinSensor.BTCMote">teleceptor.softSensors.BitcoinSensor.BTCMote module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="teleceptor.softSensors.BitcoinSensor.html#module-teleceptor.softSensors.BitcoinSensor">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="teleceptor.softSensors.SimpleInput.html">teleceptor.softSensors.SimpleInput package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="teleceptor.softSensors.SimpleInput.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="teleceptor.softSensors.SimpleInput.html#module-teleceptor.softSensors.SimpleInput.simpleInput">teleceptor.softSensors.SimpleInput.simpleInput module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="teleceptor.softSensors.SimpleInput.html#module-teleceptor.softSensors.SimpleInput">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="teleceptor.softSensors.html#module-teleceptor.softSensors">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-teleceptor.auth">
+<span id="teleceptor-auth-module"></span><h2>teleceptor.auth module<a class="headerlink" href="#module-teleceptor.auth" title="Permalink to this headline">¶</a></h2>
+<p>Authors: Victor Szczepanski</p>
+<dl class="class">
+<dt id="teleceptor.auth.AuthController">
+<em class="property">class </em><code class="descclassname">teleceptor.auth.</code><code class="descname">AuthController</code><a class="reference internal" href="_modules/teleceptor/auth.html#AuthController"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.auth.AuthController" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Controller to provide login and logout actions</p>
+<dl class="method">
+<dt id="teleceptor.auth.AuthController.login">
+<code class="descname">login</code><span class="sig-paren">(</span><em>username=None</em>, <em>password=None</em>, <em>from_page='/'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/auth.html#AuthController.login"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.auth.AuthController.login" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="teleceptor.auth.AuthController.loginForm">
+<code class="descname">loginForm</code><span class="sig-paren">(</span><em>username</em>, <em>msg='Enter login information'</em>, <em>from_page='/'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/auth.html#AuthController.loginForm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.auth.AuthController.loginForm" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="teleceptor.auth.AuthController.logout">
+<code class="descname">logout</code><span class="sig-paren">(</span><em>from_page='/'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/auth.html#AuthController.logout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.auth.AuthController.logout" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="teleceptor.auth.AuthController.on_login">
+<code class="descname">on_login</code><span class="sig-paren">(</span><em>username</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/auth.html#AuthController.on_login"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.auth.AuthController.on_login" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called on successful login</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="teleceptor.auth.AuthController.on_logout">
+<code class="descname">on_logout</code><span class="sig-paren">(</span><em>username</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/auth.html#AuthController.on_logout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.auth.AuthController.on_logout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called on logout</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="teleceptor.auth.all_of">
+<code class="descclassname">teleceptor.auth.</code><code class="descname">all_of</code><span class="sig-paren">(</span><em>*conditions</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/auth.html#all_of"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.auth.all_of" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">True if all of the conditions match</td>
+</tr>
+</tbody>
+</table>
+<p>By default all conditions are required, but this might still be
+needed if you want to use it inside of an any_of(...) condition</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="teleceptor.auth.any_of">
+<code class="descclassname">teleceptor.auth.</code><code class="descname">any_of</code><span class="sig-paren">(</span><em>*conditions</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/auth.html#any_of"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.auth.any_of" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">True if any of the conditions match</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="teleceptor.auth.check_auth">
+<code class="descclassname">teleceptor.auth.</code><code class="descname">check_auth</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/auth.html#check_auth"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.auth.check_auth" title="Permalink to this definition">¶</a></dt>
+<dd><p>A tool that looks in config for &#8216;auth.require&#8217;. If found and it
+is not None, a login is required and the entry is evaluated as a list of
+conditions that the user must fulfill</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="teleceptor.auth.check_credentials">
+<code class="descclassname">teleceptor.auth.</code><code class="descname">check_credentials</code><span class="sig-paren">(</span><em>username</em>, <em>password</em>, <em>session</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/auth.html#check_credentials"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.auth.check_credentials" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verifies credentials for username and password.
+:returns: None on success or a string describing the error on failure</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="teleceptor.auth.member_of">
+<code class="descclassname">teleceptor.auth.</code><code class="descname">member_of</code><span class="sig-paren">(</span><em>groupname</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/auth.html#member_of"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.auth.member_of" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="teleceptor.auth.name_is">
+<code class="descclassname">teleceptor.auth.</code><code class="descname">name_is</code><span class="sig-paren">(</span><em>reqd_username</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/auth.html#name_is"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.auth.name_is" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="teleceptor.auth.require">
+<code class="descclassname">teleceptor.auth.</code><code class="descname">require</code><span class="sig-paren">(</span><em>*conditions</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/auth.html#require"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.auth.require" title="Permalink to this definition">¶</a></dt>
+<dd><p>A decorator that appends conditions to the auth.require config
+variable.</p>
+<p>Conditions are callables that return True
+if the user fulfills the conditions they define, False otherwise</p>
+<p>They can access the current username as cherrypy.request.login</p>
+<p>Define those at will however suits the application.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-teleceptor.elasticsearchUtils">
+<span id="teleceptor-elasticsearchutils-module"></span><h2>teleceptor.elasticsearchUtils module<a class="headerlink" href="#module-teleceptor.elasticsearchUtils" title="Permalink to this headline">¶</a></h2>
+<p>Authors: Victor Szczepanski</p>
+<dl class="function">
+<dt id="teleceptor.elasticsearchUtils.getReadings">
+<code class="descclassname">teleceptor.elasticsearchUtils.</code><code class="descname">getReadings</code><span class="sig-paren">(</span><em>ds</em>, <em>start</em>, <em>end</em>, <em>points=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/elasticsearchUtils.html#getReadings"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.elasticsearchUtils.getReadings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the readings from elastic search for datastream <cite>ds</cite> between dates <cite>start</cite> and <cite>end</cite>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>ds</strong> (<em>int</em>) &#8211; The datastream id</li>
+<li><strong>start</strong> (<em>float</em>) &#8211; The time in seconds since UNIX epoch to start the query from.</li>
+<li><strong>end</strong> (<em>float</em>) &#8211; The time in seconds since UNIX epoch to end the query at.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>:param points:The number of points to retrieve. This affects the level of aggregation when combined with the start and end times.
+:type points: optional int</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">We return data points at <cite>start</cite> and <cite>end</cite>. That is, this function is inclusive of the end points.</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If <cite>points</cite> is None, we use the default aggregation of 1 minute.</p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">list[(float,float)] &#8211; pairs of the form (timestamp, value) for all data in datastream <cite>ds</cite> between dates <cite>start</cite> and <cite>end</cite>.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="teleceptor.elasticsearchUtils.get_elastic">
+<code class="descclassname">teleceptor.elasticsearchUtils.</code><code class="descname">get_elastic</code><span class="sig-paren">(</span><em>elastic_buffer</em>, <em>index_info=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/elasticsearchUtils.html#get_elastic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.elasticsearchUtils.get_elastic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make a query to elasticsearch with args in <cite>elastic_buffer</cite></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name" colspan="2">Parma elastic_buffer:</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">The query json to provide to elastic search.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">list[(float,float)] &#8211; pairs of the form (timestamp, value) for all data that matches the query in <cite>elastic_buffer</cite></td>
+</tr>
+</tbody>
+</table>
+<div class="admonition-todo admonition" id="index-0">
+<p class="first admonition-title">Todo</p>
+<p class="last">May want to pass in a list of indicies to search on</p>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="teleceptor.elasticsearchUtils.insertReading">
+<code class="descclassname">teleceptor.elasticsearchUtils.</code><code class="descname">insertReading</code><span class="sig-paren">(</span><em>ds</em>, <em>value</em>, <em>timestamp=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/elasticsearchUtils.html#insertReading"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.elasticsearchUtils.insertReading" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="teleceptor.elasticsearchUtils.insert_elastic">
+<code class="descclassname">teleceptor.elasticsearchUtils.</code><code class="descname">insert_elastic</code><span class="sig-paren">(</span><em>elastic_buffer</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/elasticsearchUtils.html#insert_elastic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.elasticsearchUtils.insert_elastic" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-teleceptor.models">
+<span id="teleceptor-models-module"></span><h2>teleceptor.models module<a class="headerlink" href="#module-teleceptor.models" title="Permalink to this headline">¶</a></h2>
+<p>Models contains what information will be stored in the database for each component of the project (such as the necessary attributes to be stored for a sensor).  Not all classes will have a toDict()/to_dict() function.
+This module cannot be run independently as it just describes the structure of the database.</p>
+<dl class="docutils">
+<dt>Authors: Bretton Murphy</dt>
+<dd>Victor Szczepanski
+Jessica Greenling</dd>
+</dl>
+<dl class="class">
+<dt id="teleceptor.models.Calibration">
+<em class="property">class </em><code class="descclassname">teleceptor.models.</code><code class="descname">Calibration</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/models.html#Calibration"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.models.Calibration" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">sqlalchemy.ext.declarative.api.Base</span></code></p>
+<dl class="docutils">
+<dt>id</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">int</span><dd>Unique identifier of this Calibration.</dd>
+<dt>sensor_id</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">str</span><dd>Used to identify a Calibration to a Sensor.</dd>
+<dt>timestamp</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">BigInt</span><dd>Indentifies the time in miliseconds when the calibration was stored.</dd>
+<dt>user</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">str</span><dd>Currently unused.</dd>
+<dt>coefficients: str</dt>
+<dd>Describes the coefficients of a polynomial function to a apply to the readings.  Order of coefficients is in decreasing polynomial degree (e.g. [1, 0] represents the polynomial 1*x + 0)</dd>
+</dl>
+<dl class="attribute">
+<dt id="teleceptor.models.Calibration.coefficients">
+<code class="descname">coefficients</code><a class="headerlink" href="#teleceptor.models.Calibration.coefficients" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="teleceptor.models.Calibration.id">
+<code class="descname">id</code><a class="headerlink" href="#teleceptor.models.Calibration.id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="teleceptor.models.Calibration.sensor_id">
+<code class="descname">sensor_id</code><a class="headerlink" href="#teleceptor.models.Calibration.sensor_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="teleceptor.models.Calibration.timestamp">
+<code class="descname">timestamp</code><a class="headerlink" href="#teleceptor.models.Calibration.timestamp" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="teleceptor.models.Calibration.toDict">
+<code class="descname">toDict</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/models.html#Calibration.toDict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.models.Calibration.toDict" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="teleceptor.models.Calibration.user">
+<code class="descname">user</code><a class="headerlink" href="#teleceptor.models.Calibration.user" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="teleceptor.models.DataStream">
+<em class="property">class </em><code class="descclassname">teleceptor.models.</code><code class="descname">DataStream</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/models.html#DataStream"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.models.DataStream" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">sqlalchemy.ext.declarative.api.Base</span></code></p>
+<dl class="docutils">
+<dt>id</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">int</span><dd>Unique identifier of this DataStream.</dd>
+<dt>sensor</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">str</span><dd>Used to identify a DataStream to a Sensor.</dd>
+<dt>owner</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">int</span><dd>Identifies the user for the datastream.  Currently unused.</dd>
+</dl>
+<p>min_value : float
+max_value : float
+name : str</p>
+<blockquote>
+<div>User-friendly (human-readable) name.  Currently unused.</div></blockquote>
+<dl class="docutils">
+<dt>description</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">str</span><dd>Some information that describes the datastream.  Currently unused.</dd>
+</dl>
+<dl class="attribute">
+<dt id="teleceptor.models.DataStream.description">
+<code class="descname">description</code><a class="headerlink" href="#teleceptor.models.DataStream.description" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="teleceptor.models.DataStream.id">
+<code class="descname">id</code><a class="headerlink" href="#teleceptor.models.DataStream.id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="teleceptor.models.DataStream.max_value">
+<code class="descname">max_value</code><a class="headerlink" href="#teleceptor.models.DataStream.max_value" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="teleceptor.models.DataStream.min_value">
+<code class="descname">min_value</code><a class="headerlink" href="#teleceptor.models.DataStream.min_value" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="teleceptor.models.DataStream.name">
+<code class="descname">name</code><a class="headerlink" href="#teleceptor.models.DataStream.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="teleceptor.models.DataStream.owner">
+<code class="descname">owner</code><a class="headerlink" href="#teleceptor.models.DataStream.owner" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="teleceptor.models.DataStream.sensor">
+<code class="descname">sensor</code><a class="headerlink" href="#teleceptor.models.DataStream.sensor" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="teleceptor.models.DataStream.toDict">
+<code class="descname">toDict</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/models.html#DataStream.toDict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.models.DataStream.toDict" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="teleceptor.models.Message">
+<em class="property">class </em><code class="descclassname">teleceptor.models.</code><code class="descname">Message</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/models.html#Message"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.models.Message" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">sqlalchemy.ext.declarative.api.Base</span></code></p>
+<p>A message contains instructions for the sensor.</p>
+<dl class="docutils">
+<dt>id</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">int</span><dd>Uniquely identifies a Message.</dd>
+<dt>message</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">str</span><dd>Instructions for the sensor to perform some action that corresponds with the sensors capabilities.</dd>
+<dt>message_queue_id</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">int</span><dd>Used to identify a Message to a MessageQueue.</dd>
+<dt>timeout</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">float</span><dd>The expiration time for a Message. Old messages should not be used by the sensor.</dd>
+<dt>read</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">bool</span><dd>Indicates whether the Message as been sent to the basestation or read/acknowledged in some other way.</dd>
+</dl>
+<dl class="attribute">
+<dt id="teleceptor.models.Message.id">
+<code class="descname">id</code><a class="headerlink" href="#teleceptor.models.Message.id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="teleceptor.models.Message.message">
+<code class="descname">message</code><a class="headerlink" href="#teleceptor.models.Message.message" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="teleceptor.models.Message.message_queue_id">
+<code class="descname">message_queue_id</code><a class="headerlink" href="#teleceptor.models.Message.message_queue_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="teleceptor.models.Message.read">
+<code class="descname">read</code><a class="headerlink" href="#teleceptor.models.Message.read" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="teleceptor.models.Message.timeout">
+<code class="descname">timeout</code><a class="headerlink" href="#teleceptor.models.Message.timeout" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="teleceptor.models.Message.to_dict">
+<code class="descname">to_dict</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/models.html#Message.to_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.models.Message.to_dict" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="teleceptor.models.MessageQueue">
+<em class="property">class </em><code class="descclassname">teleceptor.models.</code><code class="descname">MessageQueue</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/models.html#MessageQueue"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.models.MessageQueue" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">sqlalchemy.ext.declarative.api.Base</span></code></p>
+<p>Each sensor will have it&#8217;s own unique message queue with its own identification number. The message queue can contain many messages.  Message handling can be found in messages.</p>
+<dl class="docutils">
+<dt>id</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">int</span><dd>Uniquely identifies the MessageQueue.</dd>
+<dt>messages</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">list of Message</span><dd>Can be an empty list or have many elements. Used to store pending messages for sensor.</dd>
+<dt>sensor_id</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">str</span><dd>Used to identify a MessageQueue to a Sensor.</dd>
+</dl>
+<dl class="attribute">
+<dt id="teleceptor.models.MessageQueue.id">
+<code class="descname">id</code><a class="headerlink" href="#teleceptor.models.MessageQueue.id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="teleceptor.models.MessageQueue.messages">
+<code class="descname">messages</code><a class="headerlink" href="#teleceptor.models.MessageQueue.messages" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="teleceptor.models.MessageQueue.sensor_id">
+<code class="descname">sensor_id</code><a class="headerlink" href="#teleceptor.models.MessageQueue.sensor_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="teleceptor.models.MessageQueue.to_dict">
+<code class="descname">to_dict</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/models.html#MessageQueue.to_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.models.MessageQueue.to_dict" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="teleceptor.models.Sensor">
+<em class="property">class </em><code class="descclassname">teleceptor.models.</code><code class="descname">Sensor</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/models.html#Sensor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.models.Sensor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">sqlalchemy.ext.declarative.api.Base</span></code></p>
+<dl class="docutils">
+<dt>uuid</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">str</span><dd>Unique identifier of this sensor.</dd>
+<dt>sensor_IOtype</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">bool</span><dd>True indicates that the sensor takes input.  False indicates that the sensor is only for output.</dd>
+<dt>sensor_type</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">str</span><dd>Indicates the type of sensor.  Used in conjunction with message to check that the message is valid for this type of sensor.</dd>
+<dt>name</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">str</span><dd>User-friendly (human-readable) name.</dd>
+<dt>units</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">str</span><dd>Identifies the type of data gathered from the sensor.</dd>
+<dt>model</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">str</span><dd>Identifies the model of the sensor.</dd>
+<dt>description</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">str</span><dd>Some information that describes the sensor. Meant for the user&#8217;s purposes.</dd>
+<dt>last_calibration_id</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">int</span><dd>Used to identify a Sensor to a Calibration.</dd>
+<dt>last_calibration</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">Calibration</span><dd>Has the current calibration data for the sensor.</dd>
+<dt>message_queue: MessageQueue</dt>
+<dd>Message queue that contains message for the sensor.</dd>
+<dt>_meta_data</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">str</span><dd>Any extra information about the sensor.</dd>
+</dl>
+<dl class="attribute">
+<dt id="teleceptor.models.Sensor.description">
+<code class="descname">description</code><a class="headerlink" href="#teleceptor.models.Sensor.description" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="teleceptor.models.Sensor.last_calibration">
+<code class="descname">last_calibration</code><a class="headerlink" href="#teleceptor.models.Sensor.last_calibration" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="teleceptor.models.Sensor.last_calibration_id">
+<code class="descname">last_calibration_id</code><a class="headerlink" href="#teleceptor.models.Sensor.last_calibration_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="teleceptor.models.Sensor.last_value">
+<code class="descname">last_value</code><a class="headerlink" href="#teleceptor.models.Sensor.last_value" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="teleceptor.models.Sensor.message_queue">
+<code class="descname">message_queue</code><a class="headerlink" href="#teleceptor.models.Sensor.message_queue" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="teleceptor.models.Sensor.message_queue_id">
+<code class="descname">message_queue_id</code><a class="headerlink" href="#teleceptor.models.Sensor.message_queue_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="teleceptor.models.Sensor.meta_data">
+<code class="descname">meta_data</code><a class="headerlink" href="#teleceptor.models.Sensor.meta_data" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="teleceptor.models.Sensor.model">
+<code class="descname">model</code><a class="headerlink" href="#teleceptor.models.Sensor.model" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="teleceptor.models.Sensor.name">
+<code class="descname">name</code><a class="headerlink" href="#teleceptor.models.Sensor.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="teleceptor.models.Sensor.sensor_IOtype">
+<code class="descname">sensor_IOtype</code><a class="headerlink" href="#teleceptor.models.Sensor.sensor_IOtype" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="teleceptor.models.Sensor.sensor_type">
+<code class="descname">sensor_type</code><a class="headerlink" href="#teleceptor.models.Sensor.sensor_type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="teleceptor.models.Sensor.toDict">
+<code class="descname">toDict</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/models.html#Sensor.toDict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.models.Sensor.toDict" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="teleceptor.models.Sensor.units">
+<code class="descname">units</code><a class="headerlink" href="#teleceptor.models.Sensor.units" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="teleceptor.models.Sensor.uuid">
+<code class="descname">uuid</code><a class="headerlink" href="#teleceptor.models.Sensor.uuid" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="teleceptor.models.SensorReading">
+<em class="property">class </em><code class="descclassname">teleceptor.models.</code><code class="descname">SensorReading</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/models.html#SensorReading"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.models.SensorReading" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">sqlalchemy.ext.declarative.api.Base</span></code></p>
+<dl class="docutils">
+<dt>id</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">int</span><dd>Uniquely identifies the SensorReading.</dd>
+<dt>datastream</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">int</span><dd>Used to identify a SensorReading to a DataStream.</dd>
+<dt>sensor</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">str</span><dd>Used to identify a SensorReading to a Sensor.</dd>
+<dt>value</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">float</span><dd>The value read from the sensor.</dd>
+<dt>timestamp</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">BigInt</span><dd>The time that the reading was taken.</dd>
+</dl>
+<dl class="attribute">
+<dt id="teleceptor.models.SensorReading.datastream">
+<code class="descname">datastream</code><a class="headerlink" href="#teleceptor.models.SensorReading.datastream" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="teleceptor.models.SensorReading.id">
+<code class="descname">id</code><a class="headerlink" href="#teleceptor.models.SensorReading.id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="teleceptor.models.SensorReading.sensor">
+<code class="descname">sensor</code><a class="headerlink" href="#teleceptor.models.SensorReading.sensor" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="teleceptor.models.SensorReading.timestamp">
+<code class="descname">timestamp</code><a class="headerlink" href="#teleceptor.models.SensorReading.timestamp" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="teleceptor.models.SensorReading.toDict">
+<code class="descname">toDict</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/models.html#SensorReading.toDict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.models.SensorReading.toDict" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="teleceptor.models.SensorReading.value">
+<code class="descname">value</code><a class="headerlink" href="#teleceptor.models.SensorReading.value" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="teleceptor.models.Session">
+<em class="property">class </em><code class="descclassname">teleceptor.models.</code><code class="descname">Session</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/models.html#Session"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.models.Session" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">sqlalchemy.ext.declarative.api.Base</span></code></p>
+<p>Currently unused.</p>
+<dl class="attribute">
+<dt id="teleceptor.models.Session.expiration">
+<code class="descname">expiration</code><a class="headerlink" href="#teleceptor.models.Session.expiration" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="teleceptor.models.Session.id">
+<code class="descname">id</code><a class="headerlink" href="#teleceptor.models.Session.id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="teleceptor.models.Session.key">
+<code class="descname">key</code><a class="headerlink" href="#teleceptor.models.Session.key" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="teleceptor.models.Session.user">
+<code class="descname">user</code><a class="headerlink" href="#teleceptor.models.Session.user" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="teleceptor.models.User">
+<em class="property">class </em><code class="descclassname">teleceptor.models.</code><code class="descname">User</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/models.html#User"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.models.User" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">sqlalchemy.ext.declarative.api.Base</span></code></p>
+<p>Information that identifies the user.  Currently unused.</p>
+<p>id : int
+email : str
+firstname : str
+lastname : str
+active : bool
+password : str</p>
+<dl class="attribute">
+<dt id="teleceptor.models.User.active">
+<code class="descname">active</code><a class="headerlink" href="#teleceptor.models.User.active" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="teleceptor.models.User.email">
+<code class="descname">email</code><a class="headerlink" href="#teleceptor.models.User.email" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="teleceptor.models.User.firstname">
+<code class="descname">firstname</code><a class="headerlink" href="#teleceptor.models.User.firstname" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="teleceptor.models.User.id">
+<code class="descname">id</code><a class="headerlink" href="#teleceptor.models.User.id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="teleceptor.models.User.lastname">
+<code class="descname">lastname</code><a class="headerlink" href="#teleceptor.models.User.lastname" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="teleceptor.models.User.password">
+<code class="descname">password</code><a class="headerlink" href="#teleceptor.models.User.password" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-teleceptor.pages">
+<span id="teleceptor-pages-module"></span><h2>teleceptor.pages module<a class="headerlink" href="#module-teleceptor.pages" title="Permalink to this headline">¶</a></h2>
+<p>Sets up webpage and displays current sensor readings.</p>
+<p>Authors: Victor Szczepanski</p>
+<dl class="class">
+<dt id="teleceptor.pages.Root">
+<em class="property">class </em><code class="descclassname">teleceptor.pages.</code><code class="descname">Root</code><a class="reference internal" href="_modules/teleceptor/pages.html#Root"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.pages.Root" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<dl class="attribute">
+<dt id="teleceptor.pages.Root.api">
+<code class="descname">api</code><em class="property"> = &lt;teleceptor.api.ResourceApi instance&gt;</em><a class="headerlink" href="#teleceptor.pages.Root.api" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="teleceptor.pages.Root.auth">
+<code class="descname">auth</code><em class="property"> = &lt;teleceptor.auth.AuthController object&gt;</em><a class="headerlink" href="#teleceptor.pages.Root.auth" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="teleceptor.pages.Root.generateJson">
+<code class="descname">generateJson</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/pages.html#Root.generateJson"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.pages.Root.generateJson" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="teleceptor.pages.Root.index">
+<code class="descname">index</code><span class="sig-paren">(</span><em>sensor_id=None</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/pages.html#Root.index"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.pages.Root.index" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-teleceptor.server">
+<span id="teleceptor-server-module"></span><h2>teleceptor.server module<a class="headerlink" href="#module-teleceptor.server" title="Permalink to this headline">¶</a></h2>
+<p>The server that runs Teleceptor</p>
+<p>Authors: Evan Salazar</p>
+<dl class="function">
+<dt id="teleceptor.server.get_cp_config">
+<code class="descclassname">teleceptor.server.</code><code class="descname">get_cp_config</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/server.html#get_cp_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.server.get_cp_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates config file for server</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">a dictionary with the server settings</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="teleceptor.server.runserver">
+<code class="descclassname">teleceptor.server.</code><code class="descname">runserver</code><span class="sig-paren">(</span><em>config</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/server.html#runserver"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.server.runserver" title="Permalink to this definition">¶</a></dt>
+<dd><p>Runs a cherrypy server</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>server</strong> &#8211; configuration file</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-teleceptor.sessionManager">
+<span id="teleceptor-sessionmanager-module"></span><h2>teleceptor.sessionManager module<a class="headerlink" href="#module-teleceptor.sessionManager" title="Permalink to this headline">¶</a></h2>
+<p>Authors: Victor Szczepanski</p>
+<dl class="function">
+<dt id="teleceptor.sessionManager.sessionScope">
+<code class="descclassname">teleceptor.sessionManager.</code><code class="descname">sessionScope</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwds</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/sessionManager.html#sessionScope"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.sessionManager.sessionScope" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provide a transactional scope around a series of operations.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-teleceptor.testFixtures">
+<span id="teleceptor-testfixtures-module"></span><h2>teleceptor.testFixtures module<a class="headerlink" href="#module-teleceptor.testFixtures" title="Permalink to this headline">¶</a></h2>
+<p>Authors: Victor Szczepanski</p>
+<dl class="function">
+<dt id="teleceptor.testFixtures.loadAdmin">
+<code class="descclassname">teleceptor.testFixtures.</code><code class="descname">loadAdmin</code><span class="sig-paren">(</span><em>session</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/testFixtures.html#loadAdmin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.testFixtures.loadAdmin" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="teleceptor.testFixtures.loadCalibrations">
+<code class="descclassname">teleceptor.testFixtures.</code><code class="descname">loadCalibrations</code><span class="sig-paren">(</span><em>session</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/testFixtures.html#loadCalibrations"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.testFixtures.loadCalibrations" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="teleceptor.testFixtures.loadDatastreams">
+<code class="descclassname">teleceptor.testFixtures.</code><code class="descname">loadDatastreams</code><span class="sig-paren">(</span><em>session</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/testFixtures.html#loadDatastreams"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.testFixtures.loadDatastreams" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="teleceptor.testFixtures.loadReadings">
+<code class="descclassname">teleceptor.testFixtures.</code><code class="descname">loadReadings</code><span class="sig-paren">(</span><em>session</em>, <em>range=None</em>, <em>interval=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/testFixtures.html#loadReadings"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.testFixtures.loadReadings" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="teleceptor.testFixtures.loadSensors">
+<code class="descclassname">teleceptor.testFixtures.</code><code class="descname">loadSensors</code><span class="sig-paren">(</span><em>session</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/testFixtures.html#loadSensors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.testFixtures.loadSensors" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="teleceptor.testFixtures.main">
+<code class="descclassname">teleceptor.testFixtures.</code><code class="descname">main</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/testFixtures.html#main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.testFixtures.main" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-teleceptor.timeAggregationUtils">
+<span id="teleceptor-timeaggregationutils-module"></span><h2>teleceptor.timeAggregationUtils module<a class="headerlink" href="#module-teleceptor.timeAggregationUtils" title="Permalink to this headline">¶</a></h2>
+<p>Defines high level functions for retrieving Teleceptor aggregation levels.</p>
+<p>Authors: Victor Szczepanski</p>
+<dl class="data">
+<dt id="teleceptor.timeAggregationUtils.aggregation_levels">
+<code class="descclassname">teleceptor.timeAggregationUtils.</code><code class="descname">aggregation_levels</code><em class="property"> = {(10801, 259200): 300, (121, 7200): 10, (0, 120): 1, (7201, 10800): 60, (259201, 9223372036854775807): 3600}</em><a class="headerlink" href="#teleceptor.timeAggregationUtils.aggregation_levels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines the aggregation levels used by Teleceptor.
+The form is (period_start, period_end): aggregation_value.
+So, if some value v is between period_start and period_end, aggregation_value should be used.
+Does not admit negative values or values &gt; sys.maxsize</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="teleceptor.timeAggregationUtils.getAggregationLevel">
+<code class="descclassname">teleceptor.timeAggregationUtils.</code><code class="descname">getAggregationLevel</code><span class="sig-paren">(</span><em>start</em>, <em>end</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/timeAggregationUtils.html#getAggregationLevel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.timeAggregationUtils.getAggregationLevel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the appropriate aggregation level for the time period <cite>start</cite> - <cite>end</cite>.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Uses the aggregation_levels dictionary for lookup. We assume the keys
+in aggregation_levels are non-overlapping - undefined behaviour may occur if this is not true.</p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Params start:</th><td class="field-body">The start time in seconds.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><strong>end</strong> (<em>int</em>) &#8211; The end time in seconds.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">int &#8211; The number of seconds to aggregate on.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="teleceptor.timeAggregationUtils.getElasticSearchAggregationLevel">
+<code class="descclassname">teleceptor.timeAggregationUtils.</code><code class="descname">getElasticSearchAggregationLevel</code><span class="sig-paren">(</span><em>start</em>, <em>end</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/timeAggregationUtils.html#getElasticSearchAggregationLevel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.timeAggregationUtils.getElasticSearchAggregationLevel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the appropriate aggregation level for the time period <cite>start</cite> - <cite>end</cite>, in EalsticSearch format.</p>
+<p>This function will return the aggregation period in the lowest common division possible.
+For example, if the aggregation period requested is &gt; 60 seconds but &lt; 1 hour, this function will
+return the aggregation in minutes, rather than seconds or hours.</p>
+<dl class="docutils">
+<dt>Example:</dt>
+<dd>time_frame = getElasticSearchAggregationLevel(0,3 * 3600 + 1)
+assert(time_frame is &#8220;1m&#8221;)
+time_frame = getElasticSearchAggregationLevel(0,120*60 + 1)
+assert(time_frame is &#8220;10s&#8221;)</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Params start:</th><td class="field-body">The start time in seconds.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><strong>end</strong> (<em>int</em>) &#8211; The end time in seconds.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">str &#8211; The aggregation period in ElasticSearch format, in the lowest common division.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-teleceptor.version">
+<span id="teleceptor-version-module"></span><h2>teleceptor.version module<a class="headerlink" href="#module-teleceptor.version" title="Permalink to this headline">¶</a></h2>
+<p>Holds the version number</p>
+<p>Authors: Evan Salazar</p>
+</div>
+<div class="section" id="module-teleceptor.whisperUtils">
+<span id="teleceptor-whisperutils-module"></span><h2>teleceptor.whisperUtils module<a class="headerlink" href="#module-teleceptor.whisperUtils" title="Permalink to this headline">¶</a></h2>
+<p>Utilites for using whisper</p>
+<p>Authors: Evan Salazar</p>
+<dl class="function">
+<dt id="teleceptor.whisperUtils.createDs">
+<code class="descclassname">teleceptor.whisperUtils.</code><code class="descname">createDs</code><span class="sig-paren">(</span><em>uuid</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/whisperUtils.html#createDs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.whisperUtils.createDs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="teleceptor.whisperUtils.getReadings">
+<code class="descclassname">teleceptor.whisperUtils.</code><code class="descname">getReadings</code><span class="sig-paren">(</span><em>uuid</em>, <em>start</em>, <em>end</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/whisperUtils.html#getReadings"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.whisperUtils.getReadings" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="teleceptor.whisperUtils.insertReading">
+<code class="descclassname">teleceptor.whisperUtils.</code><code class="descname">insertReading</code><span class="sig-paren">(</span><em>uuid</em>, <em>value</em>, <em>timestamp=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/whisperUtils.html#insertReading"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.whisperUtils.insertReading" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-teleceptor">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-teleceptor" title="Permalink to this headline">¶</a></h2>
+<p>Authors: Victor Szczepanski</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">teleceptor package</a><ul>
+<li><a class="reference internal" href="#subpackages">Subpackages</a></li>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-teleceptor.auth">teleceptor.auth module</a></li>
+<li><a class="reference internal" href="#module-teleceptor.elasticsearchUtils">teleceptor.elasticsearchUtils module</a></li>
+<li><a class="reference internal" href="#module-teleceptor.models">teleceptor.models module</a></li>
+<li><a class="reference internal" href="#module-teleceptor.pages">teleceptor.pages module</a></li>
+<li><a class="reference internal" href="#module-teleceptor.server">teleceptor.server module</a></li>
+<li><a class="reference internal" href="#module-teleceptor.sessionManager">teleceptor.sessionManager module</a></li>
+<li><a class="reference internal" href="#module-teleceptor.testFixtures">teleceptor.testFixtures module</a></li>
+<li><a class="reference internal" href="#module-teleceptor.timeAggregationUtils">teleceptor.timeAggregationUtils module</a></li>
+<li><a class="reference internal" href="#module-teleceptor.version">teleceptor.version module</a></li>
+<li><a class="reference internal" href="#module-teleceptor.whisperUtils">teleceptor.whisperUtils module</a></li>
+<li><a class="reference internal" href="#module-teleceptor">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/teleceptor.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">teleceptor 1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2016, Visgence Inc..
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+    </div>
+  </body>
+</html>

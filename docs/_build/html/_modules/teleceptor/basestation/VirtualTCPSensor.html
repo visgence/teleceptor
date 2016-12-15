@@ -1,0 +1,175 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>teleceptor.basestation.VirtualTCPSensor &mdash; teleceptor 1 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="teleceptor 1 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">teleceptor 1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for teleceptor.basestation.VirtualTCPSensor</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Contributing Authors:</span>
+<span class="sd">    Victor Szczepanski (Visgence, Inc)</span>
+
+<span class="sd">Simulates a teleimperium-like TCP sensor.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">socket</span>
+<span class="kn">import</span> <span class="nn">json</span>
+
+<span class="n">TCP_IP</span> <span class="o">=</span> <span class="s1">&#39;127.0.0.1&#39;</span>
+<span class="n">TCP_PORT</span> <span class="o">=</span> <span class="mi">5005</span>
+<span class="n">BUFFER_SIZE</span> <span class="o">=</span> <span class="mi">1024</span>
+
+<span class="c1"># basic sensor for testing without any input sensors.</span>
+<span class="n">SENSOR_INFO</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;Desc&quot;</span><span class="p">:</span> <span class="s2">&quot;Virtual TCP Sensor&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;out&quot;</span><span class="p">:</span> <span class="p">[{</span>
+        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;VirtualOut1&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;s_t&quot;</span><span class="p">:</span> <span class="s2">&quot;int&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;u&quot;</span><span class="p">:</span> <span class="s2">&quot;real&quot;</span>
+    <span class="p">}],</span>
+    <span class="s2">&quot;uuid&quot;</span><span class="p">:</span> <span class="s2">&quot;VTCP001&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;mode&quot;</span><span class="p">:</span> <span class="s2">&quot;Virtual TCP Sensor&quot;</span>
+<span class="p">}</span>
+<span class="n">IN_STATES</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="c1"># would be of form &quot;sensorname&quot;: state</span>
+<span class="p">}</span>
+
+<span class="n">SENSOR_READINGS</span> <span class="o">=</span> <span class="p">[[</span><span class="s2">&quot;VirtualOut1&quot;</span><span class="p">,</span> <span class="mf">3.2</span><span class="p">]]</span>
+
+
+<div class="viewcode-block" id="parseJSON"><a class="viewcode-back" href="../../../teleceptor.basestation.html#teleceptor.basestation.VirtualTCPSensor.parseJSON">[docs]</a><span class="k">def</span> <span class="nf">parseJSON</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Parses incoming update data and tries to update any input sensors</span>
+<span class="sd">    given in the data.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">j</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="k">if</span> <span class="s2">&quot;in&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">SENSOR_INFO</span><span class="p">:</span>
+        <span class="k">return</span>
+    <span class="k">for</span> <span class="n">sensorname</span> <span class="ow">in</span> <span class="n">j</span><span class="o">.</span><span class="n">iterkeys</span><span class="p">():</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">IN_STATES</span><span class="p">[</span><span class="s2">&quot;in&quot;</span><span class="p">][</span><span class="n">sensorname</span><span class="p">]</span> <span class="o">=</span> <span class="n">j</span><span class="p">[</span><span class="n">sensorname</span><span class="p">]</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="main"><a class="viewcode-back" href="../../../teleceptor.basestation.html#teleceptor.basestation.VirtualTCPSensor.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Simple TCP server that simulates a teleimperium-like sensor that is compatible with GenericQueryer basestation.</span>
+
+<span class="sd">    Creates a socket connection with ip and port defined above, then</span>
+<span class="sd">    waits forever for a connection.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">s</span> <span class="o">=</span> <span class="n">socket</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">socket</span><span class="o">.</span><span class="n">AF_INET</span><span class="p">,</span> <span class="n">socket</span><span class="o">.</span><span class="n">SOCK_STREAM</span><span class="p">)</span>
+    <span class="n">s</span><span class="o">.</span><span class="n">bind</span><span class="p">((</span><span class="n">TCP_IP</span><span class="p">,</span> <span class="n">TCP_PORT</span><span class="p">))</span>
+    <span class="n">s</span><span class="o">.</span><span class="n">listen</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">while</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">addr</span><span class="p">)</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">accept</span><span class="p">()</span>
+        <span class="k">print</span> <span class="s1">&#39;Connection address:&#39;</span><span class="p">,</span> <span class="n">addr</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">data</span><span class="p">:</span>
+            <span class="k">break</span>
+        <span class="k">print</span> <span class="s2">&quot;received data:&quot;</span><span class="p">,</span> <span class="n">data</span>
+
+        <span class="c1"># check for command char</span>
+        <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;@&#39;</span><span class="p">:</span>
+            <span class="c1"># parse rest of data as JSON</span>
+            <span class="n">command</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="n">BUFFER_SIZE</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">parseJSON</span><span class="p">(</span><span class="n">command</span><span class="p">)</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="k">continue</span>
+        <span class="k">elif</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;%&#39;</span><span class="p">:</span>
+            <span class="k">print</span> <span class="s2">&quot;in % block. Sending:&quot;</span>
+            <span class="k">print</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">SENSOR_INFO</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">SENSOR_READINGS</span><span class="p">)</span>
+
+            <span class="n">conn</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">SENSOR_INFO</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="n">conn</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">SENSOR_READINGS</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span></div>
+
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">teleceptor 1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2016, Visgence Inc..
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+    </div>
+  </body>
+</html>

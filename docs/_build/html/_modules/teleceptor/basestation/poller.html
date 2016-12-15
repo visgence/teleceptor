@@ -1,0 +1,175 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>teleceptor.basestation.poller &mdash; teleceptor 1 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="teleceptor 1 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">teleceptor 1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for teleceptor.basestation.poller</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Authors:</span>
+<span class="sd">    Victor Szczepanski (Visgence, Inc)</span>
+<span class="sd">    Jessica Greenling (Visgence, Inc)</span>
+
+<span class="sd">Poller actively searches for newly connected motes.  Each new mote found is sent as a new process to queryer.  Previously found motes are still returned in the list of active processes.  If a mote is disconnected, it is not returned in the list.</span>
+
+<span class="sd">Poller can be run with or without the server.</span>
+
+
+<span class="sd">Example usage:</span>
+<span class="sd">python poller.py</span>
+
+<span class="sd">or</span>
+
+<span class="sd">./teleceptorcmd poller</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">multiprocessing</span>
+<span class="kn">import</span> <span class="nn">subprocess</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">serial</span> <span class="kn">import</span> <span class="n">SerialException</span><span class="p">,</span> <span class="n">SerialTimeoutException</span>
+
+<span class="c1"># Local Imports</span>
+<span class="kn">from</span> <span class="nn">teleceptor.basestation</span> <span class="kn">import</span> <span class="n">GenericQueryer</span><span class="p">,</span> <span class="n">SerialMote</span>
+<span class="kn">from</span> <span class="nn">teleceptor</span> <span class="kn">import</span> <span class="n">USE_DEBUG</span>
+
+
+<div class="viewcode-block" id="grepfinddevices"><a class="viewcode-back" href="../../../teleceptor.basestation.html#teleceptor.basestation.poller.grepfinddevices">[docs]</a><span class="k">def</span> <span class="nf">grepfinddevices</span><span class="p">(</span><span class="n">previousDevices</span><span class="o">=</span><span class="p">[]):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Searches for a mote connected through a USB port.</span>
+<span class="sd">        Gathers info about all ports from /dev/, splits each item by a newline character, and a process is created for each new mote found. A mote is described by having these two properties in the /dev/ folder: &#39;    DRIVERS==&quot;ftdi_sio&quot; and &#39;    ATTRS{product}==&quot;FT232R USB UART&quot;</span>
+
+<span class="sd">        :param previousDevices: a list of process names</span>
+<span class="sd">            Refers to previously found motes that were stored to this list via their process name.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Getting all available ttyUSB paths.&quot;</span><span class="p">)</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span><span class="s2">&quot;ls /dev | grep ttyUSB&quot;</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,)</span>
+    <span class="n">stdout_list</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">communicate</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+
+    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Got paths: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">stdout_list</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">dev</span> <span class="ow">in</span> <span class="n">stdout_list</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">dev</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="k">if</span> <span class="n">dev</span> <span class="ow">in</span> <span class="n">previousDevices</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Found new device </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">dev</span><span class="p">)</span>
+        <span class="n">devpath</span> <span class="o">=</span> <span class="s2">&quot;/dev/&quot;</span> <span class="o">+</span> <span class="n">dev</span>
+
+        <span class="n">bashcommand</span> <span class="o">=</span> <span class="s2">&quot;udevadm info -a -n &quot;</span> <span class="o">+</span> <span class="n">devpath</span>
+
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Getting device information with command </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">bashcommand</span><span class="p">)</span>
+
+        <span class="n">df2</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span><span class="n">bashcommand</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,)</span>
+        <span class="n">udev_list</span> <span class="o">=</span> <span class="n">df2</span><span class="o">.</span><span class="n">communicate</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Got udev_list: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">udev_list</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="s1">&#39;    DRIVERS==&quot;ftdi_sio&quot;&#39;</span> <span class="ow">in</span> <span class="n">udev_list</span> <span class="ow">and</span> <span class="s1">&#39;    ATTRS{product}==&quot;FT232R USB UART&quot;&#39;</span> <span class="ow">in</span> <span class="n">udev_list</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Looks like device </span><span class="si">%s</span><span class="s2"> is a mote. Making process...&quot;</span><span class="p">,</span> <span class="n">dev</span><span class="p">)</span>
+
+            <span class="n">p</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">Process</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">GenericQueryer</span><span class="o">.</span><span class="n">main</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">dev</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,),</span> <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;deviceName&quot;</span><span class="p">:</span> <span class="n">devpath</span><span class="p">,</span> <span class="s2">&quot;timeout&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s2">&quot;debug&quot;</span><span class="p">:</span> <span class="n">USE_DEBUG</span><span class="p">})</span>
+            <span class="n">p</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Began process.&quot;</span><span class="p">)</span>
+
+    <span class="c1"># print(stdout_list)</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">p</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">active_children</span><span class="p">()]</span></div>
+
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">USE_DEBUG</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">format</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%(levelname)s</span><span class="s1">:</span><span class="si">%(asctime)s</span><span class="s1"> </span><span class="si">%(message)s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">format</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%(levelname)s</span><span class="s1">:</span><span class="si">%(asctime)s</span><span class="s1"> </span><span class="si">%(message)s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+
+    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Beginning polling cycle.&quot;</span><span class="p">)</span>
+
+    <span class="n">foundDevices</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">while</span><span class="p">(</span><span class="mi">1</span><span class="p">):</span>
+        <span class="n">foundDevices</span> <span class="o">=</span> <span class="n">grepfinddevices</span><span class="p">(</span><span class="n">foundDevices</span><span class="p">)</span>
+
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">teleceptor 1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2016, Visgence Inc..
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+    </div>
+  </body>
+</html>
