@@ -58,7 +58,7 @@ import logging
 # Local Imports
 from teleceptor.models import DataStream, Sensor
 from teleceptor.sessionManager import sessionScope
-from teleceptor import USE_ELASTICSEARCH, USE_DEBUG
+from teleceptor import USE_DEBUG
 from teleceptor import elasticsearchUtils as esUtils
 
 

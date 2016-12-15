@@ -10,11 +10,7 @@ import sys
 import random
 from time import time
 from teleceptor.models import MessageQueue
-from teleceptor import USE_ELASTICSEARCH
-if USE_ELASTICSEARCH:
-    import elasticsearchUtils
-else:
-    import whisperUtils
+import elasticsearchUtils
 
 
 def loadAdmin(session):
@@ -139,9 +135,8 @@ def loadReadings(session, range=None, interval=None):
 
         now -= 60
 
-        if USE_ELASTICSEARCH:
-            elasticsearchUtils.insertReading('1', voltReading['value'], voltReading['timestamp'])
-            elasticsearchUtils.insertReading('2', ampReading['value'], ampReading['timestamp'])
+        elasticsearchUtils.insertReading('1', voltReading['value'], voltReading['timestamp'])
+        elasticsearchUtils.insertReading('2', ampReading['value'], ampReading['timestamp'])
 
         volt = SensorReading(**voltReading)
         amp = SensorReading(**ampReading)

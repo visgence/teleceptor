@@ -6,8 +6,6 @@
     "PGSQLDBUSERNAME": "tele",
     "PGSQLDBPORT": 5432,
     "PASSWORD": "password",
-    "WHISPER_DATA": "whisperData",
-    "WHISPER_ARCHIVES": ["60:1440", "15m:14d", "6h:1y"],
     "SQLDATA": true,
     "SQLREADTIME": 7200,
     "PORT": 8000,
@@ -16,7 +14,6 @@
     "USE_DEBUG": false,
     "SUPRESS_SERVER_OUTPUT": false,
     "USE_SQL_ALWAYS": false,
-    "USE_ELASTICSEARCH": true,
     "ELASTICSEARCH_URI": "http://elasticsearch:9200/",
     "ELASTICSEARCH_INDEX": "teleceptor",
     "ELASTICSEARCH_DOC": "teledata"
