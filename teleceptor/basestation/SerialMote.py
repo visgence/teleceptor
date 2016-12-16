@@ -37,6 +37,7 @@ class SerialMote(serial.Serial):
 
         Additional Serial settings can be configured after creating the mote.
         """
+        logging.info("debug set to {}".format(debug))
         if debug:
             logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s', level=logging.DEBUG)
         else:
@@ -63,13 +64,15 @@ class SerialMote(serial.Serial):
             # failed device
             logging.error("Serial Exception, device may not be connected or has failed. \n %s", str(se))
             raise se
-
+        logging.info("\nWe're here\n")
+        logging.info("serial info: {}".format(info))
         info = json.loads(info)
+
         self.uuid = info['uuid']
         self.deviceurl = deviceName
         self.metadata = {"deviceurl": deviceName}
 
-        logging.debug("Finished creating SerialMote, uuid: %s, metadata: %s.", str(self.uuid), str(metadata))
+        logging.debug("Finished creating SerialMote, uuid: %s, metadata: %s.", str(self.uuid), str(self.metadata))
 
     def getReadings(self):
         """

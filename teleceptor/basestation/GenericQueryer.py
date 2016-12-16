@@ -82,8 +82,8 @@ def main(queryRate=60, **kwargs):
     # create the device from kwargs
     try:
         device = moteFactory(**kwargs)
-    except:
-        logging.error("Provided kwargs caused exception during mote creation.\n kwargs: %s", str(kwargs))
+    except Exception as e:
+        logging.error("Provided kwargs caused exception during mote creation.\n kwargs: %s exception %s", str(kwargs), str(e))
         return
 
     if device is None:

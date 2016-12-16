@@ -71,6 +71,7 @@ def grepfinddevices(previousDevices=[]):
 
 
 if __name__ == "__main__":
+
     if USE_DEBUG:
         logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s', level=logging.DEBUG)
     else:

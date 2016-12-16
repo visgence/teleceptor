@@ -56,6 +56,15 @@ def poller(*args):
     runpy.run_path(pollercmd, None, '__main__')
 
 
+def serialPoller(*args):
+    sys.argv = ["something here "]
+    if len(args[0]) is not 1:
+        print "Please enter the name of the USB device you are trying to connect to. Read the documentation to find out how to find your device name."
+    serialpollercmd = os.path.join(teleceptor.__path__[0], 'basestation', 'serialPoller.py')
+    print serialpollercmd
+    runpy.run_path(serialpollercmd, {"DEVICENAME": args[0]}, '__main__')
+
+
 def tcpPoller(*args):
     tcppollercmd = os.path.join(teleceptor.__path__[0], 'basestation', 'tcpPoller.py')
     print tcppollercmd
@@ -226,10 +235,12 @@ if __name__ == "__main__":
         'rebuild': [rebuild, "Rebuild the database and datafiles"],
         'setup': [setup, "Build the database"],
         'btcmote': [btcmote, "Example sensor that collects BTC informaiotn"],
-        'poller': [poller, "Serial poller"],
+        'poller': [poller, "General poller"],
+        'serialpoller': [serialPoller, "Serial poller"],
         'tcppoller': [tcpPoller, "TCP poller (Hosts are added in config.json)"],
         'loadfixtures': [loadfixtures, "Load test database data"],
         'version': [displayVersion, "Display version"]
+
     }
 
     args = sys.argv
