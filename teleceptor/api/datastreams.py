@@ -43,9 +43,11 @@ Authors: Victor Szczepanski
                 'stream':  A single stream
             }
 
+        PUT /api/datastreams/<stream_id>/
+            Updates stream with valid id
+
         TODO:
         POST /api/datastreams/  -  Create a new Datastreams.
-        PUT /api/datastreams/<stream_id>/  -  Update an existing stream.
 """
 
 # System Imports
@@ -275,9 +277,8 @@ class DataStreams:
 
         .. seealso:: `models.DataStream`
 
-        .. note:: This function contains a blacklist of keys that may not be updated. If `data` contains these keys, they are ignored. This documentation should contain the full blacklist:
-            blacklist = ["uuid","message"]
-            whitelist = ["sensor_IOtype", "sensor_type", "name", "units", ""]
+        .. note:: This function contains a blacklist of keys that may not be updated. If `data` contains these keys, they are ignored.
+
         """
 
         logging.debug("Updating stream with id %s with data %s", str(stream_id), str(data))
@@ -307,7 +308,7 @@ def deleteDatastream(session, datastream_id):
 
     try:
         stream = session.query(DataStream).filter_by(id=datastream_id).one()
-        sensor = session.query(Sensor).filter_by(uuid=stream.sensor).one()
+        sensor = session.query(Sensor).filter_by(id=stream.sensor).one()
     except NoResultFound:
         logging.error("Requested datastream {} does not exist.".format(datastream_id))
     else:
@@ -321,7 +322,7 @@ def deleteDatastream(session, datastream_id):
 
 
 def _updateStream(stream_id, data, session):
-    stream = session.query(DataStream).filter_by(uuid=stream_id).one()
+    stream = session.query(DataStream).filter_by(id=stream_id).one()
     for key, value in data.iteritems():
         logging.debug("Key: {}, Value: {}".format(key, value))
         if key != 'uuid':

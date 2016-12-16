@@ -48,6 +48,7 @@
         this.updateSuccessCb = function(resp) {
             __this.rebuild(resp.sensor);
             __this.editing(false);
+            __this.streamEditing(false);
             __this.updateError(null);
             $(__this).trigger('calibrationchanged')
         };
