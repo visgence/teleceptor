@@ -65,9 +65,11 @@ $(function($) {
 
             //Handle switching sensor here so we can preserve other parts of url query string
             $(".sensor-list").on("click", "a.sensor", function(e) {
-                var sensorId = $(e.currentTarget).data("sensorid");
-                if (sensorId)
-                    $.fn.updateRoute({"sensor_id": sensorId}, true);
+                console.log($(e.currentTarget).data())
+                var sensor_name = $(e.currentTarget).data("sensorid");
+                if (sensor_name){
+                    $.fn.updateRoute({"sensor_name": sensor_name}, true);
+                }
             });
 		}
 

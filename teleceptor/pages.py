@@ -33,7 +33,7 @@ class Root(object):
         logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s', level=logging.INFO)
 
     @require()
-    def index(self, sensor_id=None, *args, **kwargs):
+    def index(self, sensor_name=None, *args, **kwargs):
         params = cherrypy.request.params
 
         sensors = api.Sensors()
@@ -46,11 +46,13 @@ class Root(object):
 
         activeSensor = sensorsList[0] if len(sensorsList) > 0 else None
 
-        if sensor_id is not None:
+        if sensor_name is not None:
             try:
-                activeSensor = json.loads(sensors.GET(sensor_id))["sensor"]
+                print " trying"
+                activeSensor = json.loads(sensors.GET(sensor_name))["sensor"]
+                print"there"
             except KeyError, ke:
-                logging.error("Error: no sensor with id %s", sensor_id)
+                logging.error("Error: no sensor with id %s", sensor_name)
                 logging.error(str(ke))
 
         datastream = None
@@ -65,6 +67,7 @@ class Root(object):
         returnData = {
             "sysdata": sysdata_dict,
             "sensorsList": sensorsList,
+            "streamsList": streamList,
             "activeSensor": activeSensor,
             "activeSensorJSON": json.dumps(activeSensor),
             "datastreamJSON": json.dumps(datastream),
@@ -73,7 +76,6 @@ class Root(object):
         t = env.get_template("sensorsIndex.html")
 
         return t.render(returnData)
-
 
     index.exposed = True
 
