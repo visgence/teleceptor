@@ -42,6 +42,8 @@
         this.streamName = ko.observable();
         this.streamDescription = ko.observable();
         this.streamEditing = ko.observable();
+        this.path = ko.observable();
+        this.pathid = ko.observable();
 
         console.log(vars)
 
@@ -306,6 +308,11 @@
             this.streamDescription(vars.datastream.description);
         if (vars.hasOwnProperty('datastream'))
             this.streamUuid(vars.datastream.id);
+        if (vars.hasOwnProperty('datastream'))
+            this.path(vars.datastream.path);
+        if (vars.hasOwnProperty('datastream'))
+            this.pathid(vars.datastream.pathid);
+
     };
 
     Sensor.prototype.getState = function() {

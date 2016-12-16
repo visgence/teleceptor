@@ -270,7 +270,9 @@ class DataStream(Base):
             'name': self.name,
             'description': self.description,
             'owner': self.owner,
-            'sensor': self.sensor
+            'sensor': self.sensor,
+            'path': "/my/path/",
+            'pathid': 1
         }
 
 
