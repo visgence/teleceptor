@@ -29,40 +29,29 @@
         </div>
 
 		<div class = "form-group" data-bind="css: {'has-error': name.hasError}">
-
 			<label class="col-md-2 control-label">Name</label>
 			<div class="col-md-4">
-				<!-- ko ifnot: editing -->
 				<p class="form-control-static" data-bind="text: name()"></p>
-				<!-- /ko -->
-				<!-- ko if: editing -->
-				<input class="form-control" data-bind="value: name">
-				<p class="text-danger" data-bind="text: name.validationMessage, if: name.hasError"></p>
-				<!-- /ko -->
 			</div>
 		</div>
 		<div class = "form-group">
 			<label class="col-md-2 control-label">Description</label>
 			<div class="col-md-4">
-				<!-- ko ifnot: editing -->
 				<p class="form-control-static" data-bind="text: description()"></p>
-				<!-- /ko -->
-				<!-- ko if: editing -->
-				<input class="form-control" data-bind="value: description">
-				<!-- /ko -->
 			</div>
 		</div>
 		<div class = "form-group">
 			<label class="col-md-2 control-label">Units</label>
 			<div class="col-md-4">
-				<!-- ko ifnot: editing -->
 				<p class="form-control-static" data-bind="text: units()"></p>
-				<!-- /ko -->
-				<!-- ko if: editing -->
-				<input class="form-control" data-bind="value: units">
-				<!-- /ko -->
 			</div>
 		</div>
+        <div class = "form-group">
+            <label class="col-md-2 control-label">Last Calibration</label>
+            <div class="col-md-4">
+                <p class="form-control-static" data-bind="text: lastCalibration"></p>
+            </div>
+        </div>
 		<div class = "form-group">
 			<label class="col-md-2 control-label">Calibration</label>
 			<div class="col-md-4">

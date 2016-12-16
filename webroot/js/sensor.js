@@ -21,27 +21,24 @@
         var __datacache = {};
         var __firstrun = true;
 
-        this.uuid             = ko.observable();
-        this.sensor_type      = ko.observable();
-        this.units            = ko.observable();
-        this.name             = ko.observable().extend({required:'Name is required'});
-        this.model            = ko.observable();
-        this.description      = ko.observable();
-        this.last_calibration = ko.observable();
-        this.meta_data        = ko.observable();
-        this.isInput = ko.observable();
+        this.uuid               = ko.observable();
+        this.sensor_type        = ko.observable();
+        this.units              = ko.observable();
+        this.name               = ko.observable().extend({required:'Name is required'});
+        this.model              = ko.observable();
+        this.description        = ko.observable();
+        this.last_calibration   = ko.observable();
+        this.lastCalibration    = ko.observable();
+        this.meta_data          = ko.observable();
+        this.isInput            = ko.observable();
         this.temp_command_value = ko.observable()
-        this.new_data_value = ko.observable()
+        this.new_data_value     = ko.observable()
+        this.coefficients       = ko.observable(); //used to buffer between this.last_calibration.coefficients and view's JSON
+        this.editing            = ko.observable(false);
+        this.command_value      = ko.observable(true); //value to command this sensor to.
+        this.post_value         = ko.observable();
 
-        this.coefficients = ko.observable(); //used to buffer between this.last_calibration.coefficients and view's JSON
-
-        this.editing = ko.observable(false);
-
-        this.command_value = ko.observable(true); //value to command this sensor to.
-
-        this.post_value = ko.observable();
-
-
+        console.log(vars)
 
         this.updateSuccessCb = function(resp) {
             __this.rebuild(resp.sensor);
@@ -258,6 +255,8 @@
                 this.coefficients(ko.toJSON(vars.last_calibration.coefficients));
             this.last_calibration(vars.last_calibration);
             this.last_calibration().coefficients = vars.last_calibration.coefficients;
+            console.log(vars.last_calibration.timestamp)
+            this.lastCalibration(new Date(vars.last_calibration.timestamp*1000).toDateString())
         }
         if (vars.hasOwnProperty('units'))
             this.units(vars.units);

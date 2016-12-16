@@ -119,7 +119,7 @@ $(function($) {
                         }
                         else{
                             csv += "null";
-                        } 
+                        }
                         csv += colDelim + units + rowDelim;
                     }
                 }
