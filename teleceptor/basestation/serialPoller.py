@@ -1,3 +1,6 @@
+"""
+Authors: Cyrille Gindreau
+"""
 from teleceptor.basestation import GenericQueryer
 import sys
 
