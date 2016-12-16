@@ -456,33 +456,6 @@ def _deleteReadingsByDatastream(datastream_id, session):
     return []
 
 
-# def reduceData(readings, granularity, reduction_method='mean'):
-#     """
-#     Take a a list of tuples containing at [0] a timeStamp and at [1] a raw data value from a sensor reading, and reduce this list to about granularity datapoints, using different methods.
-
-#     :param readings: Tuples are (SensorReading.timestamp, SensorReading.sensorValue)
-#     :type readings: list of 2-tuples
-#     :param granularity: the number of datapoints to which to reduce the list. (will not be exact)
-#     :type granularity: int
-#     :param reduction_method: The reduction method.  Can be 'mean', 'sample', etc.
-#     :type reduction_method: str
-#     """
-
-#     logging.debug("Reducing data with granularity %s and method %s", str(granularity), str(reduction_method))
-
-#     if reduction_method not in reductMethods:
-#         logging.error("Method %s not a valid reduction method.", str(reduction_method))
-#         return []
-
-#     increment = len(readings)/granularity
-#     data = []
-#     for i in range(0, len(readings), increment):
-#         data.append(reductMethods[reduction_method](readings[i:i+increment]))
-
-#     logging.debug("Finished reducing data.")
-#     return data
-
-
 def incrementMean(readings):
     """
     Return the timeCenter of the increment and the mean of the readings_values within the increment as a list of 2 values

@@ -46,19 +46,19 @@ The ```./teleceptorcmd btcmote``` command will run a program that requests data 
 #Sensor Firmware
 Sensor firmware can be found in the [firmware](https://github.com/visgence/teleceptor/tree/master/firmware) folder. Download the appropriate firmware for your type of sensor, and then upload it to your sensor.
 
-**Important:**
-* You will need to download aJSON and add it to your adruino IDE.
-* In the .ino file that you download for your firmware, change the uuid found in _static const char jsonData[ ]_ to be a unique name of your choosing.
 
 ##Setting Up Sensors
-1. Run command ```./teleceptorcmd poller```. This will begin to look for sensors via USB ports.
-2. Plug in your sensor through a USB port.
-  * Make sure you have the most current firmware for your sensor. (_See **Sensor Firmware**._)
+1. Plug in your sensor through a USB port.
+* Make sure you have the most current firmware for your sensor. (_See **Sensor Firmware**._)
+2. Run command ```./teleceptorcmd serialPoller PathOfSensor```. This will begin to look for sensors via USB ports.
+Note: On OS X, to find the name of your sensor, in terminal, type ```ls /dev/```. This will give you a list of all sensors currently connected. To use the serialPoller then, you would type ```./teleceptorcmd serialPoller /dev/tty.myUSBSensor1234```.
+
+  
 
 #Teleceptor Front-End Usage
 * To view sensor data that has been collected, click on a sensor under the _Sensors_ tab.
 * To look at a certain time period of data, select a range under the _Time Controls_ tab.
-  * :star: Specifc data can also be viewed by passing the mouse on the graph to observe data points and the time it was collected.
+  * :star: Specific data can also be viewed by passing the mouse on the graph to observe data points and the time it was collected.
   * :star2: By clicking and dragging on a certain part of _either_ graph, you can zoom-in on points.
 * Some information about the sensor is editable and will change the graph accordingly such as _Units_ or _Calibration_.
   * Be sure to save after editing for the configuration information to be available later.
