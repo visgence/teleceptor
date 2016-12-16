@@ -200,19 +200,13 @@
 
     };
     Sensor.prototype.update = function() {
-        console.log("In update");
-        console.log(this.last_calibration().coefficients);
-        console.log(this.coefficients());
         this.last_calibration().coefficients = (JSON.parse(this.coefficients()));
-        console.log(this.last_calibration().coefficients);
         var id = this.uuid();
         if (!id || !this.validate())
             return $.Deferred().reject().promise();
 
         var payload = this.toDict();
         delete payload.last_calibration.timestamp;
-        console.log("payload:");
-        console.log(payload);
         return $.ajax({
                url: "/api/sensors/"+id+"/",
                method: "PUT",
@@ -221,7 +215,22 @@
                contentType: "application/json",
                processData: false
         }).then(this.updateSuccessCb.bind(this),this.updateFailCb.bind(this));
+    };
 
+    Sensor.prototype.streamUpdate = function() {
+        var id = this.streamUuid();
+        if (!id || !this.validate())
+            return $.Deferred().reject().promise();
+
+        var payload = this.streamToDict();
+        return $.ajax({
+               url: "/api/datastreams/"+id+"/",
+               method: "PUT",
+               data: ko.toJSON(payload),
+               dataType: "json",
+               contentType: "application/json",
+               processData: false
+        }).then(this.updateSuccessCb.bind(this),this.updateFailCb.bind(this));
     };
 
     Sensor.prototype.updateCommand = function() {
@@ -260,6 +269,7 @@
     };
 
     Sensor.prototype.rebuild = function(vars) {
+        console.log(vars)
         vars = vars || {};
 
         if (vars.hasOwnProperty('sensor_type'))
@@ -288,6 +298,13 @@
             this.isInput(vars.sensor_IOtype);
         if (vars.hasOwnProperty('last_value') && vars.last_value != "")
             this.command_value(JSON.parse(vars.last_value));
+
+        if (vars.hasOwnProperty('datastream'))
+            this.streamName(vars.datastream.name);
+        if (vars.hasOwnProperty('datastream'))
+            this.streamDescription(vars.datastream.description);
+        if (vars.hasOwnProperty('datastream'))
+            this.streamUuid(vars.datastream.id);
     };
 
     Sensor.prototype.getState = function() {
@@ -319,4 +336,11 @@
         // }
 
         return returnDict;
+    };
+
+    Sensor.prototype.streamToDict = function() {
+        return {
+            'name': this.streamName(),
+            'description': this.streamDescription()
+        }
     };

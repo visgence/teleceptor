@@ -60,6 +60,8 @@ class Root(object):
 
         cherrypy.response.headers['Content-Type'] = 'text/html'
 
+        activeSensor['datastream'] = datastream
+
         returnData = {
             "sysdata": sysdata_dict,
             "sensorsList": sensorsList,

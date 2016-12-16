@@ -60,6 +60,7 @@ from teleceptor.models import DataStream, Sensor
 from teleceptor.sessionManager import sessionScope
 from teleceptor import USE_DEBUG
 from teleceptor import elasticsearchUtils as esUtils
+from teleceptor.auth import require
 
 
 class DataStreams:
@@ -159,10 +160,45 @@ class DataStreams:
         logging.error("POST request to datastreams. This API end point is not implemented.")
         pass
 
-    def PUT(self, streamid=None):
-        # TODO: Implement this for datastream update
-        logging.error("PUT request to datastreams. This API end point is not implemented.")
-        pass
+    @require()
+    def PUT(self, stream_id):
+        """
+        Updates the stream with uuid `stream_id`.
+
+        Using the JSON formatted data in the HTTP request body, updates the datastream information in the database. Valid key/value pairs correspond to the columns in `models.DataStreams`.
+
+        :param stream_id: The UUID of a datastream
+        :type stream_id: str
+
+        :returns: Dictionary -- A JSON object with an 'error' key if an error occured or 'datastream' key if update succeeded. If 'error', the value is an error string. If 'datastream', the value is a JSON object representing the updated datastream in the database.
+
+        .. seealso:: `models.DataStream`
+
+        """
+        logging.debug("PUT request to datastreams. ")
+        returnData = {}
+        statusCode = "200"
+        cherrypy.response.headers['Content-Type'] = 'application/json'
+        try:
+            data = json.loads(cherrypy.request.body.read())
+        except ValueError:
+            # no json object to decode, just use an empty dictionary
+            data = {}
+
+        logging.debug("Request body: %s", data)
+
+        try:
+            stream = DataStreams.updateStream(stream_id, data)
+            returnData['stream'] = stream
+        except NoResultFound:
+            logging.error("Stream with id %s doesn't exist.", str(stream_id))
+            returnData['error'] = "Stream with id %s doesn't exist." % stream_id
+            statusCode = "400"
+
+        cherrypy.response.status = statusCode
+
+        logging.debug("Finished PUT request to datastream.")
+        return json.dumps(returnData, indent=4)
 
     def DELETE(self, stream_id):
         """
@@ -225,6 +261,32 @@ class DataStreams:
         else:
             logging.error("Provided datastream to createDatastream method is None.")
 
+    @staticmethod
+    def updateStream(stream_id, data, session=None):
+        """
+        Updates stream with id `stream_id` with new key/values in `data`. Note that this function will incur a db lookup.
+
+        :param stream_id: The id of the stream to modify.
+        :type stream_id: str
+        :param data: The new data to update `stream` with.
+        :type data: dictionary
+
+        :returns: Dictionary -- The dictionary view of the updated stream.
+
+        .. seealso:: `models.DataStream`
+
+        .. note:: This function contains a blacklist of keys that may not be updated. If `data` contains these keys, they are ignored. This documentation should contain the full blacklist:
+            blacklist = ["uuid","message"]
+            whitelist = ["sensor_IOtype", "sensor_type", "name", "units", ""]
+        """
+
+        logging.debug("Updating stream with id %s with data %s", str(stream_id), str(data))
+        if session is None:
+            with sessionScope() as session:
+                stream_info = _updateStream(stream_id, data, session)
+            return stream_info
+        return _updateStream(stream_id, data, session)
+
 
 def deleteDatastream(session, datastream_id):
     """ Deletes a datastream with the given `datastream_id` and its associated sensor.
@@ -256,6 +318,18 @@ def deleteDatastream(session, datastream_id):
         session.commit()
         return stream_dict
     return None
+
+
+def _updateStream(stream_id, data, session):
+    stream = session.query(DataStream).filter_by(uuid=stream_id).one()
+    for key, value in data.iteritems():
+        logging.debug("Key: {}, Value: {}".format(key, value))
+        if key != 'uuid':
+            setattr(stream, key, value)
+    session.add(stream)
+
+    logging.debug("Finished updating stream.")
+    return stream.toDict()
 
 
 def clean_inputs(inputs):
