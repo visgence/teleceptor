@@ -26,7 +26,7 @@
 				'datastream': {{datastreamJSON}},
 			};
 
-			
+
 			{% if startZoom %} pageData["startZoom"] = {{startZoom}} {% endif %}
 			{% if endZoom %} pageData["endZoom"] = {{endZoom}} {% endif %}
 			{% if time %} pageData["time"] = "{{time}}" {% endif %}
@@ -76,7 +76,7 @@
     							<a class="list-group-item sensor" data-sensorid="{{sensor.uuid}}">
     							{% endif %}
                                 <span>{{sensor.name}} </span><span class="small" style="color: #888888"> {{sensor.uuid}}</span>
-    								
+
     							</a>
 							{% endfor %}
 						</div>
@@ -101,16 +101,30 @@
 				</div>
 
 				{% if activeSensor %}
-				<div class="panel panel-default">
-					<div class= "panel-heading">
-						<h3 class="panel-title">Sensor Information</h3>
-					</div>
+                <div class="col-md-6">
+				    <div class="panel panel-default">
+    					<div class= "panel-heading">
+    						<h3 class="panel-title">Sensor Information</h3>
+    					</div>
 
-					<div class="panel-body">
-						{% include 'sensor.html' %}
-					</div>
+    					<div class="panel-body">
+    						{% include 'sensor.html' %}
+    					</div>
 
-				</div>
+    				</div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="panel panel-default">
+                        <div class= "panel-heading">
+                            <h3 class="panel-title">Data Stream Information</h3>
+                        </div>
+
+                        <div class="panel-body">
+                            {% include 'datastream.html' %}
+                        </div>
+                    </div>
+                </div>
 				{% endif %}
 
 			</div><!-- end right-col -->
