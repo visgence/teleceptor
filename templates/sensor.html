@@ -15,46 +15,46 @@
 
 	<form class = "form-horizontal" role="form">
         <div class="form-group">
-            <label class="col-md-2 control-label">UUID</label>
-            <div class="col-md-4">
+            <label class="col-md-3 control-label">UUID</label>
+            <div class="col-md-6">
                 <p class="form-control-static" data-bind="text: uuid()"></p>
             </div>
         </div>
 
         <div class="form-group">
-            <label class="col-md-2 control-label">Model</label>
-            <div class="col-md-4">
+            <label class="col-md-3 control-label">Model</label>
+            <div class="col-md-6">
                 <p class="form-control-static" data-bind="text: model()"></p>
             </div>
         </div>
 
 		<div class = "form-group" data-bind="css: {'has-error': name.hasError}">
-			<label class="col-md-2 control-label">Name</label>
-			<div class="col-md-4">
+			<label class="col-md-3 control-label">Name</label>
+			<div class="col-md-6">
 				<p class="form-control-static" data-bind="text: name()"></p>
 			</div>
 		</div>
 		<div class = "form-group">
-			<label class="col-md-2 control-label">Description</label>
-			<div class="col-md-4">
+			<label class="col-md-3 control-label">Description</label>
+			<div class="col-md-6">
 				<p class="form-control-static" data-bind="text: description()"></p>
 			</div>
 		</div>
 		<div class = "form-group">
-			<label class="col-md-2 control-label">Units</label>
-			<div class="col-md-4">
+			<label class="col-md-3 control-label">Units</label>
+			<div class="col-md-6">
 				<p class="form-control-static" data-bind="text: units()"></p>
 			</div>
 		</div>
         <div class = "form-group">
-            <label class="col-md-2 control-label">Last Calibration</label>
-            <div class="col-md-4">
+            <label class="col-md-3 control-label">Last Calibration</label>
+            <div class="col-md-6">
                 <p class="form-control-static" data-bind="text: lastCalibration"></p>
             </div>
         </div>
 		<div class = "form-group">
-			<label class="col-md-2 control-label">Calibration</label>
-			<div class="col-md-4">
+			<label class="col-md-3 control-label">Calibration</label>
+			<div class="col-md-6">
 				<!-- ko ifnot: editing -->
 				<p class="form-control-static" data-bind="text: coefficients()"></p>
 				<!-- /ko -->
@@ -97,10 +97,10 @@
 	<form class = "form-horizontal" role="form">
 
 		<div class = "form-group form-group-sm" >
-			<label class="col-md-2 control-label" data-bind="text: name"></label>
+			<label class="col-md-3 control-label" data-bind="text: name"></label>
 
 			<!-- ko ifnot: isInput -->
-			<p class="form-control-static" > Output Sensor</p>
+			<p class="form-control-static col-md-4"  > Output Sensor</p>
 			<!-- /ko -->
 			<!-- ko if: isInput -->
 

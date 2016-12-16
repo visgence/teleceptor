@@ -2,6 +2,7 @@
 Sets up webpage and displays current sensor readings.
 
 Authors: Victor Szczepanski
+         Cyrille Gindreau
 
 """
 
@@ -41,6 +42,8 @@ class Root(object):
         sysdata_dict = json.loads(sysdata.GET())
 
         sensorsList = json.loads(sensors.GET())['sensors']
+        streamList = json.loads(datastreams.GET())['datastreams']
+
         activeSensor = sensorsList[0] if len(sensorsList) > 0 else None
 
         if sensor_id is not None:
@@ -65,9 +68,10 @@ class Root(object):
             "datastreamJSON": json.dumps(datastream),
         }
         returnData.update(**kwargs)
-
         t = env.get_template("sensorsIndex.html")
+
         return t.render(returnData)
+
 
     index.exposed = True
 

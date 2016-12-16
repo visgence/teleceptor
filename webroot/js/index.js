@@ -25,6 +25,7 @@ $(function($) {
         var __this = this;
 
         this.activeSensor = ko.observable();
+        this.datastreams = ko.observable();
         this.sensors = ko.observableArray();
         this.timeControls = ko.observable();
         this.graph = ko.observable();
@@ -49,6 +50,8 @@ $(function($) {
 
             if (vars.hasOwnProperty("activeSensor"))
                 __this.activeSensor(new Sensor(vars.activeSensor));
+            if(vars.hasOwnProperty("datastreams"))
+                __this.datastreams(new Stream(vars.datastreams));
 
             initTimeControls(vars);
 

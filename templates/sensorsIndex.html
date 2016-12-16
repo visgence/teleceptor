@@ -21,11 +21,10 @@
 
 	<script>
 		$(function() {
-			var pageData = {
-				'activeSensor': {{activeSensorJSON}},
-				'datastream': {{datastreamJSON}},
+            var pageData = {
+                'activeSensor': {{activeSensorJSON}},
+                'datastream': {{datastreamJSON}},
 			};
-
 
 			{% if startZoom %} pageData["startZoom"] = {{startZoom}} {% endif %}
 			{% if endZoom %} pageData["endZoom"] = {{endZoom}} {% endif %}
@@ -101,20 +100,7 @@
 				</div>
 
 				{% if activeSensor %}
-                <div class="col-md-6">
-				    <div class="panel panel-default">
-    					<div class= "panel-heading">
-    						<h3 class="panel-title">Sensor Information</h3>
-    					</div>
-
-    					<div class="panel-body">
-    						{% include 'sensor.html' %}
-    					</div>
-
-    				</div>
-                </div>
-
-                <div class="col-md-6">
+                <div class="col-md-4">
                     <div class="panel panel-default">
                         <div class= "panel-heading">
                             <h3 class="panel-title">Data Stream Information</h3>
@@ -123,6 +109,19 @@
                         <div class="panel-body">
                             {% include 'datastream.html' %}
                         </div>
+                    </div>
+                </div>
+
+                <div class="col-md-8">
+                    <div class="panel panel-default">
+                        <div class= "panel-heading">
+                            <h3 class="panel-title">Sensor Information</h3>
+                        </div>
+
+                        <div class="panel-body">
+                            {% include 'sensor.html' %}
+                        </div>
+
                     </div>
                 </div>
 				{% endif %}

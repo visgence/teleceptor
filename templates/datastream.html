@@ -1,13 +1,5 @@
 
-<ul id="sensor-tabs" class="nav nav-tabs" role="tablist" style="margin-bottom:1em;">
-    <li class="tab active" data-tab="sensor-config"><a href="#">Configuration</a></li>
-    <li class="tab" data-tab="sensor-metadata"><a href="#">Metadata</a></li>
-    <li class="tab" data-tab="sensor-command"><a href="#">Command</a></li>
-    <li class="tab" data-tab="post-data"><a href="#">Manual Entry</a></li>
-    <li class="tab" data-tab="export-data"><a href="#">Export</a></li>
-</ul>
-
-<div id="sensor-config" data-bind="with: activeSensor">
+<div id="stream-config" data-bind="with: activeSensor">
 
     <!-- ko if: updateError -->
     <div class="alert alert-danger" data-bind="text: updateError"></div>
@@ -15,79 +7,57 @@
 
     <form class = "form-horizontal" role="form">
         <div class="form-group">
-            <label class="col-md-2 control-label">UUID</label>
-            <div class="col-md-4">
-                <p class="form-control-static" data-bind="text: uuid()"></p>
+            <label class="col-md-3 control-label">UUID</label>
+            <div class="col-md-6">
+                <p class="form-control-static" data-bind="text: streamUuid()"></p>
             </div>
         </div>
 
-        <div class="form-group">
-            <label class="col-md-2 control-label">Model</label>
-            <div class="col-md-4">
-                <p class="form-control-static" data-bind="text: model()"></p>
+        <div class = "form-group" data-bind="css: {'has-error': streamName.hasError}">
+
+            <label class="col-md-3 control-label">Name</label>
+            <div class="col-md-6">
+                <!-- ko ifnot: streamEditing -->
+                <p class="form-control-static" data-bind="text: streamName()"></p>
+                <!-- /ko -->
+                <!-- ko if: streamEditing -->
+                <input class="form-control" data-bind="value: streamName">
+                <p class="text-danger" data-bind="text: streamName.validationMessage, if: streamName.hasError"></p>
+                <!-- /ko -->
+            </div>
+        </div>
+        <div class = "form-group">
+            <label class="col-md-3 control-label">Description</label>
+            <div class="col-md-6">
+                <!-- ko ifnot: streamEditing -->
+                <p class="form-control-static" data-bind="text: streamDescription()"></p>
+                <!-- /ko -->
+                <!-- ko if: streamEditing -->
+                <input class="form-control" data-bind="value: streamDescription">
+                <!-- /ko -->
             </div>
         </div>
 
-        <div class = "form-group" data-bind="css: {'has-error': name.hasError}">
-
-            <label class="col-md-2 control-label">Name</label>
-            <div class="col-md-4">
-                <!-- ko ifnot: editing -->
+        <div class = "form-group">
+            <label class="col-md-3 control-label">Sensor Name</label>
+            <div class="col-md-6">
                 <p class="form-control-static" data-bind="text: name()"></p>
-                <!-- /ko -->
-                <!-- ko if: editing -->
-                <input class="form-control" data-bind="value: name">
-                <p class="text-danger" data-bind="text: name.validationMessage, if: name.hasError"></p>
-                <!-- /ko -->
-            </div>
-        </div>
-        <div class = "form-group">
-            <label class="col-md-2 control-label">Description</label>
-            <div class="col-md-4">
-                <!-- ko ifnot: editing -->
-                <p class="form-control-static" data-bind="text: description()"></p>
-                <!-- /ko -->
-                <!-- ko if: editing -->
-                <input class="form-control" data-bind="value: description">
-                <!-- /ko -->
-            </div>
-        </div>
-        <div class = "form-group">
-            <label class="col-md-2 control-label">Units</label>
-            <div class="col-md-4">
-                <!-- ko ifnot: editing -->
-                <p class="form-control-static" data-bind="text: units()"></p>
-                <!-- /ko -->
-                <!-- ko if: editing -->
-                <input class="form-control" data-bind="value: units">
-                <!-- /ko -->
-            </div>
-        </div>
-        <div class = "form-group">
-            <label class="col-md-2 control-label">Calibration</label>
-            <div class="col-md-4">
-                <!-- ko ifnot: editing -->
-                <p class="form-control-static" data-bind="text: coefficients()"></p>
-                <!-- /ko -->
-                <!-- ko if: editing -->
-                <input class="form-control" data-bind="value: coefficients">
-                <!-- /ko -->
             </div>
         </div>
 
         <div class = "form-group">
             <div class="col-md-6 col-md-offset-2">
-                <!-- ko ifnot: editing -->
-                <button type="button" class="btn btn-primary btn-sm" data-bind="click: beginEditing">
+                <!-- ko ifnot: streamEditing -->
+                <button type="button" class="btn btn-primary btn-sm" data-bind="click: streamBeginEditing">
                     <span class="glyphicon glyphicon-pencil"></span> Edit
                 </button>
                 <!-- /ko -->
 
-                <!-- ko if: editing -->
-                <button type="button" class="btn btn-primary btn-sm" data-bind="click: update">
+                <!-- ko if: streamEditing -->
+                <button type="button" class="btn btn-primary btn-sm" data-bind="click: streamUpdate">
                     <span class="glyphicon glyphicon-ok"></span> Save
                 </button>
-                <button type="button" class="btn btn-default btn-sm" data-bind="click: cancelEditing">
+                <button type="button" class="btn btn-default btn-sm" data-bind="click: streamCancelEditing">
                     <span class="glyphicon glyphicon-remove"></span> Cancel
                 </button>
 
@@ -97,99 +67,3 @@
     </form>
 </div>
 
-<div id="sensor-metadata" class="hidden" data-bind="with: activeSensor">
-    <ul data-bind="metadata: meta_data"></ul>
-</div>
-
-<div id="sensor-command" class="hidden" data-bind="with: activeSensor">
-    <!-- ko if: updateError -->
-    <div class="alert alert-danger" data-bind="text: updateError"></div>
-    <!-- /ko -->
-    <form class = "form-horizontal" role="form">
-
-        <div class = "form-group form-group-sm" >
-            <label class="col-md-2 control-label" data-bind="text: name"></label>
-
-            <!-- ko ifnot: isInput -->
-            <p class="form-control-static" > Output Sensor</p>
-            <!-- /ko -->
-            <!-- ko if: isInput -->
-
-                <!-- ko if: sensor_type() == "bool" -->
-                <div class = "col-md-1" style="height: 30px">
-                    <input class="form-control" type="checkbox" data-bind="bootstrapSwitchOn: command_value">
-                </div>
-                <!-- /ko -->
-                <!--ko ifnot: sensor_type() == "bool"-->
-                <label class="col-md-2 control-label">Value:</label>
-                <div class="col-md-4">
-                <input class="form-control" data-bind="value: temp_command_value">
-                <p class="text-danger" data-bind="text: temp_command_value.validationMessage, if: temp_command_value.hasError"></p>
-                <button type="button" class="btn btn-primary btn-sm" data-bind="click: sendCommand">
-                    <span class="glyphicon glyphicon-send"></span> Send
-                </button>
-
-                </div>
-                <!-- /ko -->
-            <!-- /ko -->
-
-
-        </div>
-    </form>
-
-
-    </div>
-
-
-<div id="post-data" class="hidden" data-bind="with: activeSensor">
-        <!-- ko if: updateError -->
-        <div class="alert alert-danger" data-bind="text: updateError"></div>
-        <!-- /ko -->
-        <form class = "form-horizontal" role="form">
-        <div class = "form-group form-group-sm">
-            <label class="col-md-2 data-label">New Data:</label>
-            <div class="col-md-4">
-                <input class="form-control" data-bind="value: new_data_value">
-                <p class="text-danger" data-bind="text: temp_command_value.validationMessage, if: temp_command_value.hasError"></p>
-                <button type="button" class="btn btn-primary btn-sm" data-bind="click: sendData">
-                    <span class="glyphicon glyphicon-send"></span> Send
-                </button>
-
-            </div>
-
-
-        </div>
-
-        </form>
-
-</div>
-
-<div id="export-data" class="hidden" data-bind="with: activeSensor">
-        <!-- ko if: updateError -->
-        <div class="alert alert-danger" data-bind="text: updateError"></div>
-        <!-- /ko -->
-        <form class="form-horizontal" role="form">
-            <div class="form-group form-group-sm">
-                <label class="col-md-2 data-label">Source</label>
-            </div>
-            <div class="form-group form-group-sm" data-bind="with: $root.graph">
-                <div class="col-md-2"> <!-- dropdown -->
-                    <div class="dropdown">
-                        <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">
-                        <span data-bind="text: exportSource"></span><span> </span><span class="caret"></span></button>
-                        <ul id="sourceDropdown" class="dropdown-menu">
-                            <li><a href="#">SQL</a></li>
-                            <li><a href="#">ElasticSearch</a></li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="col-md-2">
-                    <button type="button" class="btn btn-primary btn-sm" data-bind="click: function(data, event) { export_data($parent.name(), 'SQL', data, event) }">
-                        <span class="glyphicon glyphicon-send"></span> Send
-                    </button>
-                </div>
-            </div>
-        </form>
-</div>
-
-<iframe id="download_iframe" style="display:none;"></iframe>

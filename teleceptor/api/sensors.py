@@ -48,7 +48,7 @@ class Sensors:
 
         .. seealso:: `models.Sensor`
         """
-        logging.debug("GET request to sensors.")
+        logging.info("GET request to sensors.")
 
         cherrypy.response.headers['Content-Type'] = 'application/json'
         data = {}

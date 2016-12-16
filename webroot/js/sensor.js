@@ -38,6 +38,11 @@
         this.command_value      = ko.observable(true); //value to command this sensor to.
         this.post_value         = ko.observable();
 
+        this.streamUuid = ko.observable();
+        this.streamName = ko.observable();
+        this.streamDescription = ko.observable();
+        this.streamEditing = ko.observable();
+
         console.log(vars)
 
         this.updateSuccessCb = function(resp) {
@@ -240,6 +245,17 @@
     Sensor.prototype.cancelEditing = function() {
         this.restoreCache();
         this.editing(false);
+        this.name.hasError(false);
+    };
+
+    Sensor.prototype.streamBeginEditing = function() {
+        this.setCache();
+        this.streamEditing(true);
+    };
+
+    Sensor.prototype.streamCancelEditing = function() {
+        this.restoreCache();
+        this.streamEditing(false);
         this.name.hasError(false);
     };
 
