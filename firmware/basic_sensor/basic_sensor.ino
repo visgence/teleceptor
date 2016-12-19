@@ -84,7 +84,7 @@ Set all pinModes and send them default values
 void setup(){
  
   Wire.begin();        // join i2c bus (address optional for master)
-  Serial.begin(9600);  // start serial for output
+  SERIAL.begin(9600);  // start serial for output
 
   pinMode(RELAY1, OUTPUT);
   pinMode(RELAY2, OUTPUT);
@@ -183,39 +183,39 @@ Prints all of the sensor info. The resulting data should look like:
 --------------------------------------------------------------------------
 */
 void printSensorInfo(){
-  Serial.print("{\"model\": \"");
-  Serial.print(StationName);
-  Serial.print("\", \"desc\": \"");
-  Serial.print(StationDescription);
-  Serial.print("\", \"uuid\": \"");
-  Serial.print(Uuid);
-  Serial.print("\", \"out\": [");
+  SERIAL.print("{\"model\": \"");
+  SERIAL.print(StationName);
+  SERIAL.print("\", \"desc\": \"");
+  SERIAL.print(StationDescription);
+  SERIAL.print("\", \"uuid\": \"");
+  SERIAL.print(Uuid);
+  SERIAL.print("\", \"out\": [");
   for(int i = 0; i < NUMOUTPUTSENSORS; i++){
-    if(i != 0) Serial.print(", ");
+    if(i != 0) SERIAL.print(", ");
 
-    Serial.print("{\"scale\": [");
-    Serial.print(outputSensorCoefficents[i][0]);
-    Serial.print(", ");
-    Serial.print(outputSensorCoefficents[i][1]);
-    Serial.print("], \"u\": \"");
-    Serial.print(outputSensorUnits[i]);
-    Serial.print("\", \"name\": \"");
-    Serial.print(outputSensorNames[i]);
-    Serial.print("\"}");
+    SERIAL.print("{\"scale\": [");
+    SERIAL.print(outputSensorCoefficents[i][0]);
+    SERIAL.print(", ");
+    SERIAL.print(outputSensorCoefficents[i][1]);
+    SERIAL.print("], \"u\": \"");
+    SERIAL.print(outputSensorUnits[i]);
+    SERIAL.print("\", \"name\": \"");
+    SERIAL.print(outputSensorNames[i]);
+    SERIAL.print("\"}");
   }
-  Serial.print("], \"in\": [");
+  SERIAL.print("], \"in\": [");
   for(int i = 0; i < NUMINPUTSENSORS; i++){
-    if(i != 0) Serial.print(", ");
-    Serial.print("{\"name\": \"");
-    Serial.print(inputSensorNames[i]);
-    Serial.print("\", \"s_t\": \"");
-    Serial.print(inputSensorState[i]);
-    Serial.print("\", \"desc\": \"");
-    Serial.print(inputSensorDesc[i]);
-    Serial.print("\"}");
+    if(i != 0) SERIAL.print(", ");
+    SERIAL.print("{\"name\": \"");
+    SERIAL.print(inputSensorNames[i]);
+    SERIAL.print("\", \"s_t\": \"");
+    SERIAL.print(inputSensorState[i]);
+    SERIAL.print("\", \"desc\": \"");
+    SERIAL.print(inputSensorDesc[i]);
+    SERIAL.print("\"}");
   }
-  Serial.print("]}");
-  Serial.println("");
+  SERIAL.print("]}");
+  SERIAL.println("");
 }
 
 /*
