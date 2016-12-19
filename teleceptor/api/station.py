@@ -134,7 +134,7 @@ class Station:
 
             ]
         """
-        logging.debug("Got POST request to delegation.")
+        logging.info("Got POST request to delegation.")
 
         cherrypy.response.headers['Content-Type'] = 'application/json'
         data = {'info': [], "newValues": {}}
@@ -143,7 +143,7 @@ class Station:
 
         try:
             readingData = json.load(cherrypy.request.body)
-            logging.debug("Got data: %s", readingData)
+            logging.info("Got data: %s", readingData)
         except (ValueError, TypeError):
             logging.error("Request data is not JSON: %s", cherrypy.request.body)
             data['error'] = "Bad json"
@@ -167,7 +167,7 @@ class Station:
 
 
 def update_motes(mote_datas=[]):
-    logging.debug("Updating motes %s", str(mote_datas))
+    logging.info("Updating motes %s", str(mote_datas))
     new_values = {}
     for mote in mote_datas:
         if 'info' not in mote:
@@ -229,7 +229,6 @@ def update_motes(mote_datas=[]):
                 reading[0] = sensor_datastream_ids[mote['info']['uuid'] + reading[0]]
 
             readings.insertReadings(mote['readings'], session=session)
-    logging.info("Done updating mote info.")
     return new_values, updated_sensors
 
 

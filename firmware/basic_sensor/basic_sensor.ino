@@ -65,9 +65,6 @@ boolean inputSensorState[] = {false,false,false,false};
 const char * inputSensorNames[] = {"PWR1","PWR2","PWR3","PWR4"};
 const char * inputSensorDesc[] = {"Power Relay","Power Relay","Power Relay","Power Relay"};
 
-//const char sensorData1[] PROGMEM = "{\"model\": \"POE Power Monitor\", \"out\": [{\"scale\": [0.0025, 0], \"u\": \"mA\", \"name\": \"CH1I\", \"s_t\":\"Current\"}, {\"scale\": [0.00125, 0], \"u\": \"v\", \"name\": \"CH1V\", \"s_t\": \"Voltage\"}, {\"scale\": [0.0025, 0], \"u\": \"mA\", \"name\": \"CH2I\", \"s_t\": \"Current\"}, {\"scale\": [0.00125, 0], \"u\": \"v\", \"name\": \"CH2V\", \"s_t\": \"Voltage\"}, {\"scale\": [0.0025, 0], \"u\": \"mA\", \"name\": \"CH3I\", \"s_t\": \"Current\"}, {\"scale\": [0.00125, 0], \"u\": \"v\", \"name\": \"CH3V\", \"s_t\": \"Voltage\"}, {\"scale\": [0.0025, 0], \"u\": \"mA\", \"name\": \"CH4I\", \"s_t\": \"Current\"}, {\"scale\": [0.00125, 0], \"u\": \"v\", \"name\": \"CH4V\", \"s_t\": \"Voltage\"}], \"in\": [{\"desc\": \"Power Relay\", \"u\": \"tf\", \"name\": \"PWR1\", \"s_t\": \"bool\"}, {\"desc\": \"Power Relay\", \"u\": \"tf\", \"name\": \"PWR2\", \"s_t\": \"bool\"}, {\"desc\": \"Power Relay\", \"u\": \"tf\", \"name\": \"PWR3\", \"s_t\": \"bool\"}, {\"desc\": \"Power Relay\", \"u\": \"tf\", \"name\": \"PWR4\", \"s_t\": \"bool\"}], \"uuid\": \"POESW00\", \"desc\": \"South Well\"}";
-
-
 /* 
 -------------------------------------------------------------------------
 Function Prototypes 
@@ -180,7 +177,9 @@ void serialComm(){
 /*
 --------------------------------------------------------------------------
 printSensorInfo()
-Prints all of the sensor info.
+Prints all of the sensor info. The resulting data should look like:
+"{\"model\": \"POE Power Monitor\", \"out\": [{\"scale\": [0.0025, 0], \"u\": \"mA\", \"name\": \"CH1I\", \"s_t\":\"Current\"}, {\"scale\": [0.00125, 0], \"u\": \"v\", \"name\": \"CH1V\", \"s_t\": \"Voltage\"}, {\"scale\": [0.0025, 0], \"u\": \"mA\", \"name\": \"CH2I\", \"s_t\": \"Current\"}, {\"scale\": [0.00125, 0], \"u\": \"v\", \"name\": \"CH2V\", \"s_t\": \"Voltage\"}, {\"scale\": [0.0025, 0], \"u\": \"mA\", \"name\": \"CH3I\", \"s_t\": \"Current\"}, {\"scale\": [0.00125, 0], \"u\": \"v\", \"name\": \"CH3V\", \"s_t\": \"Voltage\"}, {\"scale\": [0.0025, 0], \"u\": \"mA\", \"name\": \"CH4I\", \"s_t\": \"Current\"}, {\"scale\": [0.00125, 0], \"u\": \"v\", \"name\": \"CH4V\", \"s_t\": \"Voltage\"}], \"in\": [{\"desc\": \"Power Relay\", \"u\": \"tf\", \"name\": \"PWR1\", \"s_t\": \"bool\"}, {\"desc\": \"Power Relay\", \"u\": \"tf\", \"name\": \"PWR2\", \"s_t\": \"bool\"}, {\"desc\": \"Power Relay\", \"u\": \"tf\", \"name\": \"PWR3\", \"s_t\": \"bool\"}, {\"desc\": \"Power Relay\", \"u\": \"tf\", \"name\": \"PWR4\", \"s_t\": \"bool\"}], \"uuid\": \"POESW00\", \"desc\": \"South Well\"}";
+
 --------------------------------------------------------------------------
 */
 void printSensorInfo(){
@@ -216,6 +215,7 @@ void printSensorInfo(){
     Serial.print("\"}");
   }
   Serial.print("]}");
+  Serial.println("");
 }
 
 /*

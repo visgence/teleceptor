@@ -197,12 +197,13 @@ def updateMote(moteHandle, newValues={}):
                     }
 
     """
+
     if not newValues:
         return
     parsedNewValues = {}
     for sen in newValues:
         logging.debug("sen: %s", sen)
-        if len(newValues[sen]) == 0:
+        if newValues[sen] == None:
             continue
         message = newValues[sen][-1] # get the last message (ignore others)
         for senName, senMessage in message.items():
