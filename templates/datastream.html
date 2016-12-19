@@ -47,9 +47,13 @@
             <!-- /ko -->
             <!-- ko if: streamEditing -->
                 <div class="col-md-6" data-bind="foreach: streamPaths">
-                    <input class="form-control" data-bind="value: path">
+                    <div style="padding-bottom: 10px">
+                        <input class="form-control" data-bind="value: path">
+                    </div>
                 </div>
-                <button class="glyphicon glyphicon-plus" style="float:right;" data-bind="click: addStreamPath"></button>
+                <div style="float: right; padding-right: 30px">
+                    <button class="glyphicon glyphicon-plus" data-bind="click: addStreamPath" > </button>
+                </div>
             <!-- /ko -->
 
         </div>
