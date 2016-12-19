@@ -66,7 +66,7 @@
         </div>
 
         <div class = "form-group">
-            <div class="col-md-6 col-md-offset-2">
+            <div class="col-md-8 col-md-offset-2">
                 <!-- ko ifnot: streamEditing -->
                 <button type="button" class="btn btn-primary btn-sm" data-bind="click: streamBeginEditing">
                     <span class="glyphicon glyphicon-pencil"></span> Edit
@@ -79,6 +79,9 @@
                 </button>
                 <button type="button" class="btn btn-default btn-sm" data-bind="click: streamCancelEditing">
                     <span class="glyphicon glyphicon-remove"></span> Cancel
+                </button>
+                 <button type="button" class="btn btn-danger btn-sm" data-bind="click: deleteStream">
+                    <span class="glyphicon glyphicon-remove"></span> Delete Stream
                 </button>
 
                 <!-- /ko -->

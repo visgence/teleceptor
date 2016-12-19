@@ -281,13 +281,13 @@ class SensorReadings:
         logging.info("Finished POST request to readings.")
         return json.dumps(data, indent=4)
 
-    def DELETE(self, reading_id=None, datastream_id=None):
+    def DELETE(self, datastream_id=None):
         """
-        Deletes a sensor reading or all sensor readings for a given datastream.
+        Deletes all sensor readings for a given datastream.
 
-        :raises: A JSON object with an 'error' key if an error occured or 'readings' key if delete was successful.
+        :returns: A JSON object with an 'error' key if an error occured or 'readings' key if delete was successful.
         """
-        logging.info("DELETE request to readings with reading_id {} and datastream_id {}".format(reading_id, datastream_id))
+        logging.info("DELETE request to readings with datastream_id {}".format(datastream_id))
 
         cherrypy.response.headers['Content-Type'] = 'application/json'
         data = {}
@@ -301,6 +301,7 @@ class SensorReadings:
             except Exception as e:
                 error_string = "Unexpected error while deleting readings by datastream: {}".format(e)
                 logging.exception(error_string)
+                logging.info(error_string)
                 data['error'] = error_string
                 statusCode = "400"
 

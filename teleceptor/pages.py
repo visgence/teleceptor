@@ -48,20 +48,23 @@ class Root(object):
 
         if sensor_name is not None:
             try:
-                print " trying"
                 activeSensor = json.loads(sensors.GET(sensor_name))["sensor"]
-                print"there"
             except KeyError, ke:
                 logging.error("Error: no sensor with id %s", sensor_name)
                 logging.error(str(ke))
-
         datastream = None
         if activeSensor is not None:
-            dsList = json.loads(datastreams.GET(None, **{"sensor": activeSensor['uuid']}))
+            dsList = json.loads(datastreams.GET())
+            logging.info("dslist")
+            logging.info(dsList)
             datastream = dsList['datastreams'][0] if len(dsList['datastreams']) > 0 else None
 
         cherrypy.response.headers['Content-Type'] = 'text/html'
-
+        logging.info("sensorlist")
+        logging.info(sensorsList)
+        logging.info("active")
+        logging.info(activeSensor)
+        logging.info("streaminfo:\n")
         logging.info(datastream)
         activeSensor['datastream'] = datastream
 

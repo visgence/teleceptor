@@ -186,17 +186,9 @@
             return displayName;
         });
 
-
-
-
-
         this.addStreamPath = function(){
             this.streamPaths.push({"path": ""});
         }
-
-
-
-
 
         var init = function(vars) {
             vars = vars || {};
@@ -208,7 +200,6 @@
         }.bind(this);
 
         init(vars);
-
 
     };
     Sensor.prototype.update = function() {
@@ -269,6 +260,36 @@
         this.name.hasError(false);
     };
 
+    Sensor.prototype.deleteStream = function() {
+        var id = this.streamUuid();
+        if (!id || !this.validate())
+            return $.Deferred().reject().promise();
+
+        var payload = this.streamToDict();
+        return $.ajax({
+               url: "/api/readings/"+id+"/",
+               method: "DELETE",
+               data: ko.toJSON(payload),
+               dataType: "json",
+               contentType: "application/json",
+               processData: false,
+               success: function(data){
+                    return $.ajax({
+                       url: "/api/datastreams/"+id+"/",
+                       method: "DELETE",
+                       data: ko.toJSON(payload),
+                       dataType: "json",
+                       contentType: "application/json",
+                       processData: false,
+                       success: function(data){
+                            window.location.href = window.location.pathname
+                       }
+                });
+               }
+        }).then(this.updateSuccessCb.bind(this),this.updateFailCb.bind(this));
+
+    }
+
     Sensor.prototype.streamBeginEditing = function() {
         this.setCache();
         this.streamEditing(true);
@@ -312,14 +333,14 @@
         if (vars.hasOwnProperty('last_value') && vars.last_value != "")
             this.command_value(JSON.parse(vars.last_value));
 
-        if (vars.hasOwnProperty('datastream'))
-            this.streamName(vars.datastream.name);
-        if (vars.hasOwnProperty('datastream'))
-            this.streamDescription(vars.datastream.description);
-        if (vars.hasOwnProperty('datastream'))
-            this.streamUuid(vars.datastream.id);
-        if (vars.hasOwnProperty('datastream'))
-            this.streamPaths(vars.datastream.streamPaths);
+        if (vars.hasOwnProperty('datastream')){
+            if(vars.datastream !== null){
+                this.streamName(vars.datastream.name);
+                this.streamDescription(vars.datastream.description);
+                this.streamUuid(vars.datastream.id);
+                this.streamPaths(vars.datastream.streamPaths);
+            }
+        }
 
     };
 
