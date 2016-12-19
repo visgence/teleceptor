@@ -62,6 +62,7 @@ class Root(object):
 
         cherrypy.response.headers['Content-Type'] = 'text/html'
 
+        logging.info(datastream)
         activeSensor['datastream'] = datastream
 
         returnData = {

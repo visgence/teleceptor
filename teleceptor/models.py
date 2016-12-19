@@ -270,9 +270,30 @@ class DataStream(Base):
             'name': self.name,
             'description': self.description,
             'owner': self.owner,
-            'sensor': self.sensor,
-            'path': "/my/path/",
-            'pathid': 1
+            'sensor': self.sensor
+            }
+
+
+class StreamPath(Base):
+    """
+    id : int
+        Unique identifier of this StreamPath.
+    datastream : str
+        What datastream does this path belong to.
+    path : str
+        The path String.
+    """
+    __tablename__ = "streampath"
+
+    id = Column(Integer, primary_key=True)
+    datastream = Column(Text, ForeignKey('datastream.uuid', ondelete='CASCADE'), unique=True, index=True)
+    path = Column(Text, default="New/")
+
+    def toDict(self):
+        return {
+            'id': self.id,
+            'datastream': self.datastream,
+            'path': self.path
         }
 
 

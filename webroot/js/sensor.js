@@ -42,10 +42,7 @@
         this.streamName = ko.observable();
         this.streamDescription = ko.observable();
         this.streamEditing = ko.observable();
-        this.path = ko.observable();
-        this.pathid = ko.observable();
-
-        console.log(vars)
+        this.streamPaths = ko.observableArray();
 
         this.updateSuccessCb = function(resp) {
             __this.rebuild(resp.sensor);
@@ -189,6 +186,18 @@
             return displayName;
         });
 
+
+
+
+
+        this.addStreamPath = function(){
+            this.streamPaths.push({"path": ""});
+        }
+
+
+
+
+
         var init = function(vars) {
             vars = vars || {};
 
@@ -226,6 +235,7 @@
             return $.Deferred().reject().promise();
 
         var payload = this.streamToDict();
+        console.log(payload);
         return $.ajax({
                url: "/api/datastreams/"+id+"/",
                method: "PUT",
@@ -251,7 +261,6 @@
     Sensor.prototype.beginEditing = function() {
         this.setCache();
         this.editing(true);
-        console.log(this.last_calibration());
     };
 
     Sensor.prototype.cancelEditing = function() {
@@ -271,6 +280,8 @@
         this.name.hasError(false);
     };
 
+
+
     Sensor.prototype.rebuild = function(vars) {
         console.log(vars)
         vars = vars || {};
@@ -284,7 +295,6 @@
                 this.coefficients(ko.toJSON(vars.last_calibration.coefficients));
             this.last_calibration(vars.last_calibration);
             this.last_calibration().coefficients = vars.last_calibration.coefficients;
-            console.log(vars.last_calibration.timestamp)
             this.lastCalibration(new Date(vars.last_calibration.timestamp*1000).toDateString())
         }
         if (vars.hasOwnProperty('units'))
@@ -309,9 +319,7 @@
         if (vars.hasOwnProperty('datastream'))
             this.streamUuid(vars.datastream.id);
         if (vars.hasOwnProperty('datastream'))
-            this.path(vars.datastream.path);
-        if (vars.hasOwnProperty('datastream'))
-            this.pathid(vars.datastream.pathid);
+            this.streamPaths(vars.datastream.streamPaths);
 
     };
 
@@ -349,6 +357,7 @@
     Sensor.prototype.streamToDict = function() {
         return {
             'name': this.streamName(),
-            'description': this.streamDescription()
+            'description': this.streamDescription(),
+            'streamPaths': this.streamPaths()
         }
     };

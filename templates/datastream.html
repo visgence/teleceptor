@@ -40,26 +40,18 @@
 
         <div class = "form-group">
             <label class="col-md-3 control-label">Path</label>
-            <div class="col-md-6">
-                <!-- ko ifnot: streamEditing -->
-                <p class="form-control-static" data-bind="text: path()"></p>
-                <!-- /ko -->
-                <!-- ko if: streamEditing -->
-                <input class="form-control" data-bind="value: path">
-                <!-- /ko -->
-            </div>
-        </div>
+            <!-- ko ifnot: streamEditing -->
+                <div class="col-md-6" data-bind="foreach: streamPaths">
+                    <p class="form-control-static" data-bind="text: path"></p>
+                </div>
+            <!-- /ko -->
+            <!-- ko if: streamEditing -->
+                <div class="col-md-6" data-bind="foreach: streamPaths">
+                    <input class="form-control" data-bind="value: path">
+                </div>
+                <button class="glyphicon glyphicon-plus" style="float:right;" data-bind="click: addStreamPath"></button>
+            <!-- /ko -->
 
-        <div class = "form-group">
-            <label class="col-md-3 control-label">Path ID</label>
-            <div class="col-md-6">
-                <!-- ko ifnot: streamEditing -->
-                <p class="form-control-static" data-bind="text: pathid()"></p>
-                <!-- /ko -->
-                <!-- ko if: streamEditing -->
-                <input class="form-control" data-bind="value: pathid">
-                <!-- /ko -->
-            </div>
         </div>
 
         <div class = "form-group">
