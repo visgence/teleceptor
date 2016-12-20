@@ -160,11 +160,11 @@
             setupPickers($(".graph-time-controls"));
             __this.timeRange.subscribe(timeRangeHandler);
 
-             //On page load set the Default Time  
+             //On page load set the Default Time
             if (vars.hasOwnProperty('time')) {
                 __this.selectTime(vars['time']);
             }
-            else{ 
+            else{
                 __this.selectTime("24-hour");
             }
 
@@ -236,8 +236,9 @@
 
     TimeControls.prototype.activateSelectedTime = function() {
         var timeOption = this.selectedTime();
-        if (timeOption.hasOwnProperty('action') && timeOption.action !== null)
+        if (timeOption.hasOwnProperty('action') && timeOption.action !== null){
             timeOption.action.call(this);
+        }
     };
 
     TimeControls.prototype.rebuild = function(vars) {

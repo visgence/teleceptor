@@ -110,6 +110,7 @@ $(function($) {
                 zoom['start'] = params.startZoom;
             if (params.hasOwnProperty('endZoom'))
                 zoom['end'] = params.endZoom;
+            params['timecontrols'] = __this.timeControls();
 
             params['zoomRange'] = zoom;
             var graph = new Graph(params);
