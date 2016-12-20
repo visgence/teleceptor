@@ -255,6 +255,7 @@ class DataStream(Base):
     max_value = Column(Float)
     name = Column(Text)
     description = Column(Text)
+    paths = relationship("StreamPath")
     # scaling_function = Column(String, ForeignKey('scalingfunction.name'))
     # reduction_type = Column.CharField(max_length=32, default='sample', choices=reduction_type_choices())
     # is_public = Column.BooleanField(default=False)

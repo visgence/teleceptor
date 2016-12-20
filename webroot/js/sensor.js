@@ -187,8 +187,11 @@
         });
 
         this.addStreamPath = function(){
+            if(this.streamPaths === null){
+                this.streamPaths = [];
+            }
             this.streamPaths.push({"path": ""});
-        }
+        };
 
         var init = function(vars) {
             vars = vars || {};
@@ -287,8 +290,7 @@
                 });
                }
         }).then(this.updateSuccessCb.bind(this),this.updateFailCb.bind(this));
-
-    }
+    };
 
     Sensor.prototype.streamBeginEditing = function() {
         this.setCache();
@@ -338,7 +340,7 @@
                 this.streamName(vars.datastream.name);
                 this.streamDescription(vars.datastream.description);
                 this.streamUuid(vars.datastream.id);
-                this.streamPaths(vars.datastream.streamPaths);
+                this.streamPaths(vars.datastream.paths);
             }
         }
 

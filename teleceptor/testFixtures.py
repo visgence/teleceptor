@@ -95,18 +95,31 @@ def loadCalibrations(session):
 def loadDatastreams(session):
     datastream1 = {
         "sensor": "volts",
-        "owner": 1
+        "owner": 1,
         # ,"scaling_function": "Identity"
     }
 
     datastream2 = {
         "sensor": "amps",
-        "owner": 1
+        "owner": 1,
         # ,"scaling_function": "Identity"
     }
 
     streams = [DataStream(**datastream1), DataStream(**datastream2)]
     session.add_all(streams)
+
+
+def loadPaths(session):
+    path1 = {
+        'datastream': 1,
+        'path': 'myPath'
+    }
+    path2 = {
+        'datastream': 2,
+        'path': 'myOtherPath'
+    }
+    paths = [StreamPath(**path1), StreamPath(**path2)]
+    session.add_all(paths)
 
 
 def loadReadings(session, range=None, interval=None):
@@ -182,6 +195,7 @@ def main():
             print i.toDict()
 
         loadReadings(s)
+        loadPaths(s)
         # loadScalingFunctions(s)
 
 

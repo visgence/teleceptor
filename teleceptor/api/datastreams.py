@@ -58,7 +58,7 @@ import re
 import logging
 
 # Local Imports
-from teleceptor.models import DataStream, Sensor
+from teleceptor.models import DataStream, Sensor, StreamPath
 from teleceptor.sessionManager import sessionScope
 from teleceptor import USE_DEBUG, USE_ELASTICSEARCH
 from teleceptor.auth import require
@@ -140,8 +140,15 @@ class DataStreams:
                     data['error'] = "Stream with id %s doesn't exist." % stream_id
                     statusCode = "400"
                 else:
-                    logging.debug("Found stream with id %s: %s", str(stream_id), str(stream.toDict()))
+                    logging.info("Found stream with id %s: %s", str(stream_id), str(stream.toDict()))
                     data['stream'] = stream.toDict()
+                    try:
+                        path = s.query(StreamPath).filter_by(datastream=stream_id)
+                    except NoResultFound:
+                        logging.error("There is no path for stream with id %s", str(stream_id))
+                    else:
+                        logging.info("Found path: %s", str(stream_id), str(path.toDict()))
+                        data['path'] = path.toDict()
         else:
             logging.debug("Request for all datastreams with parameters %s", str(filter_arguments))
             inputs = clean_inputs(filter_arguments)
@@ -153,6 +160,8 @@ class DataStreams:
                 logging.debug("Parameters are valid.")
                 with sessionScope() as s:
                     datastreams = s.query(DataStream).filter_by(**inputs).all()
+                    paths = s.query(StreamPath).all()
+                    data['paths'] = [path.toDict() for path in paths]
                     data['datastreams'] = [stream.toDict() for stream in datastreams]
 
         cherrypy.response.status = statusCode
@@ -325,7 +334,7 @@ def deleteDatastream(session, datastream_id):
 def _updateStream(stream_id, data, session):
     stream = session.query(DataStream).filter_by(id=stream_id).one()
     for key, value in data.iteritems():
-        logging.debug("Key: {}, Value: {}".format(key, value))
+        logging.info("Key: {}, Value: {}".format(key, value))
         if key != 'uuid':
             setattr(stream, key, value)
     session.add(stream)

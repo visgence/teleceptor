@@ -40,3 +40,10 @@ def sessionScope():
         raise
     finally:
         session.close()
+
+
+def createSession():
+    db = create_engine(engine)
+    Session = sessionmaker(bind=db)
+    session = Session()
+    return session

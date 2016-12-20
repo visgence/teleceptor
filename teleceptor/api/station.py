@@ -47,7 +47,7 @@ except ImportError:
 import logging
 
 # Local Imports
-from teleceptor.models import DataStream, Sensor, Message, MessageQueue
+from teleceptor.models import DataStream, Sensor, Message, MessageQueue, StreamPath
 from teleceptor.sessionManager import sessionScope
 from teleceptor.api.sensors import Sensors
 from teleceptor.api.datastreams import DataStreams
@@ -194,7 +194,6 @@ def update_motes(mote_datas=[]):
                     sensor['sensor_IOtype'] = False
 
                 # update data in db
-                simple_name = sensor['name']
                 sensor['name'] = mote['info']['uuid'] + sensor['name']
                 sensor['uuid'] = sensor['name']
                 sensorUuid = sensor['name']
@@ -218,6 +217,8 @@ def update_motes(mote_datas=[]):
                     logging.info("No datastream. Making one for sensor %s", sensorUuid)
                     datastream = DataStream(sensor=sensorUuid)
                     DataStreams.createDatastream(session, datastream)
+                    path = StreamPath(datastream=datastream)
+
                     datastream = datastream.toDict()
                 logging.info("Got datastream id %s", str(datastream['id']))
                 sensor_datastream_ids[sensorUuid] = datastream['id']
