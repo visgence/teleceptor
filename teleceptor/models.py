@@ -286,7 +286,7 @@ class StreamPath(Base):
     __tablename__ = "streampath"
 
     id = Column(Integer, primary_key=True)
-    datastream = Column(Text, ForeignKey('datastream.uuid', ondelete='CASCADE'), unique=True, index=True)
+    datastream = Column(Integer, ForeignKey('datastream.id', ondelete='CASCADE'), unique=True, index=True)
     path = Column(Text, default="New/")
 
     def toDict(self):
