@@ -30,11 +30,12 @@ import re
 import logging
 
 # Local Imports
-from teleceptor import SQLDATA, SQLREADTIME, USE_DEBUG, USE_SQL_ALWAYS
+from teleceptor import SQLDATA, SQLREADTIME, USE_DEBUG, USE_SQL_ALWAYS, USE_ELASTICSEARCH
 from teleceptor.models import SensorReading, DataStream
 from teleceptor.sessionManager import sessionScope
-from teleceptor.elasticsearchUtils import getReadings as esGetReadings
-from teleceptor.elasticsearchUtils import insertReading as esInsert
+if USE_ELASTICSEARCH:
+    from teleceptor.elasticsearchUtils import getReadings as esGetReadings
+    from teleceptor.elasticsearchUtils import insertReading as esInsert
 
 
 class SensorReadings:
@@ -158,7 +159,7 @@ class SensorReadings:
 
         data_source = "None"
         if source is not None:
-            if source == "ElasticSearch":
+            if USE_ELASTICSEARCH and source == "ElasticSearch":
                 logging.debug('Getting Elasticsearch data.')
                 data_source = source
             elif source == "SQL":
@@ -170,7 +171,7 @@ class SensorReadings:
             if SQLDATA and (int(end) - int(start) < SQLREADTIME):
                 logging.debug("Request time %s less than SQLREADTIME %s. Getting high-resolution data.", str((int(end) - int(start))), str(SQLREADTIME))
                 data_source = "SQL"
-            elif (int(end) - int(start) > SQLREADTIME):
+            elif USE_ELASTICSEARCH and (int(end) - int(start) > SQLREADTIME):
                 logging.debug('Getting Elasticsearch data.')
                 data_source = "ElasticSearch"
             else:
@@ -381,7 +382,8 @@ def _insertReadings(readings, session=None):
 
         try:
             logging.debug("Inserting into database with streamId %s, rawVal %s, and timestamp %s", str(streamId), str(rawVal), str(timestamp))
-            esInsert(streamId, rawVal, timestamp)
+            if USE_ELASTICSEARCH:
+                esInsert(streamId, rawVal, timestamp)
 
             if SQLDATA:
                 logging.debug("Creating new sensor reading in SQL database...")

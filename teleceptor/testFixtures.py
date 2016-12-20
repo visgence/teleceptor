@@ -1,6 +1,11 @@
 """
+testFixtures.py
 
 Authors: Victor Szczepanski
+         Cyrille Gindreau
+
+Adds two sensors and two datastreams and their calibration
+Then adds some randomly generated sensor readings.
 
 """
 
@@ -10,7 +15,9 @@ import sys
 import random
 from time import time
 from teleceptor.models import MessageQueue, Sensor
-import elasticsearchUtils
+from teleceptor import USE_ELASTICSEARCH
+if USE_ELASTICSEARCH:
+    import elasticsearchUtils
 
 
 def loadAdmin(session):
@@ -135,8 +142,9 @@ def loadReadings(session, range=None, interval=None):
 
         now -= 60
 
-        elasticsearchUtils.insertReading('1', voltReading['value'], voltReading['timestamp'])
-        elasticsearchUtils.insertReading('2', ampReading['value'], ampReading['timestamp'])
+        if USE_ELASTICSEARCH:
+            elasticsearchUtils.insertReading('1', voltReading['value'], voltReading['timestamp'])
+            elasticsearchUtils.insertReading('2', ampReading['value'], ampReading['timestamp'])
 
         volt = SensorReading(**voltReading)
         amp = SensorReading(**ampReading)

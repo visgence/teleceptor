@@ -14,6 +14,7 @@
     "USE_DEBUG": false,
     "SUPRESS_SERVER_OUTPUT": false,
     "USE_SQL_ALWAYS": false,
+    "USE_ELASTICSEARCH": true,
     "ELASTICSEARCH_URI": "http://elasticsearch:9200/",
     "ELASTICSEARCH_INDEX": "teleceptor",
     "ELASTICSEARCH_DOC": "teledata"

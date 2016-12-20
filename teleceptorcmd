@@ -26,7 +26,7 @@ from sqlalchemy.schema import (
     DropConstraint,
 )
 import teleceptor
-from teleceptor import models, testFixtures, server
+from teleceptor import models, testFixtures, server, USE_ELASTICSEARCH
 
 Stdin = '/dev/null'
 Stdout = '/dev/null'
@@ -217,10 +217,11 @@ def setup(*args):
     print "Initializing database tables..."
     models.Base.metadata.create_all(db)
 
-    # TODO: Use index and doc from config
-    conf = json.load(open(os.path.join(teleceptor.PATH, 'config', 'es_template.json')))
-    r = requests.put(teleceptor.ELASTICSEARCH_URI+'/_template/teleceptor', json=conf)
-    print r
+    if USE_ELASTICSEARCH:
+        # TODO: Use index and doc from config
+        conf = json.load(open(os.path.join(teleceptor.PATH, 'config', 'es_template.json')))
+        r = requests.put(teleceptor.ELASTICSEARCH_URI+'/_template/teleceptor', json=conf)
+        print r
 
     print "Run teleceptorcmd loadfixtures for example data"
 

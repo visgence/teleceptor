@@ -60,9 +60,10 @@ import logging
 # Local Imports
 from teleceptor.models import DataStream, Sensor
 from teleceptor.sessionManager import sessionScope
-from teleceptor import USE_DEBUG
-from teleceptor import elasticsearchUtils as esUtils
+from teleceptor import USE_DEBUG, USE_ELASTICSEARCH
 from teleceptor.auth import require
+if USE_ELASTICSEARCH:
+    from teleceptor import elasticsearchUtils as esUtils
 
 
 class DataStreams:
