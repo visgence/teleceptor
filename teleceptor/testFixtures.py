@@ -9,7 +9,7 @@ from models import *
 import sys
 import random
 from time import time
-from teleceptor.models import MessageQueue
+from teleceptor.models import MessageQueue, Sensor
 import elasticsearchUtils
 
 
@@ -143,17 +143,37 @@ def loadReadings(session, range=None, interval=None):
         readings.append(volt)
         readings.append(amp)
 
-    # session.add_all(readings)
+    session.add_all(readings)
 
 
 def main():
+    """
+    Loads two sensors, two datastreams, and some readings
+
+    .. todo:: admin is currently unused
+    .. todo:: loadScalingFunctions is unused
+
+    .. note:: After loadSensors and after loadDatastream there is a query and a loop printing the newly added data
+        For some reason, this function will not work without them. My guess is that the database needs time to submit
+        the new results before it can start attaching foreign key relationships.
+
+    """
     with sessionScope() as s:
         loadAdmin(s)
         loadCalibrations(s)
-        loadReadings(s)
         loadSensors(s)
 
-        # loadDatastreams(s)heres where the error is===========================================!!!!!!!!!!!
+        myObj = s.query(Sensor)
+        for i in myObj:
+            print i.toDict()
+
+        loadDatastreams(s)
+
+        myObj = s.query(DataStream)
+        for i in myObj:
+            print i.toDict()
+
+        loadReadings(s)
         # loadScalingFunctions(s)
 
 
