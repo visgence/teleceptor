@@ -149,11 +149,12 @@ def loadReadings(session, range=None, interval=None):
 def main():
     with sessionScope() as s:
         loadAdmin(s)
-        # loadScalingFunctions(s)
-        loadSensors(s)
         loadCalibrations(s)
-        loadDatastreams(s)
         loadReadings(s)
+        loadSensors(s)
+
+        # loadDatastreams(s)heres where the error is===========================================!!!!!!!!!!!
+        # loadScalingFunctions(s)
 
 
 if __name__ == "__main__":
