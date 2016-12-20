@@ -1,6 +1,5 @@
 #include "Arduino.h"
-#include <Wire.h>
-#define FS(x) (__FlashStringHelper*)(x)
+
 
 /* 
 -------------------------------------------------------------------------
@@ -45,24 +44,21 @@ unsigned char jsonDataCount=0;
 Station Config 
 */
 
-const char *  StationName = "POE Power Monitor";
-const char * StationDescription = "South Well";
-const char * Uuid = "POESW00"; 
+const char *  StationName = "Voltage Example";
+const char * StationDescription = "Reads Voltage from A0-A5";
+const char * Uuid = "VOLTS001"; 
 
-#define NUMOUTPUTSENSORS 8
-int outputSensorValues[] = {0,0,0,0,0,0,0,0};
-const char * outputSensorNames[] = {"CH1I","CH1V","CH2I","CH2V","CH3I","CH3V","CH4I","CH4V"};
-const char * outputSensorUnits[] = {"mA", "v", "mA", "v", "mA", "v", "mA", "v"};
-const float outputSensorCoefficents[NUMOUTPUTSENSORS][2] = {{0.0025,0},{0.00125,0},{0.0025,0},{0.00125,0},{0.0025,0},{0.00125,0},{0.0025,0},{0.00125,0}};
+#define NUMOUTPUTSENSORS 6
+int outputSensorValues[] = {0,0,0,0,0,0};
+const char * outputSensorNames[] = {"A0","A1","A2","A3","A4","A5"};
 
-#define RELAY1 2
-#define RELAY2 3
-#define RELAY3 4
-#define RELAY4 5
+const char * outputSensorUnits[] = {"v", "v", "v", "v", "v", "v"};
+const float outputSensorCoefficents[NUMOUTPUTSENSORS][2] = {{0.0049,0},{0.0049,0},{0.0049,0},{0.0049,0},{0.0049,0},{0.0049,0} };
+
 #define NUMINPUTSENSORS 4
-const int inputSensorPins[] = {RELAY1,RELAY2,RELAY3,RELAY4};
+const int inputSensorPins[] = {2,3,4,5};
 boolean inputSensorState[] = {false,false,false,false};
-const char * inputSensorNames[] = {"PWR1","PWR2","PWR3","PWR4"};
+const char * inputSensorNames[] = {"D2","D3","D4","D5"};
 const char * inputSensorDesc[] = {"Power Relay","Power Relay","Power Relay","Power Relay"};
 
 /* 
@@ -83,18 +79,17 @@ Set all pinModes and send them default values
 
 void setup(){
  
-  Wire.begin();        // join i2c bus (address optional for master)
   SERIAL.begin(9600);  // start serial for output
 
-  pinMode(RELAY1, OUTPUT);
-  pinMode(RELAY2, OUTPUT);
-  pinMode(RELAY3, OUTPUT);
-  pinMode(RELAY4, OUTPUT);
+  pinMode(2, OUTPUT);
+  pinMode(3, OUTPUT);
+  pinMode(4, OUTPUT);
+  pinMode(5, OUTPUT);
 
-  digitalWrite(RELAY1,LOW);
-  digitalWrite(RELAY2,LOW);
-  digitalWrite(RELAY3,LOW);
-  digitalWrite(RELAY4,LOW);
+  digitalWrite(2,LOW);
+  digitalWrite(3,LOW);
+  digitalWrite(4,LOW);
+  digitalWrite(5,LOW);
 }
 
 /*
@@ -106,6 +101,10 @@ Send sensor values back to teleceptor
 */
 
 void loop() {
+  for(int i = 0; i < 6;i++){
+    outputSensorValues[i] = analogRead(i);
+  }
+  
   serialComm();
 }
 
@@ -194,9 +193,9 @@ void printSensorInfo(){
     if(i != 0) SERIAL.print(", ");
 
     SERIAL.print("{\"scale\": [");
-    SERIAL.print(outputSensorCoefficents[i][0]);
+    SERIAL.print(outputSensorCoefficents[i][0], 6);
     SERIAL.print(", ");
-    SERIAL.print(outputSensorCoefficents[i][1]);
+    SERIAL.print(outputSensorCoefficents[i][1], 6);
     SERIAL.print("], \"u\": \"");
     SERIAL.print(outputSensorUnits[i]);
     SERIAL.print("\", \"name\": \"");
