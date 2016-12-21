@@ -236,7 +236,8 @@
                data: ko.toJSON(payload),
                dataType: "json",
                contentType: "application/json",
-               processData: false
+               processData: false,
+               success: function(){location.reload();}
         }).then(this.updateSuccessCb.bind(this),this.updateFailCb.bind(this));
     };
 

@@ -52,7 +52,7 @@ class Root(object):
             except KeyError, ke:
                 logging.error("Error: no sensor with id %s", sensor_name)
                 logging.error(str(ke))
-        datastream = None
+        datastream = streamList[0] if len(streamList) > 0 else None
         if activeSensor is not None:
             dsList = json.loads(datastreams.GET())
             for i in dsList['datastreams']:
@@ -62,6 +62,7 @@ class Root(object):
         cherrypy.response.headers['Content-Type'] = 'text/html'
         activeSensor['datastream'] = datastream
 
+
         returnData = {
             "sysdata": sysdata_dict,
             "sensorsList": sensorsList,
@@ -70,6 +71,7 @@ class Root(object):
             "activeSensorJSON": json.dumps(activeSensor),
             "datastreamJSON": json.dumps(datastream),
         }
+        logging.info("\n\nwe're here:\n{}".format(returnData))
         returnData.update(**kwargs)
         t = env.get_template("sensorsIndex.html")
 
