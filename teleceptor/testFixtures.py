@@ -195,7 +195,7 @@ def main():
             print i.toDict()
 
         loadReadings(s)
-        loadPaths(s)
+        # loadPaths(s)
         # loadScalingFunctions(s)
 
 

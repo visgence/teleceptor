@@ -26,7 +26,7 @@ from sqlalchemy.schema import (
     DropConstraint,
 )
 import teleceptor
-from teleceptor import models, testFixtures, server, USE_ELASTICSEARCH
+from teleceptor import models, testFixtures, server, sessionManager, USE_ELASTICSEARCH
 
 Stdin = '/dev/null'
 Stdout = '/dev/null'
@@ -230,6 +230,14 @@ def loadfixtures(*args):
     print "Loading fixtures..."
     testFixtures.main()
 
+
+def shell(*args):
+    import IPython
+    print "Starting IPython Shell"
+    session = sessionManager.createSession()
+    IPython.embed()
+
+
 if __name__ == "__main__":
     cmds = {
         'runserver': [runserver, "Start the server"],
@@ -241,8 +249,8 @@ if __name__ == "__main__":
         'serialpoller': [serialPoller, "Serial poller"],
         'tcppoller': [tcpPoller, "TCP poller (Hosts are added in config.json)"],
         'loadfixtures': [loadfixtures, "Load test database data"],
-        'version': [displayVersion, "Display version"]
-
+        'version': [displayVersion, "Display version"],
+        'shell': [shell, "Ipython shell"]
     }
 
     args = sys.argv
@@ -300,3 +308,10 @@ if __name__ == "__main__":
         print "Commands Are:"
         for c in sorted(cmds):
             print "    %s : %s" % (c, cmds[c][1])
+
+
+
+
+
+
+

@@ -55,11 +55,9 @@ class Root(object):
         datastream = None
         if activeSensor is not None:
             dsList = json.loads(datastreams.GET())
-            logging.info("dslist")
-            logging.info(dsList)
-            if len(dsList['datastreams']) > 0:
-                datastream = dsList['datastreams'][0]
-                datastream['paths'] = dsList['paths']
+            for i in dsList['datastreams']:
+                if(i['sensor'] == sensor_name):
+                    datastream = i
 
         cherrypy.response.headers['Content-Type'] = 'text/html'
         activeSensor['datastream'] = datastream

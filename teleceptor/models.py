@@ -255,7 +255,7 @@ class DataStream(Base):
     max_value = Column(Float)
     name = Column(Text)
     description = Column(Text)
-    paths = relationship("StreamPath")
+    paths = relationship("Path")
     # scaling_function = Column(String, ForeignKey('scalingfunction.name'))
     # reduction_type = Column.CharField(max_length=32, default='sample', choices=reduction_type_choices())
     # is_public = Column.BooleanField(default=False)
@@ -271,11 +271,12 @@ class DataStream(Base):
             'name': self.name,
             'description': self.description,
             'owner': self.owner,
-            'sensor': self.sensor
+            'sensor': self.sensor,
+            "paths": [p.path for p in self.paths]
             }
 
 
-class StreamPath(Base):
+class Path(Base):
     """
     id : int
         Unique identifier of this StreamPath.
@@ -287,13 +288,13 @@ class StreamPath(Base):
     __tablename__ = "streampath"
 
     id = Column(Integer, primary_key=True)
-    datastream = Column(Integer, ForeignKey('datastream.id', ondelete='CASCADE'), unique=True, index=True)
-    path = Column(Text, default="New/")
+    datastream_id = Column(Integer, ForeignKey('datastream.id'))
+    path = Column(Text, nullable=False)
 
     def toDict(self):
         return {
             'id': self.id,
-            'datastream': self.datastream,
+            'datastream_id': self.datastream_id,
             'path': self.path
         }
 

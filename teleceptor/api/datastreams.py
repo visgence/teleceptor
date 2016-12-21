@@ -58,7 +58,7 @@ import re
 import logging
 
 # Local Imports
-from teleceptor.models import DataStream, Sensor, StreamPath
+from teleceptor.models import DataStream, Sensor, Path
 from teleceptor.sessionManager import sessionScope
 from teleceptor import USE_DEBUG, USE_ELASTICSEARCH
 from teleceptor.auth import require
@@ -160,9 +160,7 @@ class DataStreams:
                 logging.debug("Parameters are valid.")
                 with sessionScope() as s:
                     datastreams = s.query(DataStream).filter_by(**inputs).all()
-                    paths = s.query(StreamPath).all()
-                    data['paths'] = [path.toDict() for path in paths]
-                    data['datastreams'] = [stream.toDict() for stream in datastreams]
+                    data['datastreams'] = [i.toDict() for i in datastreams]
 
         cherrypy.response.status = statusCode
         return json.dumps(data, indent=4)
@@ -200,6 +198,8 @@ class DataStreams:
         logging.debug("Request body: %s", data)
 
         try:
+            logging.info("\n\ndata:")
+            logging.info(data)
             stream = DataStreams.updateStream(stream_id, data)
             returnData['stream'] = stream
         except NoResultFound:
@@ -333,10 +333,27 @@ def deleteDatastream(session, datastream_id):
 
 def _updateStream(stream_id, data, session):
     stream = session.query(DataStream).filter_by(id=stream_id).one()
+    paths = session.query
     for key, value in data.iteritems():
         logging.info("Key: {}, Value: {}".format(key, value))
+        if key == "paths":
+            currentPaths = stream.toDict()['paths']
+            newPaths = data[key]
+            toDelete = set(currentPaths) - set(newPaths)
+            toAdd = set(newPaths) - set(currentPaths)
+            for i in toDelete:
+                session.delete(session.query(Path).filter_by(datastream_id=stream_id, path=i)[0])
+            for j in toAdd:
+                session.add(Path(datastream_id=stream_id, path=j))
+            session.commit()
+            continue
         if key != 'uuid':
+            logging.info("changing: {}".format(key))
             setattr(stream, key, value)
+
+
+
+
     session.add(stream)
 
     logging.debug("Finished updating stream.")

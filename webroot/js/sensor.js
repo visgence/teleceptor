@@ -42,7 +42,7 @@
         this.streamName = ko.observable();
         this.streamDescription = ko.observable();
         this.streamEditing = ko.observable();
-        this.streamPaths = ko.observableArray();
+        this.paths = ko.observableArray();
 
         this.updateSuccessCb = function(resp) {
             __this.rebuild(resp.sensor);
@@ -187,10 +187,10 @@
         });
 
         this.addStreamPath = function(){
-            if(this.streamPaths === null){
-                this.streamPaths = [];
+            if(this.paths === null){
+                this.paths = [];
             }
-            this.streamPaths.push({"path": ""});
+            this.paths.push("");
         };
 
         var init = function(vars) {
@@ -340,7 +340,7 @@
                 this.streamName(vars.datastream.name);
                 this.streamDescription(vars.datastream.description);
                 this.streamUuid(vars.datastream.id);
-                this.streamPaths(vars.datastream.paths);
+                this.paths(vars.datastream.paths);
             }
         }
 
@@ -378,9 +378,24 @@
     };
 
     Sensor.prototype.streamToDict = function() {
-        return {
+        data = {
             'name': this.streamName(),
             'description': this.streamDescription(),
-            'streamPaths': this.streamPaths()
+            'paths': []
+        };
+        var foundPaths = false;
+        var counter = 0;
+        while(!foundPaths){
+            newpath = $("#newpaths_" + counter);
+            if(newpath.length > 0){
+                data['paths'].push(newpath[0].value);
+                counter++;
+                if(counter > 5){
+                    foundPaths = true;
+                }
+            } else {
+                foundPaths = true;
+            }
         }
+        return data
     };

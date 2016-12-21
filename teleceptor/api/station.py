@@ -47,7 +47,7 @@ except ImportError:
 import logging
 
 # Local Imports
-from teleceptor.models import DataStream, Sensor, Message, MessageQueue, StreamPath
+from teleceptor.models import DataStream, Sensor, Message, MessageQueue, Path
 from teleceptor.sessionManager import sessionScope
 from teleceptor.api.sensors import Sensors
 from teleceptor.api.datastreams import DataStreams
