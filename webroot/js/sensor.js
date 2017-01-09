@@ -21,31 +21,33 @@
         var __datacache = {};
         var __firstrun = true;
 
-        this.uuid             = ko.observable();
-        this.sensor_type      = ko.observable();
-        this.units            = ko.observable();
-        this.name             = ko.observable().extend({required:'Name is required'});
-        this.model            = ko.observable();
-        this.description      = ko.observable();
-        this.last_calibration = ko.observable();
-        this.meta_data        = ko.observable();
-        this.isInput = ko.observable();
+        this.uuid               = ko.observable();
+        this.sensor_type        = ko.observable();
+        this.units              = ko.observable();
+        this.name               = ko.observable().extend({required:'Name is required'});
+        this.model              = ko.observable();
+        this.description        = ko.observable();
+        this.last_calibration   = ko.observable();
+        this.lastCalibration    = ko.observable();
+        this.meta_data          = ko.observable();
+        this.isInput            = ko.observable();
         this.temp_command_value = ko.observable()
-        this.new_data_value = ko.observable()
+        this.new_data_value     = ko.observable()
+        this.coefficients       = ko.observable(); //used to buffer between this.last_calibration.coefficients and view's JSON
+        this.editing            = ko.observable(false);
+        this.command_value      = ko.observable(true); //value to command this sensor to.
+        this.post_value         = ko.observable();
 
-        this.coefficients = ko.observable(); //used to buffer between this.last_calibration.coefficients and view's JSON
-
-        this.editing = ko.observable(false);
-
-        this.command_value = ko.observable(true); //value to command this sensor to.
-
-        this.post_value = ko.observable();
-
-
+        this.streamUuid = ko.observable();
+        this.streamName = ko.observable();
+        this.streamDescription = ko.observable();
+        this.streamEditing = ko.observable();
+        this.paths = ko.observableArray();
 
         this.updateSuccessCb = function(resp) {
             __this.rebuild(resp.sensor);
             __this.editing(false);
+            __this.streamEditing(false);
             __this.updateError(null);
             $(__this).trigger('calibrationchanged')
         };
@@ -184,6 +186,13 @@
             return displayName;
         });
 
+        this.addStreamPath = function(){
+            if(this.paths === null){
+                this.paths = [];
+            }
+            this.paths.push("");
+        };
+
         var init = function(vars) {
             vars = vars || {};
 
@@ -195,22 +204,15 @@
 
         init(vars);
 
-
     };
     Sensor.prototype.update = function() {
-        console.log("In update");
-        console.log(this.last_calibration().coefficients);
-        console.log(this.coefficients());
         this.last_calibration().coefficients = (JSON.parse(this.coefficients()));
-        console.log(this.last_calibration().coefficients);
         var id = this.uuid();
         if (!id || !this.validate())
             return $.Deferred().reject().promise();
 
         var payload = this.toDict();
         delete payload.last_calibration.timestamp;
-        console.log("payload:");
-        console.log(payload);
         return $.ajax({
                url: "/api/sensors/"+id+"/",
                method: "PUT",
@@ -219,7 +221,24 @@
                contentType: "application/json",
                processData: false
         }).then(this.updateSuccessCb.bind(this),this.updateFailCb.bind(this));
+    };
 
+    Sensor.prototype.streamUpdate = function() {
+        var id = this.streamUuid();
+        if (!id || !this.validate())
+            return $.Deferred().reject().promise();
+
+        var payload = this.streamToDict();
+        console.log(payload);
+        return $.ajax({
+               url: "/api/datastreams/"+id+"/",
+               method: "PUT",
+               data: ko.toJSON(payload),
+               dataType: "json",
+               contentType: "application/json",
+               processData: false,
+               success: function(){location.reload();}
+        }).then(this.updateSuccessCb.bind(this),this.updateFailCb.bind(this));
     };
 
     Sensor.prototype.updateCommand = function() {
@@ -237,7 +256,6 @@
     Sensor.prototype.beginEditing = function() {
         this.setCache();
         this.editing(true);
-        console.log(this.last_calibration());
     };
 
     Sensor.prototype.cancelEditing = function() {
@@ -246,7 +264,50 @@
         this.name.hasError(false);
     };
 
+    Sensor.prototype.deleteStream = function() {
+        var id = this.streamUuid();
+        if (!id || !this.validate())
+            return $.Deferred().reject().promise();
+
+        var payload = this.streamToDict();
+        return $.ajax({
+               url: "/api/readings/"+id+"/",
+               method: "DELETE",
+               data: ko.toJSON(payload),
+               dataType: "json",
+               contentType: "application/json",
+               processData: false,
+               success: function(data){
+                    return $.ajax({
+                       url: "/api/datastreams/"+id+"/",
+                       method: "DELETE",
+                       data: ko.toJSON(payload),
+                       dataType: "json",
+                       contentType: "application/json",
+                       processData: false,
+                       success: function(data){
+                            window.location.href = window.location.pathname
+                       }
+                });
+               }
+        }).then(this.updateSuccessCb.bind(this),this.updateFailCb.bind(this));
+    };
+
+    Sensor.prototype.streamBeginEditing = function() {
+        this.setCache();
+        this.streamEditing(true);
+    };
+
+    Sensor.prototype.streamCancelEditing = function() {
+        this.restoreCache();
+        this.streamEditing(false);
+        this.name.hasError(false);
+    };
+
+
+
     Sensor.prototype.rebuild = function(vars) {
+        console.log(vars)
         vars = vars || {};
 
         if (vars.hasOwnProperty('sensor_type'))
@@ -258,6 +319,7 @@
                 this.coefficients(ko.toJSON(vars.last_calibration.coefficients));
             this.last_calibration(vars.last_calibration);
             this.last_calibration().coefficients = vars.last_calibration.coefficients;
+            this.lastCalibration(new Date(vars.last_calibration.timestamp*1000).toDateString())
         }
         if (vars.hasOwnProperty('units'))
             this.units(vars.units);
@@ -273,6 +335,16 @@
             this.isInput(vars.sensor_IOtype);
         if (vars.hasOwnProperty('last_value') && vars.last_value != "")
             this.command_value(JSON.parse(vars.last_value));
+
+        if (vars.hasOwnProperty('datastream')){
+            if(vars.datastream !== null){
+                this.streamName(vars.datastream.name);
+                this.streamDescription(vars.datastream.description);
+                this.streamUuid(vars.datastream.id);
+                this.paths(vars.datastream.paths);
+            }
+        }
+
     };
 
     Sensor.prototype.getState = function() {
@@ -304,4 +376,27 @@
         // }
 
         return returnDict;
+    };
+
+    Sensor.prototype.streamToDict = function() {
+        data = {
+            'name': this.streamName(),
+            'description': this.streamDescription(),
+            'paths': []
+        };
+        var foundPaths = false;
+        var counter = 0;
+        while(!foundPaths){
+            newpath = $("#newpaths_" + counter);
+            if(newpath.length > 0){
+                data['paths'].push(newpath[0].value);
+                counter++;
+                if(counter > 5){
+                    foundPaths = true;
+                }
+            } else {
+                foundPaths = true;
+            }
+        }
+        return data
     };

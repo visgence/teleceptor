@@ -1,0 +1,243 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>teleceptor.auth &mdash; teleceptor 1 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="teleceptor 1 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">teleceptor 1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for teleceptor.auth</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">Authors: Victor Szczepanski</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c1"># System Imports</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">cherrypy</span>
+<span class="kn">from</span> <span class="nn">cherrypy.lib.static</span> <span class="kn">import</span> <span class="n">serve_file</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy.orm.exc</span> <span class="kn">import</span> <span class="n">NoResultFound</span>
+
+<span class="c1"># Local Imports</span>
+<span class="kn">from</span> <span class="nn">sessionManager</span> <span class="kn">import</span> <span class="n">sessionScope</span>
+<span class="kn">from</span> <span class="nn">models</span> <span class="kn">import</span> <span class="n">User</span>
+
+<span class="n">SESSION_KEY</span> <span class="o">=</span> <span class="s1">&#39;_cp_username&#39;</span>
+<span class="n">PATH</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">__file__</span><span class="p">))</span>
+
+
+<div class="viewcode-block" id="check_credentials"><a class="viewcode-back" href="../../teleceptor.html#teleceptor.auth.check_credentials">[docs]</a><span class="k">def</span> <span class="nf">check_credentials</span><span class="p">(</span><span class="n">username</span><span class="p">,</span> <span class="n">password</span><span class="p">,</span> <span class="n">session</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Verifies credentials for username and password.</span>
+<span class="sd">    :returns: None on success or a string describing the error on failure</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">user</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">User</span><span class="p">)</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">email</span><span class="o">=</span><span class="n">username</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="n">password</span><span class="p">)</span><span class="o">.</span><span class="n">one</span><span class="p">()</span>
+    <span class="k">except</span> <span class="n">NoResultFound</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;Incorrect username or password&quot;</span>
+
+    <span class="k">return</span> <span class="bp">None</span></div>
+
+
+<div class="viewcode-block" id="check_auth"><a class="viewcode-back" href="../../teleceptor.html#teleceptor.auth.check_auth">[docs]</a><span class="k">def</span> <span class="nf">check_auth</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A tool that looks in config for &#39;auth.require&#39;. If found and it</span>
+<span class="sd">    is not None, a login is required and the entry is evaluated as a list of</span>
+<span class="sd">    conditions that the user must fulfill</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">conditions</span> <span class="o">=</span> <span class="n">cherrypy</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;auth.require&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">conditions</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">username</span> <span class="o">=</span> <span class="n">cherrypy</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">SESSION_KEY</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">username</span><span class="p">:</span>
+            <span class="n">cherrypy</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">login</span> <span class="o">=</span> <span class="n">username</span>
+            <span class="k">for</span> <span class="n">condition</span> <span class="ow">in</span> <span class="n">conditions</span><span class="p">:</span>
+                <span class="c1"># A condition is just a callable that returns true or false</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">condition</span><span class="p">():</span>
+                    <span class="k">raise</span> <span class="n">cherrypy</span><span class="o">.</span><span class="n">HTTPRedirect</span><span class="p">(</span><span class="s2">&quot;/auth/login&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">cherrypy</span><span class="o">.</span><span class="n">HTTPRedirect</span><span class="p">(</span><span class="s2">&quot;/auth/login&quot;</span><span class="p">)</span></div>
+
+<span class="n">cherrypy</span><span class="o">.</span><span class="n">tools</span><span class="o">.</span><span class="n">auth</span> <span class="o">=</span> <span class="n">cherrypy</span><span class="o">.</span><span class="n">Tool</span><span class="p">(</span><span class="s1">&#39;before_handler&#39;</span><span class="p">,</span> <span class="n">check_auth</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="require"><a class="viewcode-back" href="../../teleceptor.html#teleceptor.auth.require">[docs]</a><span class="k">def</span> <span class="nf">require</span><span class="p">(</span><span class="o">*</span><span class="n">conditions</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A decorator that appends conditions to the auth.require config</span>
+<span class="sd">    variable.</span>
+
+<span class="sd">    Conditions are callables that return True</span>
+<span class="sd">    if the user fulfills the conditions they define, False otherwise</span>
+
+<span class="sd">    They can access the current username as cherrypy.request.login</span>
+
+<span class="sd">    Define those at will however suits the application.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">decorate</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="s1">&#39;_cp_config&#39;</span><span class="p">):</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">_cp_config</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">if</span> <span class="s1">&#39;auth.require&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">f</span><span class="o">.</span><span class="n">_cp_config</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">_cp_config</span><span class="p">[</span><span class="s1">&#39;auth.require&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">_cp_config</span><span class="p">[</span><span class="s1">&#39;auth.require&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">conditions</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">f</span>
+    <span class="k">return</span> <span class="n">decorate</span></div>
+
+
+<div class="viewcode-block" id="member_of"><a class="viewcode-back" href="../../teleceptor.html#teleceptor.auth.member_of">[docs]</a><span class="k">def</span> <span class="nf">member_of</span><span class="p">(</span><span class="n">groupname</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">check</span><span class="p">():</span>
+        <span class="c1"># replace with actual check if &lt;username&gt; is in &lt;groupname&gt;</span>
+        <span class="k">return</span> <span class="n">cherrypy</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">login</span> <span class="o">==</span> <span class="s1">&#39;joe&#39;</span> <span class="ow">and</span> <span class="n">groupname</span> <span class="o">==</span> <span class="s1">&#39;admin&#39;</span>
+    <span class="k">return</span> <span class="n">check</span></div>
+
+
+<div class="viewcode-block" id="name_is"><a class="viewcode-back" href="../../teleceptor.html#teleceptor.auth.name_is">[docs]</a><span class="k">def</span> <span class="nf">name_is</span><span class="p">(</span><span class="n">reqd_username</span><span class="p">):</span>
+    <span class="k">return</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">reqd_username</span> <span class="o">==</span> <span class="n">cherrypy</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">login</span></div>
+
+<span class="c1"># These might be handy</span>
+
+
+<div class="viewcode-block" id="any_of"><a class="viewcode-back" href="../../teleceptor.html#teleceptor.auth.any_of">[docs]</a><span class="k">def</span> <span class="nf">any_of</span><span class="p">(</span><span class="o">*</span><span class="n">conditions</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    :returns: True if any of the conditions match</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">check</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">conditions</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">c</span><span class="p">():</span>
+                <span class="k">return</span> <span class="bp">True</span>
+        <span class="k">return</span> <span class="bp">False</span>
+    <span class="k">return</span> <span class="n">check</span></div>
+
+
+<div class="viewcode-block" id="all_of"><a class="viewcode-back" href="../../teleceptor.html#teleceptor.auth.all_of">[docs]</a><span class="k">def</span> <span class="nf">all_of</span><span class="p">(</span><span class="o">*</span><span class="n">conditions</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    :returns: True if all of the conditions match</span>
+
+<span class="sd">    By default all conditions are required, but this might still be</span>
+<span class="sd">    needed if you want to use it inside of an any_of(...) condition</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">check</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">conditions</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">c</span><span class="p">():</span>
+                <span class="k">return</span> <span class="bp">False</span>
+        <span class="k">return</span> <span class="bp">True</span>
+    <span class="k">return</span> <span class="n">check</span></div>
+
+
+<div class="viewcode-block" id="AuthController"><a class="viewcode-back" href="../../teleceptor.html#teleceptor.auth.AuthController">[docs]</a><span class="k">class</span> <span class="nc">AuthController</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Controller to provide login and logout actions</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="AuthController.on_login"><a class="viewcode-back" href="../../teleceptor.html#teleceptor.auth.AuthController.on_login">[docs]</a>    <span class="k">def</span> <span class="nf">on_login</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">username</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Called on successful login&quot;&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="AuthController.on_logout"><a class="viewcode-back" href="../../teleceptor.html#teleceptor.auth.AuthController.on_logout">[docs]</a>    <span class="k">def</span> <span class="nf">on_logout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">username</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Called on logout&quot;&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="AuthController.loginForm"><a class="viewcode-back" href="../../teleceptor.html#teleceptor.auth.AuthController.loginForm">[docs]</a>    <span class="k">def</span> <span class="nf">loginForm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">username</span><span class="p">,</span> <span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Enter login information&quot;</span><span class="p">,</span> <span class="n">from_page</span><span class="o">=</span><span class="s2">&quot;/&quot;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">serve_file</span><span class="p">(</span><span class="n">PATH</span> <span class="o">+</span> <span class="s1">&#39;/login.html&#39;</span><span class="p">,</span> <span class="n">content_type</span><span class="o">=</span><span class="s2">&quot;text/html&quot;</span><span class="p">)</span></div>
+
+    <span class="nd">@cherrypy.expose</span>
+<div class="viewcode-block" id="AuthController.login"><a class="viewcode-back" href="../../teleceptor.html#teleceptor.auth.AuthController.login">[docs]</a>    <span class="k">def</span> <span class="nf">login</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">username</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">from_page</span><span class="o">=</span><span class="s2">&quot;/&quot;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">username</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">or</span> <span class="n">password</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">loginForm</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">from_page</span><span class="o">=</span><span class="n">from_page</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="n">sessionScope</span><span class="p">()</span> <span class="k">as</span> <span class="n">s</span><span class="p">:</span>
+            <span class="n">error_msg</span> <span class="o">=</span> <span class="n">check_credentials</span><span class="p">(</span><span class="n">username</span><span class="p">,</span> <span class="n">password</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">error_msg</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">loginForm</span><span class="p">(</span><span class="n">username</span><span class="p">,</span> <span class="n">error_msg</span><span class="p">,</span> <span class="n">from_page</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">cherrypy</span><span class="o">.</span><span class="n">session</span><span class="p">[</span><span class="n">SESSION_KEY</span><span class="p">]</span> <span class="o">=</span> <span class="n">cherrypy</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">login</span> <span class="o">=</span> <span class="n">username</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">on_login</span><span class="p">(</span><span class="n">username</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">cherrypy</span><span class="o">.</span><span class="n">HTTPRedirect</span><span class="p">(</span><span class="n">from_page</span> <span class="ow">or</span> <span class="s2">&quot;/&quot;</span><span class="p">)</span></div>
+
+    <span class="nd">@cherrypy.expose</span>
+<div class="viewcode-block" id="AuthController.logout"><a class="viewcode-back" href="../../teleceptor.html#teleceptor.auth.AuthController.logout">[docs]</a>    <span class="k">def</span> <span class="nf">logout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">from_page</span><span class="o">=</span><span class="s2">&quot;/&quot;</span><span class="p">):</span>
+        <span class="n">sess</span> <span class="o">=</span> <span class="n">cherrypy</span><span class="o">.</span><span class="n">session</span>
+        <span class="n">username</span> <span class="o">=</span> <span class="n">sess</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">SESSION_KEY</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="n">sess</span><span class="p">[</span><span class="n">SESSION_KEY</span><span class="p">]</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">if</span> <span class="n">username</span><span class="p">:</span>
+            <span class="n">cherrypy</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">login</span> <span class="o">=</span> <span class="bp">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">on_logout</span><span class="p">(</span><span class="n">username</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">cherrypy</span><span class="o">.</span><span class="n">HTTPRedirect</span><span class="p">(</span><span class="n">from_page</span> <span class="ow">or</span> <span class="s2">&quot;/&quot;</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">teleceptor 1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2016, Visgence Inc..
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+    </div>
+  </body>
+</html>

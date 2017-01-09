@@ -1,0 +1,270 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>teleceptor.testFixtures &mdash; teleceptor 1 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="teleceptor 1 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">teleceptor 1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for teleceptor.testFixtures</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">Authors: Victor Szczepanski</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">sessionManager</span> <span class="kn">import</span> <span class="n">sessionScope</span>
+<span class="kn">from</span> <span class="nn">models</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">time</span>
+<span class="kn">from</span> <span class="nn">teleceptor.models</span> <span class="kn">import</span> <span class="n">MessageQueue</span>
+<span class="kn">from</span> <span class="nn">teleceptor</span> <span class="kn">import</span> <span class="n">USE_ELASTICSEARCH</span>
+<span class="k">if</span> <span class="n">USE_ELASTICSEARCH</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">elasticsearchUtils</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">whisperUtils</span>
+
+
+<div class="viewcode-block" id="loadAdmin"><a class="viewcode-back" href="../../teleceptor.html#teleceptor.testFixtures.loadAdmin">[docs]</a><span class="k">def</span> <span class="nf">loadAdmin</span><span class="p">(</span><span class="n">session</span><span class="p">):</span>
+    <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;email&quot;</span><span class="p">:</span> <span class="s2">&quot;admin@visgence.com&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;firstname&quot;</span><span class="p">:</span> <span class="s2">&quot;Admin&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lastname&quot;</span><span class="p">:</span> <span class="s2">&quot;Developer&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;active&quot;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+        <span class="s2">&quot;password&quot;</span><span class="p">:</span> <span class="s2">&quot;password&quot;</span>
+    <span class="p">}</span>
+    <span class="n">admin</span> <span class="o">=</span> <span class="n">User</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">admin</span><span class="p">)</span></div>
+
+
+<span class="c1"># def loadScalingFunctions(session):</span>
+<span class="c1">#     kwargs = {</span>
+<span class="c1">#         &quot;name&quot;: &quot;Identity&quot;</span>
+<span class="c1">#         ,&quot;definition&quot;: &quot;return x;&quot;</span>
+<span class="c1">#     }</span>
+
+<span class="c1">#     sf = ScalingFunction(**kwargs)</span>
+<span class="c1">#     session.add(sf)</span>
+
+<div class="viewcode-block" id="loadSensors"><a class="viewcode-back" href="../../teleceptor.html#teleceptor.testFixtures.loadSensors">[docs]</a><span class="k">def</span> <span class="nf">loadSensors</span><span class="p">(</span><span class="n">session</span><span class="p">):</span>
+    <span class="n">sensor1</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;uuid&quot;</span><span class="p">:</span> <span class="s2">&quot;volts&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Volts Sensor&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;units&quot;</span><span class="p">:</span> <span class="s2">&quot;V&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="s2">&quot;003-SP1001&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Volts of shivaplug&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;last_calibration_id&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="s2">&quot;meta_data&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;metafield&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span>
+            <span class="s2">&quot;metalist&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;one&quot;</span><span class="p">,</span> <span class="s2">&quot;two&quot;</span><span class="p">,</span> <span class="s2">&quot;three&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;metadict&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;hue&quot;</span><span class="p">:</span> <span class="s2">&quot;fue&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;boo&quot;</span><span class="p">:</span> <span class="s2">&quot;foo&quot;</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="n">sensor2</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;uuid&quot;</span><span class="p">:</span> <span class="s2">&quot;amps&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Amperes Sensor&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;units&quot;</span><span class="p">:</span> <span class="s2">&quot;A&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="s2">&quot;003-SP1001&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Amperes of shivaplug&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;last_calibration_id&quot;</span><span class="p">:</span> <span class="mi">2</span>
+    <span class="p">}</span>
+
+    <span class="n">sensors</span> <span class="o">=</span> <span class="p">[</span><span class="n">Sensor</span><span class="p">(</span><span class="o">**</span><span class="n">sensor1</span><span class="p">),</span> <span class="n">Sensor</span><span class="p">(</span><span class="o">**</span><span class="n">sensor2</span><span class="p">)]</span>
+    <span class="k">for</span> <span class="n">sensor</span> <span class="ow">in</span> <span class="n">sensors</span><span class="p">:</span>
+        <span class="k">print</span> <span class="s2">&quot;Adding sensor </span><span class="si">%s</span><span class="s2"> to db&quot;</span> <span class="o">%</span> <span class="nb">str</span><span class="p">(</span><span class="n">sensor</span><span class="o">.</span><span class="n">toDict</span><span class="p">())</span>
+        <span class="n">sensor</span><span class="o">.</span><span class="n">message_queue</span> <span class="o">=</span> <span class="n">MessageQueue</span><span class="p">(</span><span class="n">sensor_id</span><span class="o">=</span><span class="n">sensor</span><span class="o">.</span><span class="n">uuid</span><span class="p">)</span>
+    <span class="n">session</span><span class="o">.</span><span class="n">add_all</span><span class="p">(</span><span class="n">sensors</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="loadCalibrations"><a class="viewcode-back" href="../../teleceptor.html#teleceptor.testFixtures.loadCalibrations">[docs]</a><span class="k">def</span> <span class="nf">loadCalibrations</span><span class="p">(</span><span class="n">session</span><span class="p">):</span>
+    <span class="n">calibration1</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;sensor_id&quot;</span><span class="p">:</span> <span class="s2">&quot;volts&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;coefficients&quot;</span><span class="p">:</span> <span class="s2">&quot;[0.128755, -65.794]&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="n">time</span><span class="p">()</span>
+    <span class="p">}</span>
+
+    <span class="n">calibration2</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;sensor_id&quot;</span><span class="p">:</span> <span class="s2">&quot;amps&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;coefficients&quot;</span><span class="p">:</span> <span class="s2">&quot;[0.048828, -25.0]&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="n">time</span><span class="p">()</span>
+    <span class="p">}</span>
+
+    <span class="n">cals</span> <span class="o">=</span> <span class="p">[</span><span class="n">Calibration</span><span class="p">(</span><span class="o">**</span><span class="n">calibration1</span><span class="p">),</span> <span class="n">Calibration</span><span class="p">(</span><span class="o">**</span><span class="n">calibration2</span><span class="p">)]</span>
+    <span class="n">session</span><span class="o">.</span><span class="n">add_all</span><span class="p">(</span><span class="n">cals</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="loadDatastreams"><a class="viewcode-back" href="../../teleceptor.html#teleceptor.testFixtures.loadDatastreams">[docs]</a><span class="k">def</span> <span class="nf">loadDatastreams</span><span class="p">(</span><span class="n">session</span><span class="p">):</span>
+    <span class="n">datastream1</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;sensor&quot;</span><span class="p">:</span> <span class="s2">&quot;volts&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;owner&quot;</span><span class="p">:</span> <span class="mi">1</span>
+        <span class="c1"># ,&quot;scaling_function&quot;: &quot;Identity&quot;</span>
+    <span class="p">}</span>
+
+    <span class="n">datastream2</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;sensor&quot;</span><span class="p">:</span> <span class="s2">&quot;amps&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;owner&quot;</span><span class="p">:</span> <span class="mi">1</span>
+        <span class="c1"># ,&quot;scaling_function&quot;: &quot;Identity&quot;</span>
+    <span class="p">}</span>
+
+    <span class="n">streams</span> <span class="o">=</span> <span class="p">[</span><span class="n">DataStream</span><span class="p">(</span><span class="o">**</span><span class="n">datastream1</span><span class="p">),</span> <span class="n">DataStream</span><span class="p">(</span><span class="o">**</span><span class="n">datastream2</span><span class="p">)]</span>
+    <span class="n">session</span><span class="o">.</span><span class="n">add_all</span><span class="p">(</span><span class="n">streams</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">USE_ELASTICSEARCH</span><span class="p">:</span>
+        <span class="n">whisperUtils</span><span class="o">.</span><span class="n">createDs</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">whisperUtils</span><span class="o">.</span><span class="n">createDs</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="loadReadings"><a class="viewcode-back" href="../../teleceptor.html#teleceptor.testFixtures.loadReadings">[docs]</a><span class="k">def</span> <span class="nf">loadReadings</span><span class="p">(</span><span class="n">session</span><span class="p">,</span> <span class="nb">range</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="n">timeRanges</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;2hour&#39;</span><span class="p">:</span> <span class="mi">7200</span><span class="p">,</span>
+        <span class="s2">&quot;day&quot;</span><span class="p">:</span>  <span class="mi">86400</span><span class="p">,</span>
+        <span class="s2">&quot;week&quot;</span><span class="p">:</span> <span class="mi">604800</span>
+    <span class="p">}</span>
+
+    <span class="n">defaultRange</span> <span class="o">=</span> <span class="n">timeRanges</span><span class="p">[</span><span class="s1">&#39;2hour&#39;</span><span class="p">]</span>
+    <span class="n">now</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
+    <span class="n">lastWeek</span> <span class="o">=</span> <span class="n">now</span> <span class="o">-</span> <span class="n">defaultRange</span>
+    <span class="k">if</span> <span class="nb">range</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="nb">range</span> <span class="ow">in</span> <span class="n">timeRanges</span><span class="p">:</span>
+        <span class="n">lastWeek</span> <span class="o">=</span> <span class="n">now</span> <span class="o">-</span> <span class="n">timeRanges</span><span class="p">[</span><span class="nb">range</span><span class="p">]</span>
+
+    <span class="n">interval</span> <span class="o">=</span> <span class="n">interval</span> <span class="k">if</span> <span class="n">interval</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="k">else</span> <span class="mi">43200</span>
+
+    <span class="n">readings</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">while</span> <span class="n">now</span> <span class="o">&gt;=</span> <span class="n">lastWeek</span><span class="p">:</span>
+        <span class="n">voltReading</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;datastream&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="s2">&quot;sensor&quot;</span><span class="p">:</span> <span class="s2">&quot;volts&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">550</span><span class="p">,</span> <span class="mi">600</span><span class="p">),</span>
+            <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="n">now</span>
+        <span class="p">}</span>
+
+        <span class="n">ampReading</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;datastream&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+            <span class="s2">&quot;sensor&quot;</span><span class="p">:</span> <span class="s2">&quot;amps&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">550</span><span class="p">,</span> <span class="mi">600</span><span class="p">),</span>
+            <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="n">now</span>
+        <span class="p">}</span>
+
+        <span class="n">now</span> <span class="o">-=</span> <span class="mi">60</span>
+
+        <span class="k">if</span> <span class="n">USE_ELASTICSEARCH</span><span class="p">:</span>
+            <span class="n">elasticsearchUtils</span><span class="o">.</span><span class="n">insertReading</span><span class="p">(</span><span class="s1">&#39;1&#39;</span><span class="p">,</span> <span class="n">voltReading</span><span class="p">[</span><span class="s1">&#39;value&#39;</span><span class="p">],</span> <span class="n">voltReading</span><span class="p">[</span><span class="s1">&#39;timestamp&#39;</span><span class="p">])</span>
+            <span class="n">elasticsearchUtils</span><span class="o">.</span><span class="n">insertReading</span><span class="p">(</span><span class="s1">&#39;2&#39;</span><span class="p">,</span> <span class="n">ampReading</span><span class="p">[</span><span class="s1">&#39;value&#39;</span><span class="p">],</span> <span class="n">ampReading</span><span class="p">[</span><span class="s1">&#39;timestamp&#39;</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">whisperUtils</span><span class="o">.</span><span class="n">insertReading</span><span class="p">(</span><span class="s1">&#39;1&#39;</span><span class="p">,</span> <span class="n">voltReading</span><span class="p">[</span><span class="s1">&#39;value&#39;</span><span class="p">],</span> <span class="n">voltReading</span><span class="p">[</span><span class="s1">&#39;timestamp&#39;</span><span class="p">])</span>
+            <span class="n">whisperUtils</span><span class="o">.</span><span class="n">insertReading</span><span class="p">(</span><span class="s1">&#39;2&#39;</span><span class="p">,</span> <span class="n">ampReading</span><span class="p">[</span><span class="s1">&#39;value&#39;</span><span class="p">],</span> <span class="n">ampReading</span><span class="p">[</span><span class="s1">&#39;timestamp&#39;</span><span class="p">])</span>
+
+        <span class="n">volt</span> <span class="o">=</span> <span class="n">SensorReading</span><span class="p">(</span><span class="o">**</span><span class="n">voltReading</span><span class="p">)</span>
+        <span class="n">amp</span> <span class="o">=</span> <span class="n">SensorReading</span><span class="p">(</span><span class="o">**</span><span class="n">ampReading</span><span class="p">)</span>
+        <span class="n">readings</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">volt</span><span class="p">)</span>
+        <span class="n">readings</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">amp</span><span class="p">)</span></div>
+
+    <span class="c1"># session.add_all(readings)</span>
+
+
+<div class="viewcode-block" id="main"><a class="viewcode-back" href="../../teleceptor.html#teleceptor.testFixtures.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="k">with</span> <span class="n">sessionScope</span><span class="p">()</span> <span class="k">as</span> <span class="n">s</span><span class="p">:</span>
+        <span class="n">loadAdmin</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+        <span class="c1"># loadScalingFunctions(s)</span>
+        <span class="n">loadSensors</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+        <span class="n">loadCalibrations</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+        <span class="n">loadDatastreams</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+        <span class="n">loadReadings</span><span class="p">(</span><span class="n">s</span><span class="p">)</span></div>
+
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">cmds</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;loadreadings&quot;</span><span class="p">:</span> <span class="n">loadReadings</span>
+    <span class="p">}</span>
+
+    <span class="n">args</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">2</span> <span class="ow">and</span> <span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="ow">in</span> <span class="n">cmds</span><span class="p">):</span>
+        <span class="n">interval</span> <span class="o">=</span> <span class="bp">None</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">3</span> <span class="k">else</span> <span class="nb">int</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+        <span class="k">with</span> <span class="n">sessionScope</span><span class="p">()</span> <span class="k">as</span> <span class="n">s</span><span class="p">:</span>
+            <span class="n">cmds</span><span class="p">[</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">]](</span><span class="n">s</span><span class="p">,</span> <span class="n">args</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">interval</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">main</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">teleceptor 1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2016, Visgence Inc..
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+    </div>
+  </body>
+</html>

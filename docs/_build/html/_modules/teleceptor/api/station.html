@@ -1,0 +1,376 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>teleceptor.api.station &mdash; teleceptor 1 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="teleceptor 1 documentation" href="../../../index.html" />
+    <link rel="up" title="teleceptor.api" href="../api.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">teleceptor 1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../api.html" accesskey="U">teleceptor.api</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for teleceptor.api.station</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    station.py</span>
+
+<span class="sd">    Authors:</span>
+<span class="sd">        Bretton Murphy (Visgence, Inc.)</span>
+<span class="sd">        Victor Szczepanski (Visgence, Inc.)</span>
+<span class="sd">        Jessica Greenling (Visgence, Inc.)</span>
+
+<span class="sd">    Resource endpoint for accepting POST requests that is used as part of the RESTful api.</span>
+<span class="sd">    Handles the delegation of tasks to other api modules. Specifically, this api should be used for posting new sensor readings with sensor readings.</span>
+<span class="sd">    With all sensor information in the input data, this module will create or update sensors as needed, along with updating metadata.</span>
+
+<span class="sd">    This module is the recommended way of updating sensor information and readings.</span>
+
+<span class="sd">    API:</span>
+<span class="sd">        Unless otherwise noted api will return data as JSON.</span>
+
+<span class="sd">        POST /api/station/</span>
+<span class="sd">            Update sensor information (and create if necessary) and put new sensor readings by calling respective api modules.</span>
+
+<span class="sd">            In the HTTP POST request, the data field must be a JSON array of the following form:</span>
+<span class="sd">            [</span>
+<span class="sd">                { &quot;info&quot;:</span>
+<span class="sd">                    {</span>
+
+
+<span class="sd">                    },</span>
+<span class="sd">                  &quot;readings&quot;:</span>
+<span class="sd">                    [</span>
+
+<span class="sd">                    ]</span>
+<span class="sd">                },</span>
+<span class="sd">                ...</span>
+<span class="sd">            ]</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c1"># System Imports</span>
+<span class="kn">import</span> <span class="nn">cherrypy</span>
+<span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">time</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy.orm.exc</span> <span class="kn">import</span> <span class="n">NoResultFound</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">simplejson</span> <span class="kn">as</span> <span class="nn">json</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">json</span>
+
+
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="c1"># Local Imports</span>
+<span class="kn">from</span> <span class="nn">teleceptor.models</span> <span class="kn">import</span> <span class="n">DataStream</span><span class="p">,</span> <span class="n">Sensor</span><span class="p">,</span> <span class="n">Message</span><span class="p">,</span> <span class="n">MessageQueue</span>
+<span class="kn">from</span> <span class="nn">teleceptor.sessionManager</span> <span class="kn">import</span> <span class="n">sessionScope</span>
+<span class="kn">from</span> <span class="nn">teleceptor.api.sensors</span> <span class="kn">import</span> <span class="n">Sensors</span>
+<span class="kn">from</span> <span class="nn">teleceptor.api.datastreams</span> <span class="kn">import</span> <span class="n">DataStreams</span>
+<span class="kn">from</span> <span class="nn">teleceptor.api</span> <span class="kn">import</span> <span class="n">readings</span><span class="p">,</span> <span class="n">datastreams</span><span class="p">,</span> <span class="n">sensors</span><span class="p">,</span> <span class="n">messages</span>
+<span class="kn">from</span> <span class="nn">teleceptor.api.readings</span> <span class="kn">import</span> <span class="n">SensorReadings</span>
+<span class="kn">from</span> <span class="nn">teleceptor</span> <span class="kn">import</span> <span class="n">USE_DEBUG</span>
+
+
+<div class="viewcode-block" id="Station"><a class="viewcode-back" href="../../../teleceptor.api.html#teleceptor.api.station.Station">[docs]</a><span class="k">class</span> <span class="nc">Station</span><span class="p">:</span>
+    <span class="n">exposed</span> <span class="o">=</span> <span class="bp">True</span>
+
+    <span class="k">if</span> <span class="n">USE_DEBUG</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">format</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%(levelname)s</span><span class="s1">:</span><span class="si">%(asctime)s</span><span class="s1"> </span><span class="si">%(message)s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">format</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%(levelname)s</span><span class="s1">:</span><span class="si">%(asctime)s</span><span class="s1"> </span><span class="si">%(message)s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Station.POST"><a class="viewcode-back" href="../../../teleceptor.api.html#teleceptor.api.station.Station.POST">[docs]</a>    <span class="k">def</span> <span class="nf">POST</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Handles incoming data from a basestation by updating (or creating) sensor information, including metadata, calibration, and datastream. Additionally updates sensor readings, if any.</span>
+
+<span class="sd">        :param data: A JSON array formatted string stored in the data section of the HTTP POST request. It is not optional, but some elements can be omitted. The JSON object should be a list, even if there is only one element in it. The full format is listed in the Notes section.</span>
+<span class="sd">        &quot;type data: str</span>
+
+
+<span class="sd">        :returns: str -- A JSON object with either a key &#39;error&#39; or &#39;newValues&#39;. In the case of &#39;error&#39;, the value is an error string.</span>
+<span class="sd">                In the case of &#39;newValues&#39;, the value is an object with key/value pairs as &quot;sensorname&quot; : messagelist, where messagelist is all unread, unexpired messages for the sensor with name sensorname.</span>
+<span class="sd">                The receiving function must determine how to handle the messages (e.g. to consider only the newest message, or to use all messages.)</span>
+
+<span class="sd">        .. seealso::</span>
+<span class="sd">            models.Message : The model that defines a message, which is returned in `data`.</span>
+<span class="sd">            models.Sensor : The model that defines a sensor, whose columns are valid fields in the &quot;info&quot; section of the input JSON string.</span>
+
+<span class="sd">        .. note::</span>
+<span class="sd">            The JSON format for the input `data` string follows. Note that required fields are marked with a *.</span>
+<span class="sd">            The JSON object should be an array, with elements being a object with two keys: &quot;info&quot; and &quot;readings&quot;.</span>
+<span class="sd">            &quot;info&quot; is always required, but &quot;readings&quot; is optional. See `models.Sensor` for all valid keys in the &quot;info&quot; object.</span>
+<span class="sd">            Note that, while `scale` is not required for each sensor, this module will create a new `Calibration` with coefficients [1,0] for any sensors without a `scale` field.</span>
+<span class="sd">            The `in` and `out` sections are not optional, but may have empty arrays.</span>
+<span class="sd">            An error will be thrown, however, if there are readings whose `sensorname` does not match the `name` of either an `in` or `out` sensor.</span>
+
+<span class="sd">        Full Format:</span>
+<span class="sd">            [</span>
+<span class="sd">                {</span>
+<span class="sd">                    &quot;info&quot;:</span>
+<span class="sd">                        {</span>
+<span class="sd">                            *&quot;uuid&quot;: &quot;.....&quot;,</span>
+<span class="sd">                            &quot;name&quot;: &quot;.....&quot;,</span>
+<span class="sd">                            &quot;rev&quot; : &quot;.....&quot;,</span>
+<span class="sd">                            ...</span>
+<span class="sd">                            *&quot;in&quot;  : [</span>
+<span class="sd">                                        {</span>
+<span class="sd">                                            *&quot;name&quot;  : &quot;in1&quot;,</span>
+<span class="sd">                                            &quot;scale&quot; : [1,2,3,...],</span>
+<span class="sd">                                            ...</span>
+<span class="sd">                                        },</span>
+<span class="sd">                                        {</span>
+<span class="sd">                                            *&quot;name&quot;  : &quot;in2&quot;,</span>
+<span class="sd">                                            &quot;scale&quot; : [1,2,3,...],</span>
+<span class="sd">                                            ...</span>
+<span class="sd">                                        }</span>
+<span class="sd">                                    ]</span>
+<span class="sd">                            *&quot;out&quot; : [</span>
+<span class="sd">                                        {</span>
+<span class="sd">                                            *&quot;name&quot;  : &quot;out1&quot;,</span>
+<span class="sd">                                            &quot;scale&quot; : [1,2,3,...],</span>
+<span class="sd">                                            ...</span>
+<span class="sd">                                        },</span>
+<span class="sd">                                        {</span>
+<span class="sd">                                            *&quot;name&quot;  : &quot;out2&quot;,</span>
+<span class="sd">                                            &quot;scale&quot; : [1,2,3,...],</span>
+<span class="sd">                                            ...</span>
+<span class="sd">                                        }</span>
+<span class="sd">                                    ]</span>
+
+
+<span class="sd">                        }</span>
+<span class="sd">                    &quot;readings&quot;:</span>
+<span class="sd">                        [</span>
+<span class="sd">                            [*sensorname, *val, *time],</span>
+<span class="sd">                            [*sensorname, *val, *time],</span>
+<span class="sd">                            ...</span>
+<span class="sd">                        ]</span>
+<span class="sd">                }</span>
+
+<span class="sd">            ]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Got POST request to delegation.&quot;</span><span class="p">)</span>
+
+        <span class="n">cherrypy</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="s1">&#39;Content-Type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;application/json&#39;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;info&#39;</span><span class="p">:</span> <span class="p">[],</span> <span class="s2">&quot;newValues&quot;</span><span class="p">:</span> <span class="p">{}}</span>
+
+        <span class="n">statusCode</span> <span class="o">=</span> <span class="s2">&quot;200&quot;</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">readingData</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">cherrypy</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">body</span><span class="p">)</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Got data: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">readingData</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">):</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Request data is not JSON: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">cherrypy</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">body</span><span class="p">)</span>
+            <span class="n">data</span><span class="p">[</span><span class="s1">&#39;error&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;Bad json&quot;</span>
+            <span class="n">statusCode</span> <span class="o">=</span> <span class="s2">&quot;400&quot;</span>
+            <span class="n">cherrypy</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="n">statusCode</span>
+            <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">new_values</span><span class="p">,</span> <span class="n">sensor_info</span> <span class="o">=</span> <span class="n">update_motes</span><span class="p">(</span><span class="n">readingData</span><span class="p">)</span>
+
+            <span class="n">data</span><span class="p">[</span><span class="s1">&#39;newValues&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_values</span>
+            <span class="n">data</span><span class="p">[</span><span class="s1">&#39;info&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sensor_info</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">__class__</span><span class="p">),</span> <span class="n">e</span><span class="o">.</span><span class="n">message</span><span class="p">)</span>
+            <span class="n">data</span><span class="p">[</span><span class="s1">&#39;error&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="n">message</span>
+            <span class="n">statusCode</span> <span class="o">=</span> <span class="s2">&quot;400&quot;</span>
+
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Finished POST request to delegation.&quot;</span><span class="p">)</span>
+        <span class="n">cherrypy</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="n">statusCode</span>
+        <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="update_motes"><a class="viewcode-back" href="../../../teleceptor.api.html#teleceptor.api.station.update_motes">[docs]</a><span class="k">def</span> <span class="nf">update_motes</span><span class="p">(</span><span class="n">mote_datas</span><span class="o">=</span><span class="p">[]):</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Updating motes </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">mote_datas</span><span class="p">))</span>
+    <span class="n">new_values</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">mote</span> <span class="ow">in</span> <span class="n">mote_datas</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s1">&#39;info&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">mote</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Mote </span><span class="si">%s</span><span class="s2"> did not report its info&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">mote</span><span class="p">))</span>
+            <span class="k">continue</span>
+
+        <span class="n">sensor_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="s1">&#39;out&#39;</span> <span class="ow">in</span> <span class="n">mote</span><span class="p">[</span><span class="s1">&#39;info&#39;</span><span class="p">]:</span>
+            <span class="n">sensor_list</span> <span class="o">=</span> <span class="n">mote</span><span class="p">[</span><span class="s1">&#39;info&#39;</span><span class="p">][</span><span class="s1">&#39;out&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="s1">&#39;in&#39;</span> <span class="ow">in</span> <span class="n">mote</span><span class="p">[</span><span class="s1">&#39;info&#39;</span><span class="p">]:</span>
+            <span class="n">sensor_list</span> <span class="o">=</span> <span class="n">sensor_list</span> <span class="o">+</span> <span class="n">mote</span><span class="p">[</span><span class="s1">&#39;info&#39;</span><span class="p">][</span><span class="s1">&#39;in&#39;</span><span class="p">]</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Sensor_list: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">sensor_list</span><span class="p">))</span>
+        <span class="n">sensor_datastream_ids</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">sensor</span> <span class="ow">in</span> <span class="n">sensor_list</span><span class="p">:</span>
+            <span class="n">sensor_datastream_ids</span><span class="p">[</span><span class="n">mote</span><span class="p">[</span><span class="s1">&#39;info&#39;</span><span class="p">][</span><span class="s1">&#39;uuid&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">sensor</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="bp">None</span>
+
+        <span class="n">updated_sensors</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">with</span> <span class="n">sessionScope</span><span class="p">()</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">sensor</span> <span class="ow">in</span> <span class="n">sensor_list</span><span class="p">:</span>
+
+                <span class="k">if</span> <span class="s1">&#39;in&#39;</span> <span class="ow">in</span> <span class="n">mote</span><span class="p">[</span><span class="s1">&#39;info&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="n">sensor</span> <span class="ow">in</span> <span class="n">mote</span><span class="p">[</span><span class="s1">&#39;info&#39;</span><span class="p">][</span><span class="s1">&#39;in&#39;</span><span class="p">]:</span>
+                    <span class="n">sensor</span><span class="p">[</span><span class="s1">&#39;sensor_IOtype&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">sensor</span><span class="p">[</span><span class="s1">&#39;sensor_IOtype&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">False</span>
+
+                <span class="c1"># update data in db</span>
+                <span class="n">simple_name</span> <span class="o">=</span> <span class="n">sensor</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+                <span class="n">sensor</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mote</span><span class="p">[</span><span class="s1">&#39;info&#39;</span><span class="p">][</span><span class="s1">&#39;uuid&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">sensor</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+                <span class="n">sensor</span><span class="p">[</span><span class="s1">&#39;uuid&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sensor</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+                <span class="n">sensorUuid</span> <span class="o">=</span> <span class="n">sensor</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Updating sensor </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">sensor</span><span class="p">))</span>
+                <span class="n">sensor_info</span> <span class="o">=</span> <span class="n">update_sensor_data</span><span class="p">(</span><span class="n">sensor</span><span class="p">,</span> <span class="n">session</span><span class="p">)</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Sensor_info after update: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">sensor_info</span><span class="p">))</span>
+                <span class="n">updated_sensors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sensor_info</span><span class="p">)</span>
+
+                <span class="c1"># Get message queue for input sensors</span>
+                <span class="k">if</span> <span class="s1">&#39;in&#39;</span> <span class="ow">in</span> <span class="n">mote</span><span class="p">[</span><span class="s1">&#39;info&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="n">sensor</span> <span class="ow">in</span> <span class="n">mote</span><span class="p">[</span><span class="s1">&#39;info&#39;</span><span class="p">][</span><span class="s1">&#39;in&#39;</span><span class="p">]:</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Getting messages for sensor </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">sensorUuid</span><span class="p">)</span>
+                    <span class="n">message_list</span> <span class="o">=</span> <span class="n">messages</span><span class="o">.</span><span class="n">getMessages</span><span class="p">(</span><span class="n">sensorUuid</span><span class="p">,</span> <span class="n">by_timestamp</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">unread_only</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Got unread messages: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">message_list</span><span class="p">))</span>
+                    <span class="n">new_values</span><span class="p">[</span><span class="n">sensor</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">message_list</span>
+
+                <span class="c1"># get datastream to pass to insertReadings</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Getting datastream.&quot;</span><span class="p">)</span>
+                    <span class="n">datastream</span> <span class="o">=</span> <span class="n">datastreams</span><span class="o">.</span><span class="n">get_datastream_by_sensorid</span><span class="p">(</span><span class="n">sensorUuid</span><span class="p">,</span> <span class="n">session</span><span class="p">)</span>
+                <span class="k">except</span> <span class="n">NoResultFound</span><span class="p">:</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;No datastream. Making one for sensor </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">sensorUuid</span><span class="p">)</span>
+                    <span class="n">datastream</span> <span class="o">=</span> <span class="n">DataStream</span><span class="p">(</span><span class="n">sensor</span><span class="o">=</span><span class="n">sensorUuid</span><span class="p">)</span>
+                    <span class="n">DataStreams</span><span class="o">.</span><span class="n">createDatastream</span><span class="p">(</span><span class="n">session</span><span class="p">,</span> <span class="n">datastream</span><span class="p">)</span>
+                    <span class="n">datastream</span> <span class="o">=</span> <span class="n">datastream</span><span class="o">.</span><span class="n">toDict</span><span class="p">()</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Got datastream id </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">datastream</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]))</span>
+                <span class="n">sensor_datastream_ids</span><span class="p">[</span><span class="n">sensorUuid</span><span class="p">]</span> <span class="o">=</span> <span class="n">datastream</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>
+
+            <span class="c1"># Swap sensorname in readings with datastream id.</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Inserting readings...&quot;</span><span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">reading</span> <span class="ow">in</span> <span class="n">mote</span><span class="p">[</span><span class="s1">&#39;readings&#39;</span><span class="p">]:</span>
+                <span class="n">reading</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">sensor_datastream_ids</span><span class="p">[</span><span class="n">mote</span><span class="p">[</span><span class="s1">&#39;info&#39;</span><span class="p">][</span><span class="s1">&#39;uuid&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">reading</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+
+            <span class="n">readings</span><span class="o">.</span><span class="n">insertReadings</span><span class="p">(</span><span class="n">mote</span><span class="p">[</span><span class="s1">&#39;readings&#39;</span><span class="p">],</span> <span class="n">session</span><span class="o">=</span><span class="n">session</span><span class="p">)</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Done updating mote info.&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">new_values</span><span class="p">,</span> <span class="n">updated_sensors</span></div>
+
+
+<div class="viewcode-block" id="update_sensor_data"><a class="viewcode-back" href="../../../teleceptor.api.html#teleceptor.api.station.update_sensor_data">[docs]</a><span class="k">def</span> <span class="nf">update_sensor_data</span><span class="p">(</span><span class="n">sensor_data</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">session</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="n">uuid</span> <span class="o">=</span> <span class="n">sensor_data</span><span class="p">[</span><span class="s1">&#39;uuid&#39;</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="s1">&#39;scale&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">sensor_data</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Sensor did not report a scaling function. Using identity function.&quot;</span><span class="p">)</span>
+        <span class="n">coefficients</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">coefficients</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">sensor_data</span><span class="p">[</span><span class="s1">&#39;scale&#39;</span><span class="p">])</span>
+        <span class="k">del</span> <span class="n">sensor_data</span><span class="p">[</span><span class="s1">&#39;scale&#39;</span><span class="p">]</span>
+
+    <span class="c1"># TODO: Put code in other function</span>
+    <span class="k">if</span> <span class="n">session</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">sessionScope</span><span class="p">()</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
+            <span class="c1"># Update sensors (and create if needed)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">sensor_info</span> <span class="o">=</span> <span class="n">Sensors</span><span class="o">.</span><span class="n">updateSensor</span><span class="p">(</span><span class="n">sensor_id</span><span class="o">=</span><span class="n">uuid</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">sensor_data</span><span class="p">,</span> <span class="n">session</span><span class="o">=</span><span class="n">session</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">NoResultFound</span><span class="p">:</span>
+                <span class="n">timestamp</span> <span class="o">=</span> <span class="n">sensor_data</span><span class="p">[</span><span class="s1">&#39;timestamp&#39;</span><span class="p">]</span>
+                <span class="k">del</span> <span class="n">sensor_data</span><span class="p">[</span><span class="s1">&#39;timestamp&#39;</span><span class="p">]</span>
+
+                <span class="n">sensor</span> <span class="o">=</span> <span class="n">Sensor</span><span class="p">(</span><span class="o">**</span><span class="n">sensor_data</span><span class="p">)</span>
+                <span class="n">Sensors</span><span class="o">.</span><span class="n">createSensor</span><span class="p">(</span><span class="n">sensor</span><span class="o">=</span><span class="n">sensor</span><span class="p">,</span> <span class="n">session</span><span class="o">=</span><span class="n">session</span><span class="p">)</span>
+
+                <span class="n">sensor_data</span><span class="p">[</span><span class="s1">&#39;timestamp&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">timestamp</span>
+
+            <span class="n">sensor</span> <span class="o">=</span> <span class="n">sensors</span><span class="o">.</span><span class="n">getSensor</span><span class="p">(</span><span class="n">uuid</span><span class="p">,</span> <span class="n">session</span><span class="o">=</span><span class="n">session</span><span class="p">)</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Got sensor </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">sensor</span><span class="p">))</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Updating calibration...&quot;</span><span class="p">)</span>
+            <span class="n">sensor_info</span> <span class="o">=</span> <span class="n">Sensors</span><span class="o">.</span><span class="n">updateCalibration</span><span class="p">(</span><span class="n">sensor</span><span class="p">,</span> <span class="n">coefficients</span><span class="p">,</span> <span class="n">sensor_data</span><span class="p">[</span><span class="s1">&#39;timestamp&#39;</span><span class="p">],</span> <span class="n">session</span><span class="o">=</span><span class="n">session</span><span class="p">)</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Updated calibration.&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Update sensors (and create if needed)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">sensor_info</span> <span class="o">=</span> <span class="n">Sensors</span><span class="o">.</span><span class="n">updateSensor</span><span class="p">(</span><span class="n">sensor_id</span><span class="o">=</span><span class="n">uuid</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">sensor_data</span><span class="p">,</span> <span class="n">session</span><span class="o">=</span><span class="n">session</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">NoResultFound</span><span class="p">:</span>
+            <span class="n">timestamp</span> <span class="o">=</span> <span class="n">sensor_data</span><span class="p">[</span><span class="s1">&#39;timestamp&#39;</span><span class="p">]</span>
+            <span class="k">del</span> <span class="n">sensor_data</span><span class="p">[</span><span class="s1">&#39;timestamp&#39;</span><span class="p">]</span>
+
+            <span class="n">sensor</span> <span class="o">=</span> <span class="n">Sensor</span><span class="p">(</span><span class="o">**</span><span class="n">sensor_data</span><span class="p">)</span>
+            <span class="n">Sensors</span><span class="o">.</span><span class="n">createSensor</span><span class="p">(</span><span class="n">sensor</span><span class="p">,</span> <span class="n">session</span><span class="p">)</span>
+
+            <span class="n">sensor_data</span><span class="p">[</span><span class="s1">&#39;timestamp&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">timestamp</span>
+
+        <span class="n">sensor</span> <span class="o">=</span> <span class="n">sensors</span><span class="o">.</span><span class="n">getSensor</span><span class="p">(</span><span class="n">uuid</span><span class="p">,</span> <span class="n">session</span><span class="o">=</span><span class="n">session</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Got sensor </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">sensor</span><span class="p">))</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Updating calibration...&quot;</span><span class="p">)</span>
+        <span class="n">sensor_info</span> <span class="o">=</span> <span class="n">Sensors</span><span class="o">.</span><span class="n">updateCalibration</span><span class="p">(</span><span class="n">sensor</span><span class="p">,</span> <span class="n">coefficients</span><span class="p">,</span> <span class="n">sensor_data</span><span class="p">[</span><span class="s1">&#39;timestamp&#39;</span><span class="p">],</span> <span class="n">session</span><span class="o">=</span><span class="n">session</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Updated calibration&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">sensor_info</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">teleceptor 1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../api.html" >teleceptor.api</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2016, Visgence Inc..
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+    </div>
+  </body>
+</html>

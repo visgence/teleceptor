@@ -25,6 +25,7 @@ $(function($) {
         var __this = this;
 
         this.activeSensor = ko.observable();
+        this.datastreams = ko.observable();
         this.sensors = ko.observableArray();
         this.timeControls = ko.observable();
         this.graph = ko.observable();
@@ -49,6 +50,8 @@ $(function($) {
 
             if (vars.hasOwnProperty("activeSensor"))
                 __this.activeSensor(new Sensor(vars.activeSensor));
+            if(vars.hasOwnProperty("datastreams"))
+                __this.datastreams(new Stream(vars.datastreams));
 
             initTimeControls(vars);
 
@@ -62,9 +65,11 @@ $(function($) {
 
             //Handle switching sensor here so we can preserve other parts of url query string
             $(".sensor-list").on("click", "a.sensor", function(e) {
-                var sensorId = $(e.currentTarget).data("sensorid");
-                if (sensorId)
-                    $.fn.updateRoute({"sensor_id": sensorId}, true);
+                console.log($(e.currentTarget).data())
+                var sensor_name = $(e.currentTarget).data("sensorid");
+                if (sensor_name){
+                    $.fn.updateRoute({"sensor_name": sensor_name}, true);
+                }
             });
 		}
 
@@ -105,6 +110,7 @@ $(function($) {
                 zoom['start'] = params.startZoom;
             if (params.hasOwnProperty('endZoom'))
                 zoom['end'] = params.endZoom;
+            params['timecontrols'] = __this.timeControls();
 
             params['zoomRange'] = zoom;
             var graph = new Graph(params);

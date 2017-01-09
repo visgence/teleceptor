@@ -1,8 +1,5 @@
 """
-Contributing Authors:
-    Victor Szczepanski (Visgence, Inc)
-
-GenericQueryer.py
+Authors: Victor Szczepanski
 
 GenericQueryer handles the main basestation behaviour. It expects
 to receive a device (e.g. SerialMote or TCPMote) that has exposed functions
@@ -20,7 +17,7 @@ from requests import ConnectionError
 import os
 
 
-#local imports
+# local imports
 import teleceptor
 from teleceptor.basestation import TCPMote, SerialMote
 
@@ -29,6 +26,7 @@ serverURL = "http://localhost:" + str(teleceptor.PORT) + "/api/station/"
 serverDeleteURL = "http://localhost:" + str(teleceptor.PORT) + "/api/messages/"
 pid = os.getpid()
 starttime = time.time()
+
 
 def moteFactory(**kwargs):
     """
@@ -43,7 +41,8 @@ def moteFactory(**kwargs):
             baudrate = 9600 *
             debug = False *
 
-        Note that arguments marked with a * are optional. See the documentation for the respective device for default values.
+        .. note::
+            arguments marked with a * are optional. See the documentation for the respective device for default values.
     """
     device = None
     if "host" in kwargs.iterkeys() and "port" in kwargs.iterkeys():
@@ -53,7 +52,6 @@ def moteFactory(**kwargs):
         device = SerialMote.SerialMote(**kwargs)
 
     return device
-
 
 
 def main(queryRate=60, **kwargs):
@@ -72,36 +70,37 @@ def main(queryRate=60, **kwargs):
             baudrate = 9600 *
             debug = False *
 
-        Note that arguments marked with a * are optional. See the documentation for the respective device for default values.
+        .. note::
+            arguments marked with a * are optional. See the documentation for the respective device for default values.
     """
 
     if teleceptor.USE_DEBUG:
-        logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s',level=logging.DEBUG)
+        logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s', level=logging.DEBUG)
     else:
-        logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s',level=logging.INFO)
+        logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s', level=logging.INFO)
 
-    #create the device from kwargs
+    # create the device from kwargs
     try:
         device = moteFactory(**kwargs)
-    except:
-        logging.error("Provided kwargs caused exception during mote creation.\n kwargs: %s", str(kwargs))
+    except Exception as e:
+        logging.error("Provided kwargs caused exception during mote creation.\n kwargs: %s exception %s", str(kwargs), str(e))
         return
 
     if device is None:
         logging.error("Provided kwargs are not compatible with any Motes.\n kwargs: %s", str(kwargs))
         return
 
-    #array of not sent readings, saved for various reasons
+    # array of not sent readings, saved for various reasons
     payloads = []
 
     while(1):
-        #get json from device
-        info, readings = device.getReadings() #TODO: catch generic exception
+        # get json from device
+        info, readings = device.getReadings() # TODO: catch generic exception
 
         try:
             info = json.loads(info)
         except ValueError:
-            #device provided mangled JSON. Discard and continue?
+            # device provided mangled JSON. Discard and continue?
             logging.error("Error: Mangled JSON from mote.")
             logging.debug("Mangled info data: %s", str(info))
             continue
@@ -109,7 +108,7 @@ def main(queryRate=60, **kwargs):
         try:
             readings = json.loads(readings)
         except ValueError:
-            #device provided mangled JSON. Discard and continue?
+            # device provided mangled JSON. Discard and continue?
             logging.error("Mangled JSON data from mote.")
             logging.debug("Mangled readings data: %s", str(readings))
             continue
@@ -119,9 +118,9 @@ def main(queryRate=60, **kwargs):
         for reading in readings:
             reading.append(time.time())
 
-        #metadata info
-        payload = {"info":info, "readings":readings}
-        #add to each sensor
+        # metadata info
+        payload = {"info": info, "readings": readings}
+        # add to each sensor
         sensors = []
         if 'out' in payload['info']:
             sensors = payload['info']['out']
@@ -129,10 +128,10 @@ def main(queryRate=60, **kwargs):
             sensors = sensors + payload['info']['in']
 
         for sensor in sensors:
-            #do some translation from sensor mini-json to full JSON
+            # do some translation from sensor mini-json to full JSON
             if "t" not in sensor and "timestamp" not in sensor:
-                sensor.update({'timestamp':0})
-            elif "timestamp" not in sensor:#then t is in sensor, translate t to timestamp
+                sensor.update({'timestamp': 0})
+            elif "timestamp" not in sensor:# then t is in sensor, translate t to timestamp
                 sensor['timestamp'] = sensor['t']
                 del sensor['t']
 
@@ -157,12 +156,12 @@ def main(queryRate=60, **kwargs):
             if "desc" not in sensor and "description" not in sensor:
                 sensor['description'] = ""
 
-            sensor.update({'meta_data':dict({'uptime' : uptime(starttime), 'pid' : pid}, **device.metadata)})
+            sensor.update({'meta_data': dict({'uptime': uptime(starttime), 'pid': pid}, **device.metadata)})
 
         logging.info("Sending POST to server: %s", json.dumps(payload))
         payloads.append(payload)
 
-        #build JSON to send to server
+        # build JSON to send to server
 
         try:
             response = requests.post(serverURL, data=json.dumps(payloads))
@@ -170,7 +169,6 @@ def main(queryRate=60, **kwargs):
         except ConnectionError:
             logging.error("Error connecting to server. Caching data: %s", str(payloads[-1]))
             continue
-
 
         logging.info("Server response: %s", str(response.text))
 
@@ -180,8 +178,7 @@ def main(queryRate=60, **kwargs):
             if 'newValues' in responseData:
                 updateMote(device, (responseData['newValues']))
 
-
-        #wait by queryRate
+        # wait by queryRate
         time.sleep(queryRate)
 
 
@@ -200,14 +197,15 @@ def updateMote(moteHandle, newValues={}):
                     }
 
     """
+
     if not newValues:
         return
     parsedNewValues = {}
     for sen in newValues:
         logging.debug("sen: %s", sen)
-        if len(newValues[sen]) == 0:
+        if newValues[sen] == None:
             continue
-        message = newValues[sen][-1] #get the last message (ignore others)
+        message = newValues[sen][-1] # get the last message (ignore others)
         for senName, senMessage in message.items():
             if senName == "id":
                 pass
@@ -223,6 +221,7 @@ def updateMote(moteHandle, newValues={}):
 
     return info, readings
 
+
 def uptime(starttime):
     """
     Convience method that returns the time since starttime.
@@ -230,4 +229,3 @@ def uptime(starttime):
     starttime -- the start time to compare against
     """
     return (time.time()-starttime)
-

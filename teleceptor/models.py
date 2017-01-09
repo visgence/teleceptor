@@ -1,34 +1,11 @@
 """
-Contributing Authors:
-    Bretton Murphy (Visgence, Inc.)
-    Victor Szczepanski (Visgence, Inc)
-    Jessica Greenling (Visgence, Inc)
-
 Models contains what information will be stored in the database for each component of the project (such as the necessary attributes to be stored for a sensor).  Not all classes will have a toDict()/to_dict() function.
-
 This module cannot be run independently as it just describes the structure of the database.
 
-Dependencies:
+Authors: Bretton Murphy
+         Victor Szczepanski
+         Jessica Greenling
 
-external libraries:
-    sqlalchemy
-    json
-
-
-    (c) 2014 Visgence, Inc.
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>
 """
 
 from sqlalchemy import Column, Integer, Text, Boolean, BigInteger, ForeignKey, Float, String
@@ -41,7 +18,7 @@ except ImportError:
 
 Base = declarative_base()
 
-#Used for other modules to know what attributes are changeable for a sensor row.
+# Used for other modules to know what attributes are changeable for a sensor row.
 SENSORWHITELIST = ["sensor_IOtype", "sensor_type", "name", "units", "model", "description", "meta_data"]
 
 
@@ -65,9 +42,9 @@ class User(Base):
     active = Column(Boolean, default=True)
     password = Column(Text, nullable=False)
 
-
     def __repr__(self):
         return self.firstname + " " + self.lastname
+
 
 class Session(Base):
     """
@@ -102,15 +79,15 @@ class SensorReading(Base):
     value = Column(Float)
     timestamp = Column(BigInteger, index=True)
 
-
     def toDict(self):
         return {
-             'id': self.id
-            ,'datastream': self.datastream
-            ,'sensor': self.sensor
-            ,'value': self.value
-            ,'timestamp': self.timestamp
+            'id': self.id,
+            'datastream': self.datastream,
+            'sensor': self.sensor,
+            'value': self.value,
+            'timestamp': self.timestamp
         }
+
 
 class MessageQueue(Base):
     """
@@ -126,14 +103,14 @@ class MessageQueue(Base):
     __tablename__ = "messagequeue"
 
     id = Column(Integer, primary_key=True)
-    #last_message_id = Column(Integer, ForeignKey('message.id'))
-    messages = relationship('Message',order_by='Message.id',backref='messagequeue',lazy='dynamic',uselist=True, cascade='delete')
+    # last_message_id = Column(Integer, ForeignKey('message.id'))
+    messages = relationship('Message', order_by='Message.id', backref='messagequeue', lazy='dynamic', uselist=True, cascade='delete')
     sensor_id = Column(Text)
 
     def to_dict(self):
         data = {
-             'id': self.id
-            ,'sensor_id': self.sensor_id
+            'id': self.id,
+            'sensor_id': self.sensor_id
         }
 
         if self.messages is not None:
@@ -143,6 +120,7 @@ class MessageQueue(Base):
                 data['messages'] = self.messages.to_dict()
 
         return data
+
 
 class Message(Base):
     """
@@ -169,10 +147,10 @@ class Message(Base):
 
     def to_dict(self):
         data = {
-             'id': self.id
-            ,'message': json.loads(self.message)
-            ,'timeout': self.timeout
-            ,'read': self.read
+            'id': self.id,
+            'message': json.loads(self.message),
+            'timeout': self.timeout,
+            'read': self.read
         }
 
         return data
@@ -207,8 +185,8 @@ class Sensor(Base):
 
     uuid = Column(Text, primary_key=True)
     sensor_IOtype = Column(Boolean)
-    sensor_type = Column(Text,default="")
-    last_value = Column(Text,default="")
+    sensor_type = Column(Text, default="")
+    last_value = Column(Text, default="")
     name = Column(Text)
     units = Column(String(32))
     model = Column(Text)
@@ -219,18 +197,17 @@ class Sensor(Base):
     message_queue = relationship('MessageQueue')
     _meta_data = Column("meta_data", Text)
 
-
     def toDict(self):
         data = {
-             'uuid': self.uuid
-            ,'sensor_type': self.sensor_type
-            ,'units': self.units
-            ,'description': self.description
-            ,'name': self.name
-            ,'model': self.model
-            ,'last_value': self.last_value
-            ,'sensor_IOtype': self.sensor_IOtype
-            ,'meta_data': self.meta_data
+            'uuid': self.uuid,
+            'sensor_type': self.sensor_type,
+            'units': self.units,
+            'description': self.description,
+            'name': self.name,
+            'model': self.model,
+            'last_value': self.last_value,
+            'sensor_IOtype': self.sensor_IOtype,
+            'meta_data': self.meta_data
         }
 
         if self.last_calibration is not None:
@@ -278,6 +255,7 @@ class DataStream(Base):
     max_value = Column(Float)
     name = Column(Text)
     description = Column(Text)
+    paths = relationship("Path")
     # scaling_function = Column(String, ForeignKey('scalingfunction.name'))
     # reduction_type = Column.CharField(max_length=32, default='sample', choices=reduction_type_choices())
     # is_public = Column.BooleanField(default=False)
@@ -285,18 +263,40 @@ class DataStream(Base):
     # created = Column.BigIntegerField(default=time.time(), editable=False)
     # _metadata = Column.TextField(blank=True)
 
+    def toDict(self):
+        return {
+            'id': self.id,
+            'min_value': self.min_value,
+            'max_value': self.max_value,
+            'name': self.name,
+            'description': self.description,
+            'owner': self.owner,
+            'sensor': self.sensor,
+            "paths": [p.path for p in self.paths]
+            }
+
+
+class Path(Base):
+    """
+    id : int
+        Unique identifier of this StreamPath.
+    datastream : str
+        What datastream does this path belong to.
+    path : str
+        The path String.
+    """
+    __tablename__ = "streampath"
+
+    id = Column(Integer, primary_key=True)
+    datastream_id = Column(Integer, ForeignKey('datastream.id'))
+    path = Column(Text, nullable=False)
 
     def toDict(self):
         return {
-             'id': self.id
-            ,'min_value': self.min_value
-            ,'max_value': self.max_value
-            ,'name': self.name
-            ,'description': self.description
-            ,'owner': self.owner
-            ,'sensor': self.sensor
+            'id': self.id,
+            'datastream_id': self.datastream_id,
+            'path': self.path
         }
-
 
 
 class Calibration(Base):
@@ -320,16 +320,14 @@ class Calibration(Base):
     user = Column(Text)
     coefficients = Column(Text, nullable=False)
 
-
     def toDict(self):
         return {
-             'id': self.id
-            ,'sensor_id': self.sensor_id
-            ,'timestamp': self.timestamp
-            ,'user': self.user
-            ,'coefficients': json.loads(self.coefficients)
+            'id': self.id,
+            'sensor_id': self.sensor_id,
+            'timestamp': self.timestamp,
+            'user': self.user,
+            'coefficients': json.loads(self.coefficients)
         }
-
 
 
 # class ScalingFunction(Base):
@@ -337,4 +335,3 @@ class Calibration(Base):
 
 #     name = Column(String(32), primary_key=True)
 #     definition = Column(Text)
-

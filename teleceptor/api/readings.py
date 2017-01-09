@@ -1,9 +1,10 @@
 """
-    Contributing Authors:
-        Bretton Murphy (Visgence, Inc.)
-        Evan Salazar (Visgence, Inc.)
-        Victor Szczepanski (Visgence, Inc.)
-        Jessica Greenling (Visgence, Inc.)
+readings.py
+
+    Authors: Bretton Murphy
+             Evan Salazar
+             Victor Szczepanski
+             Jessica Greenling
 
     Resource endpoint for SensorReadings that is used as part of the RESTful api.  Handles
     the creation and retrieval of SensorReadings.
@@ -11,41 +12,13 @@
     API:
         Unless otherwise noted api will return data as JSON.
 
-
         TODO:
         POST /api/readings/  -  Create a new SensorReading.
 
-
-Dependencies:
-    global:
-    cherrypy
-    sqlalchemy
-    (optional) simplejson
-
-    local:
-    teleceptor.models
-    teleceptor.sessionManager
-
-
-    (c) 2014 Visgence, Inc.
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>
 """
 
 # System Imports
 import cherrypy
-from whisper import WhisperException
 from time import time
 from sqlalchemy.orm.exc import NoResultFound
 try:
@@ -57,16 +30,12 @@ import re
 import logging
 
 # Local Imports
-from teleceptor import SQLDATA,SQLREADTIME, USE_DEBUG, USE_SQL_ALWAYS
+from teleceptor import SQLDATA, SQLREADTIME, USE_DEBUG, USE_SQL_ALWAYS, USE_ELASTICSEARCH
 from teleceptor.models import SensorReading, DataStream
 from teleceptor.sessionManager import sessionScope
-from teleceptor import USE_ELASTICSEARCH
 if USE_ELASTICSEARCH:
     from teleceptor.elasticsearchUtils import getReadings as esGetReadings
     from teleceptor.elasticsearchUtils import insertReading as esInsert
-
-else:
-    from teleceptor.whisperUtils import getReadings, insertReading as whisperInsert
 
 
 class SensorReadings:
@@ -93,10 +62,10 @@ class SensorReadings:
     @staticmethod
     def condense(readings):
         """
-            Takes a array of SensorReading objects and returns back a array of arrays.
+            Takes an array of SensorReading objects and returns back a array of arrays.
             Ex: [ [timestamp1, value1], [timestamp2, value2], ...]
 
-            Returns: Array of SensorReadings values in the denoted format.
+            :returns: Array -- SensorReadings values in the denoted format.
          """
 
         logging.debug("Condensing SensorReading objects to simple [timestamp, value] format: %s", str(readings))
@@ -107,17 +76,15 @@ class SensorReadings:
         logging.debug("Made readings list: %s", str(data))
         return data
 
-
     def cleanInputs(self, params):
         """
             Checks that the supplied params only contains valid key/value parameters for filtering readings and
             performing any special operations on them.
 
-            Valid Parameters:
-                Check file doc for list of valid arguments
+            :param params: Check file doc for list of valid arguments
 
-            Returns: Dict with clean parameters and None if any parameter was unrecognized or the parameter
-                     did not have a correct value format.
+            :returns: Dictionary -- Dict with clean parameters and None if any parameter was unrecognized or the parameter
+                did not have a correct value format.
         """
 
         logging.debug("Validating parameters: %s", str(params))
@@ -149,15 +116,14 @@ class SensorReadings:
         logging.debug("Returning safe parameters: %s", str(safeParams))
         return safeParams
 
-
     def filterReadings(self, session, params):
         """
         A filter that will give all data received from a sensor in the last hour for high resolution data.
 
-        session : Session
-            Refers to the session of the user.
-        params : dict
-            Contains the start time, end time, and datastream.
+        :param session: Refers to the session of the user.
+        :type session: Session
+        :param params: Contains the start time, end time, and datastream.
+        :type params: dictionary
         """
         logging.debug("Filtering readings with parameters: %s", str(params))
         filterArgs = {}
@@ -170,7 +136,7 @@ class SensorReadings:
         points = None
         source = None
 
-        #Seperate out filter arguments first
+        # Seperate out filter arguments first
         for key, value in paramsCopy.iteritems():
             if key in self.validFilterArgs:
                 if key == "start":
@@ -200,7 +166,7 @@ class SensorReadings:
                 logging.debug("Getting SQL high-resolution data.")
                 data_source = source
             else:
-                raise ValueError("Selected source {} is incompatible with USE_ELASTICSEARCH setting {}".format(source, USE_ELASTICSEARCH))
+                raise ValueError("Selected source {} is incompatible with USE_ELASTICSEARCH setting {}".format(source))
         else:
             if SQLDATA and (int(end) - int(start) < SQLREADTIME):
                 logging.debug("Request time %s less than SQLREADTIME %s. Getting high-resolution data.", str((int(end) - int(start))), str(SQLREADTIME))
@@ -229,16 +195,16 @@ class SensorReadings:
             Obtain a list of available SensorReadings.
 
             Returns:
-            {
-                'error':   <error str if applicable>
-                'readings': [List of readings]
-            }
+                {
+                    'error':   <error str if applicable>
+                    'readings': [List of readings]
+                }
 
         GET /api/readings/?arg1=value&arg2=value...
             Obtain a list of available SensorReadings filtered by url arguments.
 
-            Valid Arguments:
-                NOTE: Unless otherwise specified all filter arguments accept the value null.
+            Args:
+                .. note:: Unless otherwise specified all filter arguments accept the value null.
 
                 Filter Arguments:
                 'stream' (Numeric) - id of DataStream
@@ -252,10 +218,10 @@ class SensorReadings:
 
 
             Returns:
-            {
-                'error':   <error str if applicable>
-                'readings': [List of readings]
-            }
+                {
+                    'error':   <error str if applicable>
+                    'readings': [List of readings]
+                }
         """
         logging.info("GET request to readings.")
 
@@ -280,16 +246,13 @@ class SensorReadings:
         logging.info("Finished GET request to readings.")
         return json.dumps(data, indent=4)
 
-
     def POST(self):
         """
         Inserts the readings into the database.  Expects a json object in data section of the http request and the object must have a readings key.
 
-        Returns:
-            {
-                'error':   <error str if applicable>
-                'readings': [List of readings]
-            }
+        :returns: Dictionary --
+            'error':   <error str if applicable>
+            'readings': [List of readings]
         """
         logging.info("POST request to readings.")
 
@@ -319,15 +282,13 @@ class SensorReadings:
         logging.info("Finished POST request to readings.")
         return json.dumps(data, indent=4)
 
-    def DELETE(self, reading_id=None, datastream_id=None):
+    def DELETE(self, datastream_id=None):
         """
-        Deletes a sensor reading or all sensor readings for a given datastream.
+        Deletes all sensor readings for a given datastream.
 
-        Returns
-        -------
-        A JSON object with an 'error' key if an error occured or 'readings' key if delete was successful.
+        :returns: A JSON object with an 'error' key if an error occured or 'readings' key if delete was successful.
         """
-        logging.info("DELETE request to readings with reading_id {} and datastream_id {}".format(reading_id, datastream_id))
+        logging.info("DELETE request to readings with datastream_id {}".format(datastream_id))
 
         cherrypy.response.headers['Content-Type'] = 'application/json'
         data = {}
@@ -341,6 +302,7 @@ class SensorReadings:
             except Exception as e:
                 error_string = "Unexpected error while deleting readings by datastream: {}".format(e)
                 logging.exception(error_string)
+                logging.info(error_string)
                 data['error'] = error_string
                 statusCode = "400"
 
@@ -351,9 +313,11 @@ class SensorReadings:
 
 def insertReadings(readings, session=None):
     """
-    Tries to insert the readings provided into whisper database, and optionally into the SQL database if SQLDATA is set.
+    Tries to insert the readings provided into database, and optionally into the SQL database if SQLDATA is set.
+
     :param readings: List of reading tuples of the form (datastreamid, value, timestamp)
-    :return: A dict with keywords "insertions_attempted", "successfull_insertions", and "failed_insertions"
+
+    :returns: Dictionary -- A dict with keywords "insertions_attempted", "successfull_insertions", and "failed_insertions"
     """
 
     logging.debug("Inserting readings.")
@@ -369,14 +333,20 @@ def insertReadings(readings, session=None):
 
 def _insertReadings(readings, session=None):
     """
-    Tries to insert the readings provided into whisper database, and optionally into the SQL database if SQLDATA is set.
+    Tries to insert the readings provided into database, and optionally into the SQL database if SQLDATA is set.
+
     :param readings: List of reading tuples of the form (datastreamid, value, timestamp)
-    :return: A dict with keywords "insertions_attempted", "successfull_insertions", and "failed_insertions"
+
+    :returns: Dictionary -- A dict with keywords "insertions_attempted", "successfull_insertions", and "failed_insertions"
+
+    .. todo::
+        handle errors better
+        Get the datastream, if possible
     """
     data = {
-        "insertions_attempted":    0
-        , "successfull_insertions": 0
-        , "failed_insertions":      0
+        "insertions_attempted": 0,
+        "successfull_insertions": 0,
+        "failed_insertions": 0
     }
 
     DS = 0
@@ -411,11 +381,10 @@ def _insertReadings(readings, session=None):
             continue
 
         try:
-            logging.debug("Inserting into whisper database with streamId %s, rawVal %s, and timestamp %s", str(streamId), str(rawVal), str(timestamp))
+            logging.debug("Inserting into database with streamId %s, rawVal %s, and timestamp %s", str(streamId), str(rawVal), str(timestamp))
             if USE_ELASTICSEARCH:
                 esInsert(streamId, rawVal, timestamp)
-            else:
-                whisperInsert(streamId, rawVal, timestamp)
+
             if SQLDATA:
                 logging.debug("Creating new sensor reading in SQL database...")
                 new_reading = SensorReading()
@@ -428,10 +397,7 @@ def _insertReadings(readings, session=None):
 
             data['successfull_insertions'] += 1
         except IOError:
-            logging.error("Failed to insert reading into whisper %s", str(streamId))
-            continue
-        except WhisperException:
-            logging.error("Failed to insert reading into whisper %s", str(streamId))
+            logging.error("Failed to insert reading into database %s", str(streamId))
             continue
 
     data['failed_insertions'] = data['insertions_attempted'] - data['successfull_insertions']
@@ -439,24 +405,20 @@ def _insertReadings(readings, session=None):
 
 
 def deleteReadingsByDatastream(datastream_id, session=None):
-    """Deletes all readings with the datastream id `datastream_id`.
+    """
+    Deletes all readings with the datastream id `datastream_id`.
 
-    Parameters
-    ----------
-    datastream_id : int
-        id of the datastream to delete all of the readings for
-    session :context object from `sessionScope()`
-        Existing context into a sqlalchemy database session. Can be created by a call to `sessionScope()`
+    :param datastream_id: id of the datastream to delete all of the readings for
+    :type datastream_id: int
+    :param session: Existing context into a sqlalchemy database session. Can be created by a call to `sessionScope()`
+    :type session: context object from `sessionScope()`
 
-    Returns
-    -------
-    A list of the deleted readings
+    :returns: A list of the deleted readings
 
-    See Also
-    --------
-    `models.DataStream`
-    `models.SensorReading`
-    `readings.DELETE`
+    .. seealso::
+        `models.DataStream`
+        `models.SensorReading`
+        `readings.DELETE`
     """
 
     if session is None:
@@ -466,24 +428,20 @@ def deleteReadingsByDatastream(datastream_id, session=None):
 
 
 def _deleteReadingsByDatastream(datastream_id, session):
-    """Deletes all readings with the datastream id `datastream_id`.
+    """
+    Deletes all readings with the datastream id `datastream_id`.
 
-    Parameters
-    ----------
-    datastream_id : int
-        id of the datastream to delete all of the readings for
-    session :context object from `sessionScope()`
-        Existing context into a sqlalchemy database session. Can be created by a call to `sessionScope()`
+    :param datastream_id: id of the datastream to delete all of the readings for
+    :type datastream_id: int
+    :param session: Existing context into a sqlalchemy database session. Can be created by a call to `sessionScope()`
+    :type session: context object from `sessionScope()`
 
-    Returns
-    -------
-    A list of the deleted readings
+    :returns: A list of the deleted readings
 
-    See Also
-    --------
-    `models.DataStream`
-    `models.SensorReading`
-    `readings.DELETE`
+    .. seealso::
+        `models.DataStream`
+        `models.SensorReading`
+        `readings.DELETE`
     """
     try:
         readings = session.query(SensorReading).filter_by(datastream=datastream_id).all()
@@ -501,34 +459,6 @@ def _deleteReadingsByDatastream(datastream_id, session):
     return []
 
 
-def reduceData(readings, granularity, reduction_method='mean'):
-    """
-    Take a a list of tuples containing at [0] a timeStamp and at [1] a raw data value from a sensor reading, and reduce this list to about granularity datapoints, using different methods.
-
-    Keyword arguments:
-      readings : list of 2-tuples
-        Tuples are (SensorReading.timestamp, SensorReading.sensorValue)
-      granularity : int
-        The number of datapoints to which to reduce the list. (will not be exact)
-      reduction_method : str
-        The reduction method.  Can be 'mean', 'sample', etc.
-    """
-
-    logging.debug("Reducing data with granularity %s and method %s", str(granularity), str(reduction_method))
-
-    if reduction_method not in reductMethods:
-        logging.error("Method %s not a valid reduction method.", str(reduction_method))
-        return []
-
-    increment = len(readings)/granularity
-    data = []
-    for i in range(0, len(readings), increment):
-        data.append(reductMethods[reduction_method](readings[i:i+increment]))
-
-    logging.debug("Finished reducing data.")
-    return data
-
-
 def incrementMean(readings):
     """
     Return the timeCenter of the increment and the mean of the readings_values within the increment as a list of 2 values
@@ -543,5 +473,3 @@ def incrementMean(readings):
 reductMethods = {
     'mean': incrementMean
 }
-
-

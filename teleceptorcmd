@@ -1,25 +1,15 @@
 #!/usr/bin/env python
 """
-(c) 2014 Visgence, Inc.
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>
+Authors: Victor Szczepanski
+         Evan Salazar
+         Cyrille Gindreau
 """
 
-
-
 import runpy
-import sys, os, glob, atexit
+import sys
+import os
+import glob
+import atexit
 import argparse
 import shutil
 import platform
@@ -36,16 +26,17 @@ from sqlalchemy.schema import (
     DropConstraint,
 )
 import teleceptor
-from  teleceptor import models
-from  teleceptor import testFixtures
-from teleceptor import server
+from teleceptor import models, testFixtures, server, sessionManager, USE_ELASTICSEARCH
 
 Stdin = '/dev/null'
 Stdout = '/dev/null'
 Stderr = '/dev/null'
 
+
 def delpid():
     os.remove(self.pidfile)
+
+
 def runserver(*args):
     """
     do the UNIX double-fork magic, see Stevens' "Advanced
@@ -54,38 +45,51 @@ def runserver(*args):
     """
     server.runserver(server.get_cp_config())
 
+
 def btcmote(*args):
-    btcmotecmd = os.path.join(teleceptor.__path__[0],'softSensors','BitcoinSensor','BTCMote.py')
+    btcmotecmd = os.path.join(teleceptor.__path__[0], 'softSensors', 'BitcoinSensor', 'BTCMote.py')
     print btcmotecmd
-    runpy.run_path(btcmotecmd,None,'__main__')
+    runpy.run_path(btcmotecmd, None, '__main__')
+
 
 def poller(*args):
-    pollercmd = os.path.join(teleceptor.__path__[0],'basestation','poller.py')
+    pollercmd = os.path.join(teleceptor.__path__[0], 'basestation', 'poller.py')
     print pollercmd
-    runpy.run_path(pollercmd,None,'__main__')
+    runpy.run_path(pollercmd, None, '__main__')
+
+
+def serialPoller(*args):
+    sys.argv = ["something here "]
+    if len(args[0]) is not 1:
+        print "Please enter the name of the USB device you are trying to connect to. Read the documentation to find out how to find your device name."
+    serialpollercmd = os.path.join(teleceptor.__path__[0], 'basestation', 'serialPoller.py')
+    print serialpollercmd
+    runpy.run_path(serialpollercmd, {"DEVICENAME": args[0]}, '__main__')
+
 
 def tcpPoller(*args):
-    tcppollercmd = os.path.join(teleceptor.__path__[0],'basestation','tcpPoller.py')
+    tcppollercmd = os.path.join(teleceptor.__path__[0], 'basestation', 'tcpPoller.py')
     print tcppollercmd
-    runpy.run_path(tcppollercmd,None,'__main__')
+    runpy.run_path(tcppollercmd, None, '__main__')
+
 
 def copyConfig(*args):
     if platform.system() == 'Windows':
-        appdata = os.path.join(os.getenv("APPDATA"),"teleceptor")
+        appdata = os.path.join(os.getenv("APPDATA"), "teleceptor")
     else:
-        appdata = os.path.join(os.getenv("HOME"),".config","teleceptor")
+        appdata = os.path.join(os.getenv("HOME"), ".config", "teleceptor")
 
-    #Check if file exists
-    if os.path.exists(os.path.join(appdata,'config.json')):
-        print "Config Exists at: " + str(os.path.join(appdata,'config.json'))
+    # Check if file exists
+    if os.path.exists(os.path.join(appdata, 'config.json')):
+        print "Config Exists at: " + str(os.path.join(appdata, 'config.json'))
         return
 
     if not os.path.exists(appdata):
         os.makedirs(appdata)
 
-    fromfile = os.path.join(teleceptor.PATH,'config',"defaults.json")
-    tofile = os.path.join(appdata,"config.json")
-    shutil.copy2(fromfile,tofile)
+    fromfile = os.path.join(teleceptor.PATH, 'config', "defaults.json")
+    tofile = os.path.join(appdata, "config.json")
+    shutil.copy2(fromfile, tofile)
 
     print "Config installed at:" + str(tofile)
 
@@ -138,7 +142,7 @@ def rebuild_postgres():
     See https://bitbucket.org/zzzeek/sqlalchemy/wiki/UsageRecipes/DropEverything
     """
 
-    #Get a connection to the postgres db
+    # Get a connection to the postgres db
     dboptions = {}
     dboptions['drivername'] = 'postgres'
     dboptions['host'] = teleceptor.PGSQLDBHOST
@@ -213,32 +217,41 @@ def setup(*args):
     print "Initializing database tables..."
     models.Base.metadata.create_all(db)
 
-    if teleceptor.USE_ELASTICSEARCH:
-        #TODO: Use index and doc from config
-        conf = json.load(open(os.path.join(teleceptor.PATH,'config','es_template.json')))
-        r= requests.put(teleceptor.ELASTICSEARCH_URI+'/_template/teleceptor',json=conf)
+    if USE_ELASTICSEARCH:
+        # TODO: Use index and doc from config
+        conf = json.load(open(os.path.join(teleceptor.PATH, 'config', 'es_template.json')))
+        r = requests.put(teleceptor.ELASTICSEARCH_URI+'/_template/teleceptor', json=conf)
         print r
 
     print "Run teleceptorcmd loadfixtures for example data"
+
 
 def loadfixtures(*args):
     print "Loading fixtures..."
     testFixtures.main()
 
+
+def shell(*args):
+    import IPython
+    print "Starting IPython Shell"
+    session = sessionManager.createSession()
+    IPython.embed()
+
+
 if __name__ == "__main__":
     cmds = {
-         'runserver': [runserver,"Start the server"]
-        ,'copyconfig': [copyConfig,"Copy default config to home"]
-        ,'rebuild': [rebuild,"Rebuild the database and datafiles"]
-        ,'setup': [setup,"Build the database"]
-        ,'btcmote': [btcmote,"Example sensor that collects BTC informaiotn"]
-        ,'poller': [poller,"Serial poller"]
-        ,'tcppoller': [tcpPoller,"TCP poller (Hosts are added in config.json)"]
-        ,'loadfixtures': [loadfixtures,"Load test database data"]
-        ,'version': [displayVersion,"Display version"]
+        'runserver': [runserver, "Start the server"],
+        'copyconfig': [copyConfig, "Copy default config to home"],
+        'rebuild': [rebuild, "Rebuild the database and datafiles"],
+        'setup': [setup, "Build the database"],
+        'btcmote': [btcmote, "Example sensor that collects BTC informaiotn"],
+        'poller': [poller, "General poller"],
+        'serialpoller': [serialPoller, "Serial poller"],
+        'tcppoller': [tcpPoller, "TCP poller (Hosts are added in config.json)"],
+        'loadfixtures': [loadfixtures, "Load test database data"],
+        'version': [displayVersion, "Display version"],
+        'shell': [shell, "Ipython shell"]
     }
-
-
 
     args = sys.argv
     if len(args) > 1 and args[1].lower() in cmds:
@@ -282,11 +295,10 @@ if __name__ == "__main__":
             os.dup2(so.fileno(), sys.stdout.fileno())
             os.dup2(se.fileno(), sys.stderr.fileno())
 
-
             # write pidfile
             atexit.register(delpid)
             pid = str(os.getpid())
-            file(pidfilename,'w+').write("%s\n" % pid)
+            file(pidfilename, 'w+').write("%s\n" % pid)
 
         cmds[args[1].lower()][0](args[2:])
         print "Done!"
@@ -295,6 +307,11 @@ if __name__ == "__main__":
         print "Please enter a valid command"
         print "Commands Are:"
         for c in sorted(cmds):
-            print "    %s : %s" % (c,cmds[c][1])
+            print "    %s : %s" % (c, cmds[c][1])
+
+
+
+
+
 
 

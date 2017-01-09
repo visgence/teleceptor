@@ -1,0 +1,183 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>teleceptor.timeAggregationUtils &mdash; teleceptor 1 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="teleceptor 1 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">teleceptor 1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for teleceptor.timeAggregationUtils</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Defines high level functions for retrieving Teleceptor aggregation levels.</span>
+
+<span class="sd">Authors: Victor Szczepanski</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">sys</span> <span class="kn">import</span> <span class="n">maxsize</span>
+
+<span class="n">aggregation_levels</span> <span class="o">=</span> <span class="p">{(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">120</span><span class="p">):</span> <span class="mi">1</span><span class="p">,</span>
+                      <span class="p">(</span><span class="mi">121</span><span class="p">,</span> <span class="mi">120</span><span class="o">*</span><span class="mi">60</span><span class="p">):</span> <span class="mi">10</span><span class="p">,</span>
+                      <span class="p">(</span><span class="mi">120</span><span class="o">*</span><span class="mi">60</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="o">*</span><span class="mi">3600</span><span class="p">):</span> <span class="mi">60</span><span class="p">,</span>
+                      <span class="p">(</span><span class="mi">3</span><span class="o">*</span><span class="mi">3600</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="o">*</span><span class="mi">24</span><span class="o">*</span><span class="mi">3600</span><span class="p">):</span> <span class="mi">300</span><span class="p">,</span>
+                      <span class="p">(</span><span class="mi">3</span><span class="o">*</span><span class="mi">24</span><span class="o">*</span><span class="mi">3600</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">maxsize</span><span class="p">):</span> <span class="mi">3600</span>
+                      <span class="p">}</span>
+<span class="sd">&quot;&quot;&quot;Defines the aggregation levels used by Teleceptor.</span>
+<span class="sd"> The form is (period_start, period_end): aggregation_value.</span>
+<span class="sd"> So, if some value v is between period_start and period_end, aggregation_value should be used.</span>
+<span class="sd"> Does not admit negative values or values &gt; sys.maxsize</span>
+<span class="sd"> &quot;&quot;&quot;</span>
+
+
+<div class="viewcode-block" id="getAggregationLevel"><a class="viewcode-back" href="../../teleceptor.html#teleceptor.timeAggregationUtils.getAggregationLevel">[docs]</a><span class="k">def</span> <span class="nf">getAggregationLevel</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get the appropriate aggregation level for the time period `start` - `end`.</span>
+
+<span class="sd">    .. note::</span>
+<span class="sd">        Uses the aggregation_levels dictionary for lookup. We assume the keys</span>
+<span class="sd">        in aggregation_levels are non-overlapping - undefined behaviour may occur if this is not true.</span>
+
+<span class="sd">    :params start: The start time in seconds.</span>
+<span class="sd">    :type start: int</span>
+<span class="sd">    :param end: The end time in seconds.</span>
+<span class="sd">    :type end: int</span>
+
+<span class="sd">    :returns: int -- The number of seconds to aggregate on.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">period</span> <span class="o">=</span> <span class="n">end</span> <span class="o">-</span> <span class="n">start</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">period_start</span><span class="p">,</span> <span class="n">period_end</span><span class="p">),</span> <span class="n">aggregation_level</span> <span class="ow">in</span> <span class="n">aggregation_levels</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">period</span> <span class="o">&gt;=</span> <span class="n">period_start</span> <span class="ow">and</span> <span class="n">period</span> <span class="o">&lt;</span> <span class="n">period_end</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">aggregation_level</span>
+    <span class="k">raise</span> <span class="ne">LookupError</span><span class="p">(</span><span class="s2">&quot;Period {} is out of aggregation range.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">period</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="getElasticSearchAggregationLevel"><a class="viewcode-back" href="../../teleceptor.html#teleceptor.timeAggregationUtils.getElasticSearchAggregationLevel">[docs]</a><span class="k">def</span> <span class="nf">getElasticSearchAggregationLevel</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get the appropriate aggregation level for the time period `start` - `end`, in EalsticSearch format.</span>
+
+<span class="sd">    This function will return the aggregation period in the lowest common division possible.</span>
+<span class="sd">    For example, if the aggregation period requested is &gt; 60 seconds but &lt; 1 hour, this function will</span>
+<span class="sd">    return the aggregation in minutes, rather than seconds or hours.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        time_frame = getElasticSearchAggregationLevel(0,3 * 3600 + 1)</span>
+<span class="sd">        assert(time_frame is &quot;1m&quot;)</span>
+<span class="sd">        time_frame = getElasticSearchAggregationLevel(0,120*60 + 1)</span>
+<span class="sd">        assert(time_frame is &quot;10s&quot;)</span>
+
+<span class="sd">    :params start: The start time in seconds.</span>
+<span class="sd">    :type start: int</span>
+<span class="sd">    :param end: The end time in seconds.</span>
+<span class="sd">    :type end: int</span>
+
+<span class="sd">    :returns: str -- The aggregation period in ElasticSearch format, in the lowest common division.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">aggregation_period</span> <span class="o">=</span> <span class="n">getAggregationLevel</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">aggregation_period</span> <span class="o">&lt;</span> <span class="mi">60</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;{}s&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">aggregation_period</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">aggregation_period</span> <span class="o">&lt;</span> <span class="mi">60</span><span class="o">*</span><span class="mi">60</span><span class="p">:</span> <span class="c1"># One hour</span>
+        <span class="k">return</span> <span class="s2">&quot;{}m&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">aggregation_period</span><span class="o">/</span><span class="mf">60.0</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">aggregation_period</span> <span class="o">&lt;</span> <span class="mi">60</span><span class="o">*</span><span class="mi">60</span><span class="o">*</span><span class="mi">24</span><span class="p">:</span> <span class="c1"># One day</span>
+        <span class="k">return</span> <span class="s2">&quot;{}h&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">((</span><span class="n">aggregation_period</span><span class="o">/</span><span class="mf">60.0</span><span class="p">)</span><span class="o">/</span><span class="mf">60.0</span><span class="p">)</span>
+    <span class="k">return</span> <span class="s2">&quot;{}d&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(((</span><span class="n">aggregation_period</span><span class="o">/</span><span class="mf">60.0</span><span class="p">)</span><span class="o">/</span><span class="mf">60.0</span><span class="p">)</span><span class="o">/</span><span class="mf">24.0</span><span class="p">)</span></div>
+
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="c1"># Some basic usage examples</span>
+    <span class="n">start1</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">end1</span> <span class="o">=</span> <span class="mi">60</span>
+    <span class="n">end2</span> <span class="o">=</span> <span class="mi">121</span>
+    <span class="n">end3</span> <span class="o">=</span> <span class="mi">60</span><span class="o">*</span><span class="mi">60</span><span class="o">*</span><span class="mi">24</span> <span class="o">+</span> <span class="mi">60</span>
+    <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Aggregation period given start = {} and end = {}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">start1</span><span class="p">,</span> <span class="n">end1</span><span class="p">))</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">getAggregationLevel</span><span class="p">(</span><span class="n">start1</span><span class="p">,</span> <span class="n">end1</span><span class="p">))</span>
+    <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Aggregation period given start = {} and end = {}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">start1</span><span class="p">,</span> <span class="n">end2</span><span class="p">))</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">getAggregationLevel</span><span class="p">(</span><span class="n">start1</span><span class="p">,</span> <span class="n">end2</span><span class="p">))</span>
+    <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Aggregation period given start = {} and end = {}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">start1</span><span class="p">,</span> <span class="n">end3</span><span class="p">))</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">getAggregationLevel</span><span class="p">(</span><span class="n">start1</span><span class="p">,</span> <span class="n">end3</span><span class="p">))</span>
+
+    <span class="k">print</span><span class="p">(</span><span class="s2">&quot;ElasticSearch Aggregation period given start = {} and end = {}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">start1</span><span class="p">,</span> <span class="n">end1</span><span class="p">))</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">getElasticSearchAggregationLevel</span><span class="p">(</span><span class="n">start1</span><span class="p">,</span> <span class="n">end1</span><span class="p">))</span>
+    <span class="k">print</span><span class="p">(</span><span class="s2">&quot;ElasticSearch Aggregation period given start = {} and end = {}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">start1</span><span class="p">,</span> <span class="n">end2</span><span class="p">))</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">getElasticSearchAggregationLevel</span><span class="p">(</span><span class="n">start1</span><span class="p">,</span> <span class="n">end2</span><span class="p">))</span>
+    <span class="k">print</span><span class="p">(</span><span class="s2">&quot;ElasticSearch Aggregation period given start = {} and end = {}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">start1</span><span class="p">,</span> <span class="n">end3</span><span class="p">))</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">getElasticSearchAggregationLevel</span><span class="p">(</span><span class="n">start1</span><span class="p">,</span> <span class="n">end3</span><span class="p">))</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">teleceptor 1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2016, Visgence Inc..
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+    </div>
+  </body>
+</html>

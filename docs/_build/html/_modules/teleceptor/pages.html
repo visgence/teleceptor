@@ -1,0 +1,172 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>teleceptor.pages &mdash; teleceptor 1 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="teleceptor 1 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">teleceptor 1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for teleceptor.pages</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Sets up webpage and displays current sensor readings.</span>
+
+<span class="sd">Authors: Victor Szczepanski</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c1"># System Imports</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">cherrypy</span>
+<span class="kn">import</span> <span class="nn">jinja2</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="c1"># local Imports</span>
+<span class="kn">from</span> <span class="nn">teleceptor</span> <span class="kn">import</span> <span class="n">TEMPLATES</span>
+<span class="kn">from</span> <span class="nn">teleceptor</span> <span class="kn">import</span> <span class="n">USE_DEBUG</span>
+<span class="kn">from</span> <span class="nn">teleceptor</span> <span class="kn">import</span> <span class="n">api</span>
+<span class="kn">from</span> <span class="nn">teleceptor.api</span> <span class="kn">import</span> <span class="n">ResourceApi</span>
+<span class="kn">from</span> <span class="nn">teleceptor.auth</span> <span class="kn">import</span> <span class="n">AuthController</span><span class="p">,</span> <span class="n">require</span><span class="p">,</span> <span class="n">member_of</span><span class="p">,</span> <span class="n">name_is</span>
+<span class="n">env</span> <span class="o">=</span> <span class="n">jinja2</span><span class="o">.</span><span class="n">Environment</span><span class="p">(</span><span class="n">loader</span><span class="o">=</span><span class="n">jinja2</span><span class="o">.</span><span class="n">FileSystemLoader</span><span class="p">(</span><span class="n">searchpath</span><span class="o">=</span><span class="n">TEMPLATES</span><span class="p">))</span>
+
+
+<div class="viewcode-block" id="Root"><a class="viewcode-back" href="../../teleceptor.html#teleceptor.pages.Root">[docs]</a><span class="k">class</span> <span class="nc">Root</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="n">auth</span> <span class="o">=</span> <span class="n">AuthController</span><span class="p">()</span>
+    <span class="n">api</span> <span class="o">=</span> <span class="n">ResourceApi</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">USE_DEBUG</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">format</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%(levelname)s</span><span class="s1">:</span><span class="si">%(asctime)s</span><span class="s1"> </span><span class="si">%(message)s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">format</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%(levelname)s</span><span class="s1">:</span><span class="si">%(asctime)s</span><span class="s1"> </span><span class="si">%(message)s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+
+    <span class="nd">@require</span><span class="p">()</span>
+<div class="viewcode-block" id="Root.index"><a class="viewcode-back" href="../../teleceptor.html#teleceptor.pages.Root.index">[docs]</a>    <span class="k">def</span> <span class="nf">index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sensor_id</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="n">cherrypy</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">params</span>
+
+        <span class="n">sensors</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">Sensors</span><span class="p">()</span>
+        <span class="n">datastreams</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">DataStreams</span><span class="p">()</span>
+        <span class="n">sysdata</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">SysData</span><span class="p">()</span>
+        <span class="n">sysdata_dict</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">sysdata</span><span class="o">.</span><span class="n">GET</span><span class="p">())</span>
+
+        <span class="n">sensorsList</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">sensors</span><span class="o">.</span><span class="n">GET</span><span class="p">())[</span><span class="s1">&#39;sensors&#39;</span><span class="p">]</span>
+        <span class="n">activeSensor</span> <span class="o">=</span> <span class="n">sensorsList</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sensorsList</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="bp">None</span>
+
+        <span class="k">if</span> <span class="n">sensor_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">activeSensor</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">sensors</span><span class="o">.</span><span class="n">GET</span><span class="p">(</span><span class="n">sensor_id</span><span class="p">))[</span><span class="s2">&quot;sensor&quot;</span><span class="p">]</span>
+            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">,</span> <span class="n">ke</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Error: no sensor with id </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">sensor_id</span><span class="p">)</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">ke</span><span class="p">))</span>
+
+        <span class="n">datastream</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">if</span> <span class="n">activeSensor</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">dsList</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">datastreams</span><span class="o">.</span><span class="n">GET</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span><span class="s2">&quot;sensor&quot;</span><span class="p">:</span> <span class="n">activeSensor</span><span class="p">[</span><span class="s1">&#39;uuid&#39;</span><span class="p">]}))</span>
+            <span class="n">datastream</span> <span class="o">=</span> <span class="n">dsList</span><span class="p">[</span><span class="s1">&#39;datastreams&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">dsList</span><span class="p">[</span><span class="s1">&#39;datastreams&#39;</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="bp">None</span>
+
+        <span class="n">cherrypy</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="s1">&#39;Content-Type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;text/html&#39;</span>
+
+        <span class="n">returnData</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;sysdata&quot;</span><span class="p">:</span> <span class="n">sysdata_dict</span><span class="p">,</span>
+            <span class="s2">&quot;sensorsList&quot;</span><span class="p">:</span> <span class="n">sensorsList</span><span class="p">,</span>
+            <span class="s2">&quot;activeSensor&quot;</span><span class="p">:</span> <span class="n">activeSensor</span><span class="p">,</span>
+            <span class="s2">&quot;activeSensorJSON&quot;</span><span class="p">:</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">activeSensor</span><span class="p">),</span>
+            <span class="s2">&quot;datastreamJSON&quot;</span><span class="p">:</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">datastream</span><span class="p">),</span>
+        <span class="p">}</span>
+        <span class="n">returnData</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="n">t</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">get_template</span><span class="p">(</span><span class="s2">&quot;sensorsIndex.html&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">t</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">returnData</span><span class="p">)</span></div>
+
+    <span class="n">index</span><span class="o">.</span><span class="n">exposed</span> <span class="o">=</span> <span class="bp">True</span>
+
+    <span class="nd">@require</span><span class="p">()</span>
+<div class="viewcode-block" id="Root.generateJson"><a class="viewcode-back" href="../../teleceptor.html#teleceptor.pages.Root.generateJson">[docs]</a>    <span class="k">def</span> <span class="nf">generateJson</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">get_template</span><span class="p">(</span><span class="s2">&quot;generateJson.html&quot;</span><span class="p">)</span>
+        <span class="n">sysdata</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">SysData</span><span class="p">()</span>
+        <span class="n">sysdata_dict</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">sysdata</span><span class="o">.</span><span class="n">GET</span><span class="p">())</span>
+
+        <span class="n">cherrypy</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="s1">&#39;Content-Type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;text/html&#39;</span>
+        <span class="k">return</span> <span class="n">t</span><span class="o">.</span><span class="n">render</span><span class="p">({</span><span class="s2">&quot;sysdata&quot;</span><span class="p">:</span> <span class="n">sysdata_dict</span><span class="p">})</span></div>
+
+    <span class="n">generateJson</span><span class="o">.</span><span class="n">exposed</span> <span class="o">=</span> <span class="bp">True</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">teleceptor 1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2016, Visgence Inc..
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+    </div>
+  </body>
+</html>

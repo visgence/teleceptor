@@ -1,0 +1,1344 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>teleceptor.api package &mdash; teleceptor 1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="teleceptor 1 documentation" href="index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">teleceptor 1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="teleceptor-api-package">
+<h1>teleceptor.api package<a class="headerlink" href="#teleceptor-api-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-teleceptor.api.datastreams">
+<span id="teleceptor-api-datastreams-module"></span><h2>teleceptor.api.datastreams module<a class="headerlink" href="#module-teleceptor.api.datastreams" title="Permalink to this headline">¶</a></h2>
+<p>datastreams.py</p>
+<dl class="docutils">
+<dt>Authors: Victor Szczepanski</dt>
+<dd><blockquote class="first">
+<div>Bretton Murphy
+Jessica Greenling</div></blockquote>
+<dl class="last docutils">
+<dt>Resource endpoint for DataStreams that is used as part of the RESTful api.  Handles</dt>
+<dd><p class="first">the creation, updating, and retrieval of Datastreams.</p>
+<dl class="last docutils">
+<dt>API:</dt>
+<dd><p class="first">Unless otherwise noted api will return data as JSON.</p>
+<dl class="docutils">
+<dt>GET /api/datastreams/</dt>
+<dd><p class="first">Obtain a list of available Datastreams.</p>
+<p>Returns:
+{</p>
+<blockquote>
+<div>&#8216;error&#8217;:   &lt;error str if applicable&gt;
+&#8216;datastreams&#8217;: [List of datastreams]</div></blockquote>
+<p class="last">}</p>
+</dd>
+<dt>GET /api/datastreams/?arg1=value&amp;arg2=value...</dt>
+<dd><p class="first">Obtain a list of available Datastreams filtered by url arguments.</p>
+<dl class="docutils">
+<dt>Valid Aruments:</dt>
+<dd><p class="first">NOTE: Unless otherwise specified all arguments accept the value null.</p>
+<p class="last">&#8216;sensor&#8217; (Alphanumeric) - uuid of the Sensor</p>
+</dd>
+</dl>
+<p>Returns:
+{</p>
+<blockquote>
+<div>&#8216;error&#8217;:   &lt;error str if applicable&gt;
+&#8216;datastreams&#8217;: [List of datastreams]</div></blockquote>
+<p class="last">}</p>
+</dd>
+<dt>GET /api/datastreams/&lt;stream_id&gt;/</dt>
+<dd><p class="first">Obtain a single Datastreams for the given stream_id.</p>
+<p>Returns:
+{</p>
+<blockquote>
+<div>&#8216;error&#8217;:   &lt;error str if applicable&gt;
+&#8216;stream&#8217;:  A single stream</div></blockquote>
+<p class="last">}</p>
+</dd>
+</dl>
+<p class="last">TODO:
+POST /api/datastreams/  -  Create a new Datastreams.
+PUT /api/datastreams/&lt;stream_id&gt;/  -  Update an existing stream.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="class">
+<dt id="teleceptor.api.datastreams.DataStreams">
+<em class="property">class </em><code class="descclassname">teleceptor.api.datastreams.</code><code class="descname">DataStreams</code><a class="reference internal" href="_modules/teleceptor/api/datastreams.html#DataStreams"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.api.datastreams.DataStreams" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="teleceptor.api.datastreams.DataStreams.DELETE">
+<code class="descname">DELETE</code><span class="sig-paren">(</span><em>stream_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/api/datastreams.html#DataStreams.DELETE"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.api.datastreams.DataStreams.DELETE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Deletes the DataStream with id <cite>stream_id</cite>.</p>
+<p>This function cannot be undone, but the stream may be created again
+in a separate transaction.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>stream_id</strong> (<em>int</em>) &#8211; The id of a DataStream</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A JSON object with an &#8216;error&#8217; key if an error occured or &#8216;datastream&#8217; key if update succeeded. If &#8216;error&#8217;, the value is an error string. If &#8216;datastream&#8217;, the value is a JSON object representing the deleted DataStream in the database.</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><cite>models.DataStream</cite></p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="teleceptor.api.datastreams.DataStreams.GET">
+<code class="descname">GET</code><span class="sig-paren">(</span><em>stream_id=None</em>, <em>*args</em>, <em>**filter_arguments</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/api/datastreams.html#DataStreams.GET"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.api.datastreams.DataStreams.GET" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets a specified datastream or list of datastreams filtered by keyword arguments.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>stream_id</strong> (<em>int, optional</em>) &#8211; The <cite>stream_id</cite> of the datastream to get or None to select datastreams based on filter arguments in <cite>args</cite> and <cite>filter_arguments</cite>.</li>
+<li><strong>args</strong> (<em>list, optional</em>) &#8211; Unused list of arguments</li>
+<li><strong>filter_arguments</strong> (<em>dictionary, optional</em>) &#8211; Keyword arguments to filter the datastream query.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><dl class="docutils">
+<dt>data</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">dictionary</span><dd><p class="first last">Contains an &#8216;error&#8217; key if an error occurred with the value being a string containing the error message. Contains a &#8216;datastreams&#8217; key if multiple datastreams are selected with the value being a list of datastreams. Contains a &#8216;stream&#8217; key if <cite>stream_id</cite> selects a unique datastream with the value being the selected stream.
+<cite>data</cite> is returned in the <cite>response.text</cite> section of the HTTP response, if this function is called through the cherrypy API.</p>
+</dd>
+</dl>
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last">cleanInputs : Checks that filter_arguments only contains valid parameters for filtering datastreams.</p>
+</div>
+<dl class="docutils">
+<dt>GET /api/datastreams/</dt>
+<dd><p class="first">Obtain a list of available Datastreams.</p>
+<table class="last docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">returns:</th><td class="field-body">&#8216;error&#8217;:   &lt;error str if applicable&gt;
+&#8216;datastreams&#8217;: [List of datastreams]</td>
+</tr>
+</tbody>
+</table>
+</dd>
+<dt>GET /api/datastreams/?arg1=value&amp;arg2=value...</dt>
+<dd><p class="first">Obtain a list of available Datastreams filtered by url arguments.</p>
+<dl class="docutils">
+<dt>Valid Aruments:</dt>
+<dd><p class="first">..note:: Unless otherwise specified all arguments accept the value null.</p>
+<p class="last">&#8216;sensor&#8217; (Alphanumeric) - uuid of the Sensor</p>
+</dd>
+</dl>
+<table class="last docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">returns:</th><td class="field-body">&#8216;error&#8217;:   &lt;error str if applicable&gt;
+&#8216;datastreams&#8217;: [List of datastreams]</td>
+</tr>
+</tbody>
+</table>
+</dd>
+<dt>GET /api/datastreams/&lt;stream_id&gt;/</dt>
+<dd><p class="first">Obtain a single Datastreams for the given stream_id.</p>
+<table class="last docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">returns:</th><td class="field-body">&#8216;error&#8217;:   &lt;error str if applicable&gt;
+&#8216;stream&#8217;:  A single stream</td>
+</tr>
+</tbody>
+</table>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="teleceptor.api.datastreams.DataStreams.POST">
+<code class="descname">POST</code><span class="sig-paren">(</span><em>stream_id=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/api/datastreams.html#DataStreams.POST"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.api.datastreams.DataStreams.POST" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="teleceptor.api.datastreams.DataStreams.PUT">
+<code class="descname">PUT</code><span class="sig-paren">(</span><em>streamid=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/api/datastreams.html#DataStreams.PUT"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.api.datastreams.DataStreams.PUT" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt id="teleceptor.api.datastreams.DataStreams.createDatastream">
+<em class="property">static </em><code class="descname">createDatastream</code><span class="sig-paren">(</span><em>session</em>, <em>datastream=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/api/datastreams.html#DataStreams.createDatastream"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.api.datastreams.DataStreams.createDatastream" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a datastream with given options and binds a new whisper file to it.
+Convience function that adds the given <cite>datastream</cite> to the database in <cite>session</cite> and creates a whisper database file using this datastream&#8217;s id. If <cite>datastream</cite> is None, this function does nothing.
+expects datastream to be a DataStream() from models</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>session</strong> (context object from <cite>sessionScope()</cite>) &#8211; Existing context into a sqlalchemy database session. Can be created by a call to <cite>sessionScope()</cite></li>
+<li><strong>datastream</strong> (<em>DataStream, optional</em>) &#8211; <cite>DataStream</cite> object to add to the database and create a whisper file for.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="teleceptor.api.datastreams.DataStreams.exposed">
+<code class="descname">exposed</code><em class="property"> = True</em><a class="headerlink" href="#teleceptor.api.datastreams.DataStreams.exposed" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="teleceptor.api.datastreams.clean_inputs">
+<code class="descclassname">teleceptor.api.datastreams.</code><code class="descname">clean_inputs</code><span class="sig-paren">(</span><em>inputs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/api/datastreams.html#clean_inputs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.api.datastreams.clean_inputs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks that the supplied inputs only contains valid parameters for filtering Datadatastreams.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Dictionary with valid parameters taken from provided inputs.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="teleceptor.api.datastreams.deleteDatastream">
+<code class="descclassname">teleceptor.api.datastreams.</code><code class="descname">deleteDatastream</code><span class="sig-paren">(</span><em>session</em>, <em>datastream_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/api/datastreams.html#deleteDatastream"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.api.datastreams.deleteDatastream" title="Permalink to this definition">¶</a></dt>
+<dd><p>Deletes a datastream with the given <cite>datastream_id</cite> and its associated sensor.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>session</strong> (context object from <cite>sessionScope()</cite>) &#8211; Existing context into a sqlalchemy database session. Can be created by a call to <cite>sessionScope()</cite></li>
+<li><strong>datastream_id</strong> &#8211; id of the datastream to delete.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">The dictionary representation of the datastream that was deleted if successful; otherwise None.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><cite>models.DataStream</cite>
+<cite>datastreams.DELETE</cite></p>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="teleceptor.api.datastreams.filter_datastreams">
+<code class="descclassname">teleceptor.api.datastreams.</code><code class="descname">filter_datastreams</code><span class="sig-paren">(</span><em>session=None</em>, <em>**filter_args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/api/datastreams.html#filter_datastreams"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.api.datastreams.filter_datastreams" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tries to get all datastreams from the database.
+Optionally uses a provided session context to interact with the database.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>session</strong> &#8211; </td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>&#8220;returns:</dt>
+<dd>A list of dictionary views of the datastreams currently in the database.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="teleceptor.api.datastreams.get_datastream">
+<code class="descclassname">teleceptor.api.datastreams.</code><code class="descname">get_datastream</code><span class="sig-paren">(</span><em>datastream_id</em>, <em>session=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/api/datastreams.html#get_datastream"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.api.datastreams.get_datastream" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tries to get a datastream from the database with the provided datastream_id.
+Optionally uses a provided session context to interact with the database.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>datastream_id</strong> &#8211; ID of the datastream.</li>
+<li><strong>session</strong> &#8211; </li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">The dictionary view of the datastream.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last">noResultFound: If no datastream matches the datastream_id.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="teleceptor.api.datastreams.get_datastream_by_sensorid">
+<code class="descclassname">teleceptor.api.datastreams.</code><code class="descname">get_datastream_by_sensorid</code><span class="sig-paren">(</span><em>sensor_id</em>, <em>session=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/api/datastreams.html#get_datastream_by_sensorid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.api.datastreams.get_datastream_by_sensorid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tries to get a datastream from the database with the provided sensor_id.
+Optionally uses a provided session context to interact with the database.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>sensor_id</strong> &#8211; ID of the sensor to retrieve the datastream for.</li>
+<li><strong>session</strong> &#8211; </li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">The dictionary view of the datastream.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last">NoResultFound: If no datastream matches the datastream_id.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-teleceptor.api.messages">
+<span id="teleceptor-api-messages-module"></span><h2>teleceptor.api.messages module<a class="headerlink" href="#module-teleceptor.api.messages" title="Permalink to this headline">¶</a></h2>
+<p>messages.py</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>Authors: Victor Szczepanski</dt>
+<dd>Jessica Greenling</dd>
+</dl>
+<p>This module handles message sending, receiving, and deleting.</p>
+<dl class="docutils">
+<dt>API:</dt>
+<dd><p class="first">Unless otherwise noted api will return data as JSON.</p>
+<p class="last">Functions include GET, POST, DELETE, and PURGE.</p>
+</dd>
+</dl>
+</div></blockquote>
+<dl class="class">
+<dt id="teleceptor.api.messages.Messages">
+<em class="property">class </em><code class="descclassname">teleceptor.api.messages.</code><code class="descname">Messages</code><a class="reference internal" href="_modules/teleceptor/api/messages.html#Messages"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.api.messages.Messages" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="teleceptor.api.messages.Messages.DELETE">
+<code class="descname">DELETE</code><span class="sig-paren">(</span><em>sensor_id</em>, <em>message_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/api/messages.html#Messages.DELETE"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.api.messages.Messages.DELETE" title="Permalink to this definition">¶</a></dt>
+<dd><p>A DELETE to this module should remove one message (based on its id)
+from the message queue it is stored in.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">the deleted message as confirmation that the message was deleted.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>sensor_id</strong> (<em>int</em>) &#8211; Unique identifier for a sensor.</li>
+<li><strong>message_id</strong> (<em>int</em>) &#8211; Unique identifier for a message.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="teleceptor.api.messages.Messages.GET">
+<code class="descname">GET</code><span class="sig-paren">(</span><em>sensor_id=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/api/messages.html#Messages.GET"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.api.messages.Messages.GET" title="Permalink to this definition">¶</a></dt>
+<dd><p>A GET to this module should include the sensor_id. No content is
+needed.
+All message queues are returned if sensor_id is not given (is None)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">a json object with the form
+data = {<blockquote>
+<div>&#8216;message_queue&#8217;: [
+Message,
+Message,
+...
+]</div></blockquote>
+<p>}
+if the sensor_id is given.</p>
+<p>If no sensor_id is given, returns a json object with the form
+data = {</p>
+<blockquote>
+<div>&#8216;message_queues&#8217; :[
+MessageQueue,
+MessageQueue,
+...
+]</div></blockquote>
+<p>}</p>
+<p>If the sensor_id is not found, returns an error json of the form
+data = {</p>
+<blockquote>
+<div>&#8216;error&#8217; : &#8220;Sensor with id __ doesn&#8217;t exist&#8221;</div></blockquote>
+<p>}</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><strong>sensor_id</strong> (<em>int</em>) &#8211; Unique identifier for a sensor.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="teleceptor.api.messages.Messages.POST">
+<code class="descname">POST</code><span class="sig-paren">(</span><em>sensor_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/api/messages.html#Messages.POST"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.api.messages.Messages.POST" title="Permalink to this definition">¶</a></dt>
+<dd><p>A POST to this module should include a sensor_id and the
+content of the request should include the data to go in the message.
+:returns:</p>
+<blockquote>
+<div><p>the message that was created.
+Content form should be
+content = {</p>
+<blockquote>
+<div><blockquote>
+<div>&#8220;message&#8221;: message_value</div></blockquote>
+<p>,&#8221;duration:&#8221; duration_value</p>
+</div></blockquote>
+<p>}</p>
+</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>sensor_id</strong> (<em>int</em>) &#8211; Unique identifier for a sensor.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="teleceptor.api.messages.Messages.PURGE">
+<code class="descname">PURGE</code><span class="sig-paren">(</span><em>sensor_id</em>, <em>timeout</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/api/messages.html#Messages.PURGE"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.api.messages.Messages.PURGE" title="Permalink to this definition">¶</a></dt>
+<dd><p>A PURGE to this module should delete all messages from the message
+queue that belongs to the sensor with uuid sensor_id with
+timeout &lt;= timeout.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">an error message if an error occurred or a success message if no error occurred.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>sensor_id</strong> (<em>int</em>) &#8211; Unique identifier for a sensor.</li>
+<li><strong>timeout</strong> (<em>float</em>) &#8211; The time at which the message(s) will expire.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="teleceptor.api.messages.Messages.exposed">
+<code class="descname">exposed</code><em class="property"> = True</em><a class="headerlink" href="#teleceptor.api.messages.Messages.exposed" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt id="teleceptor.api.messages.Messages.is_valid_type">
+<em class="property">static </em><code class="descname">is_valid_type</code><span class="sig-paren">(</span><em>message</em>, <em>sensor_type</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/api/messages.html#Messages.is_valid_type"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.api.messages.Messages.is_valid_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function validates that the message type matches with the sensor type.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="teleceptor.api.messages.addMessage">
+<code class="descclassname">teleceptor.api.messages.</code><code class="descname">addMessage</code><span class="sig-paren">(</span><em>sensor_id</em>, <em>message</em>, <em>duration</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/api/messages.html#addMessage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.api.messages.addMessage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a new Message from <cite>message</cite> and <cite>duration</cite> and appends it to the msgQueue of the sensor with id <cite>sensor_id</cite>.
+If the requested sensor does not have a message queue yet, this function creates one.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>sensor_id</strong> &#8211; </li>
+<li><strong>message</strong> &#8211; </li>
+<li><strong>duration</strong> &#8211; </li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">A dictionary representing the added message.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last">NoResultFound: If sensor_id is None or no Sensor found with id <cite>sensor_id</cite>
+ValueError: If type of message is not valid for sensor with id <cite>sensor_id</cite></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="teleceptor.api.messages.deleteAllMessages">
+<code class="descclassname">teleceptor.api.messages.</code><code class="descname">deleteAllMessages</code><span class="sig-paren">(</span><em>sensor_id</em>, <em>timeout</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/api/messages.html#deleteAllMessages"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.api.messages.deleteAllMessages" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="teleceptor.api.messages.deleteMessage">
+<code class="descclassname">teleceptor.api.messages.</code><code class="descname">deleteMessage</code><span class="sig-paren">(</span><em>sensor_id</em>, <em>message_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/api/messages.html#deleteMessage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.api.messages.deleteMessage" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="teleceptor.api.messages.getAllMessages">
+<code class="descclassname">teleceptor.api.messages.</code><code class="descname">getAllMessages</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/api/messages.html#getAllMessages"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.api.messages.getAllMessages" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of message queues for all sensors.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="teleceptor.api.messages.getMessages">
+<code class="descclassname">teleceptor.api.messages.</code><code class="descname">getMessages</code><span class="sig-paren">(</span><em>sensor_id</em>, <em>by_timestamp=False</em>, <em>unread_only=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/api/messages.html#getMessages"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.api.messages.getMessages" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of all messages (read and not read) for the sensor with id <cite>sensor_id</cite></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>sensor_id</strong> (<em>int</em>) &#8211; The id of the sensor to get all messages for.</li>
+<li><strong>by_timestamp</strong> (<em>boolean</em>) &#8211; Gets only messages that have not timed out (i.e. timeout for message is greater than current time) if True</li>
+<li><strong>unread_only</strong> (<em>boolean</em>) &#8211; Gets only messages that are unread if True.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">The list of messages for the sensor with id <cite>sensor_id</cite>, or None if sensor doesn&#8217;t have a message queue.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last">NoResultFound if sensor_id is None or no Sensor found with id <cite>sensor_id</cite></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-teleceptor.api.readings">
+<span id="teleceptor-api-readings-module"></span><h2>teleceptor.api.readings module<a class="headerlink" href="#module-teleceptor.api.readings" title="Permalink to this headline">¶</a></h2>
+<p>readings.py</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>Authors: Bretton Murphy</dt>
+<dd>Evan Salazar
+Victor Szczepanski
+Jessica Greenling</dd>
+</dl>
+<p>Resource endpoint for SensorReadings that is used as part of the RESTful api.  Handles
+the creation and retrieval of SensorReadings.</p>
+<dl class="docutils">
+<dt>API:</dt>
+<dd><p class="first">Unless otherwise noted api will return data as JSON.</p>
+<p class="last">TODO:
+POST /api/readings/  -  Create a new SensorReading.</p>
+</dd>
+</dl>
+</div></blockquote>
+<dl class="class">
+<dt id="teleceptor.api.readings.SensorReadings">
+<em class="property">class </em><code class="descclassname">teleceptor.api.readings.</code><code class="descname">SensorReadings</code><a class="reference internal" href="_modules/teleceptor/api/readings.html#SensorReadings"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.api.readings.SensorReadings" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="teleceptor.api.readings.SensorReadings.DELETE">
+<code class="descname">DELETE</code><span class="sig-paren">(</span><em>reading_id=None</em>, <em>datastream_id=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/api/readings.html#SensorReadings.DELETE"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.api.readings.SensorReadings.DELETE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Deletes a sensor reading or all sensor readings for a given datastream.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body">A JSON object with an &#8216;error&#8217; key if an error occured or &#8216;readings&#8217; key if delete was successful.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="teleceptor.api.readings.SensorReadings.GET">
+<code class="descname">GET</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/api/readings.html#SensorReadings.GET"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.api.readings.SensorReadings.GET" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>GET /api/readings/</dt>
+<dd><p class="first">Obtain a list of available SensorReadings.</p>
+<dl class="last docutils">
+<dt>Returns:</dt>
+<dd><dl class="first docutils">
+<dt>{</dt>
+<dd>&#8216;error&#8217;:   &lt;error str if applicable&gt;
+&#8216;readings&#8217;: [List of readings]</dd>
+</dl>
+<p class="last">}</p>
+</dd>
+</dl>
+</dd>
+<dt>GET /api/readings/?arg1=value&amp;arg2=value...</dt>
+<dd><p class="first">Obtain a list of available SensorReadings filtered by url arguments.</p>
+<dl class="last docutils">
+<dt>Args:</dt>
+<dd><div class="first admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Unless otherwise specified all filter arguments accept the value null.</p>
+</div>
+<p>Filter Arguments:
+&#8216;stream&#8217; (Numeric) - id of DataStream
+&#8216;source&#8217; (String) - one of SQL or ElasticSearch. Selects data source to pull from (overrides any server-side source selection)</p>
+<p>Operator Arguments:
+&#8216;condense&#8217; (String)  - If value is &#8216;true&#8217; then the readings returned will</p>
+<blockquote class="last">
+<div><p>only consist of their values and timestamps.</p>
+<p>Format: [ [timestamp1, value1], [timestamp2, value2], ...]</p>
+</div></blockquote>
+</dd>
+<dt>Returns:</dt>
+<dd><dl class="first docutils">
+<dt>{</dt>
+<dd>&#8216;error&#8217;:   &lt;error str if applicable&gt;
+&#8216;readings&#8217;: [List of readings]</dd>
+</dl>
+<p class="last">}</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="teleceptor.api.readings.SensorReadings.POST">
+<code class="descname">POST</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/api/readings.html#SensorReadings.POST"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.api.readings.SensorReadings.POST" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inserts the readings into the database.  Expects a json object in data section of the http request and the object must have a readings key.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Dictionary &#8211;
+&#8216;error&#8217;:   &lt;error str if applicable&gt;
+&#8216;readings&#8217;: [List of readings]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="teleceptor.api.readings.SensorReadings.cleanInputs">
+<code class="descname">cleanInputs</code><span class="sig-paren">(</span><em>params</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/api/readings.html#SensorReadings.cleanInputs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.api.readings.SensorReadings.cleanInputs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks that the supplied params only contains valid key/value parameters for filtering readings and
+performing any special operations on them.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>params</strong> &#8211; Check file doc for list of valid arguments</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Dictionary &#8211; Dict with clean parameters and None if any parameter was unrecognized or the parameter
+did not have a correct value format.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="teleceptor.api.readings.SensorReadings.condense">
+<em class="property">static </em><code class="descname">condense</code><span class="sig-paren">(</span><em>readings</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/api/readings.html#SensorReadings.condense"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.api.readings.SensorReadings.condense" title="Permalink to this definition">¶</a></dt>
+<dd><p>Takes an array of SensorReading objects and returns back a array of arrays.
+Ex: [ [timestamp1, value1], [timestamp2, value2], ...]</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Array &#8211; SensorReadings values in the denoted format.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="teleceptor.api.readings.SensorReadings.exposed">
+<code class="descname">exposed</code><em class="property"> = True</em><a class="headerlink" href="#teleceptor.api.readings.SensorReadings.exposed" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="teleceptor.api.readings.SensorReadings.filterReadings">
+<code class="descname">filterReadings</code><span class="sig-paren">(</span><em>session</em>, <em>params</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/api/readings.html#SensorReadings.filterReadings"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.api.readings.SensorReadings.filterReadings" title="Permalink to this definition">¶</a></dt>
+<dd><p>A filter that will give all data received from a sensor in the last hour for high resolution data.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>session</strong> (<a class="reference internal" href="teleceptor.html#teleceptor.models.Session" title="teleceptor.models.Session"><em>Session</em></a>) &#8211; Refers to the session of the user.</li>
+<li><strong>params</strong> (<em>dictionary</em>) &#8211; Contains the start time, end time, and datastream.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="teleceptor.api.readings.SensorReadings.validFilterArgs">
+<code class="descname">validFilterArgs</code><em class="property"> = {'start': '^\\d+$', 'datastream': '^\\d+$', 'points': '^\\d+$', 'end': '^\\d+$', 'source': '^SQL|ElasticSearch$'}</em><a class="headerlink" href="#teleceptor.api.readings.SensorReadings.validFilterArgs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="teleceptor.api.readings.SensorReadings.validOperatorArgs">
+<code class="descname">validOperatorArgs</code><em class="property"> = {'condense': '^true|false$', 'granularity': '^\\d+$'}</em><a class="headerlink" href="#teleceptor.api.readings.SensorReadings.validOperatorArgs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="teleceptor.api.readings.deleteReadingsByDatastream">
+<code class="descclassname">teleceptor.api.readings.</code><code class="descname">deleteReadingsByDatastream</code><span class="sig-paren">(</span><em>datastream_id</em>, <em>session=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/api/readings.html#deleteReadingsByDatastream"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.api.readings.deleteReadingsByDatastream" title="Permalink to this definition">¶</a></dt>
+<dd><p>Deletes all readings with the datastream id <cite>datastream_id</cite>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>datastream_id</strong> (<em>int</em>) &#8211; id of the datastream to delete all of the readings for</li>
+<li><strong>session</strong> (context object from <cite>sessionScope()</cite>) &#8211; Existing context into a sqlalchemy database session. Can be created by a call to <cite>sessionScope()</cite></li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A list of the deleted readings</p>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><cite>models.DataStream</cite>
+<cite>models.SensorReading</cite>
+<cite>readings.DELETE</cite></p>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="teleceptor.api.readings.incrementMean">
+<code class="descclassname">teleceptor.api.readings.</code><code class="descname">incrementMean</code><span class="sig-paren">(</span><em>readings</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/api/readings.html#incrementMean"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.api.readings.incrementMean" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the timeCenter of the increment and the mean of the readings_values within the increment as a list of 2 values</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="teleceptor.api.readings.insertReadings">
+<code class="descclassname">teleceptor.api.readings.</code><code class="descname">insertReadings</code><span class="sig-paren">(</span><em>readings</em>, <em>session=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/api/readings.html#insertReadings"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.api.readings.insertReadings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tries to insert the readings provided into whisper database, and optionally into the SQL database if SQLDATA is set.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>readings</strong> &#8211; List of reading tuples of the form (datastreamid, value, timestamp)</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Dictionary &#8211; A dict with keywords &#8220;insertions_attempted&#8221;, &#8220;successfull_insertions&#8221;, and &#8220;failed_insertions&#8221;</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="teleceptor.api.readings.reduceData">
+<code class="descclassname">teleceptor.api.readings.</code><code class="descname">reduceData</code><span class="sig-paren">(</span><em>readings</em>, <em>granularity</em>, <em>reduction_method='mean'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/api/readings.html#reduceData"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.api.readings.reduceData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Take a a list of tuples containing at [0] a timeStamp and at [1] a raw data value from a sensor reading, and reduce this list to about granularity datapoints, using different methods.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>readings</strong> (<em>list of 2-tuples</em>) &#8211; Tuples are (SensorReading.timestamp, SensorReading.sensorValue)</li>
+<li><strong>granularity</strong> (<em>int</em>) &#8211; the number of datapoints to which to reduce the list. (will not be exact)</li>
+<li><strong>reduction_method</strong> (<em>str</em>) &#8211; The reduction method.  Can be &#8216;mean&#8217;, &#8216;sample&#8217;, etc.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-teleceptor.api.sensors">
+<span id="teleceptor-api-sensors-module"></span><h2>teleceptor.api.sensors module<a class="headerlink" href="#module-teleceptor.api.sensors" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>Authors: Bretton Murphy (Visgence, Inc.)</dt>
+<dd>Victor Szczepanski (Visgence, Inc.)
+Jessica Greenling (Visgence, Inc.)</dd>
+</dl>
+<p>Resource endpoint for Sensors that is used as part of the RESTful api.  Handles
+the creation, updating, and retrieval of Sensors.</p>
+<dl class="docutils">
+<dt>TODO:</dt>
+<dd>POST /api/sensors/  -  Create a new Sensor.</dd>
+</dl>
+<dl class="class">
+<dt id="teleceptor.api.sensors.Sensors">
+<em class="property">class </em><code class="descclassname">teleceptor.api.sensors.</code><code class="descname">Sensors</code><a class="reference internal" href="_modules/teleceptor/api/sensors.html#Sensors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.api.sensors.Sensors" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="teleceptor.api.sensors.Sensors.DELETE">
+<code class="descname">DELETE</code><span class="sig-paren">(</span><em>sensor_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/api/sensors.html#Sensors.DELETE"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.api.sensors.Sensors.DELETE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Deletes the sensor with uuid <cite>sensor_id</cite>.</p>
+<p>This function cannot be undone, but the sensor may be created again
+in a separate transaction.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>sensor_id</strong> (<em>str</em>) &#8211; The UUID of a sensor</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Dictionary &#8211; A JSON object with an &#8216;error&#8217; key if an error occured or &#8216;sensor&#8217; key if update succeeded. If &#8216;error&#8217;, the value is an error string. If &#8216;sensor&#8217;, the value is a JSON object representing the deleted sensor in the database.</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><cite>models.Sensor</cite></p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="teleceptor.api.sensors.Sensors.GET">
+<code class="descname">GET</code><span class="sig-paren">(</span><em>sensor_id=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/api/sensors.html#Sensors.GET"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.api.sensors.Sensors.GET" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets a sensor&#8217;s or all sensor&#8217;s information.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>sensor_id</strong> (<em>str</em>) &#8211; The UUID of a sensor</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">JSON &#8211; If a valid <cite>sensor_id</cite> is given, returns the information stored in the database for the sensor with uuid <cite>sensor_id</cite>. If <cite>sensor_id</cite> does not refer to a sensor in the database, an error string will be returned. If <cite>sensor_id</cite> is None, returns a list of all sensors in the database.</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><cite>models.Sensor</cite></p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="teleceptor.api.sensors.Sensors.POST">
+<code class="descname">POST</code><span class="sig-paren">(</span><em>sensor_id=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/api/sensors.html#Sensors.POST"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.api.sensors.Sensors.POST" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="teleceptor.api.sensors.Sensors.PUT">
+<code class="descname">PUT</code><span class="sig-paren">(</span><em>sensor_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/api/sensors.html#Sensors.PUT"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.api.sensors.Sensors.PUT" title="Permalink to this definition">¶</a></dt>
+<dd><p>Updates the sensor with uuid <cite>sensor_id</cite>.</p>
+<p>Using the JSON formatted data in the HTTP request body, updates the sensor information in the database. Valid key/value pairs correspond to the columns in <cite>models.Sensor</cite>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>sensor_id</strong> (<em>str</em>) &#8211; The UUID of a sensor</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Dictionary &#8211; A JSON object with an &#8216;error&#8217; key if an error occured or &#8216;sensor&#8217; key if update succeeded. If &#8216;error&#8217;, the value is an error string. If &#8216;sensor&#8217;, the value is a JSON object representing the updated sensor in the database.</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><cite>models.Sensor</cite></p>
+</div>
+<div class="admonition-todo admonition" id="index-0">
+<p class="first admonition-title">Todo</p>
+<p class="last">Decide on new behaviour if no json object so we don&#8217;t incur an extra db lookup.</p>
+</div>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="teleceptor.api.sensors.Sensors.createSensor">
+<em class="property">static </em><code class="descname">createSensor</code><span class="sig-paren">(</span><em>sensor=None</em>, <em>session=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/api/sensors.html#Sensors.createSensor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.api.sensors.Sensors.createSensor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds <cite>sensor</cite> to the database.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>session</strong> (<em>sessionScope() context</em>) &#8211; The context for accessing the database.</li>
+<li><strong>sensor</strong> (<em>model.Sensor</em>) &#8211; The Sensor to add to the database.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><cite>models.Sensor</cite></p>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="teleceptor.api.sensors.Sensors.exposed">
+<code class="descname">exposed</code><em class="property"> = True</em><a class="headerlink" href="#teleceptor.api.sensors.Sensors.exposed" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt id="teleceptor.api.sensors.Sensors.updateCalibration">
+<em class="property">static </em><code class="descname">updateCalibration</code><span class="sig-paren">(</span><em>sensor</em>, <em>coefficients</em>, <em>timestamp</em>, <em>session=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/api/sensors.html#Sensors.updateCalibration"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.api.sensors.Sensors.updateCalibration" title="Permalink to this definition">¶</a></dt>
+<dd><p>Updates the calibration for <cite>sensor</cite>.</p>
+<p>Using <cite>coefficients</cite> and <cite>timestamp</cite>, creates a new Calibration for <cite>sensor</cite> if <cite>timestamp</cite> is newer than <cite>sensor</cite>&#8216;s timestamp and <cite>coefficients</cite> is different from <cite>sensor</cite>&#8216;s coefficients.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>session</strong> (<em>sessionScope() context</em>) &#8211; The context for accessing the database.</li>
+<li><strong>sensor</strong> (<em>model.Sensor</em>) &#8211; The Sensor to update.</li>
+<li><strong>coefficients</strong> &#8211; The new coefficients of the Calibration function.</li>
+<li><strong>timestamp</strong> (<em>int</em>) &#8211; The timestamp for <cite>coefficients</cite></li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><cite>models.Sensor</cite>
+<cite>models.Calibration</cite></p>
+</div>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="teleceptor.api.sensors.Sensors.updateSensor">
+<em class="property">static </em><code class="descname">updateSensor</code><span class="sig-paren">(</span><em>sensor_id</em>, <em>data</em>, <em>session=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/api/sensors.html#Sensors.updateSensor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.api.sensors.Sensors.updateSensor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Updates sensor with id <cite>sensor_id</cite> with new key/values in <cite>data</cite>. Note that this function will incur a db lookup.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>sensor_id</strong> (<em>str</em>) &#8211; The id of the Sensor to modify.</li>
+<li><strong>data</strong> (<em>dictionary</em>) &#8211; The new data to update <cite>sensor</cite> with.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Dictionary &#8211; The dictionary view of the updated sensor.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><cite>models.Sensor</cite></p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This function contains a blacklist of keys that may not be updated. If <cite>data</cite> contains these keys, they are ignored. This documentation should contain the full blacklist:
+blacklist = [&#8220;uuid&#8221;,&#8221;message&#8221;]
+whitelist = [&#8220;sensor_IOtype&#8221;, &#8220;sensor_type&#8221;, &#8220;name&#8221;, &#8220;units&#8221;, &#8220;&#8221;]</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="teleceptor.api.sensors.deleteSensor">
+<code class="descclassname">teleceptor.api.sensors.</code><code class="descname">deleteSensor</code><span class="sig-paren">(</span><em>sensor_id</em>, <em>session=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/api/sensors.html#deleteSensor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.api.sensors.deleteSensor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Deletes the sensor with given uuid.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>sensor_id</strong> (<em>str.</em>) &#8211; The UUID of a sensor.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Dictionary &#8211; The dictionary representation of the sensor that was deleted if successful; otherwise None.</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><cite>models.Sensor</cite>
+<cite>sensors.DELETE</cite></p>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="teleceptor.api.sensors.getAllSensors">
+<code class="descclassname">teleceptor.api.sensors.</code><code class="descname">getAllSensors</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/api/sensors.html#getAllSensors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.api.sensors.getAllSensors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the view of every sensor in the database.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Dictionary &#8211; A list of dictionaries representing all sensors in the database.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="teleceptor.api.sensors.getSensor">
+<code class="descclassname">teleceptor.api.sensors.</code><code class="descname">getSensor</code><span class="sig-paren">(</span><em>sensor_id</em>, <em>session=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/api/sensors.html#getSensor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.api.sensors.getSensor" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>sensor_id</strong> &#8211; The id of the sensor to query on</td>
+</tr>
+</tbody>
+</table>
+<p>&#8220;param session: Optional session context. If None, this function creates its own context. Otherwise, uses this context.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Dictionary &#8211; A dictionary representing the sensor (as described in Models.Sensor) if found, else None</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body">NoResultFound &#8211; If a sensor with id sensor_id was not found.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-teleceptor.api.station">
+<span id="teleceptor-api-station-module"></span><h2>teleceptor.api.station module<a class="headerlink" href="#module-teleceptor.api.station" title="Permalink to this headline">¶</a></h2>
+<p>station.py</p>
+<dl class="docutils">
+<dt>Authors:</dt>
+<dd>Bretton Murphy (Visgence, Inc.)
+Victor Szczepanski (Visgence, Inc.)
+Jessica Greenling (Visgence, Inc.)</dd>
+</dl>
+<p>Resource endpoint for accepting POST requests that is used as part of the RESTful api.
+Handles the delegation of tasks to other api modules. Specifically, this api should be used for posting new sensor readings with sensor readings.
+With all sensor information in the input data, this module will create or update sensors as needed, along with updating metadata.</p>
+<p>This module is the recommended way of updating sensor information and readings.</p>
+<dl class="docutils">
+<dt>API:</dt>
+<dd><p class="first">Unless otherwise noted api will return data as JSON.</p>
+<dl class="last docutils">
+<dt>POST /api/station/</dt>
+<dd><p class="first">Update sensor information (and create if necessary) and put new sensor readings by calling respective api modules.</p>
+<p>In the HTTP POST request, the data field must be a JSON array of the following form:
+[</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>{ &#8220;info&#8221;:</dt>
+<dd><blockquote class="first">
+<div><p>{</p>
+<p>},</p>
+</div></blockquote>
+<dl class="last docutils">
+<dt>&#8220;readings&#8221;:</dt>
+<dd><p class="first">[</p>
+<p class="last">]</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</div></blockquote>
+<p class="last">]</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="class">
+<dt id="teleceptor.api.station.Station">
+<em class="property">class </em><code class="descclassname">teleceptor.api.station.</code><code class="descname">Station</code><a class="reference internal" href="_modules/teleceptor/api/station.html#Station"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.api.station.Station" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="teleceptor.api.station.Station.POST">
+<code class="descname">POST</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/api/station.html#Station.POST"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.api.station.Station.POST" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handles incoming data from a basestation by updating (or creating) sensor information, including metadata, calibration, and datastream. Additionally updates sensor readings, if any.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>data</strong> &#8211; A JSON array formatted string stored in the data section of the HTTP POST request. It is not optional, but some elements can be omitted. The JSON object should be a list, even if there is only one element in it. The full format is listed in the Notes section.</td>
+</tr>
+</tbody>
+</table>
+<p>&#8220;type data: str</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">str &#8211; A JSON object with either a key &#8216;error&#8217; or &#8216;newValues&#8217;. In the case of &#8216;error&#8217;, the value is an error string.
+In the case of &#8216;newValues&#8217;, the value is an object with key/value pairs as &#8220;sensorname&#8221; : messagelist, where messagelist is all unread, unexpired messages for the sensor with name sensorname.
+The receiving function must determine how to handle the messages (e.g. to consider only the newest message, or to use all messages.)</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last">models.Message : The model that defines a message, which is returned in <cite>data</cite>.
+models.Sensor : The model that defines a sensor, whose columns are valid fields in the &#8220;info&#8221; section of the input JSON string.</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The JSON format for the input <cite>data</cite> string follows. Note that required fields are marked with a <a href="#id1"><span class="problematic" id="id2">*</span></a>.
+The JSON object should be an array, with elements being a object with two keys: &#8220;info&#8221; and &#8220;readings&#8221;.
+&#8220;info&#8221; is always required, but &#8220;readings&#8221; is optional. See <cite>models.Sensor</cite> for all valid keys in the &#8220;info&#8221; object.
+Note that, while <cite>scale</cite> is not required for each sensor, this module will create a new <cite>Calibration</cite> with coefficients [1,0] for any sensors without a <cite>scale</cite> field.
+The <cite>in</cite> and <cite>out</cite> sections are not optional, but may have empty arrays.
+An error will be thrown, however, if there are readings whose <cite>sensorname</cite> does not match the <cite>name</cite> of either an <cite>in</cite> or <cite>out</cite> sensor.</p>
+</div>
+<dl class="docutils">
+<dt>Full Format:</dt>
+<dd><dl class="first docutils">
+<dt>[</dt>
+<dd><dl class="first docutils">
+<dt>{</dt>
+<dd><dl class="first last docutils">
+<dt>&#8220;info&#8221;:</dt>
+<dd><dl class="first docutils">
+<dt>{</dt>
+<dd><p class="first"><a href="#id3"><span class="problematic" id="id4">*</span></a>&#8220;uuid&#8221;: &#8221;.....&#8221;,
+&#8220;name&#8221;: &#8221;.....&#8221;,
+&#8220;rev&#8221; : &#8221;.....&#8221;,
+...
+<a href="#id5"><span class="problematic" id="id6">*</span></a>&#8220;in&#8221;  : [</p>
+<blockquote>
+<div><blockquote>
+<div><dl class="docutils">
+<dt>{</dt>
+<dd><a href="#id7"><span class="problematic" id="id8">*</span></a>&#8220;name&#8221;  : &#8220;in1&#8221;,
+&#8220;scale&#8221; : [1,2,3,...],
+...</dd>
+</dl>
+<p>},
+{</p>
+<blockquote>
+<div><a href="#id9"><span class="problematic" id="id10">*</span></a>&#8220;name&#8221;  : &#8220;in2&#8221;,
+&#8220;scale&#8221; : [1,2,3,...],
+...</div></blockquote>
+<p>}</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<dl class="last docutils">
+<dt><a href="#id11"><span class="problematic" id="id12">*</span></a>&#8220;out&#8221;</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">[</span><dd><blockquote class="first">
+<div><dl class="docutils">
+<dt>{</dt>
+<dd><a href="#id13"><span class="problematic" id="id14">*</span></a>&#8220;name&#8221;  : &#8220;out1&#8221;,
+&#8220;scale&#8221; : [1,2,3,...],
+...</dd>
+</dl>
+<p>},
+{</p>
+<blockquote>
+<div><a href="#id15"><span class="problematic" id="id16">*</span></a>&#8220;name&#8221;  : &#8220;out2&#8221;,
+&#8220;scale&#8221; : [1,2,3,...],
+...</div></blockquote>
+<p>}</p>
+</div></blockquote>
+<p class="last">]</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="last">}</p>
+</dd>
+<dt>&#8220;readings&#8221;:</dt>
+<dd><dl class="first docutils">
+<dt>[</dt>
+<dd>[<a href="#id17"><span class="problematic" id="id18">*</span></a>sensorname, <a href="#id19"><span class="problematic" id="id20">*</span></a>val, <a href="#id21"><span class="problematic" id="id22">*</span></a>time],
+[<a href="#id23"><span class="problematic" id="id24">*</span></a>sensorname, <a href="#id25"><span class="problematic" id="id26">*</span></a>val, <a href="#id27"><span class="problematic" id="id28">*</span></a>time],
+...</dd>
+</dl>
+<p class="last">]</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="last">}</p>
+</dd>
+</dl>
+<p class="last">]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="teleceptor.api.station.Station.exposed">
+<code class="descname">exposed</code><em class="property"> = True</em><a class="headerlink" href="#teleceptor.api.station.Station.exposed" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="teleceptor.api.station.update_motes">
+<code class="descclassname">teleceptor.api.station.</code><code class="descname">update_motes</code><span class="sig-paren">(</span><em>mote_datas=[]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/api/station.html#update_motes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.api.station.update_motes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="teleceptor.api.station.update_sensor_data">
+<code class="descclassname">teleceptor.api.station.</code><code class="descname">update_sensor_data</code><span class="sig-paren">(</span><em>sensor_data=None</em>, <em>session=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/api/station.html#update_sensor_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.api.station.update_sensor_data" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-teleceptor.api">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-teleceptor.api" title="Permalink to this headline">¶</a></h2>
+<p>__init__.py</p>
+<p>Authors: Victor Szczepanski</p>
+<dl class="class">
+<dt id="teleceptor.api.ResourceApi">
+<em class="property">class </em><code class="descclassname">teleceptor.api.</code><code class="descname">ResourceApi</code><a class="reference internal" href="_modules/teleceptor/api.html#ResourceApi"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.api.ResourceApi" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="attribute">
+<dt id="teleceptor.api.ResourceApi.datastreams">
+<code class="descname">datastreams</code><em class="property"> = &lt;teleceptor.api.datastreams.DataStreams instance&gt;</em><a class="headerlink" href="#teleceptor.api.ResourceApi.datastreams" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="teleceptor.api.ResourceApi.messages">
+<code class="descname">messages</code><em class="property"> = &lt;teleceptor.api.messages.Messages instance&gt;</em><a class="headerlink" href="#teleceptor.api.ResourceApi.messages" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="teleceptor.api.ResourceApi.readings">
+<code class="descname">readings</code><em class="property"> = &lt;teleceptor.api.readings.SensorReadings instance&gt;</em><a class="headerlink" href="#teleceptor.api.ResourceApi.readings" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="teleceptor.api.ResourceApi.sensors">
+<code class="descname">sensors</code><em class="property"> = &lt;teleceptor.api.sensors.Sensors instance&gt;</em><a class="headerlink" href="#teleceptor.api.ResourceApi.sensors" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="teleceptor.api.ResourceApi.station">
+<code class="descname">station</code><em class="property"> = &lt;teleceptor.api.station.Station instance&gt;</em><a class="headerlink" href="#teleceptor.api.ResourceApi.station" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="teleceptor.api.ResourceApi.sysdata">
+<code class="descname">sysdata</code><em class="property"> = &lt;teleceptor.api.SysData instance&gt;</em><a class="headerlink" href="#teleceptor.api.ResourceApi.sysdata" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="teleceptor.api.SysData">
+<em class="property">class </em><code class="descclassname">teleceptor.api.</code><code class="descname">SysData</code><a class="reference internal" href="_modules/teleceptor/api.html#SysData"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.api.SysData" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="teleceptor.api.SysData.GET">
+<code class="descname">GET</code><span class="sig-paren">(</span><em>sensor_id=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleceptor/api.html#SysData.GET"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleceptor.api.SysData.GET" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="teleceptor.api.SysData.exposed">
+<code class="descname">exposed</code><em class="property"> = True</em><a class="headerlink" href="#teleceptor.api.SysData.exposed" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">teleceptor.api package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-teleceptor.api.datastreams">teleceptor.api.datastreams module</a></li>
+<li><a class="reference internal" href="#module-teleceptor.api.messages">teleceptor.api.messages module</a></li>
+<li><a class="reference internal" href="#module-teleceptor.api.readings">teleceptor.api.readings module</a></li>
+<li><a class="reference internal" href="#module-teleceptor.api.sensors">teleceptor.api.sensors module</a></li>
+<li><a class="reference internal" href="#module-teleceptor.api.station">teleceptor.api.station module</a></li>
+<li><a class="reference internal" href="#module-teleceptor.api">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/teleceptor.api.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">teleceptor 1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2016, Visgence Inc..
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+    </div>
+  </body>
+</html>

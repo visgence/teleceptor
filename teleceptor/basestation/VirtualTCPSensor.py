@@ -1,7 +1,6 @@
 """
 Contributing Authors:
     Victor Szczepanski (Visgence, Inc)
-VirtualTCPSensor.py
 
 Simulates a teleimperium-like TCP sensor.
 """
@@ -13,23 +12,23 @@ TCP_IP = '127.0.0.1'
 TCP_PORT = 5005
 BUFFER_SIZE = 1024
 
-#basic sensor for testing without any input sensors.
-SENSOR_INFO = {"Desc": "Virtual TCP Sensor",
-                "out": [
-                        {
-                            "name": "VirtualOut1",
-                             "s_t": "int",
-                             "u": "real"
-                        }],
-                "uuid": "VTCP001",
-                "mode": "Virtual TCP Sensor"
-
-                }
+# basic sensor for testing without any input sensors.
+SENSOR_INFO = {
+    "Desc": "Virtual TCP Sensor",
+    "out": [{
+        "name": "VirtualOut1",
+        "s_t": "int",
+        "u": "real"
+    }],
+    "uuid": "VTCP001",
+    "mode": "Virtual TCP Sensor"
+}
 IN_STATES = {
-
-}#would be of form "sensorname": state
+    # would be of form "sensorname": state
+}
 
 SENSOR_READINGS = [["VirtualOut1", 3.2]]
+
 
 def parseJSON(data):
     """
@@ -67,9 +66,9 @@ def main():
             break
         print "received data:", data
 
-        #check for command char
+        # check for command char
         if data[0] == '@':
-            #parse rest of data as JSON
+            # parse rest of data as JSON
             command = conn.recv(BUFFER_SIZE)
             try:
                 parseJSON(command)

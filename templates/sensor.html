@@ -13,62 +13,48 @@
 	<div class="alert alert-danger" data-bind="text: updateError"></div>
 	<!-- /ko -->
 
-
-
 	<form class = "form-horizontal" role="form">
-
         <div class="form-group">
-            <label class="col-md-2 control-label">UUID</label>
-            <div class="col-md-4">
+            <label class="col-md-3 control-label">UUID</label>
+            <div class="col-md-6">
                 <p class="form-control-static" data-bind="text: uuid()"></p>
             </div>
         </div>
 
         <div class="form-group">
-            <label class="col-md-2 control-label">Model</label>
-            <div class="col-md-4">
+            <label class="col-md-3 control-label">Model</label>
+            <div class="col-md-6">
                 <p class="form-control-static" data-bind="text: model()"></p>
             </div>
         </div>
 
 		<div class = "form-group" data-bind="css: {'has-error': name.hasError}">
-
-			<label class="col-md-2 control-label">Name</label>
-			<div class="col-md-4">
-				<!-- ko ifnot: editing -->
+			<label class="col-md-3 control-label">Name</label>
+			<div class="col-md-6">
 				<p class="form-control-static" data-bind="text: name()"></p>
-				<!-- /ko -->
-				<!-- ko if: editing -->
-				<input class="form-control" data-bind="value: name">
-				<p class="text-danger" data-bind="text: name.validationMessage, if: name.hasError"></p>
-				<!-- /ko -->
 			</div>
 		</div>
 		<div class = "form-group">
-			<label class="col-md-2 control-label">Description</label>
-			<div class="col-md-4">
-				<!-- ko ifnot: editing -->
+			<label class="col-md-3 control-label">Description</label>
+			<div class="col-md-6">
 				<p class="form-control-static" data-bind="text: description()"></p>
-				<!-- /ko -->
-				<!-- ko if: editing -->
-				<input class="form-control" data-bind="value: description">
-				<!-- /ko -->
 			</div>
 		</div>
 		<div class = "form-group">
-			<label class="col-md-2 control-label">Units</label>
-			<div class="col-md-4">
-				<!-- ko ifnot: editing -->
+			<label class="col-md-3 control-label">Units</label>
+			<div class="col-md-6">
 				<p class="form-control-static" data-bind="text: units()"></p>
-				<!-- /ko -->
-				<!-- ko if: editing -->
-				<input class="form-control" data-bind="value: units">
-				<!-- /ko -->
 			</div>
 		</div>
+        <div class = "form-group">
+            <label class="col-md-3 control-label">Last Calibration</label>
+            <div class="col-md-6">
+                <p class="form-control-static" data-bind="text: lastCalibration"></p>
+            </div>
+        </div>
 		<div class = "form-group">
-			<label class="col-md-2 control-label">Calibration</label>
-			<div class="col-md-4">
+			<label class="col-md-3 control-label">Calibration</label>
+			<div class="col-md-6">
 				<!-- ko ifnot: editing -->
 				<p class="form-control-static" data-bind="text: coefficients()"></p>
 				<!-- /ko -->
@@ -93,7 +79,6 @@
 				<button type="button" class="btn btn-default btn-sm" data-bind="click: cancelEditing">
 					<span class="glyphicon glyphicon-remove"></span> Cancel
 				</button>
-
 				<!-- /ko -->
 			</div>
 		</div>
@@ -111,10 +96,10 @@
 	<form class = "form-horizontal" role="form">
 
 		<div class = "form-group form-group-sm" >
-			<label class="col-md-2 control-label" data-bind="text: name"></label>
+			<label class="col-md-3 control-label" data-bind="text: name"></label>
 
 			<!-- ko ifnot: isInput -->
-			<p class="form-control-static" > Output Sensor</p>
+			<p class="form-control-static col-md-4"  > Output Sensor</p>
 			<!-- /ko -->
 			<!-- ko if: isInput -->
 

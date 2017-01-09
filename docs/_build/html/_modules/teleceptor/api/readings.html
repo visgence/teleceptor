@@ -1,0 +1,601 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>teleceptor.api.readings &mdash; teleceptor 1 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="teleceptor 1 documentation" href="../../../index.html" />
+    <link rel="up" title="teleceptor.api" href="../api.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">teleceptor 1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../api.html" accesskey="U">teleceptor.api</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for teleceptor.api.readings</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">readings.py</span>
+
+<span class="sd">    Authors: Bretton Murphy</span>
+<span class="sd">             Evan Salazar</span>
+<span class="sd">             Victor Szczepanski</span>
+<span class="sd">             Jessica Greenling</span>
+
+<span class="sd">    Resource endpoint for SensorReadings that is used as part of the RESTful api.  Handles</span>
+<span class="sd">    the creation and retrieval of SensorReadings.</span>
+
+<span class="sd">    API:</span>
+<span class="sd">        Unless otherwise noted api will return data as JSON.</span>
+
+<span class="sd">        TODO:</span>
+<span class="sd">        POST /api/readings/  -  Create a new SensorReading.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c1"># System Imports</span>
+<span class="kn">import</span> <span class="nn">cherrypy</span>
+<span class="kn">from</span> <span class="nn">whisper</span> <span class="kn">import</span> <span class="n">WhisperException</span>
+<span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">time</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy.orm.exc</span> <span class="kn">import</span> <span class="n">NoResultFound</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">simplejson</span> <span class="kn">as</span> <span class="nn">json</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">json</span>
+
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="c1"># Local Imports</span>
+<span class="kn">from</span> <span class="nn">teleceptor</span> <span class="kn">import</span> <span class="n">SQLDATA</span><span class="p">,</span> <span class="n">SQLREADTIME</span><span class="p">,</span> <span class="n">USE_DEBUG</span><span class="p">,</span> <span class="n">USE_SQL_ALWAYS</span>
+<span class="kn">from</span> <span class="nn">teleceptor.models</span> <span class="kn">import</span> <span class="n">SensorReading</span><span class="p">,</span> <span class="n">DataStream</span>
+<span class="kn">from</span> <span class="nn">teleceptor.sessionManager</span> <span class="kn">import</span> <span class="n">sessionScope</span>
+<span class="kn">from</span> <span class="nn">teleceptor</span> <span class="kn">import</span> <span class="n">USE_ELASTICSEARCH</span>
+<span class="k">if</span> <span class="n">USE_ELASTICSEARCH</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">teleceptor.elasticsearchUtils</span> <span class="kn">import</span> <span class="n">getReadings</span> <span class="k">as</span> <span class="n">esGetReadings</span>
+    <span class="kn">from</span> <span class="nn">teleceptor.elasticsearchUtils</span> <span class="kn">import</span> <span class="n">insertReading</span> <span class="k">as</span> <span class="n">esInsert</span>
+
+<span class="k">else</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">teleceptor.whisperUtils</span> <span class="kn">import</span> <span class="n">getReadings</span><span class="p">,</span> <span class="n">insertReading</span> <span class="k">as</span> <span class="n">whisperInsert</span>
+
+
+<div class="viewcode-block" id="SensorReadings"><a class="viewcode-back" href="../../../teleceptor.api.html#teleceptor.api.readings.SensorReadings">[docs]</a><span class="k">class</span> <span class="nc">SensorReadings</span><span class="p">:</span>
+    <span class="n">exposed</span> <span class="o">=</span> <span class="bp">True</span>
+
+    <span class="k">if</span> <span class="n">USE_DEBUG</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">format</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%(levelname)s</span><span class="s1">:</span><span class="si">%(asctime)s</span><span class="s1"> </span><span class="si">%(message)s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">format</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%(levelname)s</span><span class="s1">:</span><span class="si">%(asctime)s</span><span class="s1"> </span><span class="si">%(message)s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+
+    <span class="n">validFilterArgs</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;datastream&#39;</span><span class="p">:</span> <span class="s1">&#39;^\d+$&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;start&#39;</span><span class="p">:</span>      <span class="s1">&#39;^\d+$&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;end&#39;</span><span class="p">:</span>        <span class="s1">&#39;^\d+$&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;points&#39;</span><span class="p">:</span>     <span class="s1">&#39;^\d+$&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;source&#39;</span><span class="p">:</span>    <span class="s1">&#39;^SQL|ElasticSearch$&#39;</span>
+    <span class="p">}</span>
+
+    <span class="n">validOperatorArgs</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;condense&#39;</span><span class="p">:</span>    <span class="s1">&#39;^true|false$&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;granularity&#39;</span><span class="p">:</span> <span class="s1">&#39;^\d+$&#39;</span>
+    <span class="p">}</span>
+
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="SensorReadings.condense"><a class="viewcode-back" href="../../../teleceptor.api.html#teleceptor.api.readings.SensorReadings.condense">[docs]</a>    <span class="k">def</span> <span class="nf">condense</span><span class="p">(</span><span class="n">readings</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Takes an array of SensorReading objects and returns back a array of arrays.</span>
+<span class="sd">            Ex: [ [timestamp1, value1], [timestamp2, value2], ...]</span>
+
+<span class="sd">            :returns: Array -- SensorReadings values in the denoted format.</span>
+<span class="sd">         &quot;&quot;&quot;</span>
+
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Condensing SensorReading objects to simple [timestamp, value] format: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">readings</span><span class="p">))</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">reading</span> <span class="ow">in</span> <span class="n">readings</span><span class="p">:</span>
+            <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">reading</span><span class="o">.</span><span class="n">timestamp</span><span class="p">,</span> <span class="n">reading</span><span class="o">.</span><span class="n">value</span><span class="p">])</span>
+
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Made readings list: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">data</span></div>
+
+<div class="viewcode-block" id="SensorReadings.cleanInputs"><a class="viewcode-back" href="../../../teleceptor.api.html#teleceptor.api.readings.SensorReadings.cleanInputs">[docs]</a>    <span class="k">def</span> <span class="nf">cleanInputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Checks that the supplied params only contains valid key/value parameters for filtering readings and</span>
+<span class="sd">            performing any special operations on them.</span>
+
+<span class="sd">            :param params: Check file doc for list of valid arguments</span>
+
+<span class="sd">            :returns: Dictionary -- Dict with clean parameters and None if any parameter was unrecognized or the parameter</span>
+<span class="sd">                did not have a correct value format.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Validating parameters: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">params</span><span class="p">))</span>
+
+        <span class="n">valueConversions</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;null&#39;</span><span class="p">:</span> <span class="bp">None</span>
+        <span class="p">}</span>
+
+        <span class="n">safeParams</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">paramsCopy</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">paramsCopy</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">validFilterArgs</span><span class="p">:</span>
+                <span class="n">arg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">validFilterArgs</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+            <span class="k">elif</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">validOperatorArgs</span><span class="p">:</span>
+                <span class="n">arg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">validOperatorArgs</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Key </span><span class="si">%s</span><span class="s2"> is invalid filter or operator argument.&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">key</span><span class="p">))</span>
+                <span class="k">return</span> <span class="bp">None</span>
+
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">validFilterArgs</span> <span class="ow">and</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">valueConversions</span><span class="p">:</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="n">valueConversions</span><span class="p">[</span><span class="n">value</span><span class="p">]</span>
+            <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">None</span>
+
+            <span class="n">safeParams</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Returning safe parameters: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">safeParams</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">safeParams</span></div>
+
+<div class="viewcode-block" id="SensorReadings.filterReadings"><a class="viewcode-back" href="../../../teleceptor.api.html#teleceptor.api.readings.SensorReadings.filterReadings">[docs]</a>    <span class="k">def</span> <span class="nf">filterReadings</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A filter that will give all data received from a sensor in the last hour for high resolution data.</span>
+
+<span class="sd">        :param session: Refers to the session of the user.</span>
+<span class="sd">        :type session: Session</span>
+<span class="sd">        :param params: Contains the start time, end time, and datastream.</span>
+<span class="sd">        :type params: dictionary</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Filtering readings with parameters: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">params</span><span class="p">))</span>
+        <span class="n">filterArgs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">paramsCopy</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="n">query</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">SensorReading</span><span class="p">)</span>
+        <span class="n">end</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">end</span> <span class="o">-</span> <span class="mi">25200</span>
+        <span class="n">uuid</span> <span class="o">=</span> <span class="s1">&#39;1&#39;</span>
+        <span class="n">points</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="n">source</span> <span class="o">=</span> <span class="bp">None</span>
+
+        <span class="c1"># Seperate out filter arguments first</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">paramsCopy</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">validFilterArgs</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;start&quot;</span><span class="p">:</span>
+                    <span class="n">start</span> <span class="o">=</span> <span class="n">value</span>
+                    <span class="n">query</span> <span class="o">=</span> <span class="n">query</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">SensorReading</span><span class="o">.</span><span class="n">timestamp</span> <span class="o">&gt;=</span> <span class="n">value</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;end&quot;</span><span class="p">:</span>
+                    <span class="n">end</span> <span class="o">=</span> <span class="n">value</span>
+                    <span class="n">query</span> <span class="o">=</span> <span class="n">query</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">SensorReading</span><span class="o">.</span><span class="n">timestamp</span> <span class="o">&lt;=</span> <span class="n">value</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;datastream&quot;</span><span class="p">:</span>
+                    <span class="n">uuid</span> <span class="o">=</span> <span class="n">value</span>
+                    <span class="n">filterArgs</span><span class="p">[</span><span class="s1">&#39;datastream&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+                <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;points&quot;</span><span class="p">:</span>
+                    <span class="n">points</span> <span class="o">=</span> <span class="n">value</span>
+                <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;source&quot;</span><span class="p">:</span>
+                    <span class="n">source</span> <span class="o">=</span> <span class="n">value</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">filterArgs</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+
+                <span class="k">del</span> <span class="n">params</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+
+        <span class="n">data_source</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span>
+        <span class="k">if</span> <span class="n">source</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">USE_ELASTICSEARCH</span> <span class="ow">and</span> <span class="n">source</span> <span class="o">==</span> <span class="s2">&quot;ElasticSearch&quot;</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Getting Elasticsearch data.&#39;</span><span class="p">)</span>
+                <span class="n">data_source</span> <span class="o">=</span> <span class="n">source</span>
+            <span class="k">elif</span> <span class="n">source</span> <span class="o">==</span> <span class="s2">&quot;SQL&quot;</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Getting SQL high-resolution data.&quot;</span><span class="p">)</span>
+                <span class="n">data_source</span> <span class="o">=</span> <span class="n">source</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Selected source {} is incompatible with USE_ELASTICSEARCH setting {}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">USE_ELASTICSEARCH</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">SQLDATA</span> <span class="ow">and</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">end</span><span class="p">)</span> <span class="o">-</span> <span class="nb">int</span><span class="p">(</span><span class="n">start</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">SQLREADTIME</span><span class="p">):</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Request time </span><span class="si">%s</span><span class="s2"> less than SQLREADTIME </span><span class="si">%s</span><span class="s2">. Getting high-resolution data.&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">((</span><span class="nb">int</span><span class="p">(</span><span class="n">end</span><span class="p">)</span> <span class="o">-</span> <span class="nb">int</span><span class="p">(</span><span class="n">start</span><span class="p">))),</span> <span class="nb">str</span><span class="p">(</span><span class="n">SQLREADTIME</span><span class="p">))</span>
+                <span class="n">data_source</span> <span class="o">=</span> <span class="s2">&quot;SQL&quot;</span>
+            <span class="k">elif</span> <span class="n">USE_ELASTICSEARCH</span> <span class="ow">and</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">end</span><span class="p">)</span> <span class="o">-</span> <span class="nb">int</span><span class="p">(</span><span class="n">start</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">SQLREADTIME</span><span class="p">):</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Getting Elasticsearch data.&#39;</span><span class="p">)</span>
+                <span class="n">data_source</span> <span class="o">=</span> <span class="s2">&quot;ElasticSearch&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Getting SQL high-resolution data.&quot;</span><span class="p">)</span>
+                <span class="n">data_source</span> <span class="o">=</span> <span class="s2">&quot;SQL&quot;</span> <span class="c1"># default case, use SQL</span>
+
+        <span class="k">if</span> <span class="n">data_source</span> <span class="o">==</span> <span class="s2">&quot;ElasticSearch&quot;</span><span class="p">:</span>
+            <span class="n">readings</span> <span class="o">=</span> <span class="n">esGetReadings</span><span class="p">(</span><span class="n">ds</span><span class="o">=</span><span class="n">uuid</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">end</span><span class="p">,</span> <span class="n">points</span><span class="o">=</span><span class="n">points</span><span class="p">)</span>
+            <span class="n">data_source</span> <span class="o">=</span> <span class="s2">&quot;ElasticSearch&quot;</span>
+        <span class="k">elif</span> <span class="n">data_source</span> <span class="o">==</span> <span class="s2">&quot;SQL&quot;</span><span class="p">:</span>
+            <span class="n">readings</span> <span class="o">=</span> <span class="n">query</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="o">**</span><span class="n">filterArgs</span><span class="p">)</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="s1">&#39;timestamp&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+            <span class="n">readings</span> <span class="o">=</span> <span class="p">[(</span><span class="n">reading</span><span class="o">.</span><span class="n">timestamp</span><span class="p">,</span> <span class="n">reading</span><span class="o">.</span><span class="n">value</span><span class="p">)</span> <span class="k">for</span> <span class="n">reading</span> <span class="ow">in</span> <span class="n">readings</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No valid data source selected.&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">readings</span><span class="p">,</span> <span class="n">data_source</span></div>
+
+<div class="viewcode-block" id="SensorReadings.GET"><a class="viewcode-back" href="../../../teleceptor.api.html#teleceptor.api.readings.SensorReadings.GET">[docs]</a>    <span class="k">def</span> <span class="nf">GET</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        GET /api/readings/</span>
+<span class="sd">            Obtain a list of available SensorReadings.</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                {</span>
+<span class="sd">                    &#39;error&#39;:   &lt;error str if applicable&gt;</span>
+<span class="sd">                    &#39;readings&#39;: [List of readings]</span>
+<span class="sd">                }</span>
+
+<span class="sd">        GET /api/readings/?arg1=value&amp;arg2=value...</span>
+<span class="sd">            Obtain a list of available SensorReadings filtered by url arguments.</span>
+
+<span class="sd">            Args:</span>
+<span class="sd">                .. note:: Unless otherwise specified all filter arguments accept the value null.</span>
+
+<span class="sd">                Filter Arguments:</span>
+<span class="sd">                &#39;stream&#39; (Numeric) - id of DataStream</span>
+<span class="sd">                &#39;source&#39; (String) - one of SQL or ElasticSearch. Selects data source to pull from (overrides any server-side source selection)</span>
+
+<span class="sd">                Operator Arguments:</span>
+<span class="sd">                &#39;condense&#39; (String)  - If value is &#39;true&#39; then the readings returned will</span>
+<span class="sd">                                        only consist of their values and timestamps.</span>
+
+<span class="sd">                                        Format: [ [timestamp1, value1], [timestamp2, value2], ...]</span>
+
+
+<span class="sd">            Returns:</span>
+<span class="sd">                {</span>
+<span class="sd">                    &#39;error&#39;:   &lt;error str if applicable&gt;</span>
+<span class="sd">                    &#39;readings&#39;: [List of readings]</span>
+<span class="sd">                }</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;GET request to readings.&quot;</span><span class="p">)</span>
+
+        <span class="n">cherrypy</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="s1">&#39;Content-Type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;application/json&#39;</span>
+        <span class="n">status_code</span> <span class="o">=</span> <span class="s2">&quot;200&quot;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">inputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cleanInputs</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Got clean input arguments </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">inputs</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">inputs</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Got invalid url parameters </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">kwargs</span><span class="p">))</span>
+            <span class="n">data</span><span class="p">[</span><span class="s1">&#39;error&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;Invalid url parameters&quot;</span>
+            <span class="n">status_code</span> <span class="o">=</span> <span class="s2">&quot;400&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">sessionScope</span><span class="p">()</span> <span class="k">as</span> <span class="n">s</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">data</span><span class="p">[</span><span class="s1">&#39;readings&#39;</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">filterReadings</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">inputs</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="n">data</span><span class="p">[</span><span class="s1">&#39;error&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+
+        <span class="n">cherrypy</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="n">status_code</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Finished GET request to readings.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SensorReadings.POST"><a class="viewcode-back" href="../../../teleceptor.api.html#teleceptor.api.readings.SensorReadings.POST">[docs]</a>    <span class="k">def</span> <span class="nf">POST</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Inserts the readings into the database.  Expects a json object in data section of the http request and the object must have a readings key.</span>
+
+<span class="sd">        :returns: Dictionary --</span>
+<span class="sd">            &#39;error&#39;:   &lt;error str if applicable&gt;</span>
+<span class="sd">            &#39;readings&#39;: [List of readings]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;POST request to readings.&quot;</span><span class="p">)</span>
+
+        <span class="n">cherrypy</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="s1">&#39;Content-Type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;application/json&#39;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">status_code</span> <span class="o">=</span> <span class="s2">&quot;200&quot;</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">reading_data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">cherrypy</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">body</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">):</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Request body is not in JSON format.&quot;</span><span class="p">)</span>
+            <span class="n">data</span><span class="p">[</span><span class="s1">&#39;error&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;Bad json&quot;</span>
+            <span class="n">status_code</span> <span class="o">=</span> <span class="s2">&quot;400&quot;</span>
+            <span class="n">cherrypy</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="n">status_code</span>
+            <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Request body: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">reading_data</span><span class="p">))</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">insertReadings</span><span class="p">(</span><span class="n">reading_data</span><span class="p">[</span><span class="s1">&#39;readings&#39;</span><span class="p">])</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;No readings in request body to insert.&quot;</span><span class="p">)</span>
+            <span class="n">data</span><span class="p">[</span><span class="s1">&#39;error&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;No readings to insert&quot;</span>
+            <span class="n">status_code</span> <span class="o">=</span> <span class="s2">&quot;400&quot;</span>
+
+        <span class="n">cherrypy</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="n">status_code</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Finished POST request to readings.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SensorReadings.DELETE"><a class="viewcode-back" href="../../../teleceptor.api.html#teleceptor.api.readings.SensorReadings.DELETE">[docs]</a>    <span class="k">def</span> <span class="nf">DELETE</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reading_id</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">datastream_id</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Deletes a sensor reading or all sensor readings for a given datastream.</span>
+
+<span class="sd">        :raises: A JSON object with an &#39;error&#39; key if an error occured or &#39;readings&#39; key if delete was successful.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;DELETE request to readings with reading_id {} and datastream_id {}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">reading_id</span><span class="p">,</span> <span class="n">datastream_id</span><span class="p">))</span>
+
+        <span class="n">cherrypy</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="s1">&#39;Content-Type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;application/json&#39;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="n">statusCode</span> <span class="o">=</span> <span class="s2">&quot;200&quot;</span>
+
+        <span class="k">if</span> <span class="n">datastream_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">deleted_readings</span> <span class="o">=</span> <span class="n">deleteReadingsByDatastream</span><span class="p">(</span><span class="n">datastream_id</span><span class="p">)</span>
+                <span class="n">data</span><span class="p">[</span><span class="s1">&#39;readings&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">deleted_readings</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">error_string</span> <span class="o">=</span> <span class="s2">&quot;Unexpected error while deleting readings by datastream: {}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="n">error_string</span><span class="p">)</span>
+                <span class="n">data</span><span class="p">[</span><span class="s1">&#39;error&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">error_string</span>
+                <span class="n">statusCode</span> <span class="o">=</span> <span class="s2">&quot;400&quot;</span>
+
+        <span class="n">cherrypy</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="n">statusCode</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Finished DELETE request to datastreams.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="insertReadings"><a class="viewcode-back" href="../../../teleceptor.api.html#teleceptor.api.readings.insertReadings">[docs]</a><span class="k">def</span> <span class="nf">insertReadings</span><span class="p">(</span><span class="n">readings</span><span class="p">,</span> <span class="n">session</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Tries to insert the readings provided into whisper database, and optionally into the SQL database if SQLDATA is set.</span>
+
+<span class="sd">    :param readings: List of reading tuples of the form (datastreamid, value, timestamp)</span>
+
+<span class="sd">    :returns: Dictionary -- A dict with keywords &quot;insertions_attempted&quot;, &quot;successfull_insertions&quot;, and &quot;failed_insertions&quot;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Inserting readings.&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">session</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">sessionScope</span><span class="p">()</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">_insertReadings</span><span class="p">(</span><span class="n">readings</span><span class="p">,</span> <span class="n">session</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">_insertReadings</span><span class="p">(</span><span class="n">readings</span><span class="p">,</span> <span class="n">session</span><span class="p">)</span>
+
+    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Stats from attempted insertions: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">data</span></div>
+
+
+<span class="k">def</span> <span class="nf">_insertReadings</span><span class="p">(</span><span class="n">readings</span><span class="p">,</span> <span class="n">session</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Tries to insert the readings provided into whisper database, and optionally into the SQL database if SQLDATA is set.</span>
+
+<span class="sd">    :param readings: List of reading tuples of the form (datastreamid, value, timestamp)</span>
+
+<span class="sd">    :returns: Dictionary -- A dict with keywords &quot;insertions_attempted&quot;, &quot;successfull_insertions&quot;, and &quot;failed_insertions&quot;</span>
+
+<span class="sd">    .. todo::</span>
+<span class="sd">        handle errors better</span>
+<span class="sd">        Get the datastream, if possible</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;insertions_attempted&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="s2">&quot;successfull_insertions&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="s2">&quot;failed_insertions&quot;</span><span class="p">:</span> <span class="mi">0</span>
+    <span class="p">}</span>
+
+    <span class="n">DS</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">VAL</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">TIME</span> <span class="o">=</span> <span class="mi">2</span>
+
+    <span class="k">for</span> <span class="n">reading</span> <span class="ow">in</span> <span class="n">readings</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Looking at reading </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">reading</span><span class="p">))</span>
+        <span class="n">data</span><span class="p">[</span><span class="s1">&#39;insertions_attempted&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">streamId</span> <span class="o">=</span> <span class="n">reading</span><span class="p">[</span><span class="n">DS</span><span class="p">]</span>
+            <span class="n">rawVal</span> <span class="o">=</span> <span class="n">reading</span><span class="p">[</span><span class="n">VAL</span><span class="p">]</span>
+            <span class="n">timestamp</span> <span class="o">=</span> <span class="n">reading</span><span class="p">[</span><span class="n">TIME</span><span class="p">]</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Error separating </span><span class="si">%s</span><span class="s2"> into streamId, rawVal, and timestamp.&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">reading</span><span class="p">))</span>
+            <span class="k">continue</span>
+
+        <span class="c1"># If no sensor value then skip this reading</span>
+        <span class="k">if</span> <span class="n">rawVal</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">or</span> <span class="n">rawVal</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Provided rawVal is invalid: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">rawVal</span><span class="p">))</span>
+            <span class="k">continue</span>
+
+        <span class="c1"># TODO: handle errors better</span>
+        <span class="c1"># Get the datastream, if possible</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># TODO: will need to validate retrieved ds</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Looking up datastream with id </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">streamId</span><span class="p">))</span>
+            <span class="n">ds</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">DataStream</span><span class="p">)</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="n">streamId</span><span class="p">)</span><span class="o">.</span><span class="n">one</span><span class="p">()</span>
+        <span class="k">except</span> <span class="n">NoResultFound</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;No datastream with id </span><span class="si">%s</span><span class="s2"> exists.&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">streamId</span><span class="p">))</span>
+            <span class="k">continue</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Inserting into whisper database with streamId </span><span class="si">%s</span><span class="s2">, rawVal </span><span class="si">%s</span><span class="s2">, and timestamp </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">streamId</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">rawVal</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">timestamp</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">USE_ELASTICSEARCH</span><span class="p">:</span>
+                <span class="n">esInsert</span><span class="p">(</span><span class="n">streamId</span><span class="p">,</span> <span class="n">rawVal</span><span class="p">,</span> <span class="n">timestamp</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">whisperInsert</span><span class="p">(</span><span class="n">streamId</span><span class="p">,</span> <span class="n">rawVal</span><span class="p">,</span> <span class="n">timestamp</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">SQLDATA</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Creating new sensor reading in SQL database...&quot;</span><span class="p">)</span>
+                <span class="n">new_reading</span> <span class="o">=</span> <span class="n">SensorReading</span><span class="p">()</span>
+                <span class="n">new_reading</span><span class="o">.</span><span class="n">datastream</span> <span class="o">=</span> <span class="n">streamId</span>
+                <span class="n">new_reading</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">rawVal</span>
+                <span class="n">new_reading</span><span class="o">.</span><span class="n">timestamp</span> <span class="o">=</span> <span class="n">timestamp</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Adding new_reading...&quot;</span><span class="p">)</span>
+                <span class="n">session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">new_reading</span><span class="p">)</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Added new_reading.&quot;</span><span class="p">)</span>
+
+            <span class="n">data</span><span class="p">[</span><span class="s1">&#39;successfull_insertions&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Failed to insert reading into whisper </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">streamId</span><span class="p">))</span>
+            <span class="k">continue</span>
+        <span class="k">except</span> <span class="n">WhisperException</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Failed to insert reading into whisper </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">streamId</span><span class="p">))</span>
+            <span class="k">continue</span>
+
+    <span class="n">data</span><span class="p">[</span><span class="s1">&#39;failed_insertions&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;insertions_attempted&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;successfull_insertions&#39;</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">data</span>
+
+
+<div class="viewcode-block" id="deleteReadingsByDatastream"><a class="viewcode-back" href="../../../teleceptor.api.html#teleceptor.api.readings.deleteReadingsByDatastream">[docs]</a><span class="k">def</span> <span class="nf">deleteReadingsByDatastream</span><span class="p">(</span><span class="n">datastream_id</span><span class="p">,</span> <span class="n">session</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Deletes all readings with the datastream id `datastream_id`.</span>
+
+<span class="sd">    :param datastream_id: id of the datastream to delete all of the readings for</span>
+<span class="sd">    :type datastream_id: int</span>
+<span class="sd">    :param session: Existing context into a sqlalchemy database session. Can be created by a call to `sessionScope()`</span>
+<span class="sd">    :type session: context object from `sessionScope()`</span>
+
+<span class="sd">    :returns: A list of the deleted readings</span>
+
+<span class="sd">    .. seealso::</span>
+<span class="sd">        `models.DataStream`</span>
+<span class="sd">        `models.SensorReading`</span>
+<span class="sd">        `readings.DELETE`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">session</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">sessionScope</span><span class="p">()</span> <span class="k">as</span> <span class="n">s</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">_deleteReadingsByDatastream</span><span class="p">(</span><span class="n">datastream_id</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_deleteReadingsByDatastream</span><span class="p">(</span><span class="n">datastream_id</span><span class="p">,</span> <span class="n">session</span><span class="p">)</span></div>
+
+
+<span class="k">def</span> <span class="nf">_deleteReadingsByDatastream</span><span class="p">(</span><span class="n">datastream_id</span><span class="p">,</span> <span class="n">session</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Deletes all readings with the datastream id `datastream_id`.</span>
+
+<span class="sd">    :param datastream_id: id of the datastream to delete all of the readings for</span>
+<span class="sd">    :type datastream_id: int</span>
+<span class="sd">    :param session: Existing context into a sqlalchemy database session. Can be created by a call to `sessionScope()`</span>
+<span class="sd">    :type session: context object from `sessionScope()`</span>
+
+<span class="sd">    :returns: A list of the deleted readings</span>
+
+<span class="sd">    .. seealso::</span>
+<span class="sd">        `models.DataStream`</span>
+<span class="sd">        `models.SensorReading`</span>
+<span class="sd">        `readings.DELETE`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">readings</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">SensorReading</span><span class="p">)</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">datastream</span><span class="o">=</span><span class="n">datastream_id</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+    <span class="k">except</span> <span class="n">NoResultFound</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;No readings found to delete for datastream {}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">datastream_id</span><span class="p">))</span>
+        <span class="k">return</span> <span class="p">[]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Deleting sensor readings for datastream {}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">datastream_id</span><span class="p">))</span>
+        <span class="n">deleted_readings</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">reading</span> <span class="ow">in</span> <span class="n">readings</span><span class="p">:</span>
+            <span class="n">deleted_readings</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">reading</span><span class="o">.</span><span class="n">toDict</span><span class="p">())</span>
+            <span class="n">session</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">reading</span><span class="p">)</span>
+        <span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">deleted_readings</span>
+    <span class="k">return</span> <span class="p">[]</span>
+
+
+<div class="viewcode-block" id="reduceData"><a class="viewcode-back" href="../../../teleceptor.api.html#teleceptor.api.readings.reduceData">[docs]</a><span class="k">def</span> <span class="nf">reduceData</span><span class="p">(</span><span class="n">readings</span><span class="p">,</span> <span class="n">granularity</span><span class="p">,</span> <span class="n">reduction_method</span><span class="o">=</span><span class="s1">&#39;mean&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Take a a list of tuples containing at [0] a timeStamp and at [1] a raw data value from a sensor reading, and reduce this list to about granularity datapoints, using different methods.</span>
+
+<span class="sd">    :param readings: Tuples are (SensorReading.timestamp, SensorReading.sensorValue)</span>
+<span class="sd">    :type readings: list of 2-tuples</span>
+<span class="sd">    :param granularity: the number of datapoints to which to reduce the list. (will not be exact)</span>
+<span class="sd">    :type granularity: int</span>
+<span class="sd">    :param reduction_method: The reduction method.  Can be &#39;mean&#39;, &#39;sample&#39;, etc.</span>
+<span class="sd">    :type reduction_method: str</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Reducing data with granularity </span><span class="si">%s</span><span class="s2"> and method </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">granularity</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">reduction_method</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">reduction_method</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">reductMethods</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Method </span><span class="si">%s</span><span class="s2"> not a valid reduction method.&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">reduction_method</span><span class="p">))</span>
+        <span class="k">return</span> <span class="p">[]</span>
+
+    <span class="n">increment</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">readings</span><span class="p">)</span><span class="o">/</span><span class="n">granularity</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">readings</span><span class="p">),</span> <span class="n">increment</span><span class="p">):</span>
+        <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">reductMethods</span><span class="p">[</span><span class="n">reduction_method</span><span class="p">](</span><span class="n">readings</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="o">+</span><span class="n">increment</span><span class="p">]))</span>
+
+    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Finished reducing data.&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">data</span></div>
+
+
+<div class="viewcode-block" id="incrementMean"><a class="viewcode-back" href="../../../teleceptor.api.html#teleceptor.api.readings.incrementMean">[docs]</a><span class="k">def</span> <span class="nf">incrementMean</span><span class="p">(</span><span class="n">readings</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return the timeCenter of the increment and the mean of the readings_values within the increment as a list of 2 values</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Using incrementMean method for reducing data.&quot;</span><span class="p">)</span>
+    <span class="n">mid_time</span> <span class="o">=</span> <span class="p">(</span><span class="n">readings</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">readings</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">readings</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span><span class="o">/</span><span class="mi">2</span>
+
+    <span class="c1"># convert to float before taking mean, because float operations are faster than decimal operations</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">mid_time</span><span class="p">,</span> <span class="nb">sum</span><span class="p">([</span><span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">readings</span><span class="p">])</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">readings</span><span class="p">)]</span></div>
+
+
+<span class="n">reductMethods</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;mean&#39;</span><span class="p">:</span> <span class="n">incrementMean</span>
+<span class="p">}</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">teleceptor 1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../api.html" >teleceptor.api</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2016, Visgence Inc..
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+    </div>
+  </body>
+</html>

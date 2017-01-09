@@ -21,12 +21,11 @@
 
 	<script>
 		$(function() {
-			var pageData = {
-				'activeSensor': {{activeSensorJSON}},
-				'datastream': {{datastreamJSON}},
+            var pageData = {
+                'activeSensor': {{activeSensorJSON}},
+                'datastream': {{datastreamJSON}},
 			};
 
-			
 			{% if startZoom %} pageData["startZoom"] = {{startZoom}} {% endif %}
 			{% if endZoom %} pageData["endZoom"] = {{endZoom}} {% endif %}
 			{% if time %} pageData["time"] = "{{time}}" {% endif %}
@@ -64,19 +63,19 @@
 
 					<div class="panel panel-default sensors-panel">
 						<div class="panel-heading">
-							<h3 class="panel-title">Sensors</h3>
+							<h3 class="panel-title">Data Streams</h3>
 						</div>
 
 						<div class="list-group sensor-list" data-bind="with: activeSensor">
-
-							{% for sensor in sensorsList %}
-								{% if activeSensor and sensor.uuid == activeSensor.uuid %}
+							{% for stream in streamsList %}
+								{% if activeSensor and stream.sensor == activeSensor.uuid %}
     							<a class="list-group-item sensor active">
     							{% else %}
-    							<a class="list-group-item sensor" data-sensorid="{{sensor.uuid}}">
+    							<a class="list-group-item sensor" data-sensorid="{{stream.sensor}}">
     							{% endif %}
-                                <span>{{sensor.name}} </span><span class="small" style="color: #888888"> {{sensor.uuid}}</span>
-    								
+                                    <span>{{stream.name}} </span>
+                                    <span class="small" style="color: #888888"> {{stream.sensor}}</span>
+
     							</a>
 							{% endfor %}
 						</div>
@@ -101,16 +100,30 @@
 				</div>
 
 				{% if activeSensor %}
-				<div class="panel panel-default">
-					<div class= "panel-heading">
-						<h3 class="panel-title">Sensor Information</h3>
-					</div>
+                <div class="col-md-4">
+                    <div class="panel panel-default">
+                        <div class= "panel-heading">
+                            <h3 class="panel-title">Data Stream Information</h3>
+                        </div>
 
-					<div class="panel-body">
-						{% include 'sensor.html' %}
-					</div>
+                        <div class="panel-body">
+                            {% include 'datastream.html' %}
+                        </div>
+                    </div>
+                </div>
 
-				</div>
+                <div class="col-md-8">
+                    <div class="panel panel-default">
+                        <div class= "panel-heading">
+                            <h3 class="panel-title">Sensor Information</h3>
+                        </div>
+
+                        <div class="panel-body">
+                            {% include 'sensor.html' %}
+                        </div>
+
+                    </div>
+                </div>
 				{% endif %}
 
 			</div><!-- end right-col -->

@@ -10,41 +10,48 @@ class simpleInput():
         self.examplevalue = 22
 
     def sendData(self, data=None, host=None):
-        #build object to send to server
+        # build object to send to server
         if data is None:
-            data = [{"info":{"uuid":"mote1234", "name":"myfirstmote","description":"My first mote","out":[],
-        "in":[{"name":"in1","sensor_type":"float","timestamp":self.caltime,"meta_data":{}}]},"readings":[["in1",self.examplevalue,time.time()]]}]
+            data = [{
+                "info": {
+                    "uuid": "mote1234",
+                    "name": "myfirstmote",
+                    "description": "My first mote",
+                    "out": [],
+                    "in":[{
+                        "name": "in1",
+                        "sensor_type": "float",
+                        "timestamp": self.caltime,
+                        "meta_data": {}
+                    }]
+                },
+                "readings": [["in1", self.examplevalue, time.time()]]
+            }]
 
-
-        print data
-        print json.dumps(data)
-
-        #send to server
+        # send to server
         if host is None:
             host = "localhost"
 
         serverURL = "http://" + host + ":" + str(8000) + "/api/station/"
         response = requests.post(serverURL, data=json.dumps(data))
 
-        print response
-        print response.text
-        #decode response
+        # decode response
         responseData = json.loads(response.text)
 
-        #check for any new values from server
+        # check for any new values from server
         if 'newValues' in responseData:
             parsedNewValues = {}
             for sen in responseData['newValues']:
                 if len(responseData['newValues'][sen]) == 0:
                     continue
                 message = responseData['newValues'][sen][-1]
-                for senName,senMessage in message.items():
+                for senName, senMessage in message.items():
                     if senName == "id":
                         pass
                     elif senName == "message":
                         parsedNewValues[sen] = senMessage
 
-            #update value
+            # update value
             if "in1" in parsedNewValues:
                 self.examplevalue = parsedNewValues["in1"]
 
@@ -61,20 +68,26 @@ if __name__ == "__main__":
     args = parser.parse_args()
     if args.name is not None and args.value is not None and args.host is not None:
 
-
-
-        data = [{"info":{"uuid":"", "name":"myfirstmote","description":"My first mote","in":[],
-        "out":[{"name":args.name,"sensor_type":"float","timestamp":time.time(),"meta_data":{}}]},"readings":[[args.name,args.value,time.time()]]}]
+        data = [{
+            "info": {
+                "uuid": "",
+                "name": "myfirstmote",
+                "description": "My first mote",
+                "in": [],
+                "out":[{
+                    "name": args.name,
+                    "sensor_type": "float",
+                    "timestamp": time.time(),
+                    "meta_data": {}
+                }]
+            },
+            "readings": [[args.name, args.value, time.time()]]}]
 
         si = simpleInput()
-        print si.sendData(data, args.host)
 
     else:
         while True:
             sendData()
 
-            #sleep based on rate of query
+            # sleep based on rate of query
             time.sleep(3)
-
-
-

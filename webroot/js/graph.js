@@ -51,6 +51,8 @@ $(function($) {
             console.log("Selected source ", $(this).text());
         });
 
+        this.timeControls = ko.observable();
+
         /*********************************************************************************
                                        Privilaged Methods
         **********************************************************************************/
@@ -119,7 +121,7 @@ $(function($) {
                         }
                         else{
                             csv += "null";
-                        } 
+                        }
                         csv += colDelim + units + rowDelim;
                     }
                 }
@@ -181,6 +183,9 @@ $(function($) {
             if (vars.hasOwnProperty("datastream"))
                 __this.datastream(vars.datastream);
 
+            if (vars.hasOwnProperty("timecontrols"))
+                __this.timeControls(vars.timecontrols);
+
             __this.rebuild(vars);
 
             initGraphWidget(vars);
@@ -198,6 +203,7 @@ $(function($) {
             zoomRange = null;
             $(__this).trigger('zoomed', newZoomRange);
             zoomRange = newZoomRange;
+            __this.timeControls().selectTime("custom", true);
             __this.fetchForZoom();
         };
 

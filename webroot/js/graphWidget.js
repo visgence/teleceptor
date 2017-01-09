@@ -276,6 +276,8 @@ $(function() {
             $(this.graphEle()).on("plotclick", plotClickHandler);
             $(this.graphEle()).on("plotselected", plotSelectedHandler);
 
+            $(this.graphEleOverview()).on("mouseout", plotMouseoutHandler);
+            $(this.graphEleOverview()).on("plothover", plotHoverHandler);
             $(this.graphEleOverview()).on("plotselected", plotSelectedHandler);
         };
 
