@@ -130,7 +130,7 @@ def loadReadings(session, range=None, interval=None):
         "week": 604800
     }
 
-    defaultRange = timeRanges['2hour']
+    defaultRange = timeRanges['week']
     now = time()
     lastWeek = now - defaultRange
     if range is not None and range in timeRanges:
@@ -144,14 +144,14 @@ def loadReadings(session, range=None, interval=None):
         voltReading = {
             "datastream": 1,
             "sensor": "volts",
-            "value": int(600 * math.sin(counter)),
+            "value": int(600 * math.sin(0.1*counter)),
             "timestamp": now
         }
 
         ampReading = {
             "datastream": 2,
             "sensor": "amps",
-            "value": int(400 * math.sin(counter)),
+            "value": int(400 * math.sin(0.1*counter)),
             "timestamp": now
         }
         counter += 1
