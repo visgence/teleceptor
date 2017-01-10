@@ -231,6 +231,13 @@ def loadfixtures(*args):
     testFixtures.main()
 
 
+def reset(*args):
+    rebuild(args)
+    setup(args)
+    loadfixtures(args)
+    runserver(args)
+
+
 def shell(*args):
     import IPython
     print "Starting IPython Shell"
@@ -250,7 +257,8 @@ if __name__ == "__main__":
         'tcppoller': [tcpPoller, "TCP poller (Hosts are added in config.json)"],
         'loadfixtures': [loadfixtures, "Load test database data"],
         'version': [displayVersion, "Display version"],
-        'shell': [shell, "Ipython shell"]
+        'shell': [shell, "Ipython shell"],
+        'reset': [reset, "Same as running 'rebuild', 'setup', 'loadfixtures', 'runserver' "]
     }
 
     args = sys.argv
