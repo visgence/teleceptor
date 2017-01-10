@@ -13,10 +13,12 @@ from sessionManager import sessionScope
 from models import *
 import sys
 import random
+import json
 from time import time
 from teleceptor.models import MessageQueue, Sensor
 from teleceptor import USE_ELASTICSEARCH
 import math
+import requests
 if USE_ELASTICSEARCH:
     import elasticsearchUtils
 
@@ -169,7 +171,51 @@ def loadReadings(session, range=None, interval=None):
     session.add_all(readings)
 
 
+def loadviaapi():
+    serverURL = "http://192.168.99.100:8000/api/station"
+    jsonExample = [{
+        "info": {
+            "uuid": "mote1234",
+            "name": "myfirstmote",
+            "description": "My first mote",
+            "out": [],
+            "in":[{
+                "name": "in1",
+                "sensor_type": "float",
+                "timestamp": 30000,
+                "meta_data": {}
+            }]
+        },
+        "readings": [
+            ["in1", 99, time()],
+            ["in1", 129, time()-20],
+            ["in1", 29, time()-40],
+        ]
+    }]
+    timeRanges = {
+        '2hour': 7200,
+        "day":  86400,
+        "week": 604800
+    }
+
+    defaultRange = timeRanges['week']
+    now = time()
+    lastWeek = now - defaultRange
+    if range is not None and range in timeRanges:
+        lastWeek = now - timeRanges[range]
+
+    counter = 0
+    while now >= lastWeek:
+        jsonExample[0]["readings"].append(["in1", 400 * math.sin(0.1*counter), now])
+        now -= 60
+        counter += 1
+
+    requests.post(serverURL, data=json.dumps(jsonExample))
+
+
 def main():
+    loadviaapi()
+    return
     """
     Loads two sensors, two datastreams, and some readings
 
