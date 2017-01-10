@@ -16,6 +16,7 @@ import random
 from time import time
 from teleceptor.models import MessageQueue, Sensor
 from teleceptor import USE_ELASTICSEARCH
+import math
 if USE_ELASTICSEARCH:
     import elasticsearchUtils
 
@@ -138,21 +139,22 @@ def loadReadings(session, range=None, interval=None):
     interval = interval if interval is not None else 43200
 
     readings = []
+    counter = 0
     while now >= lastWeek:
         voltReading = {
             "datastream": 1,
             "sensor": "volts",
-            "value": random.randint(550, 600),
+            "value": int(600 * math.sin(counter)),
             "timestamp": now
         }
 
         ampReading = {
             "datastream": 2,
             "sensor": "amps",
-            "value": random.randint(550, 600),
+            "value": int(400 * math.sin(counter)),
             "timestamp": now
         }
-
+        counter += 1
         now -= 60
 
         if USE_ELASTICSEARCH:
