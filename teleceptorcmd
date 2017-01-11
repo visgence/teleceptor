@@ -234,7 +234,6 @@ def loadfixtures(*args):
 def reset(*args):
     rebuild(args)
     setup(args)
-    loadfixtures(args)
     runserver(args)
 
 
