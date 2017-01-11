@@ -218,7 +218,7 @@ def update_motes(mote_datas=[]):
                     datastream = DataStream(sensor=sensorUuid)
                     DataStreams.createDatastream(session, datastream)
                     path = Path(datastream_id=datastream.toDict()['id'], path="/new_sensors")
-
+                    datastream.paths.append(path)
                     datastream = datastream.toDict()
                 logging.info("Got datastream id %s", str(datastream['id']))
                 sensor_datastream_ids[sensorUuid] = datastream['id']
