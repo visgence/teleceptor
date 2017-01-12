@@ -390,6 +390,9 @@
          while(!foundPaths){
             newpath = $("#newpaths_" + counter);
             if(newpath.length > 0){
+                if(/\s/g.test(newpath[0].value)){
+                    return false;
+                }
                 if(newpath[0].value[0] != "/"){
                     return false;
                 }
