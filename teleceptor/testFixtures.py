@@ -21,7 +21,7 @@ def main():
     Loads two sensors, two datastreams, and some readings
 
     """
-    serverURL = "http://192.168.99.100:8000/api/station"
+    serverURL = "http://0.0.0.0:8000/api/station"
     jsonExample = [{
         "info": {
             "uuid": "mote1234",
@@ -53,7 +53,7 @@ def main():
         "month": 18144000
     }
 
-    defaultRange = timeRanges['day']
+    defaultRange = timeRanges['2hour']
     now = time()
     lastWeek = now - defaultRange
     if range is not None and range in timeRanges:
