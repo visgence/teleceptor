@@ -37,6 +37,7 @@
         this.editing            = ko.observable(false);
         this.command_value      = ko.observable(true); //value to command this sensor to.
         this.post_value         = ko.observable();
+        this.errorMessage = ko.observable();
 
         this.streamUuid = ko.observable();
         this.streamName = ko.observable();
@@ -56,6 +57,7 @@
             __this.rebuild(resp.sensor);
             __this.editing(false);
             __this.updateError(null);
+            __this.errorMessage(null);
         }
 
         this.sendSuccessCb = function(resp){
@@ -178,6 +180,7 @@
 
         this.updateError = ko.observable();
 
+
         this.display = ko.computed(function() {
             var displayName = __this.name();
             if (displayName === "")
@@ -227,7 +230,10 @@
         var id = this.streamUuid();
         if (!id || !this.validate())
             return $.Deferred().reject().promise();
-
+        if(!this.checkPaths()){
+            this.DisplayWarning('paths must start with a "/" and cannot end with a "/"', 4);
+            return;
+        }
         var payload = this.streamToDict();
         console.log(payload);
         return $.ajax({
@@ -244,7 +250,7 @@
     Sensor.prototype.updateCommand = function() {
         console.log("Updating command");
         console.log(this.command_value);
-    }
+    };
 
     Sensor.prototype.validate = function() {
         var noError = true;
@@ -286,7 +292,7 @@
                        contentType: "application/json",
                        processData: false,
                        success: function(data){
-                            window.location.href = window.location.pathname
+                            window.location.href = window.location.pathname;
                        }
                 });
                }
@@ -307,7 +313,6 @@
 
 
     Sensor.prototype.rebuild = function(vars) {
-        console.log(vars)
         vars = vars || {};
 
         if (vars.hasOwnProperty('sensor_type'))
@@ -319,7 +324,7 @@
                 this.coefficients(ko.toJSON(vars.last_calibration.coefficients));
             this.last_calibration(vars.last_calibration);
             this.last_calibration().coefficients = vars.last_calibration.coefficients;
-            this.lastCalibration(new Date(vars.last_calibration.timestamp*1000).toDateString())
+            this.lastCalibration(new Date(vars.last_calibration.timestamp*1000).toDateString());
         }
         if (vars.hasOwnProperty('units'))
             this.units(vars.units);
@@ -378,6 +383,35 @@
         return returnDict;
     };
 
+    Sensor.prototype.checkPaths = function(){
+
+        var counter = 0;
+        var foundPaths = false;
+         while(!foundPaths){
+            newpath = $("#newpaths_" + counter);
+            if(newpath.length > 0){
+                if(newpath[0].value[0] != "/"){
+                    return false;
+                }
+                if(newpath[0].value[newpath[0].value.length-1] == "/"){
+                    return false;
+                }
+                counter++;
+            } else {
+                foundPaths = true;
+            }
+        }
+        return true;
+    };
+
+
+
+    Sensor.prototype.DisplayWarning = function(msg, location){
+        //TODO use location to display errors on different parts of the page
+        var __this = this;
+        __this.errorMessage(msg);
+    };
+
     Sensor.prototype.streamToDict = function() {
         data = {
             'name': this.streamName(),
@@ -389,7 +423,7 @@
         while(!foundPaths){
             newpath = $("#newpaths_" + counter);
             if(newpath.length > 0){
-                data['paths'].push(newpath[0].value);
+                data.paths.push(newpath[0].value);
                 counter++;
                 if(counter > 5){
                     foundPaths = true;
@@ -398,5 +432,5 @@
                 foundPaths = true;
             }
         }
-        return data
+        return data;
     };

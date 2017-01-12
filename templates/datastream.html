@@ -5,6 +5,10 @@
     <div class="alert alert-danger" data-bind="text: updateError"></div>
     <!-- /ko -->
 
+    <!-- ko if: errorMessage -->
+    <div class="alert alert-danger" data-bind="text: errorMessage"></div>
+    <!-- /ko -->
+
     <form class = "form-horizontal" role="form">
         <div class="form-group">
             <label class="col-md-3 control-label">ID</label>

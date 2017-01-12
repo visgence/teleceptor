@@ -9,9 +9,9 @@ from sys import maxsize
 
 aggregation_levels = {(0, 120): 1,
                       (121, 120*60): 10,
-                      (120*60 + 1, 3*3600): 60,
-                      (3*3600 + 1, 3*24*3600): 300,
-                      (3*24*3600 + 1, maxsize): 3600
+                      (120*60, 3*3600): 60,
+                      (3*3600, 3*24*3600): 300,
+                      (3*24*3600, maxsize): 3600
                       }
 """Defines the aggregation levels used by Teleceptor.
  The form is (period_start, period_end): aggregation_value.
