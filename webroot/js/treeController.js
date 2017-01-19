@@ -2,7 +2,7 @@
 
 angular.module('teleceptor.treecontroller', [])
 
-.controller('treeController', ['$scope', '$location', '$http', '$compile', 'apiService', function($scope, $location, $http, $compile, apiService){
+.controller('treeController', ['$scope', '$location', '$http', '$compile', 'apiService', 'infoService', function($scope, $location, $http, $compile, apiService, infoService){
     $scope.pathSetSelection = $location.search().pathSet;
         if($scope.pathSetSelection === undefined){
             $scope.pathSetSelection = 0;
@@ -47,7 +47,6 @@ angular.module('teleceptor.treecontroller', [])
                     }
                 }
 
-                console.log(data);
                 var curTree = {}
                 var treeData = GetTree(data);
                 $('#myTree').treeview({data: GetTree(data)});
@@ -93,6 +92,9 @@ angular.module('teleceptor.treecontroller', [])
                 //     }
                 }
                 $('#myTree').on('nodeSelected', function(event, data) {
+                    infoService.resetInfo();
+                    infoService.setInfo({"stream": data.info});
+                    console.log(infoService.getInfo());
                     $scope.$apply(function(){
                         $location.search('ds', data.info.id);
                     });

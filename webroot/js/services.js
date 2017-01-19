@@ -29,7 +29,10 @@ angular.module('teleceptor.services', [])
             return info;
         },
         setInfo: function(newInfo){
-            info = newInfo;
+            info.push(newInfo);
+        },
+        resetInfo: function(){
+            info = [];
         }
     };
 })
@@ -39,7 +42,6 @@ angular.module('teleceptor.services', [])
     var apiService = {};
 
     apiService.get = function(Str){
-        console.log("posting get to " + urlBase+Str);
         return $http.get(urlBase+Str);
     };
 

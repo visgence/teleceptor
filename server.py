@@ -9,34 +9,6 @@ STATIC = os.path.join(PATH, 'static')
 
 
 class Root(object):
-    @cherrypy.expose
-    def getPaths(self):
-
-        url = "http://0.0.0.0:8000/api/datastreams"
-        data = {
-            "paths": [],
-            "pathSets": {}
-        }
-        try:
-            tele_data = requests.get(url).json()["datastreams"]
-        except:
-            pass
-        print "\nteledata\n"
-        print json.dumps(tele_data, indent=2)
-        pathSetIds = []
-        for a in tele_data:
-            if "paths" not in a:
-                if '0' not in data['pathSets']:
-                    data['pathSets']['0'] = []
-                data["pathSets"]['0'].append("{}{}".format("localhost", a["sensor"]))
-                continue
-            for b in range(0, len(a["paths"])):
-                if b not in data["pathSets"]:
-                    data["pathSets"][b] = {}
-                data["pathSets"][b][a["sensor"]] = "{}{}/{}".format("localhost", a["paths"][b], a['name'])
-                pathSetIds.append(a['id'])
-        data['ids'] = pathSetIds
-        return json.dumps(data, indent=2)
 
     @cherrypy.expose
     def getData(self, **kwargs):

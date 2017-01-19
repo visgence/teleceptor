@@ -8,33 +8,32 @@ angular.module('teleceptor.graphcontroller', [])
     }, 1000);
 }])
 
-.directive('graph', ['$location', '$window', '$http', 'timeService', 'infoService', function($location, $window, $http, timeService, infoService){
+.directive('graph', ['$location', '$window', '$http', 'timeService', 'infoService', 'apiService', function($location, $window, $http, timeService, infoService, apiService){
     return{
         restrict: 'E',
         link: function(scope, elem, attrs){
             var d3 = $window.d3;
-            var data = $location.search().node;
+
             scope.$on('$routeUpdate', function(){
-                // console.log("a change has Occured")
+                GetData();
+            });
+            scope.$watch(function(){
+                return infoService.getInfo();
+            }, function(){
                 GetData();
             });
 
             function GetData(){
-                if($location.search().node === undefined) return;
-                var req = {
-                    method: 'POST',
-                    url: "/getData",
-                    params: $location.search(),
-                    headers: {
-                        'Content-Type': undefined
-                    }
-                };
+                if($location.search().ds === undefined) return;
+                if(infoService.getInfo().length === 0 ) return;
+
+                var start, end;
                 if(elem[0].clientHeight < 100){
-                    req.params.startTime = Date.now() - 84000000;
-                    req.params.endTime = Date.now();
+                    start = Date.now() - 84000000;
+                    end = Date.now();
                 } else {
-                    var start = timeService.getValues().start;
-                    var end = timeService.getValues().end;
+                    start = timeService.getValues().start;
+                    end = timeService.getValues().end;
                     if(isNaN(start)){
                         start = Date.now() - 84000000;
                         timeService.setStart(start);
@@ -43,22 +42,21 @@ angular.module('teleceptor.graphcontroller', [])
                         end = Date.now();
                         timeService.setEnd(end);
                     }
-                    // console.log(timeService.getValues());
-                    // console.log(start, end);
-
-                    req.params.startTime = start;
-                    req.params.endTime = end;
                 }
-                // console.log(req.params)
 
-                scope.refresh = false;
-                $http(req).then(function successCallback(response){
-                    infoService.setInfo(response.data.info);
-
-                   drawGraph(elem[0], response.data, 1);
-
-                }, function errorCallback(response){
-                    console.log("Error Occured: ", response.data);
+                apiService.get("sensors?sensor_id="+infoService.getInfo()[0].stream.sensor ).then(function(sensorInfoResponse){
+                    if(elem[0].clientHeight < 100){
+                        infoService.getInfo(sensorInfoResponse.data);
+                    }
+                    console.log(infoService.getInfo());
+                    var readingsUrl = "readings?datastream=" + infoService.getInfo()[0].stream.sensor + "&start="+parseInt(start/1000)+"&end="+parseInt(end/1000);
+                    apiService.get(readingsUrl).then(function(readingsResponse){
+                        drawGraph(elem[0], readingsResponse.data, 1);
+                    }, function(error){
+                        console.log("error occured: " + error);
+                    });
+                }, function(error){
+                    console.log("error occured: " + error);
                 });
             }
 
