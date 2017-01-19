@@ -163,6 +163,8 @@ class DataStreams:
                     data['datastreams'] = [i.toDict() for i in datastreams]
 
         cherrypy.response.status = statusCode
+        print "\nhere\n"
+        print data
         return json.dumps(data, indent=4)
 
     def POST(self, stream_id=None):

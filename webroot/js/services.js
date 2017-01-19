@@ -39,7 +39,7 @@ angular.module('teleceptor.services', [])
     var apiService = {};
 
     apiService.get = function(Str){
-        console.log("posting get to " + urlBase+Str)
+        console.log("posting get to " + urlBase+Str);
         return $http.get(urlBase+Str);
     };
 
