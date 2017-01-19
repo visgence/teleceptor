@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('teleceptor.infocontroller', ['ui.bootstrap'])
+angular.module('teleceptor.infocontroller', [])
 
 .controller('infoController', ['$scope', '$http', 'infoService', '$compile', '$timeout', function($scope, $http, infoService, $compile, $timeout){
     $scope.$watch(function(){
@@ -211,7 +211,4 @@ angular.module('teleceptor.infocontroller', ['ui.bootstrap'])
             }
         }
     };
-
-
-
 }]);

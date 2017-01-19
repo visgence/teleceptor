@@ -11,12 +11,11 @@ var app = angular.module('teleceptor', [
   'teleceptor.services'
 ])
 
-.config(['$routeProvider', '$httpProvider', function($routeProvider, $locationProvider, $httpProvider){
+.config(['$routeProvider', '$locationProvider', '$httpProvider', function($routeProvider, $locationProvider, $httpProvider){
     $routeProvider.otherwise({redirectTo: '/'});
 
     $routeProvider.when('/', {
         templateUrl: 'base.html',
-        // controller: 'locustMain',
         reloadOnSearch: false
     });
 

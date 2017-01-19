@@ -31,6 +31,7 @@ def get_cp_config():
         '/': {
             'tools.staticdir.on': True,
             'tools.staticdir.dir': WEBROOT,
+            'tools.staticdir.index': "{}/index.html".format(WEBROOT),
             # 'tools.auth.on': True,
             'tools.sessions.on': True
         },
