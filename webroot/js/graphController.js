@@ -45,14 +45,12 @@ angular.module('teleceptor.graphcontroller', [])
                 }
 
                 apiService.get("sensors?sensor_id="+infoService.getInfo()[0].stream.sensor ).then(function(sensorInfoResponse){
-                    if(elem[0].clientHeight < 100){
-                        infoService.getInfo(sensorInfoResponse.data);
+                    if(infoService.getInfo().length < 2){
+                        infoService.setInfo(sensorInfoResponse.data);
                     }
-                    console.log(infoService.getInfo());
                     var readingsUrl = "readings?datastream=" + infoService.getInfo()[0].stream.id + "&start="+parseInt(start/1000)+"&end="+parseInt(end/1000);
-                    // console.log(readingsUrl)
                     apiService.get(readingsUrl).then(function(readingsResponse){
-                        drawGraph(elem[0], readingsResponse.data, 1);
+                        drawGraph(elem[0], readingsResponse.data);
                     }, function(error){
                         console.log("error occured: " + error);
                     });
@@ -61,12 +59,14 @@ angular.module('teleceptor.graphcontroller', [])
                 });
             }
 
-            function drawGraph(parent, data, heightModifer){
+            function drawGraph(parent, data){
                 // console.log(data)
                 scope.graphName = data.name;
+                var sensorInfo = infoService.getInfo()[1].sensor;
+                console.log(sensorInfo)
                 parent.innerHTML = "";
                 var width = elem[0].clientWidth;
-                var height = elem[0].clientHeight*heightModifer;
+                var height = elem[0].clientHeight;
                 var additionalMargin = 0;
 
                 var margin = {top: 20, right: 10, bottom: 20, left: 40+additionalMargin};
@@ -76,7 +76,7 @@ angular.module('teleceptor.graphcontroller', [])
                 var newChart = d3.select(parent)
                     .append("svg")
                     .attr("class", "Chart-Container")
-                    .attr("id", data.name)
+                    .attr("id", sensorInfo.name)
                     .attr("width", width + margin.left + margin.right)
                     .attr("height", height + margin.top + margin.bottom)
                     .append("g")
@@ -384,9 +384,9 @@ angular.module('teleceptor.graphcontroller', [])
                     var f = d3.format(".1f");
                     var count = Math.round(d).toString().length;
                     f = d3.format(".2f");
-                    if(data.units === null) return f(d);
-                    if(data.units === "$") return data.units + f(d);
-                    return f(d) + data.units;
+                    if(sensorInfo.units === null) return f(d);
+                    if(sensorInfo.units === "$") return sensorInfo.units + f(d);
+                    return f(d) + sensorInfo.units;
                  }
             }
         }
