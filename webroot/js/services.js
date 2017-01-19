@@ -32,4 +32,16 @@ angular.module('teleceptor.services', [])
             info = newInfo;
         }
     };
-});
+})
+
+.factory('apiService', ['$http', function($http){
+    var urlBase = '/api/';
+    var apiService = {};
+
+    apiService.get = function(Str){
+        console.log("posting get to " + urlBase+Str)
+        return $http.get(urlBase+Str);
+    };
+
+    return apiService;
+}]);

@@ -123,7 +123,7 @@ class DataStreams:
                 'error':   <error str if applicable>
                 'stream':  A single stream
         """
-        logging.info("GET request\n\n to datastreams.")
+        logging.info("GET request to datastreams.")
 
         cherrypy.response.headers['Content-Type'] = 'application/json'
         data = {}

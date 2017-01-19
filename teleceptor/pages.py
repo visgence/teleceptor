@@ -15,12 +15,12 @@ import jinja2
 import logging
 
 # local Imports
-from teleceptor import TEMPLATES
+from teleceptor import TEMPLATES, WEBROOT
 from teleceptor import USE_DEBUG
 from teleceptor import api
 from teleceptor.api import ResourceApi
 from teleceptor.auth import AuthController, require, member_of, name_is
-env = jinja2.Environment(loader=jinja2.FileSystemLoader(searchpath=TEMPLATES))
+env = jinja2.Environment(loader=jinja2.FileSystemLoader(searchpath=WEBROOT))
 
 
 class Root(object):
@@ -62,7 +62,6 @@ class Root(object):
         cherrypy.response.headers['Content-Type'] = 'text/html'
         activeSensor['datastream'] = datastream
 
-
         returnData = {
             "sysdata": sysdata_dict,
             "sensorsList": sensorsList,
@@ -73,7 +72,7 @@ class Root(object):
         }
         logging.info("\n\nwe're here:\n{}".format(returnData))
         returnData.update(**kwargs)
-        t = env.get_template("sensorsIndex.html")
+        t = env.get_template("index.html")
 
         return t.render(returnData)
 

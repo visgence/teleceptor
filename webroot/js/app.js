@@ -13,18 +13,8 @@ var app = angular.module('teleceptor', [
 
 .config(['$routeProvider', '$locationProvider', '$httpProvider', function($routeProvider, $locationProvider, $httpProvider){
     $routeProvider.otherwise({redirectTo: '/'});
-
     $routeProvider.when('/', {
         templateUrl: 'base.html',
         reloadOnSearch: false
     });
-
-    // $locationProvider.html5Mode({
-    //   enabled: true,
-    //   requireBase: false
-    // });
-
-
-
-//     // $httpProvider.useApplyAsync(true);
 }]);

@@ -2,7 +2,7 @@
 
 angular.module('teleceptor.treecontroller', [])
 
-.controller('treeController', ['$scope', '$location', '$http', '$compile', function($scope, $location, $http, $compile){
+.controller('treeController', ['$scope', '$location', '$http', '$compile', 'apiService', function($scope, $location, $http, $compile, apiService){
     $scope.pathSetSelection = $location.search().pathSet;
         if($scope.pathSetSelection === undefined){
             $scope.pathSetSelection = 0;
@@ -102,6 +102,12 @@ angular.module('teleceptor.treecontroller', [])
         }
 
         function RequestTree(){
+            var data = apiService.get('datastreams').then(function(response){
+                console.log(data);
+            }, function(error){
+                console.log("error occured: " + error);
+            });
+            return
             var req = {
                 method: 'POST',
                 url: "/getPaths",
