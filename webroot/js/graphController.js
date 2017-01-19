@@ -49,7 +49,8 @@ angular.module('teleceptor.graphcontroller', [])
                         infoService.getInfo(sensorInfoResponse.data);
                     }
                     console.log(infoService.getInfo());
-                    var readingsUrl = "readings?datastream=" + infoService.getInfo()[0].stream.sensor + "&start="+parseInt(start/1000)+"&end="+parseInt(end/1000);
+                    var readingsUrl = "readings?datastream=" + infoService.getInfo()[0].stream.id + "&start="+parseInt(start/1000)+"&end="+parseInt(end/1000);
+                    // console.log(readingsUrl)
                     apiService.get(readingsUrl).then(function(readingsResponse){
                         drawGraph(elem[0], readingsResponse.data, 1);
                     }, function(error){
