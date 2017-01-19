@@ -257,7 +257,7 @@ if __name__ == "__main__":
         'loadfixtures': [loadfixtures, "Load test database data"],
         'version': [displayVersion, "Display version"],
         'shell': [shell, "Ipython shell"],
-        'reset': [reset, "Same as running 'rebuild', 'setup', 'loadfixtures', 'runserver' "]
+        'reset': [reset, "Same as running 'rebuild', 'setup', 'runserver' "]
     }
 
     args = sys.argv

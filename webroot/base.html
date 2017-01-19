@@ -1,0 +1,52 @@
+<div id="teleceptor">
+    <div class="navbar navbar-default navbar-fixed-top">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#teleceptor-nav">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a href="/">
+                <img href="/" src="images/teleceptor_final.png">
+                </a>
+            </div>
+
+            <div class="collapse navbar-collapse" id="teleceptor-nav">
+                <ul class="navbar-nav nav">
+                    <li {{ sensor_active }}>
+                        <a href="/">Sensors</a>
+                    </li>
+                    <li {{ generate_json_active }}>
+                        <a href="/generateJson">Generate Json</a>
+                    </li>
+                </ul>
+                <div class="navbar-form navbar-right">
+                    <span>Version: 0.8.0</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="main" style="margin-top: 60px">
+        <div class="row">
+            <div class="col-md-3 left-col">
+                <div ng-controller="timeController">
+                    <div ng-include="'/templates/timeWidget.html'"></div>
+                </div>
+                <div ng-controller="treeController">
+                    <div ng-include="'/templates/treeWidget.html'"></div>
+                </div>
+            </div>
+            <div class="col-md-9 right-col">
+                <div ng-controller="graphController">
+                    <div ng-include="'/templates/graphWidget.html'"></div>
+                </div>
+                <div ng-controller="infoController">
+                   <div ng-include="'/templates/infoWidget.html'"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

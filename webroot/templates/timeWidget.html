@@ -1,0 +1,56 @@
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h3 class="panel-title">Time Controls</h3>
+    </div>
+    <div class="panel-body">
+        <form class="graph-time-controls form">
+            <div class="form-group">
+                <label>From</label>
+                <div class="dropdown">
+                    <a class="dropdown-toggle" id="startdropdown" role="button" data-toggle="dropdown">
+                      <div class="input-group">
+                        <input type="text" id="startdate" name="startdate" class="form-control" ng-model="data.startdate">
+                        <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+                      </div>
+                    </a>
+                    <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
+                      <datetimepicker   ng-model="data.startdate"
+                                        data-datetimepicker-config="{ dropdownSelector: '#startdropdown' }"></datetimepicker>
+                    </ul>
+                  </div>
+            </div>
+            <div class="form-group">
+                <label>To</label>
+                <div class="dropdown">
+                    <a class="dropdown-toggle" id="enddropdown" role="button" data-toggle="dropdown" >
+                      <div class="input-group">
+                        <input type="text" id="enddate" name="enddate" class="form-control" ng-model="data.enddate">
+                        <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+                      </div>
+                    </a>
+                    <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
+                      <datetimepicker   ng-model="data.enddate"
+                                        data-datetimepicker-config="{ dropdownSelector: '#enddropdown' }"></datetimepicker>
+                    </ul>
+                  </div>
+            </div>
+            <div ng-if="data.startdate || data.enddate">
+                <button class="btn btn-sm btn-success" ng-click="SubmitTime()">Submit</button>
+            </div>
+            <br>
+            <div class="btn-group" data-bind="foreach: timeOptions">
+                <button class="btn btn-sm btn-default" ng-click="selectTime($event, 0)">Custom</button>
+                <button class="btn btn-sm btn-default" ng-click="selectTime($event, 1)">Hour</button>
+                <button class="btn btn-sm btn-default" ng-click="selectTime($event, 2)">Day</button>
+                <button class="btn btn-sm btn-default" ng-click="selectTime($event, 3)">Week</button>
+            </div>
+
+            <div style="margin-top: 1em">
+                <button type="button" class="btn btn-sm btn-default">
+                    <i class="glyphicon glyphicon-refresh"></i>
+                </button>
+                <i>Auto Refresh</i>
+            </div>
+        </form>
+    </div>
+</div>

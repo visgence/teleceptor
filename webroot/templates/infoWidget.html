@@ -1,0 +1,77 @@
+
+ <div ng-repeat="template in widgets">
+    <div class="col-md-6">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">{{template.title}}</h3>
+            </div>
+            <div class="panel-body">
+                <form class="form-horizontal" role="form">
+                    <div id="tabs_{{template.url}}"></div>
+                        <div ng-repeat="tab in template.items">
+                            <div id={{tab[0].tabName}}>
+                                <div ng-repeat="infoItem in tab">
+                                    <div class="form-group">
+                                        <label class="col-md-5 control-label">
+                                            {{infoItem.name}}
+                                        </label>
+                                        <div class="col-md-6">
+                                            <div ng-switch="infoItem.inputType">
+                                                <div ng-switch-when="text">
+                                                    {{infoItem.value}}
+                                                </div>
+                                                <div ng-switch-when="input">
+                                                    <div ng-if=template.editing>
+                                                        <input class="form-control" value={{infoItem.value}} id={{template.url}}_{{$index}}></input>
+                                                    </div>
+                                                    <div ng-if=!template.editing>
+                                                        {{infoItem.value}}
+                                                    </div>
+                                                </div>
+                                                <div ng-switch-when="multiple">
+                                                    <div ng-repeat="path in infoItem.value">
+                                                        <div style="padding-bottom: 10px">
+                                                            <div ng-if=template.editing>
+                                                                <input class="form-control" value={{path}} id={{template.url}}_{{$index}}_{{infoItem.name}}></input>
+                                                            </div>
+                                                            <div ng-if=!template.editing>
+                                                               {{path}}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div ng-if=template.editing>
+                                                        <button class="glyphicon, glyphicon-plus" ng-click="AddPath()"></button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    <div ng-if=!template.editing>
+                        <div class="col-md-8 col-md-offset-5">
+                            <button type="button" class="btn btn-primary btn-sm" ng-click="EditFields(template.title)">
+                                <span class="glyphicon glyphicon-pencil"></span>
+                                Edit
+                            </button>
+                        </div>
+                    </div>
+                    <div ng-if=template.editing>
+                        <div class="col-md-8 col-md-offset-5">
+                            <button type="button" class="btn btn-success btn-sm" ng-click="SaveFields(template.url)">
+                                <span class="glyphicon glyphicon-ok"></span>
+                                Save
+                            </button>
+                            <button type="button" class="btn btn-default btn-sm" ng-click="CancelFields(template.title)">
+                                <span class="glyphicon glyphicon-remove"></span>
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
