@@ -11,7 +11,7 @@
     "PORT": 8000,
     "LOG": "teleceptor.log",
     "TCP_POLLER_HOSTS": [],
-    "USE_DEBUG": false,
+    "USE_DEBUG": true,
     "SUPRESS_SERVER_OUTPUT": false,
     "USE_SQL_ALWAYS": false,
     "USE_ELASTICSEARCH": true,
