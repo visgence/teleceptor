@@ -384,9 +384,7 @@ angular.module('teleceptor.graphcontroller', [])
                     var info = infoService.getSensorInfo();
 
                     if(info.units === null) return f(d);
-                    console.log(info.units);
                     if(info.units == "$") return info.units + f(d);
-                    console.log("here");
                     return f(d) + sensorInfo.units;
                  }
             }
