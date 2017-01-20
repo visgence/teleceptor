@@ -21,18 +21,29 @@ angular.module('teleceptor.services', [])
 })
 
 .factory('infoService', function(){
-    var info = [];
+    var sensorInfo;
+    var streamInfo;
 
     return {
-        info: info,
-        getInfo: function(){
-            return info;
+        streamInfo: streamInfo,
+        sensorInfo: sensorInfo,
+        getStreamInfo: function(){
+            return streamInfo;
         },
-        setInfo: function(newInfo){
-            info.push(newInfo);
+        setStreamInfo: function(newInfo){
+            streamInfo = newInfo;
         },
-        resetInfo: function(){
-            info = [];
+        resetStreamInfo: function(){
+            streamInfo = null;
+        },
+        getSensorInfo: function(){
+            return sensorInfo;
+        },
+        setSensorInfo: function(newInfo){
+            sensorInfo = newInfo;
+        },
+        resetSensorInfo: function(){
+            sensorInfo = null;
         }
     };
 })

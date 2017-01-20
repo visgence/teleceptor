@@ -18,14 +18,14 @@ angular.module('teleceptor.graphcontroller', [])
                 GetData();
             });
             scope.$watch(function(){
-                return infoService.getInfo();
+                return infoService.getStreamInfo();
             }, function(){
                 GetData();
             });
 
             function GetData(){
                 if($location.search().ds === undefined) return;
-                if(infoService.getInfo().length === 0 ) return;
+                if(infoService.getStreamInfo() === undefined ) return;
 
                 var start, end;
                 if(elem[0].clientHeight < 100){
@@ -43,12 +43,12 @@ angular.module('teleceptor.graphcontroller', [])
                         timeService.setEnd(end);
                     }
                 }
-
-                apiService.get("sensors?sensor_id="+infoService.getInfo()[0].stream.sensor ).then(function(sensorInfoResponse){
-                    if(infoService.getInfo().length < 2){
-                        infoService.setInfo(sensorInfoResponse.data);
+                console.log(infoService.getStreamInfo())
+                apiService.get("sensors?sensor_id="+infoService.getStreamInfo().sensor).then(function(sensorInfoResponse){
+                    if(infoService.getSensorInfo() !== undefined){
+                        infoService.setSensorInfo(sensorInfoResponse.data);
                     }
-                    var readingsUrl = "readings?datastream=" + infoService.getInfo()[0].stream.id + "&start="+parseInt(start/1000)+"&end="+parseInt(end/1000);
+                    var readingsUrl = "readings?datastream=" + infoService.getStreamInfo().id + "&start="+parseInt(start/1000)+"&end="+parseInt(end/1000);
                     apiService.get(readingsUrl).then(function(readingsResponse){
                         drawGraph(elem[0], readingsResponse.data);
                     }, function(error){
@@ -60,10 +60,8 @@ angular.module('teleceptor.graphcontroller', [])
             }
 
             function drawGraph(parent, data){
-                // console.log(data)
-                scope.graphName = data.name;
-                var sensorInfo = infoService.getInfo()[1].sensor;
-                console.log(sensorInfo)
+                var sensorInfo = infoService.getStreamInfo();
+                scope.graphName = sensorInfo.name;
                 parent.innerHTML = "";
                 var width = elem[0].clientWidth;
                 var height = elem[0].clientHeight;

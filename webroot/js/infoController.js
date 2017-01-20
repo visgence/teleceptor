@@ -3,19 +3,23 @@
 angular.module('teleceptor.infocontroller', [])
 
 .controller('infoController', ['$scope', '$http', 'infoService', '$compile', '$timeout', function($scope, $http, infoService, $compile, $timeout){
+    $scope.widgets = [];
+    var StreamLoaded = false;
+    var SensorLoaded = false;
     $scope.$watch(function(){
-        return infoService.getInfo();
+        return infoService.getSensorInfo()
     }, function(v){
-        if(v.length === 0) return;
-        $scope.widgets = [];
+        console.log(v)
+        if(v === undefined) return;
+        if(StreamLoaded) return;
         for(var i in v){
             var newObj = {
-                "title": Object.keys(v[i])[0] + " info",
+                "title": "Sensor Info",
                 "editing": false,
-                "url": Object.keys(v[i])[0]
+                "url": "sensor"
             };
-            if(newObj.url === "sensor"){
-                newObj.id = v[i].sensor.last_calibration.id;
+
+                newObj.id = v.last_calibration.id;
                 newObj.items = [[{
                     "tabName": "Configuration",
                     "name": "UUID",
@@ -78,9 +82,8 @@ angular.module('teleceptor.infocontroller', [])
                     "inputType": "input"
                 }
 
-
                 ]];
-            }
+
             if(newObj.url === "stream"){
                 newObj.id = v[i].stream.id;
                 newObj.items = [[{
@@ -123,7 +126,6 @@ angular.module('teleceptor.infocontroller', [])
             }
             for(var x in $scope.widgets){
                 for(var y in $scope.widgets[x].items){
-                    // console.log(y)
                     var head = angular.element("#tabs_"+$scope.widgets[x].url);
                     var body = angular.element("#"+$scope.widgets[x].items[y][0].tabName);
                     if(y === "0"){
@@ -141,7 +143,7 @@ angular.module('teleceptor.infocontroller', [])
 
     $scope.ChangeTab = function(i){
         console.log(i)
-    }
+    };
 
     $scope.AddPath = function(){
 
@@ -204,11 +206,4 @@ angular.module('teleceptor.infocontroller', [])
         }
     };
 
-    $scope.DeleteFields = function(template){
-        for(var i in $scope.widgets){
-            if($scope.widgets[i].title == template){
-                $scope.widgets[i].editing = true;
-            }
-        }
-    };
 }]);

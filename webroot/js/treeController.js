@@ -92,14 +92,12 @@ angular.module('teleceptor.treecontroller', [])
                 //     }
                 }
                 $('#myTree').on('nodeSelected', function(event, data) {
-                    infoService.resetInfo();
-                    infoService.setInfo({"stream": data.info});
-                    console.log(infoService.getInfo());
+                    infoService.resetStreamInfo();
+                    infoService.setStreamInfo(data.info);
                     $scope.$apply(function(){
                         $location.search('ds', data.info.id);
                     });
                 });
-
 
             }, function(error){
                 console.log("error occured: " + error);
