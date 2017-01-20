@@ -225,7 +225,6 @@ if __name__ == "__main__":
     docs = []
     for i in range(days*period*2):
         value = int(math.sin(i*(2.0*math.pi/period))*(max/2.0) + (max/2.0))
-        # print str(i) + " : " + str(value)
         docs.append({'@timestamp': int((i*60+start)*1000), 'value': value, 'ds': 1000})
 
         if(i % 500 == 0):

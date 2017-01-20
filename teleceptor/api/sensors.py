@@ -335,7 +335,6 @@ def _updateSensor(sensor_id, data, session):
             # we want to keep using a Sensor, not the dict, so look it up
             # TODO: This is pretty smelly, but should work for now. Maybe in the future we want updateCalibration and _updateCalibration return a Sensor, or find some other way to update it.
             sensor = session.query(Sensor).filter_by(uuid=sensor_id).one()
-            logging.info("Back from updateCalibration. Sensor: {}".format(sensor))
         elif key in models.SENSORWHITELIST:
             setattr(sensor, key, value)
     session.add(sensor)

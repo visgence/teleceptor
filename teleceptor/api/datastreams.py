@@ -163,8 +163,6 @@ class DataStreams:
                     data['datastreams'] = [i.toDict() for i in datastreams]
 
         cherrypy.response.status = statusCode
-        print "\nhere\n"
-        print data
         return json.dumps(data, indent=4)
 
     def POST(self, stream_id=None):
@@ -200,8 +198,6 @@ class DataStreams:
         logging.debug("Request body: %s", data)
 
         try:
-            logging.info("\n\ndata:")
-            logging.info(data)
             stream = DataStreams.updateStream(stream_id, data)
             returnData['stream'] = stream
         except NoResultFound:
@@ -337,7 +333,6 @@ def _updateStream(stream_id, data, session):
     stream = session.query(DataStream).filter_by(id=stream_id).one()
     paths = session.query
     for key, value in data.iteritems():
-        logging.info("Key: {}, Value: {}".format(key, value))
         if key == "paths":
             currentPaths = stream.toDict()['paths']
             newPaths = data[key]
