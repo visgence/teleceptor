@@ -2,7 +2,7 @@
 
 angular.module('teleceptor.treecontroller', [])
 
-.controller('treeController', ['$scope', '$location', '$http', '$compile', 'apiService', 'infoService', function($scope, $location, $http, $compile, apiService, infoService){
+.controller('treeController', ['$scope', '$location', '$http', '$compile', 'apiService', 'infoService', '$timeout', function($scope, $location, $http, $compile, apiService, infoService, $timeout){
     $scope.pathSetSelection = $location.search().pathSet;
         if($scope.pathSetSelection === undefined){
             $scope.pathSetSelection = 0;
@@ -38,6 +38,7 @@ angular.module('teleceptor.treecontroller', [])
             apiService.get('datastreams').then(function(response){
                 var streams = response.data.datastreams;
                 var data = {};
+
                 for(var a in streams){
                     for(var b in streams[a].paths){
                         if(parseInt(b) !== pathSetId) continue;
@@ -47,66 +48,44 @@ angular.module('teleceptor.treecontroller', [])
                     }
                 }
 
-                var curTree = {}
-                var treeData = GetTree(data);
+                $scope.nodeCount = 0;
                 $('#myTree').treeview({data: GetTree(data)});
-
                 $('#myTree').treeview('collapseAll', { silent: true });
                 BuildPathSetWidget(response.data.datastreams);
                 var curStream = $location.search().ds;
 
-
                 if(curStream !== undefined){
-                    var myQ = [$('#myTree').treeview('getNode', 0)];
-                    var used = [];
-                    var allNodes = [];
-                    while(myQ.length > 0){
-                        var cur = myQ.shift();
-                        var already = false;
-                        for(var d in used){
-                            if(used[d] === cur.text){
-                                already = true;
-                            }
-                        }
-                        if(already) continue;
-                        myQ.push($('#tree').treeview('getSiblings', cur.nodeId));
-                        for(var b in cur.nodes){
-                            myQ.push(cur.nodes[b]);
-                        }
-                        used.push(cur.text);
-                    }
-
-
-                    for(var c in $('#tree').treeview){
-                        if(nodes[c].info.id === curStream){
-                            $('#myTree').treeview('revealNode', [parseInt(nodes[c].nodeId)]);
-                            $('#myTree').treeview('selectNode', [nodes[c].nodeId]);
+                    for(var c = 0; c < $scope.nodeCount;c++){
+                        var curNode = $('#myTree').treeview('getNode', c);
+                        if('info' in curNode && curNode.info.id === parseInt(curStream)){
+                            $('#myTree').treeview('revealNode', curNode);
+                            $('#myTree').treeview('selectNode', curNode);
+                            SelectTreeNode(curNode.info);
                         }
                     }
-                //     for(var i = 0; i <$scope.idData.paths.length+Object.keys($scope.idData.pathSets[$scope.pathSetSelection]).length; i++){
-                //         var node = $('#myTree').treeview('getNode', [i]);
-                //         if(node.sensor   == curNode){
-                //             $('#myTree').treeview('revealNode', [parseInt(node.nodeId)]);
-                //             $('#myTree').treeview('selectNode', [node.nodeId]);
-                //         }
-                //     }
                 }
                 $('#myTree').on('nodeSelected', function(event, data) {
-                    infoService.resetStreamInfo();
-                    infoService.setStreamInfo(data.info);
-                    $scope.$apply(function(){
-                        $location.search('ds', data.info.id);
-                    });
+                    SelectTreeNode(data.info);
                 });
-
             }, function(error){
                 console.log("error occured: " + error);
+            });
+        }
+
+        function SelectTreeNode(info){
+            infoService.resetStreamInfo();
+            infoService.setStreamInfo(info);
+            $timeout(function(){
+                $scope.$apply(function(){
+                    $location.search('ds', info.id);
+                });
             });
         }
 
         function GetTree(data){
             var arr = [];
             for(var i in data){
+                $scope.nodeCount++;
                 var newObj = {
                     "selectable": true,
                     "icon": "glyphicon glyphicon-stop",
