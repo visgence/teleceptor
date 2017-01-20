@@ -91,6 +91,10 @@ angular.module('teleceptor.graphcontroller', [])
 
                 var start = timeService.getValues().start;
                 var end = timeService.getValues().end;
+                if(elem[0].clientHeight < 100){
+                    start = Date.now() - 84000000;
+                    end = Date.now();
+                }
 
                 var min = data.readings[0][1];
                 var max = data.readings[0][1];
