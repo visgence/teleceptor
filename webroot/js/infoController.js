@@ -10,7 +10,6 @@ angular.module('teleceptor.infocontroller', [])
         return infoService.getSensorInfo();
     }, function(v){
 
-        console.log(v)
         if(v === undefined) return;
         if(StreamLoaded) return;
             var newObj = {
