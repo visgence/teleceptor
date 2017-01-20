@@ -171,6 +171,15 @@ angular.module('teleceptor.infocontroller', [])
 
     $scope.AddPath = function(){
 
+        for(var a in $scope.widgets){
+            if($scope.widgets[a].url === "stream"){
+                for(var b in $scope.widgets[a].items[0]){
+                    if($scope.widgets[a].items[0][b].name === "Paths"){
+                        $scope.widgets[a].items[0][b].value.push("/new_sensors_"+$scope.widgets[a].items[0][b].value.length);
+                    }
+                }
+            }
+        }
     };
 
     $scope.EditFields = function(template){
