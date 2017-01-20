@@ -45,8 +45,8 @@ angular.module('teleceptor.graphcontroller', [])
                 }
                 console.log(infoService.getStreamInfo())
                 apiService.get("sensors?sensor_id="+infoService.getStreamInfo().sensor).then(function(sensorInfoResponse){
-                    if(infoService.getSensorInfo() !== undefined){
-                        infoService.setSensorInfo(sensorInfoResponse.data);
+                    if(elem[0].clientHeight < 100){
+                        infoService.setSensorInfo(sensorInfoResponse.data.sensor);
                     }
                     var readingsUrl = "readings?datastream=" + infoService.getStreamInfo().id + "&start="+parseInt(start/1000)+"&end="+parseInt(end/1000);
                     apiService.get(readingsUrl).then(function(readingsResponse){
@@ -382,7 +382,8 @@ angular.module('teleceptor.graphcontroller', [])
                     var f = d3.format(".1f");
                     var count = Math.round(d).toString().length;
                     f = d3.format(".2f");
-                    if(sensorInfo.units === null) return f(d);
+                    var info = infoService.getSensorInfo();
+                    if(info.units === null) return f(d);
                     if(sensorInfo.units === "$") return sensorInfo.units + f(d);
                     return f(d) + sensorInfo.units;
                  }

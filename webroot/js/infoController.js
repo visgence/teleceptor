@@ -7,105 +7,117 @@ angular.module('teleceptor.infocontroller', [])
     var StreamLoaded = false;
     var SensorLoaded = false;
     $scope.$watch(function(){
-        return infoService.getSensorInfo()
+        return infoService.getSensorInfo();
     }, function(v){
+
         console.log(v)
         if(v === undefined) return;
         if(StreamLoaded) return;
-        for(var i in v){
             var newObj = {
                 "title": "Sensor Info",
                 "editing": false,
                 "url": "sensor"
             };
-
-                newObj.id = v.last_calibration.id;
-                newObj.items = [[{
-                    "tabName": "Configuration",
-                    "name": "UUID",
-                    "value": v[i].sensor.uuid,
-                    "inputType": "text"
-                },{
-                    "name": "Model",
-                    "value": v[i].sensor.model,
-                    "inputType": "text"
-                },{
-                    "name": "Name",
-                    "value": v[i].sensor.name,
-                    "inputType": "text"
-                },{
-                    "name": "Description",
-                    "value": v[i].sensor.description,
-                    "inputType": "text"
-                },{
-                    "name": "Units",
-                    "value": v[i].sensor.units,
-                    "inputType": "text"
-                },{
-                    "name": "Last Calibration",
-                    "value": v[i].sensor.last_calibration.timestamp,
-                    "inputType": "text"
-                },{
-                    "name": "Calibration",
-                    "value": v[i].sensor.last_calibration.coefficients,
-                    "inputType": "input"
-                }],[
-
-                {
-                    "tabName": "Metadata",
-                    "name": "UUID",
-                    "value": v[i].sensor.uuid,
-                    "inputType": "text"
-                },{
-                    "name": "Model",
-                    "value": v[i].sensor.model,
-                    "inputType": "text"
-                },{
-                    "name": "Name",
-                    "value": v[i].sensor.name,
-                    "inputType": "text"
-                },{
-                    "name": "Description",
-                    "value": v[i].sensor.description,
-                    "inputType": "text"
-                },{
-                    "name": "Units",
-                    "value": v[i].sensor.units,
-                    "inputType": "text"
-                },{
-                    "name": "Last Calibration",
-                    "value": v[i].sensor.last_calibration.timestamp,
-                    "inputType": "text"
-                },{
-                    "name": "Calibration",
-                    "value": v[i].sensor.last_calibration.coefficients,
-                    "inputType": "input"
-                }
-
-                ]];
-
-            if(newObj.url === "stream"){
-                newObj.id = v[i].stream.id;
-                newObj.items = [[{
-                    "name": "ID",
-                    "value": v[i].stream.id,
-                    "inputType": "input"
-                },{
-                    "name": "Name",
-                    "value": v[i].stream.name,
-                    "inputType": "input"
-                },{
-                    "name": "Paths",
-                    "value": v[i].stream.paths,
-                    "inputType": "multiple"
-                },{
-                    "name": "Sensor Name",
-                    "value": v[i].stream.sensor,
-                    "inputType": "text"
-                }]];
+            newObj.id = v.last_calibration.id;
+            newObj.items = [[{
+                "tabName": "Configuration",
+                "name": "UUID",
+                "value": v.uuid,
+                "inputType": "text"
+            },{
+                "name": "Model",
+                "value": v.model,
+                "inputType": "text"
+            },{
+                "name": "Name",
+                "value": v.name,
+                "inputType": "text"
+            },{
+                "name": "Description",
+                "value": v.description,
+                "inputType": "text"
+            },{
+                "name": "Units",
+                "value": v.units,
+                "inputType": "text"
+            },{
+                "name": "Last Calibration",
+                "value": v.last_calibration.timestamp,
+                "inputType": "text"
+            },{
+                "name": "Calibration",
+                "value": v.last_calibration.coefficients,
+                "inputType": "input"
+            }],[
+            //start new tab
+            {
+                "tabName": "Metadata",
+                "name": "UUID",
+                "value": v.uuid,
+                "inputType": "text"
+            },{
+                "name": "Model",
+                "value": v.model,
+                "inputType": "text"
+            },{
+                "name": "Name",
+                "value": v.name,
+                "inputType": "text"
+            },{
+                "name": "Description",
+                "value": v.description,
+                "inputType": "text"
+            },{
+                "name": "Units",
+                "value": v.units,
+                "inputType": "text"
+            },{
+                "name": "Last Calibration",
+                "value": v.last_calibration.timestamp,
+                "inputType": "text"
+            },{
+                "name": "Calibration",
+                "value": v.last_calibration.coefficients,
+                "inputType": "input"
             }
+
+            ]];
         $scope.widgets.push(newObj);
-        }
+    });
+
+    $scope.$watch(function(){
+        return infoService.getStreamInfo();
+    }, function(v){
+        if(v === undefined) return;
+        if(StreamLoaded) return;
+        var newObj = {
+            "title": "Stream Info",
+            "editing": false,
+            "url": "stream"
+        };
+        // newObj.id = v.last_calibration.id;
+        newObj.id = v.id;
+        newObj.items = [[{
+            "name": "ID",
+            "value": v.id,
+            "inputType": "input"
+        },{
+            "name": "Name",
+            "value": v.name,
+            "inputType": "input"
+        },{
+            "name": "Sensor Name",
+            "value": v.sensor,
+            "inputType": "text"
+        },{
+            "name": "Paths",
+            "value": v.paths,
+            "inputType": "multiple"
+        }]];
+
+        $scope.widgets.push(newObj);
+    });
+
 
         $timeout(function(){
             for(var i in $scope.widgets){
@@ -139,7 +151,6 @@ angular.module('teleceptor.infocontroller', [])
 
             }
         });
-    });
 
     $scope.ChangeTab = function(i){
         console.log(i)
