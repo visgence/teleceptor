@@ -12,26 +12,29 @@ angular.module('teleceptor.timecontroller', ['ui.bootstrap.datetimepicker'])
             case 0:
                 $location.search('time', 'custom');
                 setTimes(null, null);
-                 angular.element("#refreshDiv").css("display", "none");
+                $scope.showTimer = false;
                  refreshing = false;
                 break;
             case 1:
                 $location.search('time', 'hour');
                 setTimes(Date.now() - 3600000, Date.now());
-                angular.element("#refreshDiv").css("display", "block");
+                $scope.showTimer = true;
                 refreshing = true;
+                IntervalTimer();
                 break;
             case 2:
                 $location.search('time', 'day');
                 setTimes(Date.now() - 86400000, Date.now());
-                angular.element("#refreshDiv").css("display", "block");
+                $scope.showTimer = true;
                 refreshing = true;
+                IntervalTimer();
                 break;
             case 3:
                 $location.search("time", 'week');
                 setTimes(Date.now() - 604800000, Date.now());
-                angular.element("#refreshDiv").css("display", "block");
+                $scope.showTimer = true;
                 refreshing = true;
+                IntervalTimer();
                 break;
         }
     };
@@ -52,7 +55,16 @@ angular.module('teleceptor.timecontroller', ['ui.bootstrap.datetimepicker'])
     function startUp(){
         var start = $location.search().startTime;
         var end = $location.search().endTime;
+        var type = $location.search().time;
         setTimes(start, end);
+        $scope.showTimer =true;
+        if(type === "custom"){
+            $scope.toggleAutoRefresh();
+            $scope.showTimer =false;
+
+        }
+        angular.element("#"+type+"Btn").addClass('active');
+
     }
 
     $scope.intervalTimer = 10;
@@ -86,5 +98,7 @@ angular.module('teleceptor.timecontroller', ['ui.bootstrap.datetimepicker'])
     };
 
     IntervalTimer();
-    startUp();
+    $timeout(function(){
+        startUp();
+    },100);
 }]);

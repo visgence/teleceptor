@@ -39,17 +39,18 @@
             </div>
             <br>
             <div class="btn-group" data-bind="foreach: timeOptions">
-                <button class="btn btn-sm btn-default" ng-click="selectTime($event, 0)">Custom</button>
-                <button class="btn btn-sm btn-default" ng-click="selectTime($event, 1)">Hour</button>
-                <button class="btn btn-sm btn-default" ng-click="selectTime($event, 2)">Day</button>
-                <button class="btn btn-sm btn-default" ng-click="selectTime($event, 3)">Week</button>
+                <button class="btn btn-sm btn-default" id="customBtn" ng-click="selectTime($event, 0)">Custom</button>
+                <button class="btn btn-sm btn-default" id="hourBtn" ng-click="selectTime($event, 1)">Hour</button>
+                <button class="btn btn-sm btn-default" id="dayBtn" ng-click="selectTime($event, 2)">Day</button>
+                <button class="btn btn-sm btn-default" id="weekBtn" ng-click="selectTime($event, 3)">Week</button>
             </div>
-
+            <div ng-if="showTimer">
             <div style="margin-top: 1em" id="refreshDiv">
                 <button type="button" class="btn btn-sm btn-default active" id="refreshButton" ng-click="toggleAutoRefresh()">
                     <i class="glyphicon glyphicon-refresh"></i>
                 </button>
                 <i>Auto Refresh {{intervalTimer}}</i>
+            </div>
             </div>
         </form>
     </div>

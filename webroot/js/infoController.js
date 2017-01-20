@@ -75,7 +75,6 @@ angular.module('teleceptor.infocontroller', [])
             "value": v.uuid,
             "inputType": "text"
         }]];
-        console.log(newObj);
         $scope.widgets.push(newObj);
         updateInfo();
     });
