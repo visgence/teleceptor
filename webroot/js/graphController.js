@@ -186,9 +186,8 @@ angular.module('teleceptor.graphcontroller', [])
                     meanTimes.push((data.readings[j][0] - lastPoint) * 0.0001);
                     lastPoint = data.readings[j][0];
                 }
-
                 meanTimes.sort();
-                var meanTime = meanTimes[meanTimes.length/2];
+                var meanTime = meanTimes[parseInt(meanTimes.length/2)];
                 var last = 0;
 
                 var lineFunction = d3.line()
