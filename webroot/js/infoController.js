@@ -2,7 +2,7 @@
 
 angular.module('teleceptor.infocontroller', [])
 
-.controller('infoController', ['$scope', '$http', 'infoService', '$compile', '$timeout', function($scope, $http, infoService, $compile, $timeout){
+.controller('infoController', ['$scope', '$http', 'infoService', '$compile', '$timeout', 'apiService', function($scope, $http, infoService, $compile, $timeout, apiService){
     $scope.widgets = [];
     var StreamLoaded = false;
     var SensorLoaded = false;
@@ -19,7 +19,7 @@ angular.module('teleceptor.infocontroller', [])
         var newObj = {
             "title": "Sensor Info",
             "editing": false,
-            "url": "sensor"
+            "url": "sensors"
         };
         newObj.id = v.last_calibration.id;
         newObj.items = [
@@ -91,7 +91,7 @@ angular.module('teleceptor.infocontroller', [])
         var newObj = {
             "title": "Stream Info",
             "editing": false,
-            "url": "stream"
+            "url": "datastreams"
         };
         // newObj.id = v.last_calibration.id;
         newObj.id = v.id;
@@ -172,7 +172,7 @@ angular.module('teleceptor.infocontroller', [])
     $scope.AddPath = function(){
 
         for(var a in $scope.widgets){
-            if($scope.widgets[a].url === "stream"){
+            if($scope.widgets[a].url === "datastreams"){
                 for(var b in $scope.widgets[a].items[0]){
                     if($scope.widgets[a].items[0][b].name === "Paths"){
                         $scope.widgets[a].items[0][b].value.push("/new_sensors_"+$scope.widgets[a].items[0][b].value.length);
@@ -194,35 +194,34 @@ angular.module('teleceptor.infocontroller', [])
         var updates = {
             "type": template
         };
+        var url = ""
         for(var i in $scope.widgets){
             if($scope.widgets[i].url === template){
-                updates.url = $scope.widgets[i].url;
-                updates.id = $scope.widgets[i].id;
-                for(var j in $scope.widgets[i].items){
-                    if($scope.widgets[i].items[j].inputType === "input"){
-                        updates[$scope.widgets[i].items[j].name] = $("#"+template + "_" + j)[0].value;
+                console.log("here")
+                url = $scope.widgets[i].url + "/?";
+                if($scope.widgets[i].url==="datastreams"){
+                    url+= "stream_id="+$scope.widgets[i].id;
+                } else {
+                    url+= "sensor_id="+$scope.widgets[i].id;
+                }
+                for(var j in $scope.widgets[i].items[0]){
+                    if($scope.widgets[i].items[0][j].inputType === "input"){
+                        updates[$scope.widgets[i].items[0][j].name] = $("#"+template + "_" + j)[0].value;
                     }
-                    if($scope.widgets[i].items[j].inputType === "multiple"){
-                        updates[$scope.widgets[i].items[j].name] = [];
-                        for(var k in $scope.widgets[i].items[j].value){
-                            var str = "#"+template + "_" + k + "_" + $scope.widgets[i].items[j].name;
-                            updates[$scope.widgets[i].items[j].name].push($(str)[0].value);
+                    if($scope.widgets[i].items[0][j].inputType === "multiple"){
+                        updates[$scope.widgets[i].items[0][j].name] = [];
+                        for(var k in $scope.widgets[i].items[0][j].value){
+                            var str = "#"+template + "_" + k + "_" + $scope.widgets[i].items[0][j].name;
+                            updates[$scope.widgets[i].items[0][j].name].push($(str)[0].value);
                         }
                     }
                 }
             }
         }
-        var myParams = {};
-        var req = {
-            method: 'POST',
-            url: "/setData",
-            params: updates,
-            headers: {
-                'Content-Type': "application/json"
-            }
-        };
-
-         $http(req).then(function successCallback(response){
+        console.log(updates)
+        apiService.set(url, updates).then(function successCallback(response){
+            console.log(response)
+            $scope.$apply();
            //reload
 
         }, function errorCallback(response){

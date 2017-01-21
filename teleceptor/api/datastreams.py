@@ -185,7 +185,7 @@ class DataStreams:
         .. seealso:: `models.DataStream`
 
         """
-        logging.debug("PUT request to datastreams. ")
+        logging.info("PUT request to datastreams. ")
         returnData = {}
         statusCode = "200"
         cherrypy.response.headers['Content-Type'] = 'application/json'
@@ -348,12 +348,9 @@ def _updateStream(stream_id, data, session):
             logging.info("changing: {}".format(key))
             setattr(stream, key, value)
 
-
-
-
     session.add(stream)
 
-    logging.debug("Finished updating stream.")
+    logging.info("Finished updating stream.")
     return stream.toDict()
 
 
