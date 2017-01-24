@@ -19,7 +19,8 @@ angular.module('teleceptor.infocontroller', [])
         var newObj = {
             "title": "Sensor Info",
             "editing": false,
-            "url": "sensors"
+            "url": "sensors",
+            "uuid": v.uuid
         };
         newObj.id = v.last_calibration.id;
         newObj.items = [
@@ -198,21 +199,21 @@ angular.module('teleceptor.infocontroller', [])
         for(var i in $scope.widgets){
             if($scope.widgets[i].url === template){
                 console.log("here")
-                url = $scope.widgets[i].url + "/?";
+                url = $scope.widgets[i].url +"/";
                 if($scope.widgets[i].url==="datastreams"){
-                    url+= "stream_id="+$scope.widgets[i].id;
+                    url+= "?stream_id="+$scope.widgets[i].id;
                 } else {
-                    url+= "sensor_id="+$scope.widgets[i].id;
+                    url+=  $scope.widgets[i].uuid;
                 }
                 for(var j in $scope.widgets[i].items[0]){
                     if($scope.widgets[i].items[0][j].inputType === "input"){
-                        updates[$scope.widgets[i].items[0][j].name] = $("#"+template + "_" + j)[0].value;
+                        updates[$scope.widgets[i].items[0][j].name.toLowerCase()] = $("#"+template + "_" + j)[0].value.toLowerCase();
                     }
                     if($scope.widgets[i].items[0][j].inputType === "multiple"){
-                        updates[$scope.widgets[i].items[0][j].name] = [];
+                        updates[$scope.widgets[i].items[0][j].name.toLowerCase()] = [];
                         for(var k in $scope.widgets[i].items[0][j].value){
                             var str = "#"+template + "_" + k + "_" + $scope.widgets[i].items[0][j].name;
-                            updates[$scope.widgets[i].items[0][j].name].push($(str)[0].value);
+                            updates[$scope.widgets[i].items[0][j].name.toLowerCase()].push($(str)[0].value.toLowerCase());
                         }
                     }
                 }
@@ -221,7 +222,7 @@ angular.module('teleceptor.infocontroller', [])
         console.log(updates)
         apiService.set(url, updates).then(function successCallback(response){
             console.log(response)
-            $scope.$apply();
+            // $scope.$apply();
            //reload
 
         }, function errorCallback(response){

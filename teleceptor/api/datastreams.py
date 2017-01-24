@@ -289,7 +289,7 @@ class DataStreams:
 
         """
 
-        logging.debug("Updating stream with id %s with data %s", str(stream_id), str(data))
+        logging.info("Updating stream with id %s with data %s", str(stream_id), str(data))
         if session is None:
             with sessionScope() as session:
                 stream_info = _updateStream(stream_id, data, session)
@@ -345,12 +345,14 @@ def _updateStream(stream_id, data, session):
             session.commit()
             continue
         if key != 'uuid':
-            logging.info("changing: {}".format(key))
+            logging.info("changing: {} to {}".format(key, value))
             setattr(stream, key, value)
 
-    session.add(stream)
+    # session.add(stream)
+    session.commit()
 
     logging.info("Finished updating stream.")
+    logging.info("{}".format(stream.toDict()))
     return stream.toDict()
 
 
