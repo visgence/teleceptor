@@ -8,9 +8,9 @@
             <div class="panel-body">
                 <form class="form-horizontal" role="form">
                     <div id="tabs_{{template.url}}"></div>
-                        <div ng-repeat="tab in template.items">
-                            <div id={{tab[0].tabName}}></div>
-                            <div id={{tab[0].tabName}}_body>
+                    <div ng-repeat="tab in template.items">
+                        <div id={{tab[0].tabName}}></div>
+                        <div id={{tab[0].tabName}}_body>
                             <div ng-repeat="infoItem in tab">
                                 <div class="form-group">
                                     <label class="col-md-5 control-label">
@@ -48,28 +48,30 @@
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                    <div ng-if="currentTab==0 || template.title=='Stream Info'">
+                        <div ng-if=!template.editing>
+                            <div class="col-md-8 col-md-offset-5">
+                                <button type="button" class="btn btn-primary btn-sm" ng-click="EditFields(template.title)">
+                                    <span class="glyphicon glyphicon-pencil"></span>
+                                    Edit
+                                </button>
                             </div>
                         </div>
-                    <div ng-if=!template.editing>
-                        <div class="col-md-8 col-md-offset-5">
-                            <button type="button" class="btn btn-primary btn-sm" ng-click="EditFields(template.title)">
-                                <span class="glyphicon glyphicon-pencil"></span>
-                                Edit
-                            </button>
+                        <div ng-if=template.editing>
+                            <div class="col-md-8 col-md-offset-5">
+                                <button type="button" class="btn btn-success btn-sm" ng-click="SaveFields(template.url)">
+                                    <span class="glyphicon glyphicon-ok"></span>
+                                    Save
+                                </button>
+                                <button type="button" class="btn btn-default btn-sm" ng-click="CancelFields(template.title)">
+                                    <span class="glyphicon glyphicon-remove"></span>
+                                    Cancel
+                                </button>
+                            </div>
                         </div>
-                    </div>
-                    <div ng-if=template.editing>
-                        <div class="col-md-8 col-md-offset-5">
-                            <button type="button" class="btn btn-success btn-sm" ng-click="SaveFields(template.url)">
-                                <span class="glyphicon glyphicon-ok"></span>
-                                Save
-                            </button>
-                            <button type="button" class="btn btn-default btn-sm" ng-click="CancelFields(template.title)">
-                                <span class="glyphicon glyphicon-remove"></span>
-                                Cancel
-                            </button>
-                        </div>
-                    </div>
+                     </div>
                 </form>
             </div>
         </div>

@@ -56,7 +56,7 @@ angular.module('teleceptor.infocontroller', [])
         }], [{
             "tabName": "Metadata",
             "name": "Metadata",
-            "value": v.uuid,
+            "value": v.meta_data,
             "inputType": "text"
         }], [{
             "tabName": "Command",
@@ -151,14 +151,15 @@ angular.module('teleceptor.infocontroller', [])
         }
     }
 
+    $scope.currentTab = 0;
     $scope.ChangeTab = function(i){
+        $scope.currentTab = i;
          for(var x in $scope.widgets){
             for(var y in $scope.widgets[x].items){
                 var head = angular.element("#"+$scope.widgets[x].items[y][0].tabName+"_tab");
                 var body = angular.element("#"+$scope.widgets[x].items[y][0].tabName+"_body");
                 if(head[0] === undefined) continue;
                 if(parseInt(y) === parseInt(i)){
-
                     $(head[0].parentNode).addClass("active");
                     body.css("display", "block");
                 } else {
@@ -194,7 +195,7 @@ angular.module('teleceptor.infocontroller', [])
         var updates = {
             "type": template
         };
-        var url = ""
+        var url = "";
         for(var i in $scope.widgets){
             if($scope.widgets[i].url === template){
                 url = $scope.widgets[i].url +"/";
