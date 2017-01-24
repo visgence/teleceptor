@@ -44,6 +44,12 @@
                                                     <button class="glyphicon, glyphicon-plus" ng-click="AddPath()"></button>
                                                 </div>
                                             </div>
+                                            <div ng-switch-when="button">
+                                                <button type="button" class="btn btn-primary btn-sm" ng-click="EditFields(template.title)">
+                                                    <span class="glyphicon glyphicon-send"></span>
+                                                    {{infoItem.label}}
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

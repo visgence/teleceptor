@@ -60,21 +60,28 @@ angular.module('teleceptor.infocontroller', [])
             "inputType": "text"
         }], [{
             "tabName": "Command",
-            "name": "Command",
-            "value": v.uuid,
+            "name": v.uuid,
+            "value": "Output Sensor",
             "inputType": "text"
 
         }], [{
             "tabName": "ManualEntry",
-            "name": "Manual Entry",
-            "value": v.uuid,
-            "inputType": "text"
-
+            "name": "New Data",
+            "value": "",
+            "inputType": "input"
+        },{
+            "name": "",
+            "label": "Send",
+            "inputType": "button"
         }], [{
             "tabName": "Export",
             "name": "Export",
-            "value": v.uuid,
-            "inputType": "text"
+            "label": "SQL",
+            "inputType": "button"
+        }, {
+            "name": "",
+            "label": "Elastic Search",
+            "inputType": "button"
         }]];
         $scope.widgets.push(newObj);
         updateInfo();
@@ -154,7 +161,10 @@ angular.module('teleceptor.infocontroller', [])
     $scope.currentTab = 0;
     $scope.ChangeTab = function(i){
         $scope.currentTab = i;
-         for(var x in $scope.widgets){
+        $scope.widgets[1].editing = false;
+        if(i === 3)
+            $scope.widgets[1].editing = true;
+        for(var x in $scope.widgets){
             for(var y in $scope.widgets[x].items){
                 var head = angular.element("#"+$scope.widgets[x].items[y][0].tabName+"_tab");
                 var body = angular.element("#"+$scope.widgets[x].items[y][0].tabName+"_body");
