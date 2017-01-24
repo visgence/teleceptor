@@ -2,7 +2,7 @@
 
 angular.module('teleceptor.infocontroller', [])
 
-.controller('infoController', ['$scope', '$http', 'infoService', '$compile', '$timeout', 'apiService', function($scope, $http, infoService, $compile, $timeout, apiService){
+.controller('infoController', ['$scope', '$http', 'infoService', '$compile', '$timeout', 'apiService', '$window', function($scope, $http, infoService, $compile, $timeout, apiService, $window){
     $scope.widgets = [];
     var StreamLoaded = false;
     var SensorLoaded = false;
@@ -156,7 +156,6 @@ angular.module('teleceptor.infocontroller', [])
             for(var y in $scope.widgets[x].items){
                 var head = angular.element("#"+$scope.widgets[x].items[y][0].tabName+"_tab");
                 var body = angular.element("#"+$scope.widgets[x].items[y][0].tabName+"_body");
-                console.log(head[0])
                 if(head[0] === undefined) continue;
                 if(parseInt(y) === parseInt(i)){
 
@@ -198,7 +197,6 @@ angular.module('teleceptor.infocontroller', [])
         var url = ""
         for(var i in $scope.widgets){
             if($scope.widgets[i].url === template){
-                console.log("here")
                 url = $scope.widgets[i].url +"/";
                 if($scope.widgets[i].url==="datastreams"){
                     url+= "?stream_id="+$scope.widgets[i].id;
@@ -219,12 +217,13 @@ angular.module('teleceptor.infocontroller', [])
                 }
             }
         }
-        console.log(updates)
+        if(updates.type == "sensors"){
+            updates.last_calibration = {
+                "coefficients": JSON.parse(updates.calibration)
+            };
+        }
         apiService.set(url, updates).then(function successCallback(response){
-            console.log(response)
-            // $scope.$apply();
-           //reload
-
+            $window.location.reload();
         }, function errorCallback(response){
             console.log("Error Occured: ", response.data);
         });
