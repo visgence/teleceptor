@@ -8,7 +8,8 @@ var app = angular.module('teleceptor', [
   'teleceptor.treecontroller',
   'teleceptor.graphcontroller',
   'teleceptor.infocontroller',
-  'teleceptor.services'
+  'teleceptor.services',
+  'teleceptor.maincontroller'
 ])
 
 .config(['$routeProvider', '$locationProvider', '$httpProvider', function($routeProvider, $locationProvider, $httpProvider){
