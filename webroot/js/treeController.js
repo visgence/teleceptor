@@ -35,9 +35,10 @@ angular.module('teleceptor.treecontroller', [])
 
         function RequestTree(){
             var pathSetId = $location.search().pathSet-1;
-            if(pathSetId === undefined) pathSetId = 0;
+            if(isNaN(pathSetId)) pathSetId = 0;
             apiService.get('datastreams').then(function(response){
                 var streams = response.data.datastreams;
+
                 var data = {};
 
                 for(var a in streams){
@@ -48,12 +49,18 @@ angular.module('teleceptor.treecontroller', [])
                         data = MakeTreeStructure(data, streams[a], curUrl, b);
                     }
                 }
+                console.log(data)
 
                 $scope.nodeCount = 0;
+
                 $('#myTree').treeview({data: GetTree(data)});
                 $('#myTree').treeview('collapseAll', { silent: true });
                 BuildPathSetWidget(response.data.datastreams);
                 var curStream = $location.search().ds;
+
+                var currentPathSet = $location.search().pathSet;
+                if(currentPathSet === undefined) currentPathSet = 1;
+                // $scope.ChangePath(currentPathSet)
 
                 if(curStream !== undefined){
                     for(var c = 0; c < $scope.nodeCount;c++){
