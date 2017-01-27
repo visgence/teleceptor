@@ -181,7 +181,6 @@ angular.module('teleceptor.infocontroller', [])
     };
 
     $scope.AddPath = function(){
-
         for(var a in $scope.widgets){
             if($scope.widgets[a].url === "datastreams"){
                 for(var b in $scope.widgets[a].items[0]){

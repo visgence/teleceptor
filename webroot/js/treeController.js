@@ -79,6 +79,10 @@ angular.module('teleceptor.treecontroller', [])
         }
 
         function SelectTreeNode(info){
+            console.log(info)
+            if(info === undefined){
+                return;
+            }
             infoService.resetStreamInfo();
             infoService.setStreamInfo(info);
             $timeout(function(){
