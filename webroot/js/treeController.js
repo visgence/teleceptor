@@ -49,7 +49,6 @@ angular.module('teleceptor.treecontroller', [])
                         data = MakeTreeStructure(data, streams[a], curUrl, b);
                     }
                 }
-                console.log(data)
 
                 $scope.nodeCount = 0;
 
@@ -60,7 +59,6 @@ angular.module('teleceptor.treecontroller', [])
 
                 var currentPathSet = $location.search().pathSet;
                 if(currentPathSet === undefined) currentPathSet = 1;
-                // $scope.ChangePath(currentPathSet)
 
                 if(curStream !== undefined){
                     for(var c = 0; c < $scope.nodeCount;c++){

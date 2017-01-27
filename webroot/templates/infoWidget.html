@@ -11,6 +11,7 @@
                     <div ng-repeat="tab in template.items">
                         <div id={{tab[0].tabName}}></div>
                         <div id={{tab[0].tabName}}_body>
+                            <div class="alert alert-warning" style="padding-bottom: 10px; display: none" id={{template.url}}_warning></div>
                             <div ng-repeat="infoItem in tab">
                                 <div class="form-group">
                                     <label class="col-md-5 control-label">

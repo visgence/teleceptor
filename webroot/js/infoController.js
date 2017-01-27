@@ -206,6 +206,7 @@ angular.module('teleceptor.infocontroller', [])
             "type": template
         };
         var url = "";
+        var cancel = false;
         for(var i in $scope.widgets){
             if($scope.widgets[i].url === template){
                 url = $scope.widgets[i].url +"/";
@@ -214,6 +215,7 @@ angular.module('teleceptor.infocontroller', [])
                 } else {
                     url+=  $scope.widgets[i].uuid;
                 }
+
                 for(var j in $scope.widgets[i].items[0]){
                     if($scope.widgets[i].items[0][j].inputType === "input"){
                         updates[$scope.widgets[i].items[0][j].name.toLowerCase()] = $("#"+template + "_" + j)[0].value.toLowerCase();
@@ -222,12 +224,31 @@ angular.module('teleceptor.infocontroller', [])
                         updates[$scope.widgets[i].items[0][j].name.toLowerCase()] = [];
                         for(var k in $scope.widgets[i].items[0][j].value){
                             var str = "#"+template + "_" + k + "_" + $scope.widgets[i].items[0][j].name;
+                            var newPath =$(str)[0].value.toLowerCase();
+
+                            if(newPath[0] != '/'){
+                                ShowWarning(template, "Paths must begin with a '/'");
+                                cancel = true;
+                            }
+                            if(newPath[newPath.length-1] == '/'){
+                                ShowWarning(template, "Paths must not end with a '/'");
+                                cancel = true;
+                            }
+
+                            var temp = newPath.split('/');
+                            for(k in temp){
+                                if(/[~`!#$%\^&*+=\-\[\]\\';,/{}|\\":<>\?]/g.test(temp[k])){
+                                    ShowWarning(template, "Paths cannot have any special characters");
+                                    cancel = true;
+                                }
+                            }
                             updates[$scope.widgets[i].items[0][j].name.toLowerCase()].push($(str)[0].value.toLowerCase());
                         }
                     }
                 }
             }
         }
+        if(cancel) return;
         if(updates.type == "sensors"){
             updates.last_calibration = {
                 "coefficients": JSON.parse(updates.calibration)
@@ -237,9 +258,13 @@ angular.module('teleceptor.infocontroller', [])
             $window.location.reload();
         }, function errorCallback(response){
             console.log("Error Occured: ", response.data);
-        });
 
+        });
     };
+
+    function ShowWarning(tag, msg){
+        angular.element("#"+ tag+"_warning").html(msg).css('display', 'block');
+    }
 
     $scope.CancelFields = function(template){
         for(var i in $scope.widgets){
