@@ -2,7 +2,7 @@
 
 angular.module('teleceptor.treecontroller', [])
 
-.controller('treeController', ['$scope', '$location', '$http', '$compile', 'apiService', 'infoService', '$timeout', function($scope, $location, $http, $compile, apiService, infoService, $timeout){
+.controller('treeController', ['$scope', '$location', '$http', '$compile', 'apiService', 'infoService', '$timeout', '$window',function($scope, $location, $http, $compile, apiService, infoService, $timeout, $window){
     $scope.pathSetSelection = $location.search().pathSet;
         if($scope.pathSetSelection === undefined){
             $scope.pathSetSelection = 0;

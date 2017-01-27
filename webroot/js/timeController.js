@@ -8,10 +8,9 @@ angular.module('teleceptor.timecontroller', ['ui.bootstrap.datetimepicker'])
     $scope.selectTime = function($event, time){
         $($event.target).parent().children().removeClass('active');
         $($event.target).addClass('active');
-        $scope.toggleAutoRefresh();
         refreshing = false;
         $timeout(function(){
-            $scope.intervalTimer = 10;
+            $scope.intervalTimer = 60;
             switch(time){
                 case 0:
                     $location.search('time', 'custom');
@@ -43,7 +42,6 @@ angular.module('teleceptor.timecontroller', ['ui.bootstrap.datetimepicker'])
                     break;
             }
         });
-        $scope.toggleAutoRefresh();
     };
 
     $scope.SubmitTime = function(){
@@ -65,42 +63,38 @@ angular.module('teleceptor.timecontroller', ['ui.bootstrap.datetimepicker'])
         var type = $location.search().time;
         setTimes(start, end);
         $scope.showTimer =true;
-        refreshing = true
-        intervalId = setInterval(IntervalTimer, 1000);
+        refreshing = false;
         if(type === "custom"){
             clearInterval(intervalId);
             $scope.showTimer =false;
-            refreshing = false;
         }
-
         if(type===undefined){
             type = "day";
         }
-        angular.element("#"+type+"Btn").addClass('active');
     }
 
-    $scope.intervalTimer = 10;
+    $scope.intervalTimer = 60;
     var refreshing = true;
 
     function IntervalTimer(){
         if(refreshing === false) clearInterval(intervalId);
         $timeout(function(){
-        $scope.intervalTimer--;
-        if($scope.intervalTimer === 0){
-            $location.search('reload', parseInt(Date.now()/1000));
-            $scope.intervalTimer = 10;
-        }
-    });
+            $scope.intervalTimer--;
+            if($scope.intervalTimer === 0){
+                $location.search('reload', parseInt(Date.now()/1000));
+                $scope.intervalTimer = 60;
+            }
+        });
     }
 
     $scope.toggleAutoRefresh = function(){
         if(refreshing === true){
             $scope.intervalTimer = "";
-            clearInterval(intervalId)
+            clearInterval(intervalId);
             refreshing = false;
             angular.element("#refreshButton").removeClass("active");
         } else {
-            $scope.intervalTimer = 10;
+            $scope.intervalTimer = 60;
             refreshing = true;
             intervalId = setInterval(IntervalTimer, 1000);
             angular.element("#refreshButton").addClass("active");

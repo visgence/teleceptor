@@ -6,10 +6,30 @@ angular.module('teleceptor.infocontroller', [])
     $scope.widgets = [];
     var StreamLoaded = false;
     var SensorLoaded = false;
+
+    $scope.$on('$routeUpdate', function(){
+        StreamLoaded = false;
+        SensorLoaded = false;
+        $scope.widgets = [];
+        LoadStream(infoService.getStreamInfo());
+        LoadSensor(infoService.getSensorInfo());
+    });
+
     $scope.$watch(function(){
         return infoService.getSensorInfo();
     }, function(v){
         if(v === undefined) return;
+        LoadSensor(v);
+    });
+
+    $scope.$watch(function(){
+        return infoService.getStreamInfo();
+    }, function(v){
+        if(v === undefined) return;
+        LoadStream(v);
+    });
+
+    function LoadSensor(v){
         if(SensorLoaded){
             updateInfo();
             return;
@@ -85,12 +105,9 @@ angular.module('teleceptor.infocontroller', [])
         }]];
         $scope.widgets.push(newObj);
         updateInfo();
-    });
+    }
 
-    $scope.$watch(function(){
-        return infoService.getStreamInfo();
-    }, function(v){
-        if(v === undefined) return;
+    function LoadStream(v){
         if(StreamLoaded){
             updateInfo();
             return;
@@ -123,8 +140,7 @@ angular.module('teleceptor.infocontroller', [])
 
         $scope.widgets.push(newObj);
         updateInfo();
-    });
-
+    }
 
     function updateInfo(){
         for(var i in $scope.widgets){

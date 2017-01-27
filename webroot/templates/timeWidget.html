@@ -45,12 +45,12 @@
                 <button class="btn btn-sm btn-default" id="weekBtn" ng-click="selectTime($event, 3)">Week</button>
             </div>
             <div ng-if="showTimer">
-            <div style="margin-top: 1em" id="refreshDiv">
-                <button type="button" class="btn btn-sm btn-default active" id="refreshButton" ng-click="toggleAutoRefresh()">
-                    <i class="glyphicon glyphicon-refresh"></i>
-                </button>
-                <i>Auto Refresh {{intervalTimer}}</i>
-            </div>
+                <div style="margin-top: 1em" id="refreshDiv">
+                    <button type="button" class="btn btn-sm btn-default" id="refreshButton" ng-click="toggleAutoRefresh()">
+                        <i class="glyphicon glyphicon-refresh"></i>
+                    </button>
+                    <i>Auto Refresh {{intervalTimer}}</i>
+                </div>
             </div>
         </form>
     </div>
