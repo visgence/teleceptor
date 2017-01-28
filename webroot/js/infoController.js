@@ -43,6 +43,7 @@ angular.module('teleceptor.infocontroller', [])
             "uuid": v.uuid
         };
         newObj.id = v.last_calibration.id;
+        console.log(v.meta_data)
         newObj.items = [
         [{
             "tabName": "Configuration",
@@ -74,11 +75,6 @@ angular.module('teleceptor.infocontroller', [])
             "value": v.last_calibration.coefficients,
             "inputType": "input"
         }], [{
-            "tabName": "Metadata",
-            "name": "Metadata",
-            "value": v.meta_data,
-            "inputType": "text"
-        }], [{
             "tabName": "Command",
             "name": v.uuid,
             "value": "Output Sensor",
@@ -103,6 +99,19 @@ angular.module('teleceptor.infocontroller', [])
             "label": "Elastic Search",
             "inputType": "button"
         }]];
+
+        var metaObj = [];
+
+        for(var i in v.meta_data){
+            metaObj.push({
+                "tabName": "Metadata",
+                "name": i,
+                "value": v.meta_data[i],
+                "inputType": "text"
+            });
+        }
+
+        newObj.items.push(metaObj);
         $scope.widgets.push(newObj);
         updateInfo();
     }
