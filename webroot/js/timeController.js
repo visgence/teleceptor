@@ -9,6 +9,9 @@ angular.module('teleceptor.timecontroller', ['ui.bootstrap.datetimepicker'])
         $($event.target).parent().children().removeClass('active');
         $($event.target).addClass('active');
         refreshing = false;
+        clearInterval(intervalId);
+        $('#startdate')[0].value = "";
+        $('#enddate')[0].value = "";
         $timeout(function(){
             $scope.intervalTimer = 60;
             switch(time){
@@ -17,7 +20,6 @@ angular.module('teleceptor.timecontroller', ['ui.bootstrap.datetimepicker'])
                     setTimes(null, null);
                     $scope.showTimer = false;
                     refreshing = false;
-                    clearInterval(intervalId);
                     break;
                 case 1:
                     $location.search('time', 'hour');
@@ -45,9 +47,13 @@ angular.module('teleceptor.timecontroller', ['ui.bootstrap.datetimepicker'])
     };
 
     $scope.SubmitTime = function(){
-        $location.search('time', 'custom');
+        angular.element("#hourBtn").removeClass('active');
+        angular.element("#dayBtn").removeClass('active');
+        angular.element("#weekBtn").removeClass('active');
+        angular.element("#customBtn").addClass('active');
         angular.element("#refreshDiv").css("display", "none");
-        setTimes( new Date($('#startdate')[0].value).getTime(), new Date($('#enddate')[0].value).getTime());
+        $location.search('time', 'custom');
+        setTimes(new Date($('#startdate')[0].value).getTime(), new Date($('#enddate')[0].value).getTime());
     };
 
     function setTimes(startTime, endTime){
@@ -68,9 +74,8 @@ angular.module('teleceptor.timecontroller', ['ui.bootstrap.datetimepicker'])
             clearInterval(intervalId);
             $scope.showTimer =false;
         }
-        if(type===undefined){
-            type = "day";
-        }
+        if(type===undefined) type = "day";
+        angular.element("#"+type+"Btn").addClass('active');
     }
 
     $scope.intervalTimer = 60;
