@@ -28,7 +28,12 @@
                                                     <input class="form-control" value={{infoItem.value}} id={{template.url}}_{{$index}}></input>
                                                 </div>
                                                 <div ng-if=!template.editing>
-                                                    {{infoItem.value}}
+                                                    <div ng-if=tab[0].tabName=='ManualEntry'>
+                                                        <input class="form-control" value={{infoItem.value}} id={{template.url}}_{{$index}}></input>
+                                                    </div>
+                                                    <div ng-if=tab[0].tabName!='ManualEntry'>
+                                                        {{infoItem.value}}
+                                                    </div>
                                                 </div>
                                             </div>
                                             <div ng-switch-when="multiple">
