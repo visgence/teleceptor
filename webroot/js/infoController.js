@@ -260,7 +260,9 @@ angular.module('teleceptor.infocontroller', [])
                         for(var k in $scope.widgets[i].items[0][j].value){
                             var str = "#"+template + "_" + k + "_" + $scope.widgets[i].items[0][j].name;
                             var newPath =$(str)[0].value.toLowerCase();
-
+                            if(newPath === ""){
+                                continue;
+                            }
                             if(newPath[0] != '/'){
                                 ShowWarning(template, "Paths must begin with a '/'");
                                 cancel = true;
