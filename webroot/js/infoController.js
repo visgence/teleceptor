@@ -30,6 +30,7 @@ angular.module('teleceptor.infocontroller', [])
     });
 
     function LoadSensor(v){
+        if(v === undefined) return;
         if(SensorLoaded){
             updateInfo();
             return;
@@ -111,13 +112,21 @@ angular.module('teleceptor.infocontroller', [])
                 "inputType": "text"
             });
         }
-
+        if(metaObj[0] === undefined){
+            metaObj[0] = {
+                "tabName": "Metadata",
+                "name": "Metadata",
+                "value": "No meta data exists.",
+                "inputType": "text"
+            };
+        }
         newObj.items.push(metaObj);
         $scope.widgets.push(newObj);
         updateInfo();
     }
 
     function LoadStream(v){
+        if(v === undefined) return;
         if(StreamLoaded){
             updateInfo();
             return;
@@ -153,6 +162,7 @@ angular.module('teleceptor.infocontroller', [])
     }
 
     function updateInfo(){
+        console.log($scope.widgets)
         for(var i in $scope.widgets){
             if($scope.widgets[i].items.length > 1){
                 var myDiv = angular.element("#tabs_"+$scope.widgets[i].url);
