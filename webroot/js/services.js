@@ -66,8 +66,12 @@ angular.module('teleceptor.services', [])
         return $http.get(urlBase+Str);
     };
 
-    apiService.set = function(Str, params){
+    apiService.put = function(Str, params){
         return $http.put(urlBase+Str, params);
+    };
+
+    apiService.post = function(Str, params){
+        return $http.post(urlBase+Str, params);
     };
 
     return apiService;

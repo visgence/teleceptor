@@ -88,7 +88,8 @@ angular.module('teleceptor.infocontroller', [])
         },{
             "name": "",
             "label": "Send",
-            "inputType": "button"
+            "inputType": "button",
+            "btnId": "send_data"
         }], [{
             "tabName": "Export",
             "name": "Export",
@@ -294,7 +295,7 @@ angular.module('teleceptor.infocontroller', [])
                 "coefficients": JSON.parse(updates.calibration)
             };
         }
-        apiService.set(url, updates).then(function successCallback(response){
+        apiService.put(url, updates).then(function successCallback(response){
             $window.location.reload();
         }, function errorCallback(response){
             console.log("Error Occured: ", response.data);
@@ -324,6 +325,39 @@ angular.module('teleceptor.infocontroller', [])
         });
         angular.element('#exportSqlBtn').on("click", function(){
             exportData(null);
+        });
+        angular.element('#send_data').on("click", function(){
+            var sensorInfo = infoService.getSensorInfo();
+
+
+            var id = sensorInfo.uuid;
+            var newValue = angular.element('#sensors_0')[0].value;
+            var time = (new Date()).getTime() / 1000;
+
+            var sensorReading = {"name": id, "sensor_type": sensorInfo.sensor_type,
+             "timestamp": time, "meta_data":{}};
+
+            var payload = [{
+                "info":{"uuid": "", "name":sensorInfo.name, "description": sensorInfo.description, "out": (sensorInfo.isInput ? [] : [sensorReading]),
+                "in": (sensorInfo.isInput ? [sensorReading] : [])}, "readings": [[id, newValue, time]]
+            }];
+            console.log(payload);
+
+            apiService.post("station", payload).then(function(response){
+                console.log("here:");
+                console.log(response);
+            });
+            // return $.ajax({
+            //    url: "/api/station/",
+            //    method: "POST",
+            //    data: ko.toJSON(payload),
+            //    dataType: "json",
+            //    contentType: "application/json",
+            //    processData: false
+            // }).then(__this.sendSuccessCb.bind(__this),__this.updateFailCb.bind(__this));
+
+
+
         });
     }, 1000);
 
