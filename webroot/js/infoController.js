@@ -315,10 +315,14 @@ angular.module('teleceptor.infocontroller', [])
     };
     $timeout(function(){
         angular.element('#exportEsBtn').on("click", function(){
-            exportData(null);
+            var start = timeService.getValues().start;
+            var end = timeService.getValues().end;
+            var readingsUrl = "readings?datastream=" + infoService.getStreamInfo().id + "&start="+parseInt(start/1000)+"&end="+parseInt(end/1000)+"&source=ElasticSearch";
+            apiService.get(readingsUrl).then(function(readingsResponse){
+                exportData(readingsResponse);
+            });
         });
         angular.element('#exportSqlBtn').on("click", function(){
-
             exportData(null);
         });
     }, 1000);
