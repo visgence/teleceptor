@@ -174,7 +174,7 @@ angular.module('teleceptor.infocontroller', [])
                     //make sure that the first item of each tab has the tabname property!
                     wrapper += "><a class='btn btn-link' id='"+ $scope.widgets[i].items[j][0].tabName +"_tab' ng-click='ChangeTab(" + j +")'>"+ $scope.widgets[i].items[j][0].tabName + "</a></li>";
                 }
-                wrapper += "</ul>";
+                wrapper += "</ul><br>";
                 myDiv.html("");
                 myDiv.append($compile(wrapper)($scope));
             }
