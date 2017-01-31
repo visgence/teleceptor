@@ -162,7 +162,6 @@ angular.module('teleceptor.infocontroller', [])
     }
 
     function updateInfo(){
-        console.log($scope.widgets)
         for(var i in $scope.widgets){
             if($scope.widgets[i].items.length > 1){
                 var myDiv = angular.element("#tabs_"+$scope.widgets[i].url);
@@ -316,61 +315,60 @@ angular.module('teleceptor.infocontroller', [])
     };
     $timeout(function(){
         angular.element('#exportEsBtn').on("click", function(){
-            console.log("here");
+            exportData(null);
+        });
+        angular.element('#exportSqlBtn').on("click", function(){
+
+            exportData(null);
         });
     }, 1000);
 
-    function exportData(name, source, data, event){
+    function exportData(readings){
             var time_start = timeService.getValues().start;
             var time_end = timeService.getValues().end;
+            if(readings === null){
+                readings = infoService.getReadingsInfo().readings;
+            }
+            var sensorInfo = infoService.getSensorInfo();
 
-        //     else{
-        //         time_start = __this.rangeStart();
-        //         time_end = __this.rangeEnd();
-        //     }
-        //     console.log("name: ", name);
-        //     console.log("startTime: ", time_start);
-        //     console.log("endTime: ", time_end);
-        //     console.log("source: ", source);
+            //export readings to csv
+            console.log(readings);
 
-        //     __this.fetchData({"start": time_start, "end": time_end}, source, false).then(function(readings){
-        //         //export readings to csv
-        //         console.log(readings);
-        //         var scaledReadings = __this.scaleData(readings, __this.sensor().last_calibration().coefficients);
+            var scaledReadings = [];
+            for(var i = 0; i < readings.length; i++){
+                scaledReadings.push(readings[i][1] * sensorInfo.last_calibration.coefficients[0] + sensorInfo.last_calibration.coefficients[1]);
+            }
 
-        //         // actual delimiter characters for CSV format
-        //         var colDelim = ',';
-        //         var rowDelim = '\r\n';
 
-        //         //build csv string
-        //         var csv = "";
+            // actual delimiter characters for CSV format
+            var colDelim = ',';
+            var rowDelim = '\r\n';
 
-        //         var uuid = __this.sensor().uuid();
-        //         var units = __this.sensor().units();
+            //build csv string
+            var csv = "";
+            var uuid = sensorInfo.uuid;
+            var units = sensorInfo.units;
+            csv += "timestamp" + colDelim + "UUID" + colDelim + "value" + colDelim + "scaled value" + colDelim + "units" + rowDelim;
+            for(var i=0; i < readings.length; i++){
+                csv += readings[i][0] + colDelim + uuid + colDelim + readings[i][1] + colDelim + scaledReadings[i] + colDelim + units + rowDelim;
+            }
+            console.log(csv)
+            // Data URI
+            var csvData = 'data:application/csv;charset=utf-8,' + encodeURIComponent(csv);
 
-        //         csv += "timestamp" + colDelim + "UUID" + colDelim + "value" + colDelim + "scaled value" + colDelim + "units" + rowDelim;
-        //         for(var i=0; i < readings.length; i++){
-        //             csv += readings[i][0] + colDelim + uuid + colDelim + readings[i][1] + colDelim + scaledReadings[i][1] + colDelim + units + rowDelim;
-        //         }
+            var today = new Date();
+            var year = today.getFullYear();
+            var month = today.getMonth() +1; //getMonth() returns a value from 0 to 11
+            var day = today.getDate();
+            var hour = today.getHours();
+            var minute = today.getMinutes();
 
-        //         // Data URI
-        //         var csvData = 'data:application/csv;charset=utf-8,' + encodeURIComponent(csv);
-
-        //         var today = new Date();
-        //         var year = today.getFullYear();
-        //         var month = today.getMonth() +1; //getMonth() returns a value from 0 to 11
-        //         var day = today.getDate();
-        //         var hour = today.getHours();
-        //         var minute = today.getMinutes();
-
-        //         var downloadFilename = __this.sensor().uuid() + "_" + month + "-" + day + "-" + year + "_" + hour + ":" + minute + ".csv";
-        //         //actually download
-        //         //window.location.assign(csvData);
-        //         var link = document.createElement("a");
-        //         link.download = downloadFilename;
-        //         link.href = csvData;
-        //         link.click();
-        //     });
+            var downloadFilename = uuid + "_" + month + "-" + day + "-" + year + "_" + hour + ":" + minute + ".csv";
+            //actually download
+            var link = document.createElement("a");
+            link.download = downloadFilename;
+            link.href = csvData;
+            link.click();
 
 
     }

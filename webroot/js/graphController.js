@@ -50,7 +50,7 @@ angular.module('teleceptor.graphcontroller', [])
                     }
                     var readingsUrl = "readings?datastream=" + infoService.getStreamInfo().id + "&start="+parseInt(start/1000)+"&end="+parseInt(end/1000);
                     apiService.get(readingsUrl).then(function(readingsResponse){
-                        if(elem[0].clientHeight < 100){
+                        if(elem[0].clientHeight > 100){
                             infoService.setReadingsInfo(readingsResponse.data);
                         }
                         drawGraph(elem[0], readingsResponse.data);
