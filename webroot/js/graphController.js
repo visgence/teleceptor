@@ -317,9 +317,14 @@ angular.module('teleceptor.graphcontroller', [])
                         scope.$apply(function(){
                             $location.search('startTime', start);
                             $location.search('endTime', end);
+                            $location.search('time', 'custom');
                         });
                         timeService.setStart(start);
                         timeService.setEnd(end);
+                        angular.element("#hourBtn").removeClass('active');
+                        angular.element("#dayBtn").removeClass('active');
+                        angular.element("#weekBtn").removeClass('active');
+                        angular.element("#customBtn").addClass('active');
                     });
                 //Hit area for selection box
                 var circleHit = newChart.append("rect")
