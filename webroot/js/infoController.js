@@ -281,8 +281,12 @@ angular.module('teleceptor.infocontroller', [])
                             }
                             updates[$scope.widgets[i].items[0][j].name.toLowerCase()].push($(str)[0].value.toLowerCase());
                         }
+                        if(updates[$scope.widgets[i].items[0][j].name.toLowerCase()].length === 0){
+                            updates[$scope.widgets[i].items[0][j].name.toLowerCase()].push("/new_sensors");
+                        }
                     }
                 }
+
             }
         }
         if(cancel) return;
