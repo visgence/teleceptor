@@ -44,11 +44,15 @@ angular.module('teleceptor.graphcontroller', [])
                     }
                 }
                 apiService.get("sensors?sensor_id="+infoService.getStreamInfo().sensor).then(function(sensorInfoResponse){
+
                     if(elem[0].clientHeight < 100){
                         infoService.setSensorInfo(sensorInfoResponse.data.sensor);
                     }
                     var readingsUrl = "readings?datastream=" + infoService.getStreamInfo().id + "&start="+parseInt(start/1000)+"&end="+parseInt(end/1000);
                     apiService.get(readingsUrl).then(function(readingsResponse){
+                        if(elem[0].clientHeight < 100){
+                            infoService.setReadingsInfo(readingsResponse.data);
+                        }
                         drawGraph(elem[0], readingsResponse.data);
                     }, function(error){
                         console.log("error occured: " + error);

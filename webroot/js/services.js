@@ -23,6 +23,7 @@ angular.module('teleceptor.services', [])
 .factory('infoService', function(){
     var sensorInfo;
     var streamInfo;
+    var readingsInfo;
 
     return {
         streamInfo: streamInfo,
@@ -44,6 +45,15 @@ angular.module('teleceptor.services', [])
         },
         resetSensorInfo: function(){
             sensorInfo = null;
+        },
+        getReadingsInfo: function(){
+            return readingsInfo;
+        },
+        setReadingsInfo: function(newInfo){
+            readingsInfo = newInfo;
+        },
+        resetReadingsInfo: function(){
+            readingsInfo = null;
         }
     };
 })
