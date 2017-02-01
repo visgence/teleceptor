@@ -78,7 +78,8 @@ angular.module('teleceptor.infocontroller', [])
             "tabName": "ManualEntry",
             "name": "New Data",
             "value": "",
-            "inputType": "input"
+            "inputType": "input",
+            "inputid": "manEntry"
         },{
             "name": "",
             "label": "Send",
@@ -98,12 +99,14 @@ angular.module('teleceptor.infocontroller', [])
         }]];
 
         var commandObj = [];
+        v.sensor_IOtype = true;
         if(v.sensor_IOtype){
             commandObj.push({
                 "tabName": "Command",
-                "name": v.uuid,
-                "value": "",
-                "inputType": "input"
+                "name": "Command",
+                "value": "enter commands",
+                "inputType": "input",
+                "inputid": "commandInput"
             });
             commandObj.push({
                 "tabName": "Command",
@@ -142,6 +145,7 @@ angular.module('teleceptor.infocontroller', [])
         }
         newObj.items.push(metaObj);
         $scope.widgets.push(newObj);
+        console.log($scope.widgets)
         updateInfo();
     }
 
@@ -217,8 +221,6 @@ angular.module('teleceptor.infocontroller', [])
     $scope.ChangeTab = function(i){
         $scope.currentTab = i;
         $scope.widgets[1].editing = false;
-        if(i === 3)
-            $scope.widgets[1].editing = true;
         for(var x in $scope.widgets){
             for(var y in $scope.widgets[x].items){
                 var head = angular.element("#"+$scope.widgets[x].items[y][0].tabName+"_tab");
@@ -348,7 +350,7 @@ angular.module('teleceptor.infocontroller', [])
         angular.element('#send_data').on("click", function(){
             var sensorInfo = infoService.getSensorInfo();
             var id = sensorInfo.uuid;
-            var newValue = angular.element('#sensors_0')[0].value;
+            var newValue = angular.element('#manEntry')[0].value;
             var time = (new Date()).getTime() / 1000;
 
             var sensorReading = {"name": id, "sensor_type": sensorInfo.sensor_type,
@@ -371,13 +373,10 @@ angular.module('teleceptor.infocontroller', [])
     function exportData(readings){
             var time_start = timeService.getValues().start;
             var time_end = timeService.getValues().end;
+            var sensorInfo = infoService.getSensorInfo();
             if(readings === null){
                 readings = infoService.getReadingsInfo().readings;
             }
-            var sensorInfo = infoService.getSensorInfo();
-
-            //export readings to csv
-            console.log(readings);
 
             var scaledReadings = [];
             for(var i = 0; i < readings.length; i++){
@@ -390,34 +389,27 @@ angular.module('teleceptor.infocontroller', [])
 
             //build csv string
             var csv = "";
-            var uuid = sensorInfo.uuid;
-            var units = sensorInfo.units;
             csv += "timestamp" + colDelim + "UUID" + colDelim + "value" + colDelim + "scaled value" + colDelim + "units" + rowDelim;
             for(var i=0; i < readings.length; i++){
-                csv += readings[i][0] + colDelim + uuid + colDelim + readings[i][1] + colDelim + scaledReadings[i] + colDelim + units + rowDelim;
+                csv += readings[i][0] + colDelim + sensorInfo.uuid + colDelim + readings[i][1] + colDelim + scaledReadings[i] + colDelim + sensorInfo.units + rowDelim;
             }
             // Data URI
-            var csvData = 'data:application/csv;charset=utf-8,' + encodeURIComponent(csv);
             var today = new Date();
-            var year = today.getFullYear();
-            var month = today.getMonth() +1; //getMonth() returns a value from 0 to 11
-            var day = today.getDate();
-            var hour = today.getHours();
-            var minute = today.getMinutes();
 
-            var downloadFilename = uuid + "_" + month + "-" + day + "-" + year + "_" + hour + ":" + minute + ".csv";
+            var downloadFilename = sensorInfo.uuid + "_" + today.getMonth() +1 + "-" + today.getDate() + "-" + today.getFullYear() + "_" + today.getHours() + ":" + today.getMinutes() + ".csv";
             //actually download
             var link = document.createElement("a");
             link.download = downloadFilename;
-            link.href = csvData;
+            link.href = 'data:application/csv;charset=utf-8,' + encodeURIComponent(csv);
             link.click();
     }
 
     function sendCommand(){
 
         //post new value to commands api
+        console.log(angular.element('#commandInput'))
         var payload = {
-            "message": angular.element('#sensors_0')[0].value
+            "message": angular.element('#commandInput')[0].value
            ,"duration": 60000
         };
         console.log(payload);
