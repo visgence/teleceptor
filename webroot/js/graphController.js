@@ -27,16 +27,16 @@ angular.module('teleceptor.graphcontroller', [])
                 if($location.search().ds === undefined) return;
                 if(infoService.getStreamInfo() === undefined ) return;
 
-                var start = timeService.getValues().start;
-                var end = timeService.getValues().end;
-                if(isNaN(start)){
+                var start = $location.search().startTime;
+                var end = $location.search().endTime;
+                if(start === undefined){
                     start = Date.now() - 84000000;
-                    timeService.setStart(start);
                 }
-                if(isNaN(end)){
+                if(end === undefined){
                     end = Date.now();
-                    timeService.setEnd(end);
                 }
+                timeService.setStart(start);
+                timeService.setEnd(end);
 
                 apiService.get("sensors?sensor_id="+infoService.getStreamInfo().sensor).then(function(sensorInfoResponse){
 
@@ -303,8 +303,6 @@ angular.module('teleceptor.graphcontroller', [])
                             $location.search('endTime', end);
                             $location.search('time', 'custom');
                         });
-                        timeService.setStart(start);
-                        timeService.setEnd(end);
                         angular.element("#hourBtn").removeClass('active');
                         angular.element("#dayBtn").removeClass('active');
                         angular.element("#weekBtn").removeClass('active');
