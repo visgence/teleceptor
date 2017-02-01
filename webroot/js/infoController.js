@@ -99,7 +99,7 @@ angular.module('teleceptor.infocontroller', [])
         }]];
 
         var commandObj = [];
-        v.sensor_IOtype = true;
+        // v.sensor_IOtype = true;
         if(v.sensor_IOtype){
             commandObj.push({
                 "tabName": "Command",
@@ -145,7 +145,6 @@ angular.module('teleceptor.infocontroller', [])
         }
         newObj.items.push(metaObj);
         $scope.widgets.push(newObj);
-        console.log($scope.widgets)
         updateInfo();
     }
 
@@ -405,17 +404,15 @@ angular.module('teleceptor.infocontroller', [])
     }
 
     function sendCommand(){
-
+        var sensorInfo = infoService.getSensorInfo();
         //post new value to commands api
-        console.log(angular.element('#commandInput'))
         var payload = {
             "message": angular.element('#commandInput')[0].value
-           ,"duration": 60000
+           ,"duration": 60000,
+           "sensor_id": sensorInfo.uuid
         };
-        console.log(payload);
-        var sensorInfo = infoService.getSensorInfo();
-        var id = sensorInfo.uuid;
-        apiService.post("messages/"+id+"/", payload).then(function(response){
+
+        apiService.post("messages/", payload).then(function(response){
             console.log("the response was:");
             console.log(response);
         });

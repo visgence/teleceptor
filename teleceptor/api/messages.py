@@ -122,8 +122,7 @@ class Messages:
         logging.error("Provided sensor type %s does not match int, bool, or float")
         return False
 
-    @require()
-    def POST(self, sensor_id):
+    def POST(self):
         """
         A POST to this module should include a sensor_id and the
         content of the request should include the data to go in the message.
@@ -138,13 +137,15 @@ class Messages:
         :param sensor_id: Unique identifier for a sensor.
         :type sensor_id: int
         """
-        logging.debug("POST request to messages.")
+        logging.info("POST request to messages.")
 
         cherrypy.response.headers['Content-Type'] = 'application/json'
         status_code = "200"
         return_data = {}
 
         data = json.loads(cherrypy.request.body.read())
+        print"\ngot message\n"
+        print data
         if "message" not in data:
             logging.error("POST request to messages has no message data.")
             return_data['error'] = "POST to messages does not contain message data"
@@ -159,7 +160,7 @@ class Messages:
             return json.dumps(return_data, indent=4)
 
         try:
-            msg = addMessage(sensor_id, data['message'], data['duration'])
+            msg = addMessage(data['sensor_id'], float(data['message']), data['duration'])
         except NoResultFound as e:
             return_data['error'] = e.message
             status_code = "400"
