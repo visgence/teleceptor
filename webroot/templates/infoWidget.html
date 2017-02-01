@@ -28,10 +28,10 @@
                                                     <input class="form-control" value={{infoItem.value}} id={{template.url}}_{{$index}}></input>
                                                 </div>
                                                 <div ng-if=!template.editing>
-                                                    <div ng-if=tab[0].tabName=='ManualEntry'>
+                                                    <div ng-if="tab[0].tabName=='ManualEntry' || tab[0].tabName=='Command'">
                                                         <input class="form-control" value={{infoItem.value}} id={{template.url}}_{{$index}}></input>
                                                     </div>
-                                                    <div ng-if=tab[0].tabName!='ManualEntry'>
+                                                    <div ng-if="tab[0].tabName!='ManualEntry' || tab[0].tabName=='Command'">
                                                         {{infoItem.value}}
                                                     </div>
                                                 </div>

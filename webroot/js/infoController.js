@@ -75,12 +75,6 @@ angular.module('teleceptor.infocontroller', [])
             "value": v.last_calibration.coefficients,
             "inputType": "input"
         }], [{
-            "tabName": "Command",
-            "name": v.uuid,
-            "value": "Output Sensor",
-            "inputType": "text"
-
-        }], [{
             "tabName": "ManualEntry",
             "name": "New Data",
             "value": "",
@@ -102,6 +96,31 @@ angular.module('teleceptor.infocontroller', [])
             "inputType": "button",
             "btnId": "exportEsBtn"
         }]];
+
+        var commandObj = [];
+        if(v.sensor_IOtype){
+            commandObj.push({
+                "tabName": "Command",
+                "name": v.uuid,
+                "value": "",
+                "inputType": "input"
+            });
+            commandObj.push({
+                "tabName": "Command",
+                "name": "",
+                "label": "Send",
+                "inputType": "button",
+                "btnId": "sendCommand"
+            });
+        } else {
+            commandObj.push({
+                "tabName": "Command",
+                "name": v.uuid,
+                "value": "Output Sensor",
+                "inputType": "text"
+            });
+        }
+        newObj.items.push(commandObj);
 
         var metaObj = [];
 
@@ -328,8 +347,6 @@ angular.module('teleceptor.infocontroller', [])
         });
         angular.element('#send_data').on("click", function(){
             var sensorInfo = infoService.getSensorInfo();
-
-
             var id = sensorInfo.uuid;
             var newValue = angular.element('#sensors_0')[0].value;
             var time = (new Date()).getTime() / 1000;
@@ -341,23 +358,13 @@ angular.module('teleceptor.infocontroller', [])
                 "info":{"uuid": "", "name":sensorInfo.name, "description": sensorInfo.description, "out": (sensorInfo.isInput ? [] : [sensorReading]),
                 "in": (sensorInfo.isInput ? [sensorReading] : [])}, "readings": [[id, newValue, time]]
             }];
-            console.log(payload);
 
             apiService.post("station", payload).then(function(response){
-                console.log("here:");
                 console.log(response);
             });
-            // return $.ajax({
-            //    url: "/api/station/",
-            //    method: "POST",
-            //    data: ko.toJSON(payload),
-            //    dataType: "json",
-            //    contentType: "application/json",
-            //    processData: false
-            // }).then(__this.sendSuccessCb.bind(__this),__this.updateFailCb.bind(__this));
-
-
-
+        });
+        angular.element('#sendCommand').on("click", function(){
+            sendCommand();
         });
     }, 1000);
 
@@ -377,7 +384,6 @@ angular.module('teleceptor.infocontroller', [])
                 scaledReadings.push(readings[i][1] * sensorInfo.last_calibration.coefficients[0] + sensorInfo.last_calibration.coefficients[1]);
             }
 
-
             // actual delimiter characters for CSV format
             var colDelim = ',';
             var rowDelim = '\r\n';
@@ -390,10 +396,8 @@ angular.module('teleceptor.infocontroller', [])
             for(var i=0; i < readings.length; i++){
                 csv += readings[i][0] + colDelim + uuid + colDelim + readings[i][1] + colDelim + scaledReadings[i] + colDelim + units + rowDelim;
             }
-            console.log(csv)
             // Data URI
             var csvData = 'data:application/csv;charset=utf-8,' + encodeURIComponent(csv);
-
             var today = new Date();
             var year = today.getFullYear();
             var month = today.getMonth() +1; //getMonth() returns a value from 0 to 11
@@ -407,7 +411,22 @@ angular.module('teleceptor.infocontroller', [])
             link.download = downloadFilename;
             link.href = csvData;
             link.click();
+    }
 
+    function sendCommand(){
+
+        //post new value to commands api
+        var payload = {
+            "message": angular.element('#sensors_0')[0].value
+           ,"duration": 60000
+        };
+        console.log(payload);
+        var sensorInfo = infoService.getSensorInfo();
+        var id = sensorInfo.uuid;
+        apiService.post("messages/"+id+"/", payload).then(function(response){
+            console.log("the response was:");
+            console.log(response);
+        });
 
     }
 
