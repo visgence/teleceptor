@@ -27,32 +27,23 @@ angular.module('teleceptor.graphcontroller', [])
                 if($location.search().ds === undefined) return;
                 if(infoService.getStreamInfo() === undefined ) return;
 
-                var start, end;
-                if(elem[0].clientHeight < 100){
+                var start = timeService.getValues().start;
+                var end = timeService.getValues().end;
+                if(isNaN(start)){
                     start = Date.now() - 84000000;
-                    end = Date.now();
-                } else {
-                    start = timeService.getValues().start;
-                    end = timeService.getValues().end;
-                    if(isNaN(start)){
-                        start = Date.now() - 84000000;
-                        timeService.setStart(start);
-                    }
-                    if(isNaN(end)){
-                        end = Date.now();
-                        timeService.setEnd(end);
-                    }
+                    timeService.setStart(start);
                 }
+                if(isNaN(end)){
+                    end = Date.now();
+                    timeService.setEnd(end);
+                }
+
                 apiService.get("sensors?sensor_id="+infoService.getStreamInfo().sensor).then(function(sensorInfoResponse){
 
-                    if(elem[0].clientHeight < 100){
-                        infoService.setSensorInfo(sensorInfoResponse.data.sensor);
-                    }
+                    infoService.setSensorInfo(sensorInfoResponse.data.sensor);
                     var readingsUrl = "readings?datastream=" + infoService.getStreamInfo().id + "&start="+parseInt(start/1000)+"&end="+parseInt(end/1000);
                     apiService.get(readingsUrl).then(function(readingsResponse){
-                        if(elem[0].clientHeight > 100){
-                            infoService.setReadingsInfo(readingsResponse.data);
-                        }
+                        infoService.setReadingsInfo(readingsResponse.data);
                         drawGraph(elem[0], readingsResponse.data);
                     }, function(error){
                         console.log("error occured: " + error);
@@ -71,7 +62,6 @@ angular.module('teleceptor.graphcontroller', [])
                 var additionalMargin = 0;
 
                 var margin = {top: 20, right: 10, bottom: 20, left: 40+additionalMargin};
-                if(height < 100) margin.bottom = 5;
                 width = width - margin.left - margin.right; height = height - margin.top - margin.bottom;
 
                 var newChart = d3.select(parent)
@@ -121,24 +111,18 @@ angular.module('teleceptor.graphcontroller', [])
                     .rangeRound([height,margin.bottom]);
 
                 //y axis
-                if(height > 100){
-                    var yAxis = d3.axisLeft(yScale)
-                        .tickSizeInner(-width)
-                        .tickSizeOuter(-10)
-                        .tickValues(getTic())
-                        .tickFormat(function(d){
-                            var whatToReturn = getFormattedText(d);
-                            return getFormattedText(d);
-                        });
-                    newChart.append("g")
-                        .attr("class", "ChartAxis-Shape")
-                        .call(yAxis);
-                } else {
-                    var littleY = d3.axisLeft(yScale).ticks(0).tickSizeOuter(-10);
-                    newChart.append("g")
-                        .attr("class", "ChartAxis-Shape")
-                        .call(littleY);
-                }
+                var yAxis = d3.axisLeft(yScale)
+                    .tickSizeInner(-width)
+                    .tickSizeOuter(-10)
+                    .tickValues(getTic())
+                    .tickFormat(function(d){
+                        var whatToReturn = getFormattedText(d);
+                        return getFormattedText(d);
+                    });
+                newChart.append("g")
+                    .attr("class", "ChartAxis-Shape")
+                    .call(yAxis);
+
 
                 //X Axis
                 var xAxis = d3.axisBottom(xScale)
@@ -379,8 +363,7 @@ angular.module('teleceptor.graphcontroller', [])
                     }
                     circleElements[0].attr("transform", "translate(" + xScale(d[0]*1000) + "," + yScale(d[1]) + ")");
                     yLine.attr("transform", "translate(" + xScale(d[0]*1000) + "," + 0 + ")");
-                    if(height > 100)
-                        timeText.text(new Date(d[0]*1000));
+                    timeText.text(new Date(d[0]*1000));
 
                     textElements[0]
                         .text(getFormattedText(d[1]))
