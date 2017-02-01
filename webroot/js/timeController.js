@@ -19,28 +19,21 @@ angular.module('teleceptor.timecontroller', ['ui.bootstrap.datetimepicker'])
                     $location.search('time', 'custom');
                     setTimes(null, null);
                     $scope.showTimer = false;
-                    refreshing = false;
                     break;
                 case 1:
                     $location.search('time', 'hour');
                     setTimes(Date.now() - 3600000, Date.now());
                     $scope.showTimer = true;
-                    refreshing = true;
-                    intervalId = setInterval(IntervalTimer, 1000);
                     break;
                 case 2:
                     $location.search('time', 'day');
                     setTimes(Date.now() - 86400000, Date.now());
                     $scope.showTimer = true;
-                    refreshing = true;
-                    intervalId = setInterval(IntervalTimer, 1000);
                     break;
                 case 3:
                     $location.search("time", 'week');
                     setTimes(Date.now() - 604800000, Date.now());
                     $scope.showTimer = true;
-                    refreshing = true;
-                    intervalId = setInterval(IntervalTimer, 1000);
                     break;
             }
         });
