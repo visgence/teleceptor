@@ -28,9 +28,13 @@
                                                     <input class="form-control" value={{infoItem.value}} id={{template.url}}_{{$index}}></input>
                                                 </div>
                                                 <div ng-if=!template.editing>
-                                                    <div ng-if="tab[0].tabName=='ManualEntry' || tab[0].tabName=='Command'">
+                                                    <div ng-if="tab[0].tabName=='ManualEntry'">
                                                         <input class="form-control" value={{infoItem.value}} id={{infoItem.inputid}}></input>
-
+                                                    </div>
+                                                    <div ng-if="tab[0].tabName=='Command'">
+                                                        <div class = "col-md-1" style="height: 30px">
+                                                            <input class="form-control" type="checkbox" >
+                                                        </div>
                                                     </div>
                                                     <div ng-if="tab[0].tabName!='ManualEntry' && tab[0].tabName!='Command'">
                                                         {{infoItem.value}}

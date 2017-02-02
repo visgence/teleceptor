@@ -99,7 +99,6 @@ angular.module('teleceptor.infocontroller', [])
         }]];
 
         var commandObj = [];
-        // v.sensor_IOtype = true;
         if(v.sensor_IOtype){
             commandObj.push({
                 "tabName": "Command",
