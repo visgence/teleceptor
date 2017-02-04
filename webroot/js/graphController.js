@@ -23,6 +23,10 @@ angular.module('teleceptor.graphcontroller', [])
                 GetData();
             });
 
+            angular.element($window).bind('resize', function () {
+                drawGraph(elem[0], infoService.getReadingsInfo());
+            });
+
             function GetData(){
                 if($location.search().ds === undefined) return;
                 if(infoService.getStreamInfo() === undefined ) return;
