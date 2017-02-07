@@ -50,6 +50,15 @@ angular.module('teleceptor.timecontroller', ['ui.bootstrap.datetimepicker'])
     };
 
     function setTimes(startTime, endTime){
+        if(isNaN(startTime) && isNaN(endTime)){
+            startTime = Date.now() - 86400000;
+            endTime = Date.now();
+        } else if(isNaN(startTime)){
+            startTime = endTime - 86400000;
+        } else if(isNaN(endTime)){
+            endTime = startTime + 86400000;
+        }
+
         timeService.setStart(startTime);
         timeService.setEnd(endTime);
         $location.search('startTime', startTime);

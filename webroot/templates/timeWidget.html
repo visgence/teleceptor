@@ -34,9 +34,8 @@
                     </ul>
                   </div>
             </div>
-            <div ng-if="data.startdate || data.enddate">
-                <button class="btn btn-sm btn-success" ng-click="SubmitTime()">Submit</button>
-            </div>
+            <button class="btn btn-sm btn-success" ng-click="SubmitTime()">Submit</button>
+            <br>
             <br>
             <div class="btn-group" data-bind="foreach: timeOptions">
                 <button class="btn btn-sm btn-default" id="customBtn" ng-click="selectTime($event, 0)">Custom</button>
