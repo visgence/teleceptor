@@ -345,11 +345,18 @@ def _updateStream(stream_id, data, session):
             session.commit()
             continue
         if key != 'uuid':
+            logging.info("\nhere\n{}".format(value))
             if key == "minimum value":
-                value = float(value)
+                if len(value) > 0:
+                    value = float(value)
+                else:
+                    value = None
                 key = "min_value"
             if key == "maximum value":
-                value = float(value)
+                if len(value) > 0:
+                    value = float(value)
+                else:
+                    value = None
                 key = "max_value"
             logging.info("changing: {} to {}".format(key, value))
             setattr(stream, key, value)

@@ -57,14 +57,19 @@ angular.module('teleceptor.graphcontroller', [])
                 });
             }
 
+            function DisplayMessage(msg){
+                angular.element('#warning_message').text(msg);
+            }
+
             function drawGraph(parent, data){
-                var sensorInfo = infoService.getStreamInfo();
-                if(sensorInfo.name === undefined) return;
-                scope.graphName = sensorInfo.name;
+                var streamInfo = infoService.getStreamInfo();
+                if(streamInfo.name === undefined) return;
+                scope.graphName = streamInfo.name;
                 parent.innerHTML = "";
                 var width = elem[0].clientWidth;
                 var height = elem[0].clientHeight;
                 var additionalMargin = 0;
+                var messages = "";
 
                 var margin = {top: 20, right: 10, bottom: 20, left: 40+additionalMargin};
                 width = width - margin.left - margin.right; height = height - margin.top - margin.bottom;
@@ -72,7 +77,7 @@ angular.module('teleceptor.graphcontroller', [])
                 var newChart = d3.select(parent)
                     .append("svg")
                     .attr("class", "Chart-Container")
-                    .attr("id", sensorInfo.name)
+                    .attr("id", streamInfo.name)
                     .attr("width", width + margin.left + margin.right)
                     .attr("height", height + margin.top + margin.bottom)
                     .append("g")
@@ -95,13 +100,24 @@ angular.module('teleceptor.graphcontroller', [])
                     end = Date.now();
                 }
 
-                var min = data.readings[0][1];
-                var max = data.readings[0][1];
-
-                //set min and max values
+                var min = streamInfo.min_value;
+                var max = streamInfo.max_value;
+                var realMin = data.readings[0][1];
+                var realMax = data.readings[0][1];
                 for(var j = 0; j < data.readings.length; j++){
-                    if(min > data.readings[j][1]) min = data.readings[j][1];
-                    if(max < data.readings[j][1]) max = data.readings[j][1];
+                    if(realMin > data.readings[j][1]) realMin = data.readings[j][1];
+                    if(realMax < data.readings[j][1]) realMax = data.readings[j][1];
+                }
+
+                if(min === null){
+                    min = realMin;
+                } else if(min > realMin){
+                    messages = "Due to min/max values set, some points may not be seen.";
+                }
+                if(max === null){
+                  max = realMax;
+                } else if(max < realMax){
+                    messages = "Due to min/max values set, some points may not be seen.";
                 }
 
                 scope.newGraph = {};
@@ -169,6 +185,15 @@ angular.module('teleceptor.graphcontroller', [])
 
                 var lastPos =[];
                 var lastWidth = [];
+
+                newChart.append("text")
+                    .attr("x", width)
+                    .attr("y", margin.bottom-5)
+                    .attr("text-anchor", "end")
+                    .text(messages)
+                    .attr("width", 100)
+                    .attr("height", 100*0.4)
+                    .attr("fill", "black");
 
                 /* Graph lines
                 * First gets a preliminary date, then itterates through the data keeping track of the last date.

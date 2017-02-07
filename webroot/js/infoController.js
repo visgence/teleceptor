@@ -326,7 +326,6 @@ angular.module('teleceptor.infocontroller', [])
                 "coefficients": JSON.parse(updates.calibration)
             };
         }
-        console.log(updates)
         apiService.put(url, updates).then(function successCallback(response){
             $window.location.reload();
         }, function errorCallback(response){
