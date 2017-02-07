@@ -59,8 +59,8 @@ angular.module('teleceptor.graphcontroller', [])
             }
 
             function drawGraph(parent, data){
-
                 var sensorInfo = infoService.getStreamInfo();
+                if(sensorInfo.name === undefined) return;
                 scope.graphName = sensorInfo.name;
                 parent.innerHTML = "";
                 var width = elem[0].clientWidth;
@@ -190,7 +190,6 @@ angular.module('teleceptor.graphcontroller', [])
 
                 var lineFunction = d3.line()
                     .defined(function(d) {
-
                         d[0] = parseInt(d[0]);
                         if(d[0] < start/1000 || d[0] > end/1000) return false;
                         if(d[1] > max || d[1] < min){
@@ -207,7 +206,7 @@ angular.module('teleceptor.graphcontroller', [])
                         return true;
                     })
                     .x(function(d) {
-                        return xScale(d[0]*1000);
+                        return isNaN(xScale(d[0]*1000)) ? 0 : xScale(d[0]*1000);
                       })
                     .y(function(d) {
                         return yScale(d[1]);
