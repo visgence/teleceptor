@@ -47,6 +47,10 @@ angular.module('teleceptor.graphcontroller', [])
                     infoService.setSensorInfo(sensorInfoResponse.data.sensor);
                     var readingsUrl = "readings?datastream=" + infoService.getStreamInfo().id + "&start="+parseInt(start/1000)+"&end="+parseInt(end/1000);
                     apiService.get(readingsUrl).then(function(readingsResponse){
+                        for(var j = 0; j < readingsResponse.data.readings.length; j++){
+                            readingsResponse.data.readings[j][1] *= sensorInfoResponse.data.sensor.last_calibration.coefficients[0];
+                            readingsResponse.data.readings[j][1] += sensorInfoResponse.data.sensor.last_calibration.coefficients[1];
+                        }
                         infoService.setReadingsInfo(readingsResponse.data);
                         drawGraph(elem[0], readingsResponse.data);
                     }, function(error){
@@ -99,11 +103,6 @@ angular.module('teleceptor.graphcontroller', [])
                 if(elem[0].clientHeight < 100){
                     start = Date.now() - 84000000;
                     end = Date.now();
-                }
-
-                for(var j = 0; j < data.readings.length; j++){
-                    data.readings[j][1] *= sensorInfo.last_calibration.coefficients[0];
-                    data.readings[j][1] += sensorInfo.last_calibration.coefficients[1];
                 }
 
                 var min = streamInfo.min_value;
