@@ -63,6 +63,7 @@ angular.module('teleceptor.graphcontroller', [])
 
             function drawGraph(parent, data){
                 var streamInfo = infoService.getStreamInfo();
+                var sensorInfo = infoService.getSensorInfo();
                 if(streamInfo.name === undefined) return;
                 scope.graphName = streamInfo.name;
                 parent.innerHTML = "";
@@ -98,6 +99,11 @@ angular.module('teleceptor.graphcontroller', [])
                 if(elem[0].clientHeight < 100){
                     start = Date.now() - 84000000;
                     end = Date.now();
+                }
+
+                for(var j = 0; j < data.readings.length; j++){
+                    data.readings[j][1] *= sensorInfo.last_calibration.coefficients[0];
+                    data.readings[j][1] += sensorInfo.last_calibration.coefficients[1];
                 }
 
                 var min = streamInfo.min_value;
