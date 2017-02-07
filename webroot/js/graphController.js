@@ -388,6 +388,7 @@ angular.module('teleceptor.graphcontroller', [])
                             d = d0;
                         }
                     }
+                    if(d[1] < min || d[1] > max) return;
                     circleElements[0].attr("transform", "translate(" + xScale(d[0]*1000) + "," + yScale(d[1]) + ")");
                     yLine.attr("transform", "translate(" + xScale(d[0]*1000) + "," + 0 + ")");
                     timeText.text(new Date(d[0]*1000) + " | " + getFormattedText(d[1]));
