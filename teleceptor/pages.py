@@ -70,10 +70,8 @@ class Root(object):
             "activeSensorJSON": json.dumps(activeSensor),
             "datastreamJSON": json.dumps(datastream),
         }
-        logging.info("\n\nwe're here:\n{}".format(returnData))
         returnData.update(**kwargs)
         t = env.get_template("index.html")
-
         return t.render(returnData)
 
     index.exposed = True

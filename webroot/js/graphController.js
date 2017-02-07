@@ -47,6 +47,9 @@ angular.module('teleceptor.graphcontroller', [])
                     infoService.setSensorInfo(sensorInfoResponse.data.sensor);
                     var readingsUrl = "readings?datastream=" + infoService.getStreamInfo().id + "&start="+parseInt(start/1000)+"&end="+parseInt(end/1000);
                     apiService.get(readingsUrl).then(function(readingsResponse){
+                        if(readingsResponse.data.readings === undefined){
+                            angular.element("#warning_message").text("Error: No indices found in current range.");
+                        }
                         for(var j = 0; j < readingsResponse.data.readings.length; j++){
                             readingsResponse.data.readings[j][1] *= sensorInfoResponse.data.sensor.last_calibration.coefficients[0];
                             readingsResponse.data.readings[j][1] += sensorInfoResponse.data.sensor.last_calibration.coefficients[1];
