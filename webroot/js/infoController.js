@@ -170,6 +170,18 @@ angular.module('teleceptor.infocontroller', [])
             "value": v.name,
             "inputType": "input"
         },{
+            "name": "Description",
+            "value": v.description,
+            "inputType": "input"
+        },{
+            "name": "Minimum Value",
+            "value": v.min_value,
+            "inputType": "input"
+        },{
+            "name": "Maximum Value",
+            "value": v.max_value,
+            "inputType": "input"
+        },{
             "name": "Sensor Name",
             "value": v.sensor,
             "inputType": "text"
@@ -314,6 +326,7 @@ angular.module('teleceptor.infocontroller', [])
                 "coefficients": JSON.parse(updates.calibration)
             };
         }
+        console.log(updates)
         apiService.put(url, updates).then(function successCallback(response){
             $window.location.reload();
         }, function errorCallback(response){

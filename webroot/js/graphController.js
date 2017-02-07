@@ -45,7 +45,6 @@ angular.module('teleceptor.graphcontroller', [])
                 apiService.get("sensors?sensor_id="+infoService.getStreamInfo().sensor).then(function(sensorInfoResponse){
 
                     infoService.setSensorInfo(sensorInfoResponse.data.sensor);
-                    console.log(infoService.getSensorInfo());
                     var readingsUrl = "readings?datastream=" + infoService.getStreamInfo().id + "&start="+parseInt(start/1000)+"&end="+parseInt(end/1000);
                     apiService.get(readingsUrl).then(function(readingsResponse){
                         infoService.setReadingsInfo(readingsResponse.data);
@@ -366,7 +365,7 @@ angular.module('teleceptor.graphcontroller', [])
                     }
                     circleElements[0].attr("transform", "translate(" + xScale(d[0]*1000) + "," + yScale(d[1]) + ")");
                     yLine.attr("transform", "translate(" + xScale(d[0]*1000) + "," + 0 + ")");
-                    timeText.text(new Date(d[0]*1000));
+                    timeText.text(new Date(d[0]*1000) + " | " + getFormattedText(d[1]));
 
                     textElements[0]
                         .text(getFormattedText(d[1]))
