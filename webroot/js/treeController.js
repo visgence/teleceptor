@@ -79,7 +79,6 @@ angular.module('teleceptor.treecontroller', [])
         }
 
         function SelectTreeNode(info){
-            console.log(info)
             if(info === undefined){
                 return;
             }
