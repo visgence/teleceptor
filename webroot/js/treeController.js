@@ -52,7 +52,14 @@ angular.module('teleceptor.treecontroller', [])
 
                 $scope.nodeCount = 0;
 
-                $('#myTree').treeview({data: GetTree(data)});
+                $('#myTree').treeview({data: GetTree(data),
+                    showBorder: false,
+                    color: "#333",
+                    emptyIcon: "",
+                    expandIcon: "glyphicon glyphicon-folder-close glyphs",
+                    collapseIcon: "glyphicon glyphicon-folder-open glyphs"
+
+                });
                 $('#myTree').treeview('collapseAll', { silent: true });
                 BuildPathSetWidget(response.data.datastreams);
                 var curStream = $location.search().ds;
@@ -97,8 +104,7 @@ angular.module('teleceptor.treecontroller', [])
                 $scope.nodeCount++;
                 var newObj = {
                     "selectable": true,
-                    "icon": "glyphicon glyphicon-stop",
-                    "color": "#337ab7"
+                    "color": "#333"
                 };
                 if(data.constructor === Array){
                     newObj.info = data[i];
