@@ -21,7 +21,6 @@
 ```
 jinja2
 sqlalchemy
-whisper
 pip
 cherrypy (pip install --no-use-wheel cherrypy on windows)
 requests
@@ -34,10 +33,13 @@ pyserial
 3. Start up Elastic Search, Kibana, and Postgres and in your config, make sure they Everything is pointing to the correct destination.
 4. In teleceptor folder, run command ```./teleceptorcmd setup``` and wait until _Done!_ is printed.
   * **Note:** All commands should be run in the teleceptor folder unless installed with pip or setuptools
-5. Run command ```./teleceptorcmd runserver```. You will now be running teleceptor as a local host.
+5. Run command ```./teleceptorcmd runserver 0.0.0.0:8000```. You will now be running teleceptor as a local host.
 6. Open up either a Chrome or Mozilla Firefox browser and go to page [http://0.0.0.0:8000/] (http://0.0.0.0:8000/)
   * If you do not have any sensors connected, you should see two default sensors producing a graph per tab with random data.
 7. Set up desired sensors and start collecting data.(_See below for setting up sensors_)
+
+##Example Data
+The ```./teleceptorcmd loadfixtures``` command will run a program that will create two datastreams and fill them with an hours worth of data in the form of a sine curve.
 
 ##Example Sensor
 The ```./teleceptorcmd btcmote``` command will run a program that requests data from http://blockchain.info/ticker and sends the data to teleceptor.
@@ -53,7 +55,7 @@ Sensor firmware can be found in the [firmware](https://github.com/visgence/telec
 2. Run command ```./teleceptorcmd serialPoller PathOfSensor```. This will begin to look for sensors via USB ports.
 Note: On OS X, to find the name of your sensor, in terminal, type ```ls /dev/```. This will give you a list of all sensors currently connected. To use the serialPoller then, you would type ```./teleceptorcmd serialPoller /dev/tty.myUSBSensor1234```.
 
-  
+
 
 #Teleceptor Front-End Usage
 * To view sensor data that has been collected, click on a sensor under the _Sensors_ tab.
