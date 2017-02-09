@@ -15,12 +15,14 @@ import logging
 import requests
 from requests import ConnectionError
 import os
-
+import smtplib
+from email.MIMEMultipart import MIMEMultipart
+from email.MIMEText import MIMEText
 
 # local imports
 import teleceptor
 from teleceptor.basestation import TCPMote, SerialMote
-
+from teleceptor import USE_EMAIL, EMAIL_FROM, EMAIL_TO, EMAIL_PW
 
 serverURL = "http://localhost:" + str(teleceptor.PORT) + "/api/station/"
 serverDeleteURL = "http://localhost:" + str(teleceptor.PORT) + "/api/messages/"
@@ -95,7 +97,25 @@ def main(queryRate=60, **kwargs):
 
     while(1):
         # get json from device
-        info, readings = device.getReadings() # TODO: catch generic exception
+        try:
+            info, readings = device.getReadings() # TODO: catch generic exception
+        except Exception as e:
+            logging.error("An error has occured trying to getReadings: {}".format(e))
+            if USE_EMAIL:
+                msg = MIMEMultipart()
+                msg['From'] = EMAIL_FROM
+                msg['To'] = EMAIL_TO
+                msg['Subject'] = "Teleceptor error"
+                body = "the current device has stopping taking readings\n\nError message:\n{}\n\nSensor info:\n{}".format(e, device)
+                msg.attach(MIMEText(body, 'plain'))
+
+                server = smtplib.SMTP('smtp.gmail.com', 587)
+                server.starttls()
+                server.login(EMAIL_FROM, EMAIL_PW)
+                text = msg.as_string()
+                server.sendmail(EMAIL_FROM, EMAIL_TO, text)
+                server.quit()
+            return
 
         try:
             info = json.loads(info)
