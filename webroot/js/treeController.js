@@ -20,6 +20,25 @@ angular.module('teleceptor.treecontroller', [])
             RequestTree();
         };
 
+        $scope.$on('$routeUpdate', function(){
+            var nodeFound = false;
+            var i = 0;
+            var ds = $location.search().ds;
+            var source = $location.search().source;
+            while(!nodeFound && i < 500){
+                i++;
+                var node = $('#myTree').treeview('getNode', i)
+                if(node.info === undefined) continue;
+                if(source !== node.info.source) continue;
+                if(parseInt(ds) !== parseInt(node.info.id)) continue;
+                $('#myTree').treeview('selectNode', [ i, { silent: true } ]);
+                $('#myTree').treeview('revealNode', [ i, { silent: true } ]);
+                infoService.resetStreamInfo();
+                infoService.setStreamInfo(node.info);
+                break;
+            }
+        });
+
         function MakeTreeStructure(data, stream, curUrl, pathId){
             if(curUrl.length === 1){
                 if(!(curUrl[0] in data)) data[curUrl[0]] = [];
