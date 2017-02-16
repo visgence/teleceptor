@@ -77,18 +77,28 @@ angular.module('teleceptor.treecontroller', [])
                         }
                     }
                 }
+
                 $('#myTree').on('nodeSelected', function(event, data) {
-                    SelectTreeNode(data.info);
+                    if(data.info === undefined){
+                        $('#myTree').treeview('expandNode', [data.nodeId, { levels: 2, silent: true}])
+                    } else {
+                        SelectTreeNode(data.info);
+                    }
                 });
+
+                $('#myTree').on('nodeUnselected', function(event, data) {
+                    if(data.info === undefined){
+                        $('#myTree').treeview('collapseNode', [data.nodeId, { levels: 2, ignoreChildren: false}])
+                    }
+                });
+
             }, function(error){
                 console.log("error occured: " + error);
             });
         }
 
         function SelectTreeNode(info){
-            if(info === undefined){
-                return;
-            }
+            if(info === undefined) return;
             infoService.resetStreamInfo();
             infoService.setStreamInfo(info);
             $timeout(function(){
