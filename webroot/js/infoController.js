@@ -7,15 +7,8 @@ angular.module('teleceptor.infocontroller', [])
     var StreamLoaded = false;
     var SensorLoaded = false;
 
-    $scope.$on('$routeUpdate', function(){
-        StreamLoaded = false;
-        SensorLoaded = false;
-        $scope.widgets = [];
-        LoadStream(infoService.getStreamInfo());
-        LoadSensor(infoService.getSensorInfo());
-    });
-
     $scope.$watch(function(){
+        SensorLoaded = false;
         return infoService.getSensorInfo();
     }, function(v){
         if(v === undefined) return;
@@ -23,6 +16,7 @@ angular.module('teleceptor.infocontroller', [])
     });
 
     $scope.$watch(function(){
+        StreamLoaded = false;
         return infoService.getStreamInfo();
     }, function(v){
         if(v === undefined) return;
@@ -34,6 +28,11 @@ angular.module('teleceptor.infocontroller', [])
         if(SensorLoaded){
             updateInfo();
             return;
+        }
+        for(var i in $scope.widgets){
+            if($scope.widgets[i].title === "Sensor Info"){
+                $scope.widgets.splice(i);
+            }
         }
         SensorLoaded = true;
 
@@ -154,6 +153,11 @@ angular.module('teleceptor.infocontroller', [])
             return;
         }
         StreamLoaded = true;
+        for(var i in $scope.widgets){
+            if($scope.widgets[i].title !== "Sensor Info"){
+                $scope.widgets.splice(i);
+            }
+        }
         var newObj = {
             "title": "Stream Info",
             "editing": false,

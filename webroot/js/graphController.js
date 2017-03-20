@@ -8,7 +8,7 @@ angular.module('teleceptor.graphcontroller', [])
     }, 1000);
 }])
 
-.directive('graph', ['$location', '$window', '$http', 'timeService', 'infoService', 'apiService', function($location, $window, $http, timeService, infoService, apiService){
+.directive('graph', ['$location', '$window', '$http', 'timeService', 'infoService', 'apiService', '$timeout', function($location, $window, $http, timeService, infoService, apiService, $timeout){
     return{
         restrict: 'E',
         link: function(scope, elem, attrs){
@@ -55,7 +55,12 @@ angular.module('teleceptor.graphcontroller', [])
                             readingsResponse.data.readings[j][1] += sensorInfoResponse.data.sensor.last_calibration.coefficients[1];
                         }
                         infoService.setReadingsInfo(readingsResponse.data);
-                        drawGraph(elem[0], readingsResponse.data);
+                        $timeout(function(){
+                            scope.$apply(function(){
+                                drawGraph(elem[0], readingsResponse.data);
+                            })
+                        })
+
                     }, function(error){
                         console.log("error occured: " + error);
                     });
