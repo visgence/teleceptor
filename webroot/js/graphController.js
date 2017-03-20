@@ -54,9 +54,10 @@ angular.module('teleceptor.graphcontroller', [])
                             readingsResponse.data.readings[j][1] *= sensorInfoResponse.data.sensor.last_calibration.coefficients[0];
                             readingsResponse.data.readings[j][1] += sensorInfoResponse.data.sensor.last_calibration.coefficients[1];
                         }
-                        infoService.setReadingsInfo(readingsResponse.data);
+
                         $timeout(function(){
                             scope.$apply(function(){
+                                infoService.setReadingsInfo(readingsResponse.data);
                                 drawGraph(elem[0], readingsResponse.data);
                             })
                         })

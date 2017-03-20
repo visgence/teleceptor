@@ -8,27 +8,32 @@ angular.module('teleceptor.infocontroller', [])
     var SensorLoaded = false;
 
     $scope.$watch(function(){
-        SensorLoaded = false;
         return infoService.getSensorInfo();
     }, function(v){
         if(v === undefined) return;
+        $scope.widgets = []
         LoadSensor(v);
+        LoadStream(infoService.getStreamInfo())
     });
 
     $scope.$watch(function(){
-        StreamLoaded = false;
         return infoService.getStreamInfo();
     }, function(v){
         if(v === undefined) return;
         LoadStream(v);
     });
 
+    $scope.$on('$routeUpdate', function(){
+         StreamLoaded = false;
+         SensorLoaded = false;
+         $scope.widgets = [];
+         LoadStream(infoService.getStreamInfo());
+         LoadSensor(infoService.getSensorInfo());
+         updateInfo();
+     });
+
     function LoadSensor(v){
         if(v === undefined) return;
-        if(SensorLoaded){
-            updateInfo();
-            return;
-        }
         for(var i in $scope.widgets){
             if($scope.widgets[i].title === "Sensor Info"){
                 $scope.widgets.splice(i);
@@ -43,8 +48,7 @@ angular.module('teleceptor.infocontroller', [])
             "uuid": v.uuid
         };
         newObj.id = v.last_calibration.id;
-        newObj.items = [
-        [{
+        newObj.items = [[{
             "tabName": "Configuration",
             "name": "UUID",
             "value": v.uuid,
@@ -148,10 +152,6 @@ angular.module('teleceptor.infocontroller', [])
 
     function LoadStream(v){
         if(v === undefined) return;
-        if(StreamLoaded){
-            updateInfo();
-            return;
-        }
         StreamLoaded = true;
         for(var i in $scope.widgets){
             if($scope.widgets[i].title !== "Sensor Info"){
@@ -200,6 +200,7 @@ angular.module('teleceptor.infocontroller', [])
     }
 
     function updateInfo(){
+        var myDiv;
         for(var i in $scope.widgets){
             if($scope.widgets[i].items.length > 1){
                 var myDiv = angular.element("#tabs_"+$scope.widgets[i].url);
@@ -229,7 +230,11 @@ angular.module('teleceptor.infocontroller', [])
                 }
             }
         }
+        if(myDiv !== undefined){
+            angular.element('#tabs_sensors').append(myDiv)
+        }
     }
+
 
     $scope.currentTab = 0;
     $scope.ChangeTab = function(i){
