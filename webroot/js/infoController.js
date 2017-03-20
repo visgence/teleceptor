@@ -11,10 +11,34 @@ angular.module('teleceptor.infocontroller', [])
         return infoService.getSensorInfo();
     }, function(v){
         if(v === undefined) return;
-        $scope.widgets = []
+        // $scope.widgets = []
         LoadSensor(v);
-        LoadStream(infoService.getStreamInfo())
+        cleanWidgets();
     });
+
+    function cleanWidgets(){
+        var cur = []
+        for(var i in $scope.widgets){
+            var add = true;
+            for(var j in cur){
+                if(cur[j]=== undefined){
+                    cur.push($scope.widgets[i]);
+                    add = false;
+                    continue;
+                }
+                if($scope.widgets[i].title === cur[j].title){
+                    add= false;
+                    break;
+                }
+
+            }
+            if(add){
+                cur.push($scope.widgets[i])
+            }
+        }
+        $scope.widgets = [];
+        $scope.widgets = cur
+    }
 
     $scope.$watch(function(){
         return infoService.getStreamInfo();
@@ -29,16 +53,11 @@ angular.module('teleceptor.infocontroller', [])
          $scope.widgets = [];
          LoadStream(infoService.getStreamInfo());
          LoadSensor(infoService.getSensorInfo());
-         updateInfo();
      });
 
     function LoadSensor(v){
         if(v === undefined) return;
-        for(var i in $scope.widgets){
-            if($scope.widgets[i].title === "Sensor Info"){
-                $scope.widgets.splice(i);
-            }
-        }
+
         SensorLoaded = true;
 
         var newObj = {
