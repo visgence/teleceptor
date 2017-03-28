@@ -31,6 +31,12 @@ def TestStationPost(app):
     logging.info("Begining second calibration test.")
     CalibrationTwo(app)
     logging.info("Second calibration test complete.")
+    logging.info("Begining no sensor id test")
+    NoSensorId(app)
+    logging.info("No sensor id test complete.")
+    logging.info("Begining no reading id test.")
+    NoReadingId(app)
+    logging.info("No reading id test complete.")
 
 
 def CreateStations(app):
@@ -69,7 +75,7 @@ def AddReadings(app):
         }]
         for j in range(0, 1000):
             sensor[0]['readings'].append(['test_reading', math.sin(j)*100, time.time()-j*60])
-        # app.post_json('/api.station', json.loads(json.dumps(sensor)))
+        app.post_json('/api.station', json.loads(json.dumps(sensor)))
 
 
 def CalibrationOne(app):
@@ -82,7 +88,7 @@ def CalibrationOne(app):
                 'calibration_timestamp': time.time()
             }
         }])
-        # app.post_json('/api.station', json.loads(sensor))
+        app.post_json('/api.station', json.loads(sensor))
 
 
 def CalibrationTwo(app):
@@ -95,7 +101,34 @@ def CalibrationTwo(app):
                 'calibration_timestamp': time.time() - 1000000
             }
         }])
-        # app.post_json('/api.station', json.loads(sensor))
+        app.post_json('/api.station', json.loads(sensor))
+
+
+def NoSensorId(app):
+    sensor = json.dumps([{
+        'info': {
+            'name': "station_test_0",
+            'description': 'test station_test_0',
+            'out': [],
+            'in':[{
+                'name': "avg",
+                'sensor_type': "float",
+                'timestamp': time.time(),
+                'meta_data': {}
+            }]
+        }
+    }])
+    app.post_json('/api.station', json.loads(sensor))
+
+
+def NoReadingId(app):
+    sensor = [{
+        'info': {},
+        'readings': []
+    }]
+    for j in range(0, 1):
+        sensor[0]['readings'].append(['test_reading', math.sin(j)*100, time.time()-j*60])
+    app.post_json('/api.station', json.loads(json.dumps(sensor)))
 
 
 if __name__ == '__main__':
