@@ -137,7 +137,7 @@ class Messages:
         :param sensor_id: Unique identifier for a sensor.
         :type sensor_id: int
         """
-        logging.info("POST request to messages.")
+        logging.debug("POST request to messages.")
 
         cherrypy.response.headers['Content-Type'] = 'application/json'
         status_code = "200"
@@ -262,12 +262,12 @@ def getMessages(sensor_id, by_timestamp=False, unread_only=False):
         try:
             sensor_queue = session.query(MessageQueue).filter_by(sensor_id=sensor_id).one()
         except NoResultFound:
-            logging.info("Sensor %s has no message queue." % str(sensor_id))
+            logging.debug("Sensor %s has no message queue." % str(sensor_id))
             return None
-        logging.info("Got sensor_queue.")
+        logging.debug("Got sensor_queue.")
         if unread_only:
             if by_timestamp:
-                logging.info("Getting by timestamp and unread...")
+                logging.debug("Getting by timestamp and unread...")
                 messages = session.query(Message).filter(Message.message_queue_id == sensor_queue.id,
                                                          Message.timeout >= time(),
                                                          Message.read is not True)
@@ -284,8 +284,8 @@ def getMessages(sensor_id, by_timestamp=False, unread_only=False):
                                                          Message.timeout >= 0)
         messages_view = []
         if unread_only:
-            logging.info("Got messages: %s", str([msg.to_dict() for msg in messages]))
-            logging.info("Setting messages as read.")
+            logging.debug("Got messages: %s", str([msg.to_dict() for msg in messages]))
+            logging.debug("Setting messages as read.")
             for msg in messages:
                 msg.read = True
                 # if we don't directly append here, python decides to not include the messages in the list comprehension
@@ -353,7 +353,7 @@ def addMessage(sensor_id, message, duration):
             msg_queue.messages.append(msg)
             s.commit()
             logging.debug("Completed adding message.")
-            logging.info("Returning added message: %s", str(msg.to_dict()))
+            logging.debug("Returning added message: %s", str(msg.to_dict()))
             return msg.to_dict()
 
 

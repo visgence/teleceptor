@@ -123,7 +123,7 @@ class DataStreams:
                 'error':   <error str if applicable>
                 'stream':  A single stream
         """
-        logging.info("GET request to datastreams.")
+        logging.debug("GET request to datastreams.")
 
         cherrypy.response.headers['Content-Type'] = 'application/json'
         data = {}
@@ -140,14 +140,14 @@ class DataStreams:
                     data['error'] = "Stream with id %s doesn't exist." % stream_id
                     statusCode = "400"
                 else:
-                    logging.info("Found stream with id %s: %s", str(stream_id), str(stream.toDict()))
+                    logging.debug("Found stream with id %s: %s", str(stream_id), str(stream.toDict()))
                     data['stream'] = stream.toDict()
                     try:
                         path = s.query(StreamPath).filter_by(datastream=stream_id)
                     except NoResultFound:
                         logging.error("There is no path for stream with id %s", str(stream_id))
                     else:
-                        logging.info("Found path: %s", str(stream_id), str(path.toDict()))
+                        logging.debug("Found path: %s", str(stream_id), str(path.toDict()))
                         data['path'] = path.toDict()
         else:
             logging.debug("Request for all datastreams with parameters %s", str(filter_arguments))
@@ -185,7 +185,7 @@ class DataStreams:
         .. seealso:: `models.DataStream`
 
         """
-        logging.info("PUT request to datastreams. ")
+        logging.debug("PUT request to datastreams. ")
         returnData = {}
         statusCode = "200"
         cherrypy.response.headers['Content-Type'] = 'application/json'
@@ -226,7 +226,7 @@ class DataStreams:
         .. seealso::
             `models.DataStream`
         """
-        logging.info("DELETE request to datastreams for stream with id {}".format(stream_id))
+        logging.debug("DELETE request to datastreams for stream with id {}".format(stream_id))
 
         cherrypy.response.headers['Content-Type'] = 'application/json'
         data = {}
@@ -246,7 +246,7 @@ class DataStreams:
                 logging.exception("Unexpected error while deleting datastream {}".format(stream_id))
                 data['error'] = "Unexpected error occurred while deleting datastream {}: {}".format(stream_id, e)
         cherrypy.response.status = statusCode
-        logging.info("Finished DELETE request to datastreams.")
+        logging.debug("Finished DELETE request to datastreams.")
         return json.dumps(data, indent=4)
 
     @staticmethod
@@ -289,7 +289,7 @@ class DataStreams:
 
         """
 
-        logging.info("Updating stream with id %s with data %s", str(stream_id), str(data))
+        logging.debug("Updating stream with id %s with data %s", str(stream_id), str(data))
         if session is None:
             with sessionScope() as session:
                 stream_info = _updateStream(stream_id, data, session)
@@ -345,7 +345,6 @@ def _updateStream(stream_id, data, session):
             session.commit()
             continue
         if key != 'uuid':
-            logging.info("\nhere\n{}".format(value))
             if key == "minimum value":
                 if len(value) > 0:
                     value = float(value)
@@ -358,14 +357,14 @@ def _updateStream(stream_id, data, session):
                 else:
                     value = None
                 key = "max_value"
-            logging.info("changing: {} to {}".format(key, value))
+            logging.debug("changing: {} to {}".format(key, value))
             setattr(stream, key, value)
 
     # session.add(stream)
     session.commit()
 
-    logging.info("Finished updating stream.")
-    logging.info("{}".format(stream.toDict()))
+    logging.debug("Finished updating stream.")
+    logging.debug("{}".format(stream.toDict()))
     return stream.toDict()
 
 
