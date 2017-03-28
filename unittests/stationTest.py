@@ -61,15 +61,16 @@ def TestStationGet(app):
 def CreateStations(app):
     # Should create 10 stations, 10 sensors, default calibration of (1,0)
     # Note: the error about blacklisted key is to be expected.
+    motes = []
     for i in range(0, 10):
         uuid = "station_test_{}".format(i)
-        motes = json.dumps([{
+        motes.append({
             'info': {
                 'uuid': uuid,
                 'name': uuid,
                 'description': 'test {}'.format(uuid),
                 'out': [],
-                'in':[{
+                'in': [{
                     'name': "test_sensor",
                     'sensor_type': "float",
                     'timestamp': time.time(),
@@ -77,22 +78,23 @@ def CreateStations(app):
                 }]
             },
             'readings': []
-        }])
-        app.post_json('/api/station', json.loads(motes))
+        })
+    app.post_json('/api/station', json.loads(json.dumps(motes)))
 
 
 def AddReadings(app):
     # Should create 1000 readings for each sensor.
     # Note: the error about blacklisted key is to be expected.
+    motes = []
     for i in range(0, 10):
         uuid = "station_test_{}".format(i)
-        motes = [{
+        motes.append({
             'info': {
                 'uuid': uuid,
                 'name': uuid,
                 'description': 'test {}'.format(uuid),
                 'out': [],
-                'in':[{
+                'in': [{
                     'name': "test_sensor",
                     'sensor_type': "float",
                     'timestamp': time.time(),
@@ -100,10 +102,10 @@ def AddReadings(app):
                 }]
             },
             'readings': []
-        }]
+        })
         for j in range(0, 100):
-            motes[0]['readings'].append(['test_sensor', math.sin(j)*100, time.time()-j*60])
-        app.post_json('/api/station', json.loads(json.dumps(motes)))
+            motes[i]['readings'].append(['test_sensor', math.sin(j)*100, time.time()-j*60])
+    app.post_json('/api/station', json.loads(json.dumps(motes)))
 
 
 def ChangeNewCalibration(app):
