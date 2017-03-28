@@ -48,7 +48,7 @@ class Sensors:
 
         .. seealso:: `models.Sensor`
         """
-        logging.info("GET request to sensors.")
+        logging.debug("GET request to sensors.")
 
         cherrypy.response.headers['Content-Type'] = 'application/json'
         data = {}
@@ -69,7 +69,7 @@ class Sensors:
             data['sensors'] = sensors
 
         cherrypy.response.status = statusCode
-        logging.info("Finished GET request to sensors.")
+        logging.debug("Finished GET request to sensors.")
         return json.dumps(data, indent=4)
 
     @require()
@@ -135,7 +135,7 @@ class Sensors:
 
         .. seealso:: `models.Sensor`
         """
-        logging.info("DELETE request to sensors.")
+        logging.debug("DELETE request to sensors.")
 
         returnData = {}
         statusCode = "200"
@@ -149,7 +149,7 @@ class Sensors:
             returnData['sensor'] = deleted_sensor
 
         cherrypy.response.status = statusCode
-        logging.info("Finished DELETE request to sensors.")
+        logging.debug("Finished DELETE request to sensors.")
         return json.dumps(returnData, indent=4)
 
     # expects sensor to be a Sensor() from model
@@ -251,7 +251,7 @@ def deleteSensor(sensor_id, session=None):
         `models.Sensor`
         `sensors.DELETE`
     """
-    logging.info("Deleting sensor %s", sensor_id)
+    logging.debug("Deleting sensor %s", sensor_id)
 
     if session is None:
         with sessionScope() as session:
@@ -360,14 +360,14 @@ def _updateCalibration(sensor, coefficients, timestamp, session):
             currentTimestamp = timestamp
             oldTimestamp = Cal.timestamp
 
-            logging.info("Request timestamp: %s, Database timestamp: %s", currentTimestamp, oldTimestamp)
+            logging.debug("Request timestamp: %s, Database timestamp: %s", currentTimestamp, oldTimestamp)
 
             if currentTimestamp > oldTimestamp:
-                logging.info("Comparing coefficients.")
+                logging.debug("Comparing coefficients.")
 
                 # check if coefficients are different
                 if Cal.coefficients != coefficients:
-                    logging.info("Coefficients are different, updating...")
+                    logging.debug("Coefficients are different, updating...")
 
                     Cal = Calibration(coefficients=coefficients, timestamp=timestamp, sensor_id=sensor['uuid'])
                     session.add(Cal)
@@ -397,17 +397,17 @@ def _updateCalibration(sensor, coefficients, timestamp, session):
 
     # update sensor model with calibration
     if updateNeeded:
-        logging.info("Updating sensor with new calibration.")
+        logging.debug("Updating sensor with new calibration.")
 
         sensor = session.query(Sensor).filter_by(uuid=sensor['uuid']).one()
-        logging.info("Got sensor %s", str(sensor.toDict()))
+        logging.debug("Got sensor %s", str(sensor.toDict()))
         Cal = session.query(Calibration).filter_by(sensor_id=sensor.uuid)[-1] # Gets most recent (by id) calibration
-        logging.info("Got calibration %s", str(Cal.toDict()))
+        logging.debug("Got calibration %s", str(Cal.toDict()))
 
         sensor.last_calibration_id = Cal.id
-        logging.info("Updated calibration id.")
+        logging.debug("Updated calibration id.")
         sensor.last_calibration = Cal
         session.commit()
         sensor = sensor.toDict()
-    logging.info("Sensor after updateCalibration: %s", str(sensor))
+    logging.debug("Sensor after updateCalibration: %s", str(sensor))
     return sensor

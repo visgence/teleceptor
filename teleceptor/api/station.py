@@ -134,7 +134,7 @@ class Station:
 
             ]
         """
-        logging.info("Got POST request to delegation.")
+        logging.debug("Got POST request to delegation.")
 
         cherrypy.response.headers['Content-Type'] = 'application/json'
         data = {'info': [], "newValues": {}}
@@ -143,7 +143,7 @@ class Station:
 
         try:
             readingData = json.load(cherrypy.request.body)
-            logging.info("Got data: %s", readingData)
+            logging.debug("Got data: %s", readingData)
         except (ValueError, TypeError):
             logging.error("Request data is not JSON: %s", cherrypy.request.body)
             data['error'] = "Bad json"
@@ -167,7 +167,7 @@ class Station:
 
 
 def update_motes(mote_datas=[]):
-    logging.info("Updating motes %s", str(mote_datas))
+    logging.debug("Updating motes %s", str(mote_datas))
     new_values = {}
     for mote in mote_datas:
         if 'info' not in mote:
@@ -179,7 +179,7 @@ def update_motes(mote_datas=[]):
             sensor_list = mote['info']['out']
         if 'in' in mote['info']:
             sensor_list = sensor_list + mote['info']['in']
-        logging.info("Sensor_list: %s", str(sensor_list))
+        logging.debug("Sensor_list: %s", str(sensor_list))
         sensor_datastream_ids = {}
         for sensor in sensor_list:
             sensor_datastream_ids[mote['info']['uuid'] + sensor['name']] = None
@@ -197,34 +197,34 @@ def update_motes(mote_datas=[]):
                 sensor['name'] = mote['info']['uuid'] + sensor['name']
                 sensor['uuid'] = sensor['name']
                 sensorUuid = sensor['name']
-                logging.info("Updating sensor %s", str(sensor))
+                logging.debug("Updating sensor %s", str(sensor))
                 sensor_info = update_sensor_data(sensor, session)
-                logging.info("Sensor_info after update: %s", str(sensor_info))
+                logging.debug("Sensor_info after update: %s", str(sensor_info))
                 updated_sensors.append(sensor_info)
 
                 # Get message queue for input sensors
                 if 'in' in mote['info'] and sensor in mote['info']['in']:
-                    logging.info("Getting messages for sensor %s", sensorUuid)
+                    logging.debug("Getting messages for sensor %s", sensorUuid)
                     message_list = messages.getMessages(sensorUuid, by_timestamp=True, unread_only=True)
-                    logging.info("Got unread messages: %s", str(message_list))
+                    logging.debug("Got unread messages: %s", str(message_list))
                     new_values[sensor['name']] = message_list
 
                 # get datastream to pass to insertReadings
                 try:
-                    logging.info("Getting datastream.")
+                    logging.debug("Getting datastream.")
                     datastream = datastreams.get_datastream_by_sensorid(sensorUuid, session)
                 except NoResultFound:
-                    logging.info("No datastream. Making one for sensor %s", sensorUuid)
+                    logging.debug("No datastream. Making one for sensor %s", sensorUuid)
                     datastream = DataStream(sensor=sensorUuid, name=sensor['name'], description=sensor['uuid'])
                     DataStreams.createDatastream(session, datastream)
                     path = Path(datastream_id=datastream.toDict()['id'], path="/new_sensors")
                     datastream.paths.append(path)
                     datastream = datastream.toDict()
-                logging.info("Got datastream id %s", str(datastream['id']))
+                logging.debug("Got datastream id %s", str(datastream['id']))
                 sensor_datastream_ids[sensorUuid] = datastream['id']
 
             # Swap sensorname in readings with datastream id.
-            logging.info("Inserting readings...")
+            logging.debug("Inserting readings...")
 
             for reading in mote['readings']:
                 reading[0] = sensor_datastream_ids[mote['info']['uuid'] + reading[0]]
@@ -259,10 +259,10 @@ def update_sensor_data(sensor_data=None, session=None):
                 sensor_data['timestamp'] = timestamp
 
             sensor = sensors.getSensor(uuid, session=session)
-            logging.info("Got sensor %s", str(sensor))
+            logging.debug("Got sensor %s", str(sensor))
             logging.debug("Updating calibration...")
             sensor_info = Sensors.updateCalibration(sensor, coefficients, sensor_data['timestamp'], session=session)
-            logging.info("Updated calibration.")
+            logging.debug("Updated calibration.")
     else:
         # Update sensors (and create if needed)
         try:
@@ -277,9 +277,9 @@ def update_sensor_data(sensor_data=None, session=None):
             sensor_data['timestamp'] = timestamp
 
         sensor = sensors.getSensor(uuid, session=session)
-        logging.info("Got sensor %s", str(sensor))
+        logging.debug("Got sensor %s", str(sensor))
         logging.debug("Updating calibration...")
         sensor_info = Sensors.updateCalibration(sensor, coefficients, sensor_data['timestamp'], session=session)
-        logging.info("Updated calibration")
+        logging.debug("Updated calibration")
 
     return sensor_info
