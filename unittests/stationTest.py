@@ -16,6 +16,9 @@ def TestStation(app):
     TestStationPost(app)
     TestStationGet(app)
     logging.info("Tests complete.")
+    ans = input("Would you like to enter the shell with the test data? (y/n) ")
+    if ans == 'y':
+        IPython.embed()
 
 
 def TestStationPost(app):
