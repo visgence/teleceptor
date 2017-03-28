@@ -12,9 +12,9 @@ from teleceptor.server import application
 
 
 def TestStation(app):
-    IPython.embed()
     logging.info("Begining tests.")
     TestStationPost(app)
+    TestStationGet(app)
     logging.info("Tests complete.")
 
 
@@ -25,12 +25,18 @@ def TestStationPost(app):
     logging.info("Begining readings test.")
     AddReadings(app)
     logging.info("Readings test complete.")
-    logging.info("Begining calibration change test.")
-    CalibrationOne(app)
+    logging.info("Begining new calibration change test.")
+    ChangeNewCalibration(app)
     logging.info("Calibration test complete.")
-    logging.info("Begining second calibration test.")
-    CalibrationTwo(app)
-    logging.info("Second calibration test complete.")
+    logging.info("Begining old calibration test.")
+    ChangeOldCalibration(app)
+    logging.info("Old calibration test complete.")
+    logging.info("Begining nothing test.")
+    ChangeNothingCalibration(app)
+    logging.info("Nothing test complete.")
+    logging.info("Begining no timestamp test.")
+    ChangeNoTimestamp(app)
+    logging.info("No timestamp test complete.")
     logging.info("Begining no sensor id test")
     NoSensorId(app)
     logging.info("No sensor id test complete.")
@@ -39,7 +45,17 @@ def TestStationPost(app):
     logging.info("No reading id test complete.")
 
 
+def TestStationGet(app):
+    logging.info("Begin all sensor test.")
+    GetAllSensors(app)
+    logging.info("All sensor test complete.")
+    logging.info("Begining one sensor test.")
+    GetOneSensor(app)
+    logging.info("One sensor test complete.")
+
+
 def CreateStations(app):
+    # Should create 10 stations, 10 sensors, default calibration of (1,0)
     for i in range(0, 10):
         uuid = "station_test_{}".format(i)
         sensor = json.dumps([{
@@ -49,12 +65,7 @@ def CreateStations(app):
                 'description': 'test {}'.format(uuid),
                 'out': [],
                 'in':[{
-                    'name': "avg",
-                    'sensor_type': "float",
-                    'timestamp': time.time(),
-                    'meta_data': {}
-                }, {
-                    'name': "var",
+                    'name': "test_sensor",
                     'sensor_type': "float",
                     'timestamp': time.time(),
                     'meta_data': {}
@@ -65,46 +76,76 @@ def CreateStations(app):
 
 
 def AddReadings(app):
+    # Should create 1000 readings for each sensor.
     for i in range(0, 10):
         uuid = "station_test_{}".format(i)
         sensor = [{
             'info': {
-                'uuid': uuid
-            },
+                'uuid': uuid,
+                'name': uuid,
+                'description': 'test {}'.format(uuid),
+                'out': [],
+                'in':[{
+                    'name': "test_sensor",
+                    'sensor_type': "float",
+                    'timestamp': time.time(),
+                    'meta_data': {}
+                }]
+            }
             'readings': []
         }]
         for j in range(0, 1000):
             sensor[0]['readings'].append(['test_reading', math.sin(j)*100, time.time()-j*60])
-        app.post_json('/api.station', json.loads(json.dumps(sensor)))
+        app.post_json('/api/station', json.loads(json.dumps(sensor)))
 
 
-def CalibrationOne(app):
-    for i in range(0, 10):
-        uuid = "station_test_{}".format(i)
-        sensor = json.dumps([{
-            'info': {
-                'uuid': uuid,
-                'scale': "({}, {}".format(i, i),
-                'calibration_timestamp': time.time()
-            }
-        }])
-        app.post_json('/api.station', json.loads(sensor))
+def ChangeNewCalibration(app):
+    # Should update the calibration on one sensor.
+    sensor = json.dumps([{
+        'info': {
+            'uuid': station_test_0,
+            'scale': "({}, {}".format(10, 10),
+            'calibration_timestamp': time.time()
+        }
+    }])
+    app.post_json('/api/station', json.loads(sensor))
 
 
-def CalibrationTwo(app):
-    for i in range(0, 10):
-        uuid = "station_test_{}".format(i)
-        sensor = json.dumps([{
-            'info': {
-                'uuid': uuid,
-                'scale': "({}, {}".format(100-i, 100-i),
-                'calibration_timestamp': time.time() - 1000000
-            }
-        }])
-        app.post_json('/api.station', json.loads(sensor))
+def ChangeOldCalibration(app):
+    # Should NOT update the calibartion on a sensor.
+    sensor = json.dumps([{
+        'info': {
+            'uuid': station_test_0,
+            'scale': "({}, {}".format(100, 100),
+            'calibration_timestamp': time.time() - 1000000
+        }
+    }])
+    app.post_json('/api/station', json.loads(sensor))
+
+
+def ChangeNothing(app):
+    # Should do nothing
+    sensor = json.dumps([{
+        'info': {
+            'uuid': station_test_0,
+        }
+    }])
+    app.post_json('/api/station', json.loads(sensor))
+
+
+def ChangeNoTimestamp(app):
+    # Should NOT update the calibartion on a sensor.
+    sensor = json.dumps([{
+        'info': {
+            'uuid': station_test_0,
+            'scale': "({}, {}".format(100, 100),
+        }
+    }])
+    app.post_json('/api/station', json.loads(sensor))
 
 
 def NoSensorId(app):
+    # Should do nothing.
     sensor = json.dumps([{
         'info': {
             'name': "station_test_0",
@@ -118,17 +159,30 @@ def NoSensorId(app):
             }]
         }
     }])
-    app.post_json('/api.station', json.loads(sensor))
+    app.post_json('/api/station', json.loads(sensor))
 
 
 def NoReadingId(app):
+    # Should do nothing.
     sensor = [{
         'info': {},
         'readings': []
     }]
     for j in range(0, 1):
         sensor[0]['readings'].append(['test_reading', math.sin(j)*100, time.time()-j*60])
-    app.post_json('/api.station', json.loads(json.dumps(sensor)))
+    app.post_json('/api/station', json.loads(json.dumps(sensor)))
+
+
+def GetAllSensors(app):
+    info = app.get('/api/station').json
+    logging.debug("\nAll sensor data:\n")
+    logging.debug(json.dumps(info, indent=2))
+
+
+def GetOneSensor(app):
+    info = app.get('/api/station/station_test_0').json
+    logging.debug("\nsingle sensor data:\n")
+    logging.debug(json.dumps(info, indent=2))
 
 
 if __name__ == '__main__':
