@@ -35,7 +35,7 @@ def TestStationPost(app):
     ChangeOldCalibration(app)
     logging.info("Old calibration test complete.")
     logging.info("Begining nothing test.")
-    ChangeNothingCalibration(app)
+    ChangeNothing(app)
     logging.info("Nothing test complete.")
     logging.info("Begining no timestamp test.")
     ChangeNoTimestamp(app)
@@ -49,6 +49,7 @@ def TestStationPost(app):
 
 
 def TestStationGet(app):
+    return
     logging.info("Begin all sensor test.")
     GetAllSensors(app)
     logging.info("All sensor test complete.")
@@ -59,9 +60,10 @@ def TestStationGet(app):
 
 def CreateStations(app):
     # Should create 10 stations, 10 sensors, default calibration of (1,0)
+    # Note: the error about blacklisted key is to be expected.
     for i in range(0, 10):
         uuid = "station_test_{}".format(i)
-        sensor = json.dumps([{
+        motes = json.dumps([{
             'info': {
                 'uuid': uuid,
                 'name': uuid,
@@ -73,16 +75,18 @@ def CreateStations(app):
                     'timestamp': time.time(),
                     'meta_data': {}
                 }]
-            }
+            },
+            'readings': []
         }])
-        app.post_json('/api/station', json.loads(sensor))
+        app.post_json('/api/station', json.loads(motes))
 
 
 def AddReadings(app):
     # Should create 1000 readings for each sensor.
+    # Note: the error about blacklisted key is to be expected.
     for i in range(0, 10):
         uuid = "station_test_{}".format(i)
-        sensor = [{
+        motes = [{
             'info': {
                 'uuid': uuid,
                 'name': uuid,
@@ -94,19 +98,19 @@ def AddReadings(app):
                     'timestamp': time.time(),
                     'meta_data': {}
                 }]
-            }
+            },
             'readings': []
         }]
-        for j in range(0, 1000):
-            sensor[0]['readings'].append(['test_reading', math.sin(j)*100, time.time()-j*60])
-        app.post_json('/api/station', json.loads(json.dumps(sensor)))
+        for j in range(0, 100):
+            motes[0]['readings'].append(['test_sensor', math.sin(j)*100, time.time()-j*60])
+        app.post_json('/api/station', json.loads(json.dumps(motes)))
 
 
 def ChangeNewCalibration(app):
     # Should update the calibration on one sensor.
     sensor = json.dumps([{
         'info': {
-            'uuid': station_test_0,
+            'uuid': "station_test_0",
             'scale': "({}, {}".format(10, 10),
             'calibration_timestamp': time.time()
         }
@@ -118,7 +122,7 @@ def ChangeOldCalibration(app):
     # Should NOT update the calibartion on a sensor.
     sensor = json.dumps([{
         'info': {
-            'uuid': station_test_0,
+            'uuid': "station_test_0",
             'scale': "({}, {}".format(100, 100),
             'calibration_timestamp': time.time() - 1000000
         }
@@ -130,7 +134,7 @@ def ChangeNothing(app):
     # Should do nothing
     sensor = json.dumps([{
         'info': {
-            'uuid': station_test_0,
+            'uuid': "station_test_0",
         }
     }])
     app.post_json('/api/station', json.loads(sensor))
@@ -140,7 +144,7 @@ def ChangeNoTimestamp(app):
     # Should NOT update the calibartion on a sensor.
     sensor = json.dumps([{
         'info': {
-            'uuid': station_test_0,
+            'uuid': "station_test_0",
             'scale': "({}, {}".format(100, 100),
         }
     }])
@@ -149,6 +153,7 @@ def ChangeNoTimestamp(app):
 
 def NoSensorId(app):
     # Should do nothing.
+    # Note: should throw an error about the mote not reporting its uuid
     sensor = json.dumps([{
         'info': {
             'name': "station_test_0",
