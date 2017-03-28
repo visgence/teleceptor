@@ -166,12 +166,18 @@ class Station:
         return json.dumps(data, indent=4)
 
 
-def update_motes(mote_datas=[]):
+def update_motes(mote_datas):
     logging.debug("Updating motes %s", str(mote_datas))
     new_values = {}
+    updated_sensors = []
     for mote in mote_datas:
         if 'info' not in mote:
             logging.error("Mote %s did not report its info", str(mote))
+            continue
+        if 'readings' not in mote:
+            continue
+        if 'uuid' not in mote['info']:
+            logging.error("Mote %s did not report its uuid", str(mote))
             continue
 
         sensor_list = []
@@ -181,13 +187,10 @@ def update_motes(mote_datas=[]):
             sensor_list = sensor_list + mote['info']['in']
         logging.debug("Sensor_list: %s", str(sensor_list))
         sensor_datastream_ids = {}
-        for sensor in sensor_list:
-            sensor_datastream_ids[mote['info']['uuid'] + sensor['name']] = None
 
-        updated_sensors = []
         with sessionScope() as session:
             for sensor in sensor_list:
-
+                sensor_datastream_ids[mote['info']['uuid'] + sensor['name']] = None
                 if 'in' in mote['info'] and sensor in mote['info']['in']:
                     sensor['sensor_IOtype'] = True
                 else:
