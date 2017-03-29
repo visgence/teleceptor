@@ -82,10 +82,31 @@ angular.module('teleceptor.graphcontroller', [])
                 parent.innerHTML = "";
                 var width = elem[0].clientWidth;
                 var height = elem[0].clientHeight;
-                var additionalMargin = 0;
                 var messages = "";
 
-                var margin = {top: 20, right: 10, bottom: 20, left: 40+additionalMargin};
+                var min = streamInfo.min_value;
+                var max = streamInfo.max_value;
+                var realMin = data.readings[0][1];
+                var realMax = data.readings[0][1];
+                for(var j = 0; j < data.readings.length; j++){
+                    if(realMin > data.readings[j][1]) realMin = data.readings[j][1];
+                    if(realMax < data.readings[j][1]) realMax = data.readings[j][1];
+                }
+
+                if(min === null){
+                    min = realMin;
+                } else if(min > realMin){
+                    messages = "Due to min/max values set, some points may not be seen.";
+                }
+                if(max === null){
+                  max = realMax;
+                } else if(max < realMax){
+                    messages = "Due to min/max values set, some points may not be seen.";
+                }
+
+                var unitSize = " " + getFormattedText(realMax).length;
+
+                var margin = {top: 20, right: 10, bottom: 20, left: 10 + (unitSize*5)};
                 width = width - margin.left - margin.right; height = height - margin.top - margin.bottom;
 
                 var newChart = d3.select(parent)
@@ -114,26 +135,6 @@ angular.module('teleceptor.graphcontroller', [])
                     end = Date.now();
                 }
 
-                var min = streamInfo.min_value;
-                var max = streamInfo.max_value;
-                var realMin = data.readings[0][1];
-                var realMax = data.readings[0][1];
-                for(var j = 0; j < data.readings.length; j++){
-                    if(realMin > data.readings[j][1]) realMin = data.readings[j][1];
-                    if(realMax < data.readings[j][1]) realMax = data.readings[j][1];
-                }
-
-                if(min === null){
-                    min = realMin;
-                } else if(min > realMin){
-                    messages = "Due to min/max values set, some points may not be seen.";
-                }
-                if(max === null){
-                  max = realMax;
-                } else if(max < realMax){
-                    messages = "Due to min/max values set, some points may not be seen.";
-                }
-
                 scope.newGraph = {};
                 scope.newGraph.warning = "";
 
@@ -151,7 +152,6 @@ angular.module('teleceptor.graphcontroller', [])
                     .tickSizeOuter(-10)
                     .tickValues(getTic())
                     .tickFormat(function(d){
-                        var whatToReturn = getFormattedText(d);
                         return getFormattedText(d);
                     });
                 newChart.append("g")
