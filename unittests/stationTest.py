@@ -201,19 +201,21 @@ if __name__ == '__main__':
     logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s', level=logging.DEBUG)
     app = TestApp(application)
 
-    logging.info( "Creating new teleceptor_tests.db file...")
+    logging.info("Creating new teleceptor_tests.db file...")
     if not os.path.exists(os.path.dirname(teleceptor.TESTDBFILE)):
         os.makedirs(os.path.dirname(teleceptor.TESTDBFILE))
     open(teleceptor.TESTDBFILE, 'a').close()
-    logging.info( teleceptor.TESTDBFILE + " created.")
+    logging.info(teleceptor.TESTDBFILE + " created.")
     dbURL = 'sqlite:///' + teleceptor.TESTDBFILE
     db = create_engine(dbURL)
 
-    logging.info( "Initializing database tables...")
+    logging.info("Initializing database tables...")
     teleceptor.models.Base.metadata.create_all(db)
+    teleceptor.isTesting = True
 
     TestStation(app)
 
+    teleceptor.isTesting = False
     logging.info("Removing test db.")
     os.remove(teleceptor.TESTDBFILE)
 

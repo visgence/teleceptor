@@ -47,6 +47,7 @@ else:
     DBFILE = os.path.join(DATAPATH, conf['DBFILE'])
 
 # Set SQL test DB
+isTesting = False
 if os.path.isabs(conf['TESTDBFILE']):
     TESTDBFILE = conf['TESTDBFILE']
 else:
