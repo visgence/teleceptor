@@ -415,13 +415,23 @@ angular.module('teleceptor.graphcontroller', [])
 
                  //Formats text
                 function getFormattedText(d){
-                    var f = d3.format(".1f");
-                    var count = Math.round(d).toString().length;
-                    f = d3.format(".2f");
+                    var f = d3.format(".2f");
+                    var count = Math.round(d).toString().replace(".", "").replace("-", "").length;
+                    console.log(d)
+
+                    var number = f(d);
+                    if(count > 9){
+                        number = f(d/1000000000) + "G ";
+                    } else if(count > 6){
+                        number =  f(d/1000000) + "M ";
+                    } else if(count > 3){
+                        number =  f(d/1000) + "K ";
+                    } else number = f(d);
+
                     var info = infoService.getSensorInfo();
-                    if(info.units === null) return f(d);
-                    if(info.units == "$") return info.units + f(d);
-                    return f(d) + info.units;
+                    if(info.units === null) return number;
+                    if(info.units == "$") return info.units + number;
+                    return number + info.units;
                  }
             }
         }
