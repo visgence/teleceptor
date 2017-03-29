@@ -6,9 +6,11 @@ import time
 import json
 import logging
 import math
+from sqlalchemy import create_engine
 PATH = os.path.abspath(os.path.join(os.path.dirname(os.path.dirname(__file__))))
 sys.path.append(PATH)
 from teleceptor.server import application
+import teleceptor
 
 
 def TestStation(app):
@@ -16,7 +18,7 @@ def TestStation(app):
     TestStationPost(app)
     TestStationGet(app)
     logging.info("Tests complete.")
-    ans = input("Would you like to enter the shell with the test data? (y/n) ")
+    ans = raw_input("Would you like to enter the shell with the test data? (y/n) ")
     if ans == 'y':
         IPython.embed()
 
@@ -60,7 +62,7 @@ def TestStationGet(app):
 
 def CreateStations(app):
     # Should create 10 stations, 10 sensors, default calibration of (1,0)
-    # Note: the error about blacklisted key is to be expected.
+    # Note: the errors about blacklisted key is to be expected.
     motes = []
     for i in range(0, 10):
         uuid = "station_test_{}".format(i)
@@ -84,7 +86,7 @@ def CreateStations(app):
 
 def AddReadings(app):
     # Should create 1000 readings for each sensor.
-    # Note: the error about blacklisted key is to be expected.
+    # Note: the errors about blacklisted key is to be expected.
     motes = []
     for i in range(0, 10):
         uuid = "station_test_{}".format(i)
@@ -198,4 +200,27 @@ def GetOneSensor(app):
 if __name__ == '__main__':
     logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s', level=logging.DEBUG)
     app = TestApp(application)
+
+    logging.info( "Creating new teleceptor_tests.db file...")
+    if not os.path.exists(os.path.dirname(teleceptor.TESTDBFILE)):
+        os.makedirs(os.path.dirname(teleceptor.TESTDBFILE))
+    open(teleceptor.TESTDBFILE, 'a').close()
+    logging.info( teleceptor.TESTDBFILE + " created.")
+    dbURL = 'sqlite:///' + teleceptor.TESTDBFILE
+    db = create_engine(dbURL)
+
+    logging.info( "Initializing database tables...")
+    teleceptor.models.Base.metadata.create_all(db)
+
     TestStation(app)
+
+    logging.info("Removing test db.")
+    os.remove(teleceptor.TESTDBFILE)
+
+
+
+
+
+
+
+
