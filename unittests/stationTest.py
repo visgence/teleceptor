@@ -10,7 +10,11 @@ from sqlalchemy import create_engine
 PATH = os.path.abspath(os.path.join(os.path.dirname(os.path.dirname(__file__))))
 sys.path.append(PATH)
 from teleceptor.server import application
+from teleceptor.sessionManager import sessionScope
+from teleceptor.models import Sensor, Calibration, SensorReading, DataStream
 import teleceptor
+
+session = None
 
 
 def TestStation(app):
@@ -82,6 +86,11 @@ def CreateStations(app):
             'readings': []
         })
     app.post_json('/api/station', json.loads(json.dumps(motes)))
+
+    sensors = session.query(Sensor)
+    for i in range(0, 10):
+        pass
+
 
 
 def AddReadings(app):
@@ -213,7 +222,9 @@ if __name__ == '__main__':
     teleceptor.models.Base.metadata.create_all(db)
     teleceptor.isTesting = True
 
-    TestStation(app)
+    with sessionScope() as newSession:
+        session = newSession
+        TestStation(app)
 
     teleceptor.isTesting = False
     logging.info("Removing test db.")
