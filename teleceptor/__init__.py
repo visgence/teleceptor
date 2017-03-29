@@ -46,6 +46,12 @@ if os.path.isabs(conf['DBFILE']):
 else:
     DBFILE = os.path.join(DATAPATH, conf['DBFILE'])
 
+# Set SQL test DB
+if os.path.isabs(conf['TESTDBFILE']):
+    TESTDBFILE = conf['TESTDBFILE']
+else:
+    TESTDBFILE = os.path.join(DATAPATH, conf['TESTDBFILE'])
+
 # Set DB type (postgres or sqlite). Defaults to postgres
 if "USEPG" in conf:
     USEPG = conf["USEPG"]
