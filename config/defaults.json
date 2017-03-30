@@ -1,5 +1,6 @@
 {
     "DBFILE": "database/base_station.db",
+    "TESTDBFILE": "database/test.db",
     "USEPG": true,
     "PGSQLDBHOST": "pg",
     "PGSQLDBNAME": "tele",

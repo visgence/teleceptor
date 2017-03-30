@@ -317,7 +317,7 @@ def _updateSensor(sensor_id, data, session):
     for key, value in data.iteritems():
         logging.debug("Key: {}, Value: {}".format(key, value))
         if key in blacklist:
-            logging.error("Request to updateSensor included blacklisted key %s", str(key))
+            logging.debug("Request to updateSensor included blacklisted key %s", str(key))
             continue
         if 'last_calibration' in key:
             logging.debug("value: {} and type: {}".format(value, type(value)))
