@@ -163,8 +163,6 @@ class Station:
 
         logging.debug("Finished POST request to delegation.")
         cherrypy.response.status = statusCode
-        print 'were here'
-        print statusCode
         return json.dumps(data, indent=4)
 
 

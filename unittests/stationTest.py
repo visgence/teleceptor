@@ -250,8 +250,6 @@ def ChangeNothing(app):
 
     try:
         test = session.query(Sensor).filter_by(uuid='station_test_0test_sensor').first()
-        print 'we got:'
-        print test.toDict()
         if str(test.toDict()['last_calibration']['coefficients']) != "[10, 10]":
             failures.append({
                 'TestName': "ChangeNothing",
