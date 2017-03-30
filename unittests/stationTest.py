@@ -84,7 +84,13 @@ def CreateStations(app):
             },
             'readings': []
         })
-    app.post_json('/api/station', json.loads(json.dumps(motes)))
+    try:
+        app.post_json('/api/station', json.loads(json.dumps(motes)))
+    except Exception, e:
+        failures.append({
+            'TestName': "ChangeOldCalibration",
+            'ErrorGiven': e
+        })
 
     for i in range(0, 10):
         try:
@@ -181,8 +187,13 @@ def ChangeNewCalibration(app):
         },
         'readings': []
     }])
-    app.post_json('/api/station', json.loads(sensor))
-
+    try:
+        app.post_json('/api/station', json.loads(sensor))
+    except Exception, e:
+        failures.append({
+            'TestName': "ChangeOldCalibration",
+            'ErrorGiven': e
+        })
     try:
         test = session.query(Sensor).filter_by(uuid='station_test_0test_sensor').first()
         if test.toDict()['last_calibration']['coefficients'] != "[10, 10]":
@@ -250,8 +261,13 @@ def ChangeNothing(app):
         },
         'readings': []
         }])
-    app.post_json('/api/station', json.loads(sensor))
-
+    try:
+        app.post_json('/api/station', json.loads(sensor))
+    except Exception, e:
+        failures.append({
+            'TestName': "ChangeOldCalibration",
+            'ErrorGiven': e
+        })
     try:
         test = session.query(Sensor).filter_by(uuid='station_test_0test_sensor').first()
         if test.toDict()['last_calibration']['coefficients'] != "[10, 10]":
@@ -263,7 +279,7 @@ def ChangeNothing(app):
         failures.append({
             'TestName': "ChangeOldCalibration",
             'ErrorGiven': e
-            })
+        })
     return failures
 
 
@@ -284,8 +300,13 @@ def ChangeNoTimestamp(app):
         },
         'readings': []
         }])
-    app.post_json('/api/station', json.loads(sensor))
-
+    try:
+        app.post_json('/api/station', json.loads(sensor))
+    except Exception, e:
+        failures.append({
+            'TestName': "ChangeOldCalibration",
+            'ErrorGiven': e
+        })
     try:
         test = session.query(Sensor).filter_by(uuid='station_test_0test_sensor').first()
         if test.toDict()['last_calibration']['coefficients'] != "[10, 10]":
@@ -297,7 +318,7 @@ def ChangeNoTimestamp(app):
         failures.append({
             'TestName': "ChangeOldCalibration",
             'ErrorGiven': e
-            })
+        })
     return failures
 
 
@@ -319,7 +340,13 @@ def NoSensorId(app):
         },
         'readings': []
     }])
-    app.post_json('/api/station', json.loads(sensor))
+    try:
+        app.post_json('/api/station', json.loads(sensor))
+    except Exception, e:
+        failures.append({
+            'TestName': "ChangeOldCalibration",
+            'ErrorGiven': e
+        })
     return failures
 
 
@@ -332,7 +359,13 @@ def NoReadingId(app):
     }]
     for j in range(0, 1):
         sensor[0]['readings'].append(['test_reading', math.sin(j)*100, time.time()-j*60])
-    app.post_json('/api/station', json.loads(json.dumps(sensor)))
+    try:
+        app.post_json('/api/station', json.loads(json.dumps(sensor)))
+    except Exception, e:
+        failures.append({
+            'TestName': "ChangeOldCalibration",
+            'ErrorGiven': e
+        })
     return failures
 
 
