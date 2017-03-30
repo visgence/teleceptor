@@ -150,6 +150,7 @@ def AddReadings(app):
                 'TestName': "AddReadings",
                 'ErrorGiven': e
                 })
+            return failures
 
         if len(readings) != 100:
             failures.append({
@@ -214,16 +215,16 @@ def ChangeOldCalibration(app):
 
     try:
         test = session.query(Sensor).filter_by(uuid='station_test_0test_sensor').first()
-        if test.toDict()['last_calibration']['coefficients'] != "[10, 10]":
+        if str(test.toDict()['last_calibration']['coefficients']) != "[10, 10]":
             failures.append({
                 'TestName': "ChangeOldCalibration",
                 'ErrorGiven': "Coefficients were changed when they shouldn't have been."
-                })
+            })
     except Exception, e:
         failures.append({
             'TestName': "ChangeOldCalibration",
             'ErrorGiven': e
-            })
+        })
     return failures
 
 
