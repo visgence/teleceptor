@@ -22,7 +22,7 @@ def TestStation(app):
     failures = TestStationPost(app)
     logging.info("Tests complete.")
     if len(failures) != 0:
-        logging.error("\nYou've had {} tests fail:\n".format(len(failures)))
+        logging.error("\n\nYou've had {} tests fail:\n".format(len(failures)))
         for i in failures:
             logging.info(i['TestName'])
             logging.error(i['ErrorGiven'])
@@ -66,7 +66,6 @@ def CreateStations(app):
     # Should create 10 stations, 10 sensors, default calibration of (1,0)
     # Note: the errors about blacklisted key is to be expected.
     motes = []
-    failures = []
     for i in range(0, 10):
         uuid = "station_test_{}".format(i)
         motes.append({
@@ -84,13 +83,8 @@ def CreateStations(app):
             },
             'readings': []
         })
-    try:
-        app.post_json('/api/station', json.loads(json.dumps(motes)))
-    except Exception, e:
-        failures.append({
-            'TestName': "ChangeOldCalibration",
-            'ErrorGiven': e
-        })
+
+    failures = doPost(json.dumps(motes))
 
     for i in range(0, 10):
         try:
@@ -112,7 +106,6 @@ def AddReadings(app):
     # Should create 1000 readings for each sensor.
     # Note: the errors about blacklisted key is to be expected.
     motes = []
-    failures = []
     for i in range(0, 10):
         uuid = "station_test_{}".format(i)
         motes.append({
@@ -132,13 +125,9 @@ def AddReadings(app):
         })
         for j in range(0, 100):
             motes[i]['readings'].append(['test_sensor', math.sin(j)*100, time.time()-j*60])
-    try:
-        app.post_json('/api/station', json.loads(json.dumps(motes)))
-    except Exception, e:
-        failures.append({
-                'TestName': "AddReadings",
-                'ErrorGiven': e
-                })
+
+    failures = doPost(json.dumps(motes))
+
     for i in range(0, 10):
         try:
             sensor = session.query(Sensor).filter_by(uuid=motes[i]['info']['uuid']+'test_sensor').first()
@@ -172,7 +161,6 @@ def AddReadings(app):
 
 def ChangeNewCalibration(app):
     # Should update the calibration on one sensor.
-    failures = []
     sensor = json.dumps([{
         'info': {
             'uuid': "station_test_0",
@@ -187,13 +175,9 @@ def ChangeNewCalibration(app):
         },
         'readings': []
     }])
-    try:
-        app.post_json('/api/station', json.loads(sensor))
-    except Exception, e:
-        failures.append({
-            'TestName': "ChangeOldCalibration",
-            'ErrorGiven': e
-        })
+
+    failures = doPost(sensor)
+
     try:
         test = session.query(Sensor).filter_by(uuid='station_test_0test_sensor').first()
         if test.toDict()['last_calibration']['coefficients'] != "[10, 10]":
@@ -211,7 +195,6 @@ def ChangeNewCalibration(app):
 
 def ChangeOldCalibration(app):
     # Should NOT update the calibartion on a sensor.
-    failures = []
     sensor = json.dumps([{
         'info': {
             'uuid': "station_test_0",
@@ -226,7 +209,8 @@ def ChangeOldCalibration(app):
         },
         'readings': []
     }])
-    app.post_json('/api/station', json.loads(sensor))
+
+    failures = doPost(sensor)
 
     try:
         test = session.query(Sensor).filter_by(uuid='station_test_0test_sensor').first()
@@ -245,7 +229,6 @@ def ChangeOldCalibration(app):
 
 def ChangeNothing(app):
     # Should do nothing
-    failures = []
     sensor = json.dumps([{
         'info': {
             'uuid': "station_test_0",
@@ -261,13 +244,9 @@ def ChangeNothing(app):
         },
         'readings': []
         }])
-    try:
-        app.post_json('/api/station', json.loads(sensor))
-    except Exception, e:
-        failures.append({
-            'TestName': "ChangeOldCalibration",
-            'ErrorGiven': e
-        })
+
+    failures = doPost(sensor)
+
     try:
         test = session.query(Sensor).filter_by(uuid='station_test_0test_sensor').first()
         if test.toDict()['last_calibration']['coefficients'] != "[10, 10]":
@@ -285,7 +264,6 @@ def ChangeNothing(app):
 
 def ChangeNoTimestamp(app):
     # Should NOT update the calibartion on a sensor.
-    failures = []
     sensor = json.dumps([{
         'info': {
             'uuid': "station_test_0",
@@ -300,13 +278,9 @@ def ChangeNoTimestamp(app):
         },
         'readings': []
         }])
-    try:
-        app.post_json('/api/station', json.loads(sensor))
-    except Exception, e:
-        failures.append({
-            'TestName': "ChangeOldCalibration",
-            'ErrorGiven': e
-        })
+
+    failures = doPost(sensor)
+
     try:
         test = session.query(Sensor).filter_by(uuid='station_test_0test_sensor').first()
         if test.toDict()['last_calibration']['coefficients'] != "[10, 10]":
@@ -325,7 +299,6 @@ def ChangeNoTimestamp(app):
 def NoSensorId(app):
     # Should do nothing.
     # Note: should throw an error about the mote not reporting its uuid
-    failures = []
     sensor = json.dumps([{
         'info': {
             'name': "station_test_0",
@@ -340,33 +313,35 @@ def NoSensorId(app):
         },
         'readings': []
     }])
-    try:
-        app.post_json('/api/station', json.loads(sensor))
-    except Exception, e:
-        failures.append({
-            'TestName': "ChangeOldCalibration",
-            'ErrorGiven': e
-        })
+
+    failures = doPost(sensor)
+
     return failures
 
 
 def NoReadingId(app):
     # Should do nothing.
-    failures = []
     sensor = [{
         'info': {},
         'readings': []
     }]
     for j in range(0, 1):
         sensor[0]['readings'].append(['test_reading', math.sin(j)*100, time.time()-j*60])
+
+    failures = doPost(json.dumps(sensor))
+
+    return failures
+
+
+def doPost(data):
     try:
-        app.post_json('/api/station', json.loads(json.dumps(sensor)))
+        app.post_json('/api/station', json.loads(data))
+        return []
     except Exception, e:
-        failures.append({
+        return [{
             'TestName': "ChangeOldCalibration",
             'ErrorGiven': e
-        })
-    return failures
+        }]
 
 
 if __name__ == '__main__':
