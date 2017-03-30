@@ -50,9 +50,16 @@ angular.module('teleceptor.graphcontroller', [])
                         if(readingsResponse.data.readings === undefined){
                             angular.element("#warning_message").text("Error: No indices found in current range.");
                         }
+
+                        var coefs = sensorInfoResponse.data.sensor.last_calibration.coefficients
+                        if(coefs.toString().startsWith('[')){
+                            coefs = JSON.parse(coefs);
+                        } else {
+                            coefs = JSON.parse("["+coefs+"]")
+                        }
                         for(var j = 0; j < readingsResponse.data.readings.length; j++){
-                            readingsResponse.data.readings[j][1] *= sensorInfoResponse.data.sensor.last_calibration.coefficients[0];
-                            readingsResponse.data.readings[j][1] += sensorInfoResponse.data.sensor.last_calibration.coefficients[1];
+                            readingsResponse.data.readings[j][1] *= coefs[0];
+                            readingsResponse.data.readings[j][1] += coefs[1];
                         }
 
                         $timeout(function(){
@@ -417,8 +424,6 @@ angular.module('teleceptor.graphcontroller', [])
                 function getFormattedText(d){
                     var f = d3.format(".2f");
                     var count = Math.round(d).toString().replace(".", "").replace("-", "").length;
-                    console.log(d)
-
                     var number = f(d);
                     if(count > 9){
                         number = f(d/1000000000) + "G ";
