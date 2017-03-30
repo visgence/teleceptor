@@ -250,7 +250,9 @@ def ChangeNothing(app):
 
     try:
         test = session.query(Sensor).filter_by(uuid='station_test_0test_sensor').first()
-        if test.toDict()['last_calibration']['coefficients'] != "[10, 10]":
+        print 'we got:'
+        print test.toDict()
+        if str(test.toDict()['last_calibration']['coefficients']) != "[10, 10]":
             failures.append({
                 'TestName': "ChangeNothing",
                 'ErrorGiven': "Coefficients were changed when they shouldn't have been."
@@ -274,7 +276,9 @@ def ChangeNoTimestamp(app):
             'in': [{
                 'name': "test_sensor",
                 'sensor_type': "float",
-                'meta_data': {}
+                'timestamp': time.time(),
+                'meta_data': {},
+                'scale': "[{}, {}]".format(7, 7),
             }]
         },
         'readings': []
@@ -284,7 +288,7 @@ def ChangeNoTimestamp(app):
 
     try:
         test = session.query(Sensor).filter_by(uuid='station_test_0test_sensor').first()
-        if test.toDict()['last_calibration']['coefficients'] != "[10, 10]":
+        if str(test.toDict()['last_calibration']['coefficients']) != "[10, 10]":
             failures.append({
                 'TestName': "ChangeNoTimestamp",
                 'ErrorGiven': "Coefficients were changed when they shouldn't have been."
@@ -338,7 +342,7 @@ def doPost(data):
         return []
     except Exception, e:
         return [{
-            'TestName': "ChangeOldCalibration",
+            'TestName': "doPost",
             'ErrorGiven': e
         }]
 

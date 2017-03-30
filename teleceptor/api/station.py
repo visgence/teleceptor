@@ -163,6 +163,8 @@ class Station:
 
         logging.debug("Finished POST request to delegation.")
         cherrypy.response.status = statusCode
+        print 'were here'
+        print statusCode
         return json.dumps(data, indent=4)
 
 
@@ -239,50 +241,45 @@ def update_motes(mote_datas):
 def update_sensor_data(sensor_data=None, session=None):
     uuid = sensor_data['uuid']
 
-    if 'scale' not in sensor_data:
-        logging.debug("Sensor did not report a scaling function. Using identity function.")
-        coefficients = json.dumps([1, 0])
-    else:
-        coefficients = json.dumps(sensor_data['scale'])
-        del sensor_data['scale']
-
     # TODO: Put code in other function
     if session is None:
-        with sessionScope() as session:
-            # Update sensors (and create if needed)
-            try:
-                sensor_info = Sensors.updateSensor(sensor_id=uuid, data=sensor_data, session=session)
-            except NoResultFound:
-                timestamp = sensor_data['timestamp']
-                del sensor_data['timestamp']
+        with sessionScope() as newSession:
+            session = newSession
 
-                sensor = Sensor(**sensor_data)
-                Sensors.createSensor(sensor=sensor, session=session)
+    # Update sensors (and create if needed)
+    try:
+        sensor_info = Sensors.updateSensor(sensor_id=uuid, data=sensor_data, session=session)
+    except NoResultFound:
+        timestamp = sensor_data['timestamp']
+        del sensor_data['timestamp']
 
-                sensor_data['timestamp'] = timestamp
+        sensor = Sensor(**sensor_data)
+        Sensors.createSensor(sensor, session)
 
-            sensor = sensors.getSensor(uuid, session=session)
-            logging.debug("Got sensor %s", str(sensor))
-            logging.debug("Updating calibration...")
-            sensor_info = Sensors.updateCalibration(sensor, coefficients, sensor_data['timestamp'], session=session)
-            logging.debug("Updated calibration.")
+        sensor_data['timestamp'] = timestamp
+
+    sensor = sensors.getSensor(uuid, session=session)
+    coefficients = '[1, 0]'
+    if 'last_calibration' not in sensor:
+        if 'calibration_timestamp' in sensor_data and 'scale' in sensor_data:
+            coefficients = sensor_data['scale']
     else:
-        # Update sensors (and create if needed)
-        try:
-            sensor_info = Sensors.updateSensor(sensor_id=uuid, data=sensor_data, session=session)
-        except NoResultFound:
-            timestamp = sensor_data['timestamp']
-            del sensor_data['timestamp']
+        if 'calibration_timestamp' not in sensor_data or 'scale' not in sensor_data:
+            coefficients = sensor['last_calibration']['coefficients']
+        elif sensor_data['calibration_timestamp'] < sensor['last_calibration']['timestamp']:
+            coefficients = sensor['last_calibration']['coefficients']
+        else:
+            coefficients = sensor_data['scale']
 
-            sensor = Sensor(**sensor_data)
-            Sensors.createSensor(sensor, session)
-
-            sensor_data['timestamp'] = timestamp
-
-        sensor = sensors.getSensor(uuid, session=session)
-        logging.debug("Got sensor %s", str(sensor))
-        logging.debug("Updating calibration...")
-        sensor_info = Sensors.updateCalibration(sensor, coefficients, sensor_data['timestamp'], session=session)
-        logging.debug("Updated calibration")
+    logging.debug("Got sensor %s", str(sensor))
+    logging.debug("Updating calibration...")
+    sensor_info = Sensors.updateCalibration(sensor, json.dumps(str(coefficients)), sensor_data['timestamp'], session=session)
+    logging.debug("Updated calibration")
 
     return sensor_info
+
+
+
+
+
+
