@@ -298,7 +298,7 @@ def ChangeNoTimestamp(app):
 
 def NoSensorId(app):
     # Should do nothing.
-    # Note: should throw an error about the mote not reporting its uuid
+    # Note: should throw an error about the mote not reporting its uuid.
     sensor = json.dumps([{
         'info': {
             'name': "station_test_0",
@@ -314,13 +314,12 @@ def NoSensorId(app):
         'readings': []
     }])
 
-    failures = doPost(sensor)
-
-    return failures
+    return doPost(sensor)
 
 
 def NoReadingId(app):
     # Should do nothing.
+    # Note: should throw an error about the sensor not reporting its uuid.
     sensor = [{
         'info': {},
         'readings': []
@@ -328,12 +327,11 @@ def NoReadingId(app):
     for j in range(0, 1):
         sensor[0]['readings'].append(['test_reading', math.sin(j)*100, time.time()-j*60])
 
-    failures = doPost(json.dumps(sensor))
-
-    return failures
+    return doPost(json.dumps(sensor))
 
 
 def doPost(data):
+    # Does a post to app api, returns an error object if failed, an empty array if successful.
     try:
         app.post_json('/api/station', json.loads(data))
         return []
