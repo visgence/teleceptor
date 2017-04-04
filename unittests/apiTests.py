@@ -21,43 +21,43 @@ session = None
 
 
 def TestSensor(app):
-    logging.debug("Begin sensor tests.")
+    logging.info("Begin sensor tests.")
     failures = TestSensorPost(app)
     failures = failures + TestSensorGet(app)
-    logging.debug("Sensor tests completed.")
+    logging.info("Sensor tests completed.")
     return failures
 
 
 def TestSensorPost(app):
-    logging.debug("Begin add sensor test.")
+    logging.info("Begin add sensor test.")
     failures = AddSensor(app)
-    logging.debug("Add sensor test complete.")
-    logging.debug("Begin add sensor with calibration test.")
+    logging.info("Add sensor test complete.")
+    logging.info("Begin add sensor with calibration test.")
     failures = failures + AddSensorWithCalibration(app)
-    logging.debug("Add sensor with calibration test complete.")
-    logging.debug("Begin add sensor with no id test.")
+    logging.info("Add sensor with calibration test complete.")
+    logging.info("Begin add sensor with no id test.")
     failures = failures + AddSensorNoId(app)
-    logging.debug("Add sensor with no id test complete.")
-    logging.debug("Begin update new calibration test.")
+    logging.info("Add sensor with no id test complete.")
+    logging.info("Begin update new calibration test.")
     failures = failures + UpdateNewCalibration(app)
-    logging.debug("Update new calibration test complete.")
-    logging.debug("Begin update old calibration test.")
+    logging.info("Update new calibration test complete.")
+    logging.info("Begin update old calibration test.")
     failures = failures + UpdateOldCalibration(app)
-    logging.debug("Update old calibration test complete.")
-    logging.debug("Begin update no timestamp test.")
+    logging.info("Update old calibration test complete.")
+    logging.info("Begin update no timestamp test.")
     return failures
 
 
 def TestSensorGet(app):
-    logging.debug("Begin get sensor test.")
+    logging.info("Begin get sensor test.")
     failures = GetSensor(app)
-    logging.debug("Get sensor test complete.")
-    logging.debug("Begin get all sensors test.")
+    logging.info("Get sensor test complete.")
+    logging.info("Begin get all sensors test.")
     failures = failures + GetAllSensors(app)
-    logging.debug("Get all sensors test complete.")
-    logging.debug("Begin get incorrect sensor test.")
+    logging.info("Get all sensors test complete.")
+    logging.info("Begin get incorrect sensor test.")
     failures = failures + GetIncorrectSensor(app)
-    logging.debug("Get incorrect sensor test complete.")
+    logging.info("Get incorrect sensor test complete.")
     return failures
 
 
@@ -226,7 +226,7 @@ def GetAllSensors(app):
 
     test = session.query(Sensor).all()
 
-    for i in info:
+    for i in info['sensors']:
         found = False
         for j in test:
             if i['uuid'] == j.toDict()['uuid']:
@@ -262,7 +262,7 @@ def doSensorPost(data):
     except Exception, e:
         return [{
             'TestName': "doSensorPost: {}".format(data),
-            'ErrorGiven': "dosomething"
+            'ErrorGiven': e
         }]
 
 
@@ -272,7 +272,7 @@ def doSensorPost(data):
 def TestStation(app):
     logging.info("Begining station tests.")
     failures = TestStationPost(app)
-    logging.info("Tests complete.")
+    logging.info("Station tests complete.")
     return failures
 
 
@@ -611,8 +611,8 @@ if __name__ == '__main__':
     failures = []
     with sessionScope() as newSession:
         session = newSession
-        # failures = failures + TestStation(app)
-        failures = failures + TestSensor(app)
+        failures = failures + TestStation(app)
+        # failures = failures + TestSensor(app)
 
     if len(failures) != 0:
         logging.error("\n\nYou've had {} tests fail:\n".format(len(failures)))
