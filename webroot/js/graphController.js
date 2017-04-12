@@ -111,7 +111,7 @@ angular.module('teleceptor.graphcontroller', [])
                     messages = "Due to min/max values set, some points may not be seen.";
                 }
 
-                var unitSize = " " + getFormattedText(realMax).length;
+                var unitSize = " " + getFormat(realMax).length;
 
                 var margin = {top: 20, right: 10, bottom: 20, left: 10 + (unitSize*5)};
                 width = width - margin.left - margin.right; height = height - margin.top - margin.bottom;
@@ -159,7 +159,7 @@ angular.module('teleceptor.graphcontroller', [])
                     .tickSizeOuter(-10)
                     .tickValues(getTic())
                     .tickFormat(function(d){
-                        return getFormattedText(d);
+                        return getFormat(d);
                     });
                 newChart.append("g")
                     .attr("class", "ChartAxis-Shape")
@@ -412,32 +412,62 @@ angular.module('teleceptor.graphcontroller', [])
                     if(d[1] < min || d[1] > max) return;
                     circleElements[0].attr("transform", "translate(" + xScale(d[0]*1000) + "," + yScale(d[1]) + ")");
                     yLine.attr("transform", "translate(" + xScale(d[0]*1000) + "," + 0 + ")");
-                    timeText.text(new Date(d[0]*1000) + " | " + getFormattedText(d[1]));
+                    timeText.text(new Date(d[0]*1000) + " | " + getFormat(d[1]));
 
                     textElements[0]
-                        .text(getFormattedText(d[1]))
+                        .text(getFormat(d[1]))
                         .attr("transform", "translate(" + (xScale(d[0]*1000)+10) + "," + (yScale(d[1])-10) + ")");
 
                 }
 
-                 //Formats text
-                function getFormattedText(d){
+                // Formats text for units display
+                function getFormat(d){
+                    var count = 0;
+                    while(Math.abs(d) >= 1000){
+                        d /= 1000;
+                        count++;
+                    }
+                    while(Math.abs(d) < 1 && d !== 0){
+                        d *= 1000;
+                        count--;
+                    }
                     var f = d3.format(".2f");
-                    var count = Math.round(d).toString().replace(".", "").replace("-", "").length;
-                    var number = f(d);
-                    if(count > 9){
-                        number = f(d/1000000000) + "G ";
-                    } else if(count > 6){
-                        number =  f(d/1000000) + "M ";
-                    } else if(count > 3){
-                        number =  f(d/1000) + "K ";
-                    } else number = f(d);
+                    var suffix;
+                    switch(count){
+                        case -1:
+                            suffix = "m";
+                            break;
+                        case -2:
+                            suffix = "u";
+                            break;
+                        case -3:
+                            suffix = "p";
+                            break;
+                        case 1:
+                            suffix = "K";
+                            break;
+                        case 2:
+                            suffix = "M";
+                            break;
+                        case 3:
+                            suffix = "G";
+                            break;
+                        default:
+                            suffix = "";
+                    }
+                    var formattedText = f(d) + suffix + " ";
+                    var units;
 
                     var info = infoService.getSensorInfo();
-                    if(info.units === null) return number;
-                    if(info.units == "$") return info.units + number;
-                    return number + info.units;
-                 }
+                    if(info.units !== null){
+                        if(info.units === "$"){
+                            formattedText = "$"+formattedText;
+                        } else {
+                            formattedText = formattedText + info.units;
+                        }
+                    }
+                    return formattedText;
+                }
             }
         }
     };
