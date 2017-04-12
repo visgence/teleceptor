@@ -17,20 +17,263 @@ import teleceptor
 session = None
 
 
+# ==========================================================SENSOR TESTS============================================ #
+
+
+def TestSensor(app):
+    logging.info("Begin sensor tests.")
+    failures = TestSensorPost(app)
+    failures = failures + TestSensorGet(app)
+    logging.info("Sensor tests completed.")
+    return failures
+
+
+def TestSensorPost(app):
+    logging.info("Begin add sensor test.")
+    failures = AddSensor(app)
+    logging.info("Add sensor test complete.")
+    logging.info("Begin add sensor with calibration test.")
+    failures = failures + AddSensorWithCalibration(app)
+    logging.info("Add sensor with calibration test complete.")
+    logging.info("Begin add sensor with no id test.")
+    failures = failures + AddSensorNoId(app)
+    logging.info("Add sensor with no id test complete.")
+    logging.info("Begin update new calibration test.")
+    failures = failures + UpdateNewCalibration(app)
+    logging.info("Update new calibration test complete.")
+    logging.info("Begin update old calibration test.")
+    failures = failures + UpdateOldCalibration(app)
+    logging.info("Update old calibration test complete.")
+    logging.info("Begin update no timestamp test.")
+    return failures
+
+
+def TestSensorGet(app):
+    logging.info("Begin get sensor test.")
+    failures = GetSensor(app)
+    logging.info("Get sensor test complete.")
+    logging.info("Begin get all sensors test.")
+    failures = failures + GetAllSensors(app)
+    logging.info("Get all sensors test complete.")
+    logging.info("Begin get incorrect sensor test.")
+    failures = failures + GetIncorrectSensor(app)
+    logging.info("Get incorrect sensor test complete.")
+    return failures
+
+
+def AddSensor(app):
+    # Creates a bare bones sensor.
+    sensor = json.dumps({
+        'uuid': "sensor_test_0",
+    })
+
+    failures = doSensorPost(sensor)
+
+    test = session.query(Sensor).filter_by(uuid='sensor_test_0').first()
+    if test is None:
+        failures.append({
+            'TestName': "AddSensor",
+            'ErrorGiven': "query was None"
+        })
+
+    return failures
+
+
+def AddSensorWithCalibration(app):
+    # Creates a new sensor with some initial coefficients.
+    sensor = json.dumps({
+        'uuid': "sensor_test_1",
+        'calibration': {
+            'timestamp': time.time(),
+            'coefficients': "[10,10]"
+        }
+    })
+
+    failures = doSensorPost(sensor)
+
+    test = session.query(Sensor).filter_by(uuid='sensor_test_1').first()
+    if test is None:
+        failures.append({
+            'TestName': "AddSensor",
+            'ErrorGiven': "query was None."
+        })
+    elif test.toDict()['last_calibration']['coefficients'] != "[10, 10]":
+        failures.append({
+            'TestName': "AddSensor",
+            'ErrorGiven': "coefficients wern't recorded properly."
+        })
+
+    return failures
+
+
+def AddSensorNoId(app):
+    # This should NOT do anything including updating coefficients.
+    sensor = json.dumps({
+        'name': 'sensor_test_0',
+        'calibration': {
+            'timestamp': time.time(),
+            'coefficients': "(5, 5)"
+        }
+    })
+
+    failures = doSensorPost(sensor)
+
+    test = session.query(Sensor).filter_by(uuid='sensor_test_0').first()
+    if test is None:
+        failures.append({
+            'TestName': "AddSensorNoId",
+            'ErrorGiven': "Sensor doesn't exit when it should from test #1"
+        })
+    elif test.toDict()['last_calibration']['coefficients'] == "[5, 5]":
+        failures.append({
+            'TestName': "AddSensorNoId",
+            'ErrorGiven': "coefficients were overwritten when they shouldn't have been."
+        })
+
+    return failures
+
+
+def UpdateNewCalibration(app):
+    # Updates a sensors calibration.
+    sensor = json.dumps({
+        'uuid': "sensor_test_0",
+        'calibration': {
+            'timestamp': time.time(),
+            'coefficients': "(7,7)"
+        }
+    })
+
+    failures = doSensorPost(sensor)
+
+    test = session.query(Sensor).filter_by(uuid='sensor_test_0').first()
+    if test is None:
+        failures.append({
+            'TestName': "UpdateNewCalibration",
+            'ErrorGiven': "Sensor doesn't exit when it should from test #1"
+        })
+    elif test.toDict()['last_calibration']['coefficients'] != "[7, 7]":
+        failures.append({
+            'TestName': "UpdateNewCalibration",
+            'ErrorGiven': "coefficients wern't overwritten when they should have been."
+        })
+
+    return failures
+
+
+def UpdateOldCalibration(app):
+    # This should NOT update any calibrations.
+    sensor = json.dumps({
+        'uuid': "sensor_test_0",
+        'calibration': {
+            'timestamp': time.time()-10000,
+            'coefficients': "(3,3)"
+        }
+    })
+
+    failures = doSensorPost(sensor)
+
+    test = session.query(Sensor).filter_by(uuid='sensor_test_0').first()
+    if test is None:
+        failures.append({
+            'TestName': "UpdateOldCalibration",
+            'ErrorGiven': "Sensor doesn't exit when it should from test #1"
+        })
+    elif test.toDict()['last_calibration']['coefficients'] == "[3, 3]":
+        failures.append({
+            'TestName': "UpdateOldCalibration",
+            'ErrorGiven': "coefficients were overwritten when they shouldn't have been."
+        })
+
+    return failures
+
+
+def GetSensor(app):
+    # This should return sensor.
+    try:
+        info = app.get('/api/sensors/sensor_test_0').json
+    except Exception, e:
+        failures = [{
+            'TestName': "GetSensor",
+            'ErrorGiven': e
+        }]
+
+    test = session.query(Sensor).filter_by(uuid='sensor_test_0').first()
+
+    if test is None:
+        failures.append({
+            'TestName': "GetSensor",
+            'ErrorGiven': "Sensor doesn't exit when it should from test #1"
+        })
+    elif test.ToDict()['uuid'] != info['uuid']:
+        failures.append({
+            'TestName': "GetSensor",
+            'ErrorGiven': "database query doesn't match get request."
+        })
+
+    return failures
+
+
+def GetAllSensors(app):
+    # This should return all of the sensors.
+    failures = []
+    try:
+        info = app.get('/api/sensors').json
+    except Exception, e:
+        failures = [{
+            'TestName': "GetAllSensors",
+            'ErrorGiven': e
+        }]
+
+    test = session.query(Sensor).all()
+
+    for i in info['sensors']:
+        found = False
+        for j in test:
+            if i['uuid'] == j.toDict()['uuid']:
+                found = True
+        if not found:
+            failures = [{
+                'TestName': "GetAllSensors",
+                'ErrorGiven': "Sensor not found: {}".format(i)
+            }]
+    return failures
+
+
+def GetIncorrectSensor(app):
+    # This should not return anything and throw an error.
+    failures = []
+    try:
+        info = app.get('/api/sensors/fictionalSensorId').json
+    except Exception, e:
+        failures = [{
+            'TestName': "GetIncorrectSensor",
+            'ErrorGiven': e
+        }]
+
+    return failures
+
+
+def doSensorPost(data):
+    # Does a post to app api, returns an error object if failed, an empty array if successful.
+    failures = []
+    try:
+        app.post_json('/api/sensors', json.loads(data))
+        return []
+    except Exception, e:
+        return [{
+            'TestName': "doSensorPost: {}".format(data),
+            'ErrorGiven': e
+        }]
+
+
+# ==========================================================STATION TESTS============================================ #
+
+
 def TestStation(app):
-    logging.info("Begining tests.")
+    logging.info("Begining station tests.")
     failures = TestStationPost(app)
-    logging.info("Tests complete.")
-    if len(failures) != 0:
-        logging.error("\n\nYou've had {} tests fail:\n".format(len(failures)))
-        for i in failures:
-            logging.info(i['TestName'])
-            logging.error(i['ErrorGiven'])
-    else:
-        logging.info("\nAll tests have passed succesfully!\n")
-    ans = raw_input("Would you like to enter the shell with the test data? (y/n) ")
-    if ans == 'y':
-        IPython.embed()
+    logging.info("Station tests complete.")
+    return failures
 
 
 def TestStationPost(app):
@@ -84,7 +327,7 @@ def CreateStations(app):
             'readings': []
         })
 
-    failures = doPost(json.dumps(motes))
+    failures = doStationPost(json.dumps(motes))
 
     for i in range(0, 10):
         try:
@@ -126,7 +369,7 @@ def AddReadings(app):
         for j in range(0, 100):
             motes[i]['readings'].append(['test_sensor', math.sin(j)*100, time.time()-j*60])
 
-    failures = doPost(json.dumps(motes))
+    failures = doStationPost(json.dumps(motes))
 
     for i in range(0, 10):
         try:
@@ -177,7 +420,7 @@ def ChangeNewCalibration(app):
         'readings': []
     }])
 
-    failures = doPost(sensor)
+    failures = doStationPost(sensor)
 
     try:
         test = session.query(Sensor).filter_by(uuid='station_test_0test_sensor').first()
@@ -211,7 +454,7 @@ def ChangeOldCalibration(app):
         'readings': []
     }])
 
-    failures = doPost(sensor)
+    failures = doStationPost(sensor)
 
     try:
         test = session.query(Sensor).filter_by(uuid='station_test_0test_sensor').first()
@@ -246,7 +489,7 @@ def ChangeNothing(app):
         'readings': []
         }])
 
-    failures = doPost(sensor)
+    failures = doStationPost(sensor)
 
     try:
         test = session.query(Sensor).filter_by(uuid='station_test_0test_sensor').first()
@@ -282,7 +525,7 @@ def ChangeNoTimestamp(app):
         'readings': []
         }])
 
-    failures = doPost(sensor)
+    failures = doStationPost(sensor)
 
     try:
         test = session.query(Sensor).filter_by(uuid='station_test_0test_sensor').first()
@@ -317,7 +560,7 @@ def NoSensorId(app):
         'readings': []
     }])
 
-    return doPost(sensor)
+    return doStationPost(sensor)
 
 
 def NoReadingId(app):
@@ -330,19 +573,22 @@ def NoReadingId(app):
     for j in range(0, 1):
         sensor[0]['readings'].append(['test_reading', math.sin(j)*100, time.time()-j*60])
 
-    return doPost(json.dumps(sensor))
+    return doStationPost(json.dumps(sensor))
 
 
-def doPost(data):
+def doStationPost(data):
     # Does a post to app api, returns an error object if failed, an empty array if successful.
     try:
         app.post_json('/api/station', json.loads(data))
         return []
     except Exception, e:
         return [{
-            'TestName': "doPost",
+            'TestName': "doStationPost: {}".format(data),
             'ErrorGiven': e
         }]
+
+
+# ==========================================================MAIN==================================================== #
 
 
 if __name__ == '__main__':
@@ -362,9 +608,22 @@ if __name__ == '__main__':
     teleceptor.models.Base.metadata.create_all(db)
     teleceptor.isTesting = True
 
+    failures = []
     with sessionScope() as newSession:
         session = newSession
-        TestStation(app)
+        failures = failures + TestStation(app)
+        # failures = failures + TestSensor(app)
+
+    if len(failures) != 0:
+        logging.error("\n\nYou've had {} tests fail:\n".format(len(failures)))
+        for i in failures:
+            logging.info(i['TestName'])
+            logging.error(i['ErrorGiven'])
+    else:
+        logging.info("\nAll tests have passed succesfully!\n")
+    ans = raw_input("Would you like to enter the shell with the test data? (y/n) ")
+    if ans == 'y':
+        IPython.embed()
 
     teleceptor.isTesting = False
     logging.info("Removing test db.")
