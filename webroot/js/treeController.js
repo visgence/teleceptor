@@ -76,6 +76,7 @@ angular.module('teleceptor.treecontroller', [])
                     color: "#333",
                     emptyIcon: "",
                     expandIcon: "glyphicon glyphicon-folder-close glyphs",
+                    emptyIcon: "glyphicon glyphicon-minus",
                     collapseIcon: "glyphicon glyphicon-folder-open glyphs"
 
                 });
@@ -132,15 +133,16 @@ angular.module('teleceptor.treecontroller', [])
             for(var i in data){
                 $scope.nodeCount++;
                 var newObj = {
-                    "selectable": true,
                     "color": "#333"
                 };
                 if(data.constructor === Array){
                     newObj.info = data[i];
                     newObj.text = data[i].name;
+                    newObj.selectable = true;
                 } else {
                     newObj.text = i;
                     newObj.nodes = GetTree(data[i]);
+                    newObj.selectable = false;
                 }
                 arr.push(newObj);
             }
