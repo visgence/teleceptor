@@ -17,6 +17,113 @@ import teleceptor
 session = None
 
 
+# ==========================================================READING TESTS============================================ #
+
+
+def TestReading(app):
+    logging.info("Being reading tests")
+    failues = TestReadingPost(app)
+    failures = TestReadingGet(app)
+    logging.info("Reading tests completed")
+    return failures
+
+
+def TestReadingPost(app):
+    pass
+
+
+def TestReadingGet(app):
+    pass
+
+
+# ==========================================================DATASTREAM TESTS============================================ #
+
+
+def TestDatastream(app):
+    logging.info("Being datastream tests")
+    failues = TestDatastreamPut(app)
+    failures = TestDatastreamGet(app)
+    logging.info("Datastream tests completed")
+    return failures
+
+
+def TestDatastreamPut(app):
+    logging.info("Begin put nothing test.")
+    failures = PutNothing(app)
+    logging.info("Put nothing test complete.")
+    logging.info("Begin put stream with args test.")
+    failures = failures + PutStreamArgs(app)
+    logging.info("Put stream with args test complete.")
+    logging.info("Begin put stream without args test.")
+    failures = failures + PutStreamNoArgs(app)
+    logging.info("Put stream without args complete.")
+    logging.info("Begin put incorrect stream test.")
+    failures = failures + PutIncorrectStream(app)
+    logging.info("Put incorrect stream test0 complete.")
+
+
+def TestDatastreamGet(app):
+    logging.info("Begin get all streams test.")
+    failures = GetAllStreams(app)
+    logging.info("Get all streams test complete.")
+    logging.info("Begin get stream by id test.")
+    failures = failures + GetStreamById(app)
+    logging.info("Get stream by id test complete.")
+    logging.info("Begin get stream by sensor test.")
+    failures = failures + GetStreamBySensor(app)
+    logging.info("Get stream by sensor test complete.")
+    logging.info("Begin get stream with wrong id test.")
+    failures = failures + GetStreamWrongId(app)
+    logging.info("Get stream with wrong id test complete.")
+    logging.info("Begin get stream with wrong sensor id test.")
+    failures = failures + GetStreamWrongSensor(app)
+    logging.info("Get stream by wrong sensor id test complete.")
+    logging.info("Begin get stream with no sensor test.")
+    failures = failures + GetStreamNoSensor(app)
+    logging.info("Get stream with no sensor test complete.")
+    return failures
+
+
+def PutNothing(app):
+    return failures
+
+
+def PutStreamArgs(app):
+    pass
+
+
+def PutStreamNoArgs(app):
+    pass
+
+
+def PutIncorrectStream(app):
+    pass
+
+
+def GetAllStreams(app):
+    pass
+
+
+def GetStreamById(app):
+    pass
+
+
+def GetStreamBySensor(app):
+    pass
+
+
+def GetStreamWrongId(app):
+    pass
+
+
+def GetStreamWrongSensor(app):
+    pass
+
+
+def GetStreamNoSensor(app):
+    pass
+
+
 # ==========================================================SENSOR TESTS============================================ #
 
 
@@ -255,7 +362,6 @@ def GetIncorrectSensor(app):
 
 def doSensorPost(data):
     # Does a post to app api, returns an error object if failed, an empty array if successful.
-    failures = []
     try:
         app.post_json('/api/sensors', json.loads(data))
         return []
@@ -612,7 +718,9 @@ if __name__ == '__main__':
     with sessionScope() as newSession:
         session = newSession
         failures = failures + TestStation(app)
-        # failures = failures + TestSensor(app)
+        failures = failures + TestSensor(app)
+        failures = failures + TestDatastream(app)
+        failures = failures + TestReading(app)
 
     if len(failures) != 0:
         logging.error("\n\nYou've had {} tests fail:\n".format(len(failures)))
