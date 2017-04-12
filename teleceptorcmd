@@ -52,6 +52,11 @@ def btcmote(*args):
     runpy.run_path(btcmotecmd, None, '__main__')
 
 
+def apiTest(*args):
+    print "Running api test."
+    runpy.run_path('unittests/apiTests.py', None, '__main__')
+
+
 def poller(*args):
     pollercmd = os.path.join(teleceptor.__path__[0], 'basestation', 'poller.py')
     print pollercmd
@@ -257,7 +262,8 @@ if __name__ == "__main__":
         'loadfixtures': [loadfixtures, "Load test database data"],
         'version': [displayVersion, "Display version"],
         'shell': [shell, "Ipython shell"],
-        'reset': [reset, "Same as running 'rebuild', 'setup', 'runserver' "]
+        'reset': [reset, "Same as running 'rebuild', 'setup', 'runserver' "],
+        'apitest': [apiTest, "Run tests against the api."]
     }
 
     args = sys.argv
