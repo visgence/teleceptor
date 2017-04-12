@@ -113,8 +113,9 @@ angular.module('teleceptor.graphcontroller', [])
 
                 var unitSize = " " + getFormat(realMax).length;
 
-                var margin = {top: 20, right: 10, bottom: 20, left: 10 + (unitSize*5)};
-                width = width - margin.left - margin.right; height = height - margin.top - margin.bottom;
+                var margin = {top: 20, right: 10, bottom: 20, left: 10 + (unitSize*7)};
+                width = width - margin.left - margin.right;
+                height = height - margin.top - margin.bottom;
 
                 var newChart = d3.select(parent)
                     .append("svg")
