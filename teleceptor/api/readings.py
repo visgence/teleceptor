@@ -265,7 +265,6 @@ class SensorReadings:
         except (ValueError, TypeError):
             logging.error("Request body is not in JSON format.")
             data['error'] = "Bad json"
-            status_code = "400"
             cherrypy.response.status = status_code
             return json.dumps(data, indent=4)
 
@@ -276,7 +275,6 @@ class SensorReadings:
         except KeyError:
             logging.error("No readings in request body to insert.")
             data['error'] = "No readings to insert"
-            status_code = "400"
 
         cherrypy.response.status = status_code
         logging.info("Finished POST request to readings.")

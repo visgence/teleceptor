@@ -22,18 +22,335 @@ session = None
 
 def TestReading(app):
     logging.info("Being reading tests")
-    failues = TestReadingPost(app)
-    failures = TestReadingGet(app)
+    failures = TestReadingPost(app)
+    failures = failures + TestReadingGet(app)
     logging.info("Reading tests completed")
     return failures
 
 
 def TestReadingPost(app):
-    pass
+    logging.info("Begin no info test")
+    failures = PostReadingNoInfo(app)
+    logging.info("No info test complete")
+    logging.info("Begin ds test")
+    failures = failures + PostReadingDS(app)
+    logging.info("DS test complete")
+    logging.info("Begin DS & Val test")
+    failures = failures + PostReadingDSVal(app)
+    logging.info("DS & val test complete")
+    logging.info("Begin DS, Val, & Time test")
+    failures = failures + PostReadingDSValTime(app)
+    logging.info("DS, Val, & Time test complete")
+    logging.info("Begin wrong DS test")
+    failures = failures + PostReadingWrongDS(app)
+    logging.info("Wrong DS test complete")
+    logging.info("Begin multiple readings test.")
+    failures = failures + PostMultipleReadings(app)
+    logging.info("multiple readings test complete.")
+    return failures
 
 
 def TestReadingGet(app):
-    pass
+    logging.info("Begin all readings test")
+    failures = GetAllReadings(app)
+    logging.info("All readings test complete")
+    logging.info("Begin readings with start test")
+    failures = failures + GetReadingsWithStart(app)
+    logging.info("Readings with start test complete")
+    logging.info("Begin readings with end test")
+    failures = failures + GetReadingsWithEnd(app)
+    logging.info("Readings with end test complete")
+    logging.info("Begin readings with both test")
+    failures = failures + GetReadingsWithBoth(app)
+    logging.info("Readings with both test complete")
+    logging.info("Begin readings for sensor test")
+    failures = failures + GetReadingsForSensor(app)
+    logging.info("Readings for sensor test complete")
+    logging.info("Being readings for sensor with start test")
+    failures = failures + GetReadingsForSensorWithStart(app)
+    logging.info("Readings for sensor with start test complete")
+    logging.info("Begin readings for sensor with end test")
+    failures = failures + GetReadingsForSensorWithEnd(app)
+    logging.info("Readings for sensor with end test complete")
+    logging.info("Begin readings for sensor with both test")
+    failures = failures + GetReadingsForSensorWithBoth(app)
+    logging.info("Readings for sensor with both test complete")
+    return failures
+
+
+def PostReadingNoInfo(app):
+    reading = json.dumps({})
+    failures = []
+    try:
+        response = app.post_json('/api/readings/', json.loads(reading))
+        if 'error' not in response.json:
+            failures.append({
+                'TestName': "PostReadingNoInfo",
+                'ErrorGiven': "Did not receive error from server."
+            })
+    except Exception, e:
+        failures.append({
+            'TestName': "PostReadingNoInfo",
+            'ErrorGiven': e
+        })
+    return failures
+
+
+def PostReadingDS(app):
+    reading = json.dumps({
+        "readings": [(
+            3,
+            None,
+            None
+            )]
+        })
+    failures = []
+    try:
+        response = app.post_json('/api/readings/', json.loads(reading))
+        if response.json['successfull_insertions'] != 0:
+            failures.append({
+                'TestName': "PostReadingDS",
+                'ErrorGiven': "A reading was inserted when it wasn't supposed to be"
+            })
+
+    except Exception, e:
+        failures.append({
+            'TestName': "PostReadingDS",
+            'ErrorGiven': e
+        })
+    return failures
+
+
+def PostReadingDSVal(app):
+    reading = json.dumps({
+        "readings": [(
+            1,
+            5,
+            None
+            )]
+        })
+    failures = []
+    try:
+        response = app.post_json('/api/readings/', json.loads(reading))
+        if response.json['successfull_insertions'] != 1:
+            failures.append({
+                'TestName': "PostReadingDSVal",
+                'ErrorGiven': "The reading wasn't inserted when it should of been"
+            })
+    except Exception, e:
+        failures.append({
+            'TestName': "PostReadingDSVal",
+            'ErrorGiven': e
+        })
+    return failures
+
+
+def PostReadingDSValTime(app):
+    reading = json.dumps({
+        "readings": [(
+            1,
+            10,
+            100000
+            )]
+        })
+    failures = []
+    try:
+        response = app.post_json('/api/readings/', json.loads(reading))
+        print response.json
+        if response.json['successfull_insertions'] != 1:
+            failures.append({
+                'TestName': "PostReadingDSValTime",
+                'ErrorGiven': "The reading wasn't inserted when it should of been"
+            })
+
+    except Exception, e:
+        failures.append({
+            'TestName': "PostReadingDSValTime",
+            'ErrorGiven': e
+        })
+    return failures
+
+
+def PostReadingWrongDS(app):
+    reading = json.dumps({
+        "readings": [(
+            100,
+            10,
+            100000
+            )]
+        })
+    failures = []
+    try:
+        response = app.post_json('/api/readings/', json.loads(reading))
+        if response.json['successfull_insertions'] != 0:
+            failures.append({
+                'TestName': "PostReadingWrongDS",
+                'ErrorGiven': "The reading was inserted when it should of been."
+            })
+
+    except Exception, e:
+        failures.append({
+            'TestName': "PostReadingWrongDS",
+            'ErrorGiven': e
+        })
+    return failures
+
+
+def PostMultipleReadings(app):
+    # This should add only eight readings, failing two of them.
+    readings = json.dumps({
+        "readings": [
+            (1, 10, 456),
+            (3, 10, 5432),
+            (50, 10, 876),
+            (7, 10, 8765),
+            (9, 10, 2346),
+            (10, 10, 457656),
+            (2, 10, 5445632),
+            (4, 10, 234),
+            (99, 10, 4577),
+            (1, 10, 765)
+        ]
+    })
+    failures = []
+    try:
+        response = app.post_json('/api/readings/', json.loads(readings))
+        print response.json
+        if response.json['successfull_insertions'] != 8:
+            failures.append({
+                'TestName': "PostReadingWrongDS",
+                'ErrorGiven': "The reading was inserted when it should of been."
+            })
+
+    except Exception, e:
+        failures.append({
+            'TestName': "PostReadingWrongDS",
+            'ErrorGiven': e
+        })
+    return failures
+
+
+def GetAllReadings(app):
+    failures = []
+    try:
+        response = app.get('/api/readings/')
+        if len(response.json['readings']) == 0:
+            failures.append({
+                'TestName': "GetAllReadings",
+                'ErrorGiven': "The should be readings returned"
+            })
+        else:
+            q = session.query(SensorReading).all()
+            if len(q) != len(response.json['readings']):
+                failures.append({
+                    'TestName': "GetAllReadings",
+                    'ErrorGiven': "The amount returned isn't the same as the amount in database"
+                })
+    except Exception, e:
+        failures.append({
+            'TestName': "GetAllReadings",
+            'ErrorGiven': e
+        })
+
+    return failures
+
+
+def GetReadingsWithStart(app):
+    failures = []
+    try:
+        response = app.get('/api/readings/?start=10000000')
+        if len(response.json['readings']) == 0:
+            failures.append({
+                'TestName': "GetReadingsWithStart",
+                'ErrorGiven': "The should be readings returned"
+            })
+        else:
+            q = session.query(SensorReading)
+            for i in response.json['readings']:
+                if i[0] < 10000000:
+                    failures.append({
+                        'TestName': "GetReadingsWithStart",
+                        'ErrorGiven': "There are dates that wern't filtered out."
+                    })
+    except Exception, e:
+        failures.append({
+            'TestName': "GetReadingsWithStart",
+            'ErrorGiven': e
+        })
+
+    return failures
+
+
+def GetReadingsWithEnd(app):
+    failures = []
+    try:
+        response = app.get('/api/readings/?end=1492642846')
+        if len(response.json['readings']) == 0:
+            failures.append({
+                'TestName': "GetReadingsWithEnd",
+                'ErrorGiven': "The should be readings returned"
+            })
+        else:
+            q = session.query(SensorReading)
+            for i in response.json['readings']:
+                if i[0] > 1492642846:
+                    failures.append({
+                        'TestName': "GetReadingsWithEnd",
+                        'ErrorGiven': "There are dates that wern't filtered out."
+                    })
+    except Exception, e:
+        failures.append({
+            'TestName': "GetReadingsWithEnd",
+            'ErrorGiven': e
+        })
+
+    return failures
+
+
+def GetReadingsWithBoth(app):
+    failures = []
+    try:
+        response = app.get('/api/readings/?start=10000000&end=1492642846')
+        if len(response.json['readings']) == 0:
+            failures.append({
+                'TestName': "GetReadingsWithBoth",
+                'ErrorGiven': "The should be readings returned"
+            })
+        else:
+            q = session.query(SensorReading)
+            for i in response.json['readings']:
+                if i[0] < 10000000 or i[0] > 1492642846:
+                    failures.append({
+                        'TestName': "GetReadingsWithEnd",
+                        'ErrorGiven': "There are dates that wern't filtered out."
+                    })
+    except Exception, e:
+        failures.append({
+            'TestName': "GetReadingsWithBoth",
+            'ErrorGiven': e
+        })
+
+    return failures
+
+
+def GetReadingsForSensor(app):
+    failures = []
+    return failures
+
+
+def GetReadingsForSensorWithStart(app):
+    failures = []
+    return failures
+
+
+def GetReadingsForSensorWithEnd(app):
+    failures = []
+    return failures
+
+
+def GetReadingsForSensorWithBoth(app):
+    failures = []
+    return failures
 
 
 # ==========================================================DATASTREAM TESTS============================================ #
@@ -871,7 +1188,7 @@ if __name__ == '__main__':
         failures = failures + TestStation(app)
         failures = failures + TestSensor(app)
         failures = failures + TestDatastream(app)
-        # failures = failures + TestReading(app)
+        failures = failures + TestReading(app)
 
     if len(failures) != 0:
         logging.error("\n\nYou've had {} tests fail:\n".format(len(failures)))
