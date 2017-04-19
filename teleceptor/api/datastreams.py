@@ -127,7 +127,6 @@ class DataStreams:
 
         cherrypy.response.headers['Content-Type'] = 'application/json'
         data = {}
-
         statusCode = "200"
 
         if stream_id is not None:
@@ -137,25 +136,25 @@ class DataStreams:
                     stream = s.query(DataStream).filter_by(id=stream_id).one()
                 except NoResultFound:
                     logging.error("Stream with id %s does not exist.", str(stream_id))
+
                     data['error'] = "Stream with id %s doesn't exist." % stream_id
-                    statusCode = "400"
                 else:
                     logging.debug("Found stream with id %s: %s", str(stream_id), str(stream.toDict()))
                     data['stream'] = stream.toDict()
                     try:
-                        path = s.query(StreamPath).filter_by(datastream=stream_id)
+                        path = s.query(Path).filter_by(datastream_id=stream_id)
                     except NoResultFound:
                         logging.error("There is no path for stream with id %s", str(stream_id))
                     else:
-                        logging.debug("Found path: %s", str(stream_id), str(path.toDict()))
-                        data['path'] = path.toDict()
+                        data['path'] = []
+                        for i in path:
+                            data['path'].append(i.toDict())
         else:
             logging.debug("Request for all datastreams with parameters %s", str(filter_arguments))
             inputs = clean_inputs(filter_arguments)
             if len(filter_arguments) > 0 and inputs is None:
                 logging.error("Provided url parameters are invalid: %s", str(filter_arguments))
                 data['error'] = "Invalid url parameters"
-                statusCode = "400"
             else:
                 logging.debug("Parameters are valid.")
                 with sessionScope() as s:
@@ -171,7 +170,7 @@ class DataStreams:
         pass
 
     @require()
-    def PUT(self, stream_id):
+    def PUT(self, stream_id=None):
         """
         Updates the stream with uuid `stream_id`.
 
@@ -203,7 +202,6 @@ class DataStreams:
         except NoResultFound:
             logging.error("Stream with id %s doesn't exist.", str(stream_id))
             returnData['error'] = "Stream with id %s doesn't exist." % stream_id
-            statusCode = "400"
 
         cherrypy.response.status = statusCode
 

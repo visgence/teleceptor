@@ -41,8 +41,8 @@ def TestReadingGet(app):
 
 def TestDatastream(app):
     logging.info("Being datastream tests")
-    failues = TestDatastreamPut(app)
-    failures = TestDatastreamGet(app)
+    failures = TestDatastreamPut(app)
+    failures = failures + TestDatastreamGet(app)
     logging.info("Datastream tests completed")
     return failures
 
@@ -60,6 +60,7 @@ def TestDatastreamPut(app):
     logging.info("Begin put incorrect stream test.")
     failures = failures + PutIncorrectStream(app)
     logging.info("Put incorrect stream test0 complete.")
+    return failures
 
 
 def TestDatastreamGet(app):
@@ -78,50 +79,198 @@ def TestDatastreamGet(app):
     logging.info("Begin get stream with wrong sensor id test.")
     failures = failures + GetStreamWrongSensor(app)
     logging.info("Get stream by wrong sensor id test complete.")
-    logging.info("Begin get stream with no sensor test.")
-    failures = failures + GetStreamNoSensor(app)
-    logging.info("Get stream with no sensor test complete.")
     return failures
 
 
 def PutNothing(app):
+    stream = json.dumps({
+        'min_value': 0,
+        'max_value': 100
+    })
+
+    failures = []
+    try:
+        response = app.put_json('/api/datastreams/', json.loads(stream))
+        if 'error' not in response.json:
+            failures.append({
+                'TestName': "DataStreams PutNothing",
+                'ErrorGiven': "Did not receive error from server."
+            })
+
+    except Exception, e:
+        failures.append({
+            'TestName': "PutNothing",
+            'ErrorGiven': e
+        })
+
     return failures
 
 
 def PutStreamArgs(app):
-    pass
+    stream = json.dumps({
+        'min_value': 0,
+        'max_value': 100
+    })
+
+    failures = []
+    try:
+        response = app.put_json('/api/datastreams/1', json.loads(stream))
+        if response.json['stream']['name'] != 'station_test_0test_sensor':
+            failures.append({
+                'TestName': "PutStreamArgs",
+                'ErrorGiven': "streams dont' match"
+            })
+    except Exception, e:
+        failures.append({
+            'TestName': "PutStreamArgs",
+            'ErrorGiven': e
+        })
+
+    return failures
 
 
 def PutStreamNoArgs(app):
-    pass
+    stream = json.dumps({})
+
+    failures = []
+    try:
+        response = app.put_json('/api/datastreams/1', json.loads(stream))
+        if response.json['stream']['name'] != 'station_test_0test_sensor':
+            failures.append({
+                'TestName': "PutStreamNoArgs",
+                'ErrorGiven': "streams dont' match"
+            })
+        if response.json['stream']['min_value'] != 0 or response.json['stream']['max_value'] != 100:
+            failures.append({
+                'TestName': "PutStreamNoArgs",
+                'ErrorGiven': "Values were modified when they shouldn't have been."
+            })
+    except Exception, e:
+        failures.append({
+            'TestName': "PutStreamNoArgs",
+            'ErrorGiven': e
+        })
+
+    return failures
 
 
 def PutIncorrectStream(app):
-    pass
+    stream = json.dumps({
+        'min_value': 0,
+        'max_value': 100
+    })
+
+    failures = []
+    try:
+        response = app.put_json('/api/datastreams/99', json.loads(stream))
+        if 'error' not in response.json:
+            failures.append({
+                'TestName': "PutIncorrectStream",
+                'ErrorGiven': "Server didn't send error."
+            })
+    except Exception, e:
+        failures.append({
+            'TestName': "PutIncorrectStream",
+            'ErrorGiven': e
+        })
+    return failures
 
 
 def GetAllStreams(app):
-    pass
+    failures = []
+    try:
+        response = app.get('/api/datastreams/')
+        j = 0
+        for i in response.json['datastreams']:
+            if str(i['name']) != "station_test_{}test_sensor".format(j):
+                failures.append({
+                    'TestName': "GetAllStreams",
+                    'ErrorGiven': "An incorrect name was found in the streams"
+                })
+            j += 1
+    except Exception, e:
+        failures.append({
+            'TestName': "GetAllStreams",
+            'ErrorGiven': e
+        })
+    return failures
 
 
 def GetStreamById(app):
-    pass
+    failures = []
+    try:
+        response = app.get('/api/datastreams/3')
+        if str(response.json['stream']['name']) != "station_test_2test_sensor":
+            failures.append({
+                'TestName': "GetStreamById",
+                'ErrorGiven': "An stream names don't match up"
+            })
+    except Exception, e:
+        failures.append({
+            'TestName': "GetStreamById",
+            'ErrorGiven': e
+        })
+    return failures
 
 
 def GetStreamBySensor(app):
-    pass
+    sensor = json.dumps({
+        'sensor': 'station_test_0test_sensor'
+    })
+
+    failures = []
+    try:
+        response = app.get('/api/datastreams/', json.loads(sensor))
+        if response.json['datastreams'][0]['sensor'] != "station_test_0test_sensor":
+            failures.append({
+                'TestName': "GetStreamBySensor",
+                'ErrorGiven': "Response didn't return correct stream."
+            })
+    except Exception, e:
+        failures.append({
+            'TestName': "GetStreamBySensor",
+            'ErrorGiven': e
+        })
+    return failures
 
 
 def GetStreamWrongId(app):
-    pass
+    failures = []
+    try:
+        response = app.get('/api/datastreams/99')
+        if 'error' not in response.json:
+            failures.append({
+                'TestName': "GetStreamWrongId",
+                'ErrorGiven': "Server didn't send error."
+            })
+    except Exception, e:
+        failures.append({
+            'TestName': "GetStreamWrongId",
+            'ErrorGiven': e
+        })
+    return failures
 
 
 def GetStreamWrongSensor(app):
-    pass
+    sensor = json.dumps({
+        'sensor': 'incorrectSensorUUID'
+    })
 
-
-def GetStreamNoSensor(app):
-    pass
+    failures = []
+    try:
+        response = app.get('/api/datastreams/', json.loads(sensor))
+        print response.json
+        if len(response.json['datastreams']) != 0:
+            failures.append({
+                'TestName': "GetStreamWrongSensor",
+                'ErrorGiven': "Server responded with streams when it shouldn't of."
+            })
+    except Exception, e:
+        failures.append({
+            'TestName': "GetStreamWrongSensor",
+            'ErrorGiven': e
+        })
+    return failures
 
 
 # ==========================================================SENSOR TESTS============================================ #
@@ -721,7 +870,7 @@ if __name__ == '__main__':
         session = newSession
         failures = failures + TestStation(app)
         failures = failures + TestSensor(app)
-        # failures = failures + TestDatastream(app)
+        failures = failures + TestDatastream(app)
         # failures = failures + TestReading(app)
 
     if len(failures) != 0:
