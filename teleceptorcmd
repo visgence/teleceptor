@@ -230,11 +230,12 @@ def setup(*args):
         print r
 
     print "running node commands"
-    print WEBROOT
-    call('npm install', cwd=WEBROOT, shell=True)
 
+    try:
+        call('npm install', cwd=WEBROOT, shell=True)
+    except:
+        print "An error occured trying to install node modules. Please make sure that NodeJs and npm are installed."
     print "Run teleceptorcmd loadfixtures for example data"
-
 
 
 def loadfixtures(*args):
