@@ -251,14 +251,13 @@ def GetAllReadings(app):
             'TestName': "GetAllReadings",
             'ErrorGiven': e
         })
-
     return failures
 
 
 def GetReadingsWithStart(app):
     failures = []
     try:
-        response = app.get('/api/readings/?start=10000000')
+        response = app.get('/api/readings/?start={}'.format(int(time.time()-70*60)))
         if len(response.json['readings']) == 0:
             failures.append({
                 'TestName': "GetReadingsWithStart",
@@ -267,7 +266,7 @@ def GetReadingsWithStart(app):
         else:
             q = session.query(SensorReading)
             for i in response.json['readings']:
-                if i[0] < 10000000:
+                if i[0] < time.time()-70*60:
                     failures.append({
                         'TestName': "GetReadingsWithStart",
                         'ErrorGiven': "There are dates that wern't filtered out."
@@ -284,7 +283,7 @@ def GetReadingsWithStart(app):
 def GetReadingsWithEnd(app):
     failures = []
     try:
-        response = app.get('/api/readings/?end=1492642846')
+        response = app.get('/api/readings/?end={}'.format(int(time.time()-30*60)))
         if len(response.json['readings']) == 0:
             failures.append({
                 'TestName': "GetReadingsWithEnd",
@@ -293,7 +292,7 @@ def GetReadingsWithEnd(app):
         else:
             q = session.query(SensorReading)
             for i in response.json['readings']:
-                if i[0] > 1492642846:
+                if i[0] > time.time()-30*60:
                     failures.append({
                         'TestName': "GetReadingsWithEnd",
                         'ErrorGiven': "There are dates that wern't filtered out."
@@ -310,7 +309,7 @@ def GetReadingsWithEnd(app):
 def GetReadingsWithBoth(app):
     failures = []
     try:
-        response = app.get('/api/readings/?start=10000000&end=1492642846')
+        response = app.get('/api/readings/?start={}&end={}'.format(int(time.time()-70*60), int(time.time()-30*60)))
         if len(response.json['readings']) == 0:
             failures.append({
                 'TestName': "GetReadingsWithBoth",
@@ -319,9 +318,9 @@ def GetReadingsWithBoth(app):
         else:
             q = session.query(SensorReading)
             for i in response.json['readings']:
-                if i[0] < 10000000 or i[0] > 1492642846:
+                if i[0] < time.time()-70*60 or i[0] > time.time()-30*60:
                     failures.append({
-                        'TestName': "GetReadingsWithEnd",
+                        'TestName': "GetReadingsWithBoth",
                         'ErrorGiven': "There are dates that wern't filtered out."
                     })
     except Exception, e:
@@ -329,27 +328,107 @@ def GetReadingsWithBoth(app):
             'TestName': "GetReadingsWithBoth",
             'ErrorGiven': e
         })
-
     return failures
 
 
 def GetReadingsForSensor(app):
     failures = []
+    try:
+        response = app.get('/api/readings/?datastream=1')
+        if len(response.json['readings']) == 0:
+            failures.append({
+                'TestName': "GetReadingsForSensor",
+                'ErrorGiven': "The should be readings returned"
+            })
+        else:
+            q = session.query(SensorReading).filter_by(datastream=1).all()
+            if len(q) != len(response.json['readings']):
+                failures.append({
+                    'TestName': "GetReadingsForSensor",
+                    'ErrorGiven': "The amount returned isn't the same as the amount in database"
+                })
+    except Exception, e:
+        failures.append({
+            'TestName': "GetReadingsForSensor",
+            'ErrorGiven': e
+        })
     return failures
 
 
 def GetReadingsForSensorWithStart(app):
     failures = []
+    try:
+        response = app.get('/api/readings/?datastream=1&start={}'.format(int(time.time()-70*60)))
+        if len(response.json['readings']) == 0:
+            failures.append({
+                'TestName': "GetReadingsForSensorWithStart",
+                'ErrorGiven': "The should be readings returned"
+            })
+        else:
+            q = session.query(SensorReading).filter_by(datastream=1)
+            for i in response.json['readings']:
+                if i[0] < int(time.time()-70*60):
+                    failures.append({
+                        'TestName': "GetReadingsForSensorWithStart",
+                        'ErrorGiven': "There are dates that wern't filtered out."
+                    })
+    except Exception, e:
+        failures.append({
+            'TestName': "GetReadingsForSensorWithStart",
+            'ErrorGiven': e
+        })
+
     return failures
 
 
 def GetReadingsForSensorWithEnd(app):
     failures = []
+    try:
+        response = app.get('/api/readings/?datastream=1&end={}'.format(int(time.time()-30*60)))
+        if len(response.json['readings']) == 0:
+            failures.append({
+                'TestName': "GetReadingsForSensorWithEnd",
+                'ErrorGiven': "The should be readings returned"
+            })
+        else:
+            q = session.query(SensorReading).filter_by(datastream=1)
+            for i in response.json['readings']:
+                if i[0] > int(time.time()-30*60):
+                    failures.append({
+                        'TestName': "GetReadingsForSensorWithEnd",
+                        'ErrorGiven': "There are dates that wern't filtered out."
+                    })
+    except Exception, e:
+        failures.append({
+            'TestName': "GetReadingsForSensorWithEnd",
+            'ErrorGiven': e
+        })
+
     return failures
 
 
 def GetReadingsForSensorWithBoth(app):
     failures = []
+    try:
+        response = app.get('/api/readings/?datastream=1&start={}&end={}'.format(int(time.time()-70*60), int(time.time()-30*60)))
+        if len(response.json['readings']) == 0:
+            failures.append({
+                'TestName': "GetReadingsForSensorWithBoth",
+                'ErrorGiven': "The should be readings returned"
+            })
+        else:
+            q = session.query(SensorReading).filter_by(datastream=1)
+            for i in response.json['readings']:
+                if i[0] < int(time.time()-70*60) or i[0] > int(time.time()-30*60):
+                    failures.append({
+                        'TestName': "GetReadingsForSensorWithBoth",
+                        'ErrorGiven': "There are dates that wern't filtered out."
+                    })
+    except Exception, e:
+        failures.append({
+            'TestName': "GetReadingsForSensorWithBoth",
+            'ErrorGiven': e
+        })
     return failures
 
 
