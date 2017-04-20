@@ -55,3 +55,6 @@ target/
 #NPM
 bower_components/
 node_modules/
+
+config/config.json
+database/
