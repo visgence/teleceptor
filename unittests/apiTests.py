@@ -1,3 +1,15 @@
+'''
+apiTests.py
+
+Cyrille Gindrea
+4/20/17
+
+This script is ment to test all functionality of Teleceptors api.
+The readings test and datastream test need the data stream test run first.
+Currently only GET and POST or PUT methods are tested.
+TODO: Write tests for delete, complete Teleceptor api to include all methods.
+
+'''
 import os
 import sys
 import IPython
@@ -112,7 +124,6 @@ def PostReadingDS(app):
                 'TestName': "PostReadingDS",
                 'ErrorGiven': "A reading was inserted when it wasn't supposed to be"
             })
-
     except Exception, e:
         failures.append({
             'TestName': "PostReadingDS",
@@ -156,13 +167,11 @@ def PostReadingDSValTime(app):
     failures = []
     try:
         response = app.post_json('/api/readings/', json.loads(reading))
-        print response.json
         if response.json['successfull_insertions'] != 1:
             failures.append({
                 'TestName': "PostReadingDSValTime",
                 'ErrorGiven': "The reading wasn't inserted when it should of been"
             })
-
     except Exception, e:
         failures.append({
             'TestName': "PostReadingDSValTime",
@@ -215,13 +224,11 @@ def PostMultipleReadings(app):
     failures = []
     try:
         response = app.post_json('/api/readings/', json.loads(readings))
-        print response.json
         if response.json['successfull_insertions'] != 8:
             failures.append({
                 'TestName': "PostReadingWrongDS",
                 'ErrorGiven': "The reading was inserted when it should of been."
             })
-
     except Exception, e:
         failures.append({
             'TestName': "PostReadingWrongDS",
@@ -276,7 +283,6 @@ def GetReadingsWithStart(app):
             'TestName': "GetReadingsWithStart",
             'ErrorGiven': e
         })
-
     return failures
 
 
@@ -302,7 +308,6 @@ def GetReadingsWithEnd(app):
             'TestName': "GetReadingsWithEnd",
             'ErrorGiven': e
         })
-
     return failures
 
 
@@ -377,7 +382,6 @@ def GetReadingsForSensorWithStart(app):
             'TestName': "GetReadingsForSensorWithStart",
             'ErrorGiven': e
         })
-
     return failures
 
 
@@ -403,7 +407,6 @@ def GetReadingsForSensorWithEnd(app):
             'TestName': "GetReadingsForSensorWithEnd",
             'ErrorGiven': e
         })
-
     return failures
 
 
@@ -483,7 +486,6 @@ def PutNothing(app):
         'min_value': 0,
         'max_value': 100
     })
-
     failures = []
     try:
         response = app.put_json('/api/datastreams/', json.loads(stream))
@@ -492,13 +494,11 @@ def PutNothing(app):
                 'TestName': "DataStreams PutNothing",
                 'ErrorGiven': "Did not receive error from server."
             })
-
     except Exception, e:
         failures.append({
             'TestName': "PutNothing",
             'ErrorGiven': e
         })
-
     return failures
 
 
@@ -507,7 +507,6 @@ def PutStreamArgs(app):
         'min_value': 0,
         'max_value': 100
     })
-
     failures = []
     try:
         response = app.put_json('/api/datastreams/1', json.loads(stream))
@@ -521,13 +520,11 @@ def PutStreamArgs(app):
             'TestName': "PutStreamArgs",
             'ErrorGiven': e
         })
-
     return failures
 
 
 def PutStreamNoArgs(app):
     stream = json.dumps({})
-
     failures = []
     try:
         response = app.put_json('/api/datastreams/1', json.loads(stream))
@@ -546,7 +543,6 @@ def PutStreamNoArgs(app):
             'TestName': "PutStreamNoArgs",
             'ErrorGiven': e
         })
-
     return failures
 
 
@@ -555,7 +551,6 @@ def PutIncorrectStream(app):
         'min_value': 0,
         'max_value': 100
     })
-
     failures = []
     try:
         response = app.put_json('/api/datastreams/99', json.loads(stream))
@@ -613,7 +608,6 @@ def GetStreamBySensor(app):
     sensor = json.dumps({
         'sensor': 'station_test_0test_sensor'
     })
-
     failures = []
     try:
         response = app.get('/api/datastreams/', json.loads(sensor))
@@ -651,11 +645,9 @@ def GetStreamWrongSensor(app):
     sensor = json.dumps({
         'sensor': 'incorrectSensorUUID'
     })
-
     failures = []
     try:
         response = app.get('/api/datastreams/', json.loads(sensor))
-        print response.json
         if len(response.json['datastreams']) != 0:
             failures.append({
                 'TestName': "GetStreamWrongSensor",
@@ -718,7 +710,6 @@ def AddSensor(app):
     sensor = json.dumps({
         'uuid': "sensor_test_0",
     })
-
     failures = doSensorPost(sensor)
 
     test = session.query(Sensor).filter_by(uuid='sensor_test_0').first()
@@ -727,7 +718,6 @@ def AddSensor(app):
             'TestName': "AddSensor",
             'ErrorGiven': "query was None"
         })
-
     return failures
 
 
@@ -740,11 +730,8 @@ def AddSensorWithCalibration(app):
             'coefficients': "[10,10]"
         }
     })
-
     failures = doSensorPost(sensor)
-
     test = session.query(Sensor).filter_by(uuid='sensor_test_1').first()
-
     if test is None:
         failures.append({
             'TestName': "AddSensorWithCalibration",
@@ -755,7 +742,6 @@ def AddSensorWithCalibration(app):
             'TestName': "AddSensorWithCalibration",
             'ErrorGiven': "coefficients wern't recorded properly."
         })
-
     return failures
 
 
@@ -768,9 +754,7 @@ def AddSensorNoId(app):
             'coefficients': "[5, 5]"
         }
     })
-
     failures = doSensorPost(sensor)
-
     test = session.query(Sensor).filter_by(uuid='sensor_test_0').first()
     if test is None:
         failures.append({
@@ -782,7 +766,6 @@ def AddSensorNoId(app):
             'TestName': "AddSensorNoId",
             'ErrorGiven': "coefficients were added when they shouldn't have been."
         })
-
     return failures
 
 
@@ -809,7 +792,6 @@ def UpdateNewCalibration(app):
             'TestName': "UpdateNewCalibration",
             'ErrorGiven': "coefficients wern't overwritten when they should have been."
         })
-
     return failures
 
 
@@ -822,9 +804,7 @@ def UpdateOldCalibration(app):
             'coefficients': "(3,3)"
         }
     })
-
     failures = doSensorPost(sensor)
-
     test = session.query(Sensor).filter_by(uuid='sensor_test_0').first()
     if test is None:
         failures.append({
@@ -836,7 +816,6 @@ def UpdateOldCalibration(app):
             'TestName': "UpdateOldCalibration",
             'ErrorGiven': "coefficients were overwritten when they shouldn't have been."
         })
-
     return failures
 
 
@@ -850,9 +829,7 @@ def GetSensor(app):
             'TestName': "GetSensor",
             'ErrorGiven': e
         }]
-
     test = session.query(Sensor).filter_by(uuid='sensor_test_0').first()
-
     if test is None:
         failures.append({
             'TestName': "GetSensor",
@@ -863,7 +840,6 @@ def GetSensor(app):
             'TestName': "GetSensor",
             'ErrorGiven': "database query doesn't match get request."
         })
-
     return failures
 
 
@@ -877,9 +853,7 @@ def GetAllSensors(app):
             'TestName': "GetAllSensors",
             'ErrorGiven': e
         }]
-
     test = session.query(Sensor).all()
-
     for i in info['sensors']:
         found = False
         for j in test:
@@ -903,7 +877,6 @@ def GetIncorrectSensor(app):
             'TestName': "GetIncorrectSensor",
             'ErrorGiven': e
         }]
-
     return failures
 
 
@@ -979,9 +952,7 @@ def CreateStations(app):
             },
             'readings': []
         })
-
     failures = doStationPost(json.dumps(motes))
-
     for i in range(0, 10):
         try:
             test = session.query(Sensor).filter_by(uuid=motes[i]['info']['uuid']+'test_sensor').first()
@@ -1021,9 +992,7 @@ def AddReadings(app):
         })
         for j in range(0, 100):
             motes[i]['readings'].append(['test_sensor', math.sin(j)*100, time.time()-j*60])
-
     failures = doStationPost(json.dumps(motes))
-
     for i in range(0, 10):
         try:
             sensor = session.query(Sensor).filter_by(uuid=motes[i]['info']['uuid']+'test_sensor').first()
@@ -1047,7 +1016,6 @@ def AddReadings(app):
                 'ErrorGiven': e
                 })
             return failures
-
         if len(readings) != 100:
             failures.append({
                 'TestName': "AddReadings",
@@ -1072,9 +1040,7 @@ def ChangeNewCalibration(app):
         },
         'readings': []
     }])
-
     failures = doStationPost(sensor)
-
     try:
         test = session.query(Sensor).filter_by(uuid='station_test_0test_sensor').first()
         if test.toDict()['last_calibration']['coefficients'] != "[10, 10]":
@@ -1106,9 +1072,7 @@ def ChangeOldCalibration(app):
         },
         'readings': []
     }])
-
     failures = doStationPost(sensor)
-
     try:
         test = session.query(Sensor).filter_by(uuid='station_test_0test_sensor').first()
         if str(test.toDict()['last_calibration']['coefficients']) != "[10, 10]":
@@ -1141,9 +1105,7 @@ def ChangeNothing(app):
         },
         'readings': []
         }])
-
     failures = doStationPost(sensor)
-
     try:
         test = session.query(Sensor).filter_by(uuid='station_test_0test_sensor').first()
         if str(test.toDict()['last_calibration']['coefficients']) != "[10, 10]":
@@ -1212,7 +1174,6 @@ def NoSensorId(app):
         },
         'readings': []
     }])
-
     return doStationPost(sensor)
 
 
@@ -1225,7 +1186,6 @@ def NoReadingId(app):
     }]
     for j in range(0, 1):
         sensor[0]['readings'].append(['test_reading', math.sin(j)*100, time.time()-j*60])
-
     return doStationPost(json.dumps(sensor))
 
 
@@ -1246,9 +1206,7 @@ def doStationPost(data):
 
 if __name__ == '__main__':
     logging.basicConfig(format='', level=logging.INFO)
-
     app = TestApp(application)
-
     logging.info("Creating new teleceptor_tests.db file...")
     if not os.path.exists(os.path.dirname(teleceptor.TESTDBFILE)):
         os.makedirs(os.path.dirname(teleceptor.TESTDBFILE))
@@ -1256,11 +1214,9 @@ if __name__ == '__main__':
     logging.info(teleceptor.TESTDBFILE + " created.")
     dbURL = 'sqlite:///' + teleceptor.TESTDBFILE
     db = create_engine(dbURL)
-
     logging.info("Initializing database tables...")
     teleceptor.models.Base.metadata.create_all(db)
     teleceptor.isTesting = True
-
     failures = []
     with sessionScope() as newSession:
         session = newSession
@@ -1268,7 +1224,6 @@ if __name__ == '__main__':
         failures = failures + TestSensor(app)
         failures = failures + TestDatastream(app)
         failures = failures + TestReading(app)
-
     if len(failures) != 0:
         logging.error("\n\nYou've had {} tests fail:\n".format(len(failures)))
         for i in failures:
@@ -1279,15 +1234,6 @@ if __name__ == '__main__':
     ans = raw_input("Would you like to enter the shell with the test data? (y/n) ")
     if ans == 'y':
         IPython.embed()
-
     teleceptor.isTesting = False
     logging.info("Removing test db.")
     os.remove(teleceptor.TESTDBFILE)
-
-
-
-
-
-
-
-
