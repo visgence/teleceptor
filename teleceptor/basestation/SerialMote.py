@@ -76,7 +76,8 @@ class SerialMote(serial.Serial):
 
     def getReadings(self):
         """
-        Gets the JSON formatted information from the mote on one line and current sensor readings on the next line. Returns two strings: the JSON info and the readings, where the info is a JSON object(dictionary) and readings is a JSON array(list).
+        Gets the JSON formatted information from the mote on one line and current sensor readings on the next line.
+        Returns two strings: the JSON info and the readings, where the info is a JSON object(dictionary) and readings is a JSON array(list).
 
         If the mote is configured correctly, it should return two JSON objects.
 
@@ -118,7 +119,8 @@ class SerialMote(serial.Serial):
         """
         if newValues:
             logging.debug("Sending new Values: %s", json.dumps(newValues))
-            self.write('@') # TODO: Check if this is correct code.
+            # TODO: Check if this is correct code.
+            self.write('@')
             self.write(json.dumps(newValues))
         # get values from sensor
         return self.getReadings()

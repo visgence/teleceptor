@@ -19,12 +19,13 @@ import json
 import logging
 import math
 from sqlalchemy import create_engine
-PATH = os.path.abspath(os.path.join(os.path.dirname(os.path.dirname(__file__))))
-sys.path.append(PATH)
 from teleceptor.server import application
 from teleceptor.sessionManager import sessionScope
 from teleceptor.models import Sensor, Calibration, SensorReading, DataStream
 import teleceptor
+PATH = os.path.abspath(os.path.join(os.path.dirname(os.path.dirname(__file__))))
+sys.path.append(PATH)
+
 
 session = None
 
