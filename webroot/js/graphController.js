@@ -1,4 +1,6 @@
- 'use strict';
+/*jslint node: true */
+'use strict';
+var angular;
 
 angular.module('teleceptor.graphcontroller', [])
 
@@ -51,11 +53,11 @@ angular.module('teleceptor.graphcontroller', [])
                             angular.element("#warning_message").text("Error: No indices found in current range.");
                         }
 
-                        var coefs = sensorInfoResponse.data.sensor.last_calibration.coefficients
+                        var coefs = sensorInfoResponse.data.sensor.last_calibration.coefficients;
                         if(coefs.toString().startsWith('[')){
                             coefs = JSON.parse(coefs);
                         } else {
-                            coefs = JSON.parse("["+coefs+"]")
+                            coefs = JSON.parse("["+coefs+"]");
                         }
                         for(var j = 0; j < readingsResponse.data.readings.length; j++){
                             readingsResponse.data.readings[j][1] *= coefs[0];
@@ -66,8 +68,8 @@ angular.module('teleceptor.graphcontroller', [])
                             scope.$apply(function(){
                                 infoService.setReadingsInfo(readingsResponse.data);
                                 drawGraph(elem[0], readingsResponse.data);
-                            })
-                        })
+                            });
+                        });
 
                     }, function(error){
                         console.log("error occured: " + error);
@@ -95,7 +97,8 @@ angular.module('teleceptor.graphcontroller', [])
                 var max = streamInfo.max_value;
                 var realMin = data.readings[0][1];
                 var realMax = data.readings[0][1];
-                for(var j = 0; j < data.readings.length; j++){
+                var j;
+                for(j = 0; j < data.readings.length; j++){
                     if(realMin > data.readings[j][1]) realMin = data.readings[j][1];
                     if(realMax < data.readings[j][1]) realMax = data.readings[j][1];
                 }
@@ -226,7 +229,7 @@ angular.module('teleceptor.graphcontroller', [])
                 var meanTimes = [];
                 var lastPoint =(data.readings[0][0]);
 
-                for(var j = 0; j < data.readings.length; j++){
+                for(j = 0; j < data.readings.length; j++){
                     meanTimes.push((data.readings[j][0] - lastPoint) * 0.0001);
                     lastPoint = data.readings[j][0];
                 }
@@ -323,12 +326,12 @@ angular.module('teleceptor.graphcontroller', [])
                 var dragStart = 0, dragStartPos = 0, dragEnd = 0;
                 var drag = d3.drag()
                     .on("drag", function(d,i) {
-                        var x0 = xScale.invert(d3.mouse(this)[0]).getTime(),
-                            i = d3.bisect(myData, x0),
-                            d0 = data.readings[i - 1],
+                        var x0 = xScale.invert(d3.mouse(this)[0]).getTime();
+                            i = d3.bisect(myData, x0);
+                            var d0 = data.readings[i - 1],
                             d1 = data.readings[i];
                         if(d1 === undefined) return;
-                        var d = x0 - d0[0]*1000 > d1[0]*1000 - x0 ? d1 : d0;
+                        d = x0 - d0[0]*1000 > d1[0]*1000 - x0 ? d1 : d0;
                         if(xScale(d[0]*1000) > dragStartPos){
                             selectionBox.attr("width", (xScale(d[0]*1000) - dragStartPos));
                         } else {
@@ -371,7 +374,34 @@ angular.module('teleceptor.graphcontroller', [])
                     .on("mouseout", function() {
                         tooltip.style("display", "none");
                     })
-                    .on("mousemove", mousemove)
+                    .on("mousemove", function(){
+                        var x0 = xScale.invert(d3.mouse(this)[0]).getTime(),
+                        i = d3.bisect(myData, x0),
+                        d0 = data.readings[i - 1],
+                        d1 = data.readings[i];
+                        var d;
+                        if(d0 === undefined && d1 === undefined) return;
+                        if(d0 === undefined){
+                            d = d1;
+                        } else if(d1 === undefined){
+                            d = d0;
+                        } else {
+                            if(x0 -d0[0]*1000 > d1[0]*1000 -x0){
+                                d = d1;
+                            } else {
+                                d = d0;
+                            }
+                        }
+                        if(d[1] < min || d[1] > max) return;
+                        circleElements[0].attr("transform", "translate(" + xScale(d[0]*1000) + "," + yScale(d[1]) + ")");
+                        yLine.attr("transform", "translate(" + xScale(d[0]*1000) + "," + 0 + ")");
+                        timeText.text(new Date(d[0]*1000) + " | " + getFormat(d[1]));
+
+                        textElements[0]
+                            .text(getFormat(d[1]))
+                            .attr("transform", "translate(" + (xScale(d[0]*1000)+10) + "," + (yScale(d[1])-10) + ")");
+
+                        })
                     .on("mousedown", function(){
                         selectionBox.attr("fill", "#b7ff64");
                         dragStart = d3.mouse(this)[0];
@@ -391,35 +421,6 @@ angular.module('teleceptor.graphcontroller', [])
                 var bisectDate = d3.bisector(function(d) {
                     return d.date;
                 }).left;
-
-                function mousemove() {
-                    var x0 = xScale.invert(d3.mouse(this)[0]).getTime(),
-                        i = d3.bisect(myData, x0),
-                        d0 = data.readings[i - 1],
-                        d1 = data.readings[i];
-                    var d;
-                    if(d0 === undefined && d1 === undefined) return;
-                    if(d0 === undefined){
-                        d = d1;
-                    } else if(d1 === undefined){
-                        d = d0;
-                    } else {
-                        if(x0 -d0[0]*1000 > d1[0]*1000 -x0){
-                            d = d1;
-                        } else {
-                            d = d0;
-                        }
-                    }
-                    if(d[1] < min || d[1] > max) return;
-                    circleElements[0].attr("transform", "translate(" + xScale(d[0]*1000) + "," + yScale(d[1]) + ")");
-                    yLine.attr("transform", "translate(" + xScale(d[0]*1000) + "," + 0 + ")");
-                    timeText.text(new Date(d[0]*1000) + " | " + getFormat(d[1]));
-
-                    textElements[0]
-                        .text(getFormat(d[1]))
-                        .attr("transform", "translate(" + (xScale(d[0]*1000)+10) + "," + (yScale(d[1])-10) + ")");
-
-                }
 
                 // Formats text for units display
                 function getFormat(d){

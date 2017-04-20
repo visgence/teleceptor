@@ -68,12 +68,15 @@ class Station:
         """
         Handles incoming data from a basestation by updating (or creating) sensor information, including metadata, calibration, and datastream. Additionally updates sensor readings, if any.
 
-        :param data: A JSON array formatted string stored in the data section of the HTTP POST request. It is not optional, but some elements can be omitted. The JSON object should be a list, even if there is only one element in it. The full format is listed in the Notes section.
+        :param data: A JSON array formatted string stored in the data section of the HTTP POST request.
+        It is not optional, but some elements can be omitted. The JSON object should be a list, even if there is only one element in it.
+        The full format is listed in the Notes section.
         "type data: str
 
 
         :returns: str -- A JSON object with either a key 'error' or 'newValues'. In the case of 'error', the value is an error string.
-                In the case of 'newValues', the value is an object with key/value pairs as "sensorname" : messagelist, where messagelist is all unread, unexpired messages for the sensor with name sensorname.
+                In the case of 'newValues', the value is an object with key/value pairs as "sensorname" : messagelist, where messagelist is all unread,
+                unexpired messages for the sensor with name sensorname.
                 The receiving function must determine how to handle the messages (e.g. to consider only the newest message, or to use all messages.)
 
         .. seealso::

@@ -1,5 +1,7 @@
+/*jslint node: true */
 'use strict';
 
+var angular, $;
 angular.module('teleceptor.treecontroller', [])
 
 .controller('treeController', ['$scope', '$location', '$http', '$compile', 'apiService', 'infoService', '$timeout', '$window',function($scope, $location, $http, $compile, apiService, infoService, $timeout, $window){
@@ -74,7 +76,6 @@ angular.module('teleceptor.treecontroller', [])
                 $('#myTree').treeview({data: GetTree(data),
                     showBorder: false,
                     color: "#333",
-                    emptyIcon: "",
                     expandIcon: "glyphicon glyphicon-folder-close glyphs",
                     emptyIcon: "glyphicon glyphicon-minus",
                     collapseIcon: "glyphicon glyphicon-folder-open glyphs"
@@ -100,7 +101,7 @@ angular.module('teleceptor.treecontroller', [])
 
                 $('#myTree').on('nodeSelected', function(event, data) {
                     if(data.info === undefined){
-                        $('#myTree').treeview('expandNode', [data.nodeId, { levels: 2, silent: true}])
+                        $('#myTree').treeview('expandNode', [data.nodeId, { levels: 2, silent: true}]);
                     } else {
                         SelectTreeNode(data.info);
                     }
@@ -108,12 +109,12 @@ angular.module('teleceptor.treecontroller', [])
 
                 $('#myTree').on('nodeUnselected', function(event, data) {
                     if(data.info === undefined){
-                        $('#myTree').treeview('collapseNode', [data.nodeId, { levels: 2, ignoreChildren: false}])
+                        $('#myTree').treeview('collapseNode', [data.nodeId, { levels: 2, ignoreChildren: false}]);
                     }
                 });
 
                 if(streams.length === 0){
-                    $('#myTree').text("There are currently no streams available.")
+                    $('#myTree').text("There are currently no streams available.");
                 }
 
             }, function(error){
@@ -173,14 +174,11 @@ angular.module('teleceptor.treecontroller', [])
                 var newButton = "<li><button class='btn btn-default";
                 if(currentSet-1 === i) newButton += " active";
                 newButton += "' ng-click=ChangePath(" + (i+1) + ")>" + (i+1) + "</button></li>";
-
                 wrapper += newButton;
              }
              angular.element('#pathSetPaginator').html("");
 
             angular.element('#pathSetPaginator').append($compile(wrapper)($scope));
         }
-
         RequestTree();
-
 }]);

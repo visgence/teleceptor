@@ -3,7 +3,8 @@ Authors:
     Victor Szczepanski (Visgence, Inc)
     Jessica Greenling (Visgence, Inc)
 
-Poller actively searches for newly connected motes.  Each new mote found is sent as a new process to queryer.  Previously found motes are still returned in the list of active processes.  If a mote is disconnected, it is not returned in the list.
+Poller actively searches for newly connected motes.  Each new mote found is sent as a new process to queryer.
+Previously found motes are still returned in the list of active processes.  If a mote is disconnected, it is not returned in the list.
 
 Poller can be run with or without the server.
 
@@ -31,7 +32,8 @@ from teleceptor import USE_DEBUG
 def grepfinddevices(previousDevices=[]):
     """
         Searches for a mote connected through a USB port.
-        Gathers info about all ports from /dev/, splits each item by a newline character, and a process is created for each new mote found. A mote is described by having these two properties in the /dev/ folder: '    DRIVERS=="ftdi_sio" and '    ATTRS{product}=="FT232R USB UART"
+        Gathers info about all ports from /dev/, splits each item by a newline character, and a process is created for each new mote found. A mote is described
+        by having these two properties in the /dev/ folder: '    DRIVERS=="ftdi_sio" and '    ATTRS{product}=="FT232R USB UART"
 
         :param previousDevices: a list of process names
             Refers to previously found motes that were stored to this list via their process name.

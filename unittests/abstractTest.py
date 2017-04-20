@@ -12,7 +12,7 @@ unittest
 
 """
 
-#!/usr/bin/env python
+# !/usr/bin/env python
 import unittest
 import os
 import sys
@@ -32,6 +32,7 @@ URL = "http://localhost:%d/" % (TEST_PORT)
 print URL
 print DATAPATH
 
+
 def build_config():
 
     data = {"DBFILE": "database/base_station.db",
@@ -47,7 +48,7 @@ def build_config():
             "USE_SQL_ALWAYS": False}
 
     conf = open(os.path.join(DATAPATH, 'config.json'), "w")
-    json.dump(data,conf,indent=4)
+    json.dump(data, conf, indent=4)
     conf.close()
 
 
@@ -59,12 +60,12 @@ class AbstractTeleceptorTest(unittest.TestCase):
     def setUpClass(self):
         build_config()
         os.environ["TELECEPTOR_DATAPATH"] = DATAPATH
-        #Set up the database and create config information
+        # Set up the database and create config information
         assert subprocess.call([sys.executable, os.path.join(PATH, 'teleceptorcmd'), 'setup']) == 0
-        #Add some test sensors to database
+        # Add some test sensors to database
         assert subprocess.call([sys.executable, os.path.join(PATH, 'teleceptorcmd'), 'loadfixtures']) == 0
-        #start server
-        self.process = subprocess.Popen([sys.executable,os.path.join(PATH,'teleceptorcmd'),'runserver'])
+        # start server
+        self.process = subprocess.Popen([sys.executable, os.path.join(PATH, 'teleceptorcmd'), 'runserver'])
         time.sleep(2)
 
     """
@@ -89,7 +90,6 @@ def suite():
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(TestTeleceptor, 'test'))
     return suite
-
 
 
 if __name__ == "__main__":

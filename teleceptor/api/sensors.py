@@ -43,7 +43,8 @@ class Sensors:
         :param sensor_id: The UUID of a sensor
         :type sensor_id: str
 
-        :returns: JSON -- If a valid `sensor_id` is given, returns the information stored in the database for the sensor with uuid `sensor_id`. If `sensor_id` does not refer to a sensor in the database, an error string will be returned. If `sensor_id` is None, returns a list of all sensors in the database.
+        :returns: JSON -- If a valid `sensor_id` is given, returns the information stored in the database for the sensor with uuid `sensor_id`.
+        If `sensor_id` does not refer to a sensor in the database, an error string will be returned. If `sensor_id` is None, returns a list of all sensors in the database.
 
         .. seealso:: `models.Sensor`
         """
@@ -138,7 +139,8 @@ class Sensors:
         :param sensor_id: The UUID of a sensor
         :type sensor_id: str
 
-        :returns: Dictionary -- A JSON object with an 'error' key if an error occured or 'sensor' key if update succeeded. If 'error', the value is an error string. If 'sensor', the value is a JSON object representing the updated sensor in the database.
+        :returns: Dictionary -- A JSON object with an 'error' key if an error occured or 'sensor' key if update succeeded.
+        If 'error', the value is an error string. If 'sensor', the value is a JSON object representing the updated sensor in the database.
 
         .. seealso:: `models.Sensor`
 
@@ -181,7 +183,8 @@ class Sensors:
         :param sensor_id: The UUID of a sensor
         :type sensor_id: str
 
-        :returns: Dictionary -- A JSON object with an 'error' key if an error occured or 'sensor' key if update succeeded. If 'error', the value is an error string. If 'sensor', the value is a JSON object representing the deleted sensor in the database.
+        :returns: Dictionary -- A JSON object with an 'error' key if an error occured or 'sensor' key if update succeeded.
+        If 'error', the value is an error string. If 'sensor', the value is a JSON object representing the deleted sensor in the database.
 
         .. seealso:: `models.Sensor`
         """
@@ -338,7 +341,7 @@ def _updateSensor(sensor_id, data, session):
             continue
         if 'last_calibration' in key:
             logging.debug("value: {} and type: {}".format(value, type(value)))
-            if type(value['coefficients']) is not type(str()):
+            if type(value['coefficients']) != type(str()):
                     value['coefficients'] = json.dumps(value['coefficients'])
 
             # if no timestamp, create timestamp
@@ -418,7 +421,8 @@ def _updateCalibration(sensor, coefficients, timestamp, session):
 
         sensor = session.query(Sensor).filter_by(uuid=sensor['uuid']).one()
         logging.debug("Got sensor %s", str(sensor.toDict()))
-        Cal = session.query(Calibration).filter_by(sensor_id=sensor.uuid)[-1] # Gets most recent (by id) calibration
+        # Gets most recent (by id) calibration
+        Cal = session.query(Calibration).filter_by(sensor_id=sensor.uuid)[-1]
         logging.debug("Got calibration %s", str(Cal.toDict()))
 
         sensor.last_calibration_id = Cal.id

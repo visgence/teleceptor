@@ -289,7 +289,8 @@ class SensorReadings:
                 data_source = "ElasticSearch"
             else:
                 logging.debug("Getting SQL high-resolution data.")
-                data_source = "SQL" # default case, use SQL
+                # default case, use SQL
+                data_source = "SQL"
 
         if data_source == "ElasticSearch":
             readings = esGetReadings(ds=uuid, start=start, end=end, points=points)

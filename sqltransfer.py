@@ -49,12 +49,14 @@ with sessionScope() as session:
     sqcursor.execute("select * from sensor;")
     for i in sqcursor:
         print i
-        new = Sensor(uuid=i[0], sensor_IOtype=bool(i[1]), sensor_type=i[2], last_value=i[3], name=i[4], units=i[5], model=[6], description=i[7], last_calibration_id=i[8],  message_queue_id=i[9], _meta_data=i[10])
+        new = Sensor(
+            uuid=i[0], sensor_IOtype=bool(i[1]), sensor_type=i[2], last_value=i[3],
+            name=i[4], units=i[5], model=[6], description=i[7], last_calibration_id=i[8],
+            message_queue_id=i[9], _meta_data=i[10])
         session.add(new)
         session.commit()
 
     # create default path
-
 
     # datastream
     print "streams:"

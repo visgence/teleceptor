@@ -89,7 +89,9 @@ class DataStreams:
 
         :returns:
             data : dictionary
-                Contains an 'error' key if an error occurred with the value being a string containing the error message. Contains a 'datastreams' key if multiple datastreams are selected with the value being a list of datastreams. Contains a 'stream' key if `stream_id` selects a unique datastream with the value being the selected stream.
+                Contains an 'error' key if an error occurred with the value being a string containing the error message.
+                Contains a 'datastreams' key if multiple datastreams are selected with the value being a list of datastreams.
+                Contains a 'stream' key if `stream_id` selects a unique datastream with the value being the selected stream.
                 `data` is returned in the `response.text` section of the HTTP response, if this function is called through the cherrypy API.
 
         .. seealso::
@@ -174,7 +176,8 @@ class DataStreams:
         :param stream_id: The UUID of a datastream
         :type stream_id: str
 
-        :returns: Dictionary -- A JSON object with an 'error' key if an error occured or 'datastream' key if update succeeded. If 'error', the value is an error string. If 'datastream', the value is a JSON object representing the updated datastream in the database.
+        :returns: Dictionary -- A JSON object with an 'error' key if an error occured or 'datastream' key if update succeeded.
+        If 'error', the value is an error string. If 'datastream', the value is a JSON object representing the updated datastream in the database.
 
         .. seealso:: `models.DataStream`
 
@@ -215,7 +218,8 @@ class DataStreams:
         :type stream_id: int
 
         :returns:
-            A JSON object with an 'error' key if an error occured or 'datastream' key if update succeeded. If 'error', the value is an error string. If 'datastream', the value is a JSON object representing the deleted DataStream in the database.
+            A JSON object with an 'error' key if an error occured or 'datastream' key if update succeeded.
+            If 'error', the value is an error string. If 'datastream', the value is a JSON object representing the deleted DataStream in the database.
 
         .. seealso::
             `models.DataStream`
