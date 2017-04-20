@@ -27,7 +27,7 @@ angular.module('teleceptor.treecontroller', [])
             var source = $location.search().source;
             while(!nodeFound && i < 500){
                 i++;
-                var node = $('#myTree').treeview('getNode', i)
+                var node = $('#myTree').treeview('getNode', i);
                 if(node.info === undefined) continue;
                 if(source !== node.info.source) continue;
                 if(parseInt(ds) !== parseInt(node.info.id)) continue;
@@ -111,6 +111,10 @@ angular.module('teleceptor.treecontroller', [])
                         $('#myTree').treeview('collapseNode', [data.nodeId, { levels: 2, ignoreChildren: false}])
                     }
                 });
+
+                if(streams.length === 0){
+                    $('#myTree').text("There are currently no streams available.")
+                }
 
             }, function(error){
                 console.log("error occured: " + error);
