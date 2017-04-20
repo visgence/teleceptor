@@ -1139,9 +1139,7 @@ def ChangeNoTimestamp(app):
         },
         'readings': []
         }])
-
     failures = doStationPost(sensor)
-
     try:
         test = session.query(Sensor).filter_by(uuid='station_test_0test_sensor').first()
         if str(test.toDict()['last_calibration']['coefficients']) != "[10, 10]":
