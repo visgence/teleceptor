@@ -56,6 +56,126 @@ class SensorReadings:
         'granularity': '^\d+$'
     }
 
+    def GET(self, **kwargs):
+        """
+        GET /api/readings/
+            Obtain a list of available SensorReadings.
+
+            Returns:
+                {
+                    'error':   <error str if applicable>
+                    'readings': [List of readings]
+                }
+
+        GET /api/readings/?arg1=value&arg2=value...
+            Obtain a list of available SensorReadings filtered by url arguments.
+
+            Args:
+                .. note:: Unless otherwise specified all filter arguments accept the value null.
+
+                Filter Arguments:
+                'stream' (Numeric) - id of DataStream
+                'source' (String) - one of SQL or ElasticSearch. Selects data source to pull from (overrides any server-side source selection)
+
+                Operator Arguments:
+                'condense' (String)  - If value is 'true' then the readings returned will
+                                        only consist of their values and timestamps.
+
+                                        Format: [ [timestamp1, value1], [timestamp2, value2], ...]
+
+
+            Returns:
+                {
+                    'error':   <error str if applicable>
+                    'readings': [List of readings]
+                }
+        """
+        logging.info("GET request to readings.")
+
+        cherrypy.response.headers['Content-Type'] = 'application/json'
+        status_code = "200"
+        data = {}
+        inputs = self.cleanInputs(kwargs)
+        logging.debug("Got clean input arguments %s", str(inputs))
+        if len(kwargs) > 0 and inputs is None:
+            logging.error("Got invalid url parameters %s", str(kwargs))
+            data['error'] = "Invalid url parameters"
+            status_code = "400"
+        else:
+            with sessionScope() as session:
+                try:
+                    data['readings'], data['source'] = self.filterReadings(session, inputs)
+                except ValueError as e:
+                    data['error'] = str(e)
+
+        cherrypy.response.status = status_code
+        logging.info("Finished GET request to readings.")
+        return json.dumps(data, indent=4)
+
+    def POST(self):
+        """
+        Inserts the readings into the database.  Expects a json object in data section of the http request and the object must have a readings key.
+
+        :returns: Dictionary --
+            'error':   <error str if applicable>
+            'readings': [List of readings]
+        """
+        logging.info("POST request to readings.")
+
+        cherrypy.response.headers['Content-Type'] = 'application/json'
+        data = {}
+        status_code = "200"
+
+        try:
+            reading_data = json.load(cherrypy.request.body)
+        except (ValueError, TypeError):
+            logging.error("Request body is not in JSON format.")
+            data['error'] = "Bad json"
+            cherrypy.response.status = status_code
+            return json.dumps(data, indent=4)
+
+        logging.debug("Request body: %s", str(reading_data))
+
+        with sessionScope() as session:
+            try:
+                data = insertReadings(reading_data['readings'], session)
+            except KeyError:
+                logging.error("No readings in request body to insert.")
+                data['error'] = "No readings to insert"
+
+        cherrypy.response.status = status_code
+        logging.info("Finished POST request to readings.")
+        return json.dumps(data, indent=4)
+
+    def DELETE(self, datastream_id=None):
+        """
+        Deletes all sensor readings for a given datastream.
+
+        :returns: A JSON object with an 'error' key if an error occured or 'readings' key if delete was successful.
+        """
+        logging.info("DELETE request to readings with datastream_id {}".format(datastream_id))
+
+        cherrypy.response.headers['Content-Type'] = 'application/json'
+        data = {}
+
+        statusCode = "200"
+
+        if datastream_id is not None:
+            with sessionScope() as session:
+                try:
+                    deleted_readings = deleteReadingsByDatastream(datastream_id, session)
+                    data['readings'] = deleted_readings
+                except Exception as e:
+                    error_string = "Unexpected error while deleting readings by datastream: {}".format(e)
+                    logging.exception(error_string)
+                    logging.info(error_string)
+                    data['error'] = error_string
+                    statusCode = "400"
+
+        cherrypy.response.status = statusCode
+        logging.info("Finished DELETE request to datastreams.")
+        return json.dumps(data, indent=4)
+
     @staticmethod
     def condense(readings):
         """
@@ -182,126 +302,6 @@ class SensorReadings:
 
         return readings, data_source
 
-    def GET(self, **kwargs):
-        """
-        GET /api/readings/
-            Obtain a list of available SensorReadings.
-
-            Returns:
-                {
-                    'error':   <error str if applicable>
-                    'readings': [List of readings]
-                }
-
-        GET /api/readings/?arg1=value&arg2=value...
-            Obtain a list of available SensorReadings filtered by url arguments.
-
-            Args:
-                .. note:: Unless otherwise specified all filter arguments accept the value null.
-
-                Filter Arguments:
-                'stream' (Numeric) - id of DataStream
-                'source' (String) - one of SQL or ElasticSearch. Selects data source to pull from (overrides any server-side source selection)
-
-                Operator Arguments:
-                'condense' (String)  - If value is 'true' then the readings returned will
-                                        only consist of their values and timestamps.
-
-                                        Format: [ [timestamp1, value1], [timestamp2, value2], ...]
-
-
-            Returns:
-                {
-                    'error':   <error str if applicable>
-                    'readings': [List of readings]
-                }
-        """
-        logging.info("GET request to readings.")
-
-        cherrypy.response.headers['Content-Type'] = 'application/json'
-        status_code = "200"
-        data = {}
-        inputs = self.cleanInputs(kwargs)
-        logging.debug("Got clean input arguments %s", str(inputs))
-        if len(kwargs) > 0 and inputs is None:
-            logging.error("Got invalid url parameters %s", str(kwargs))
-            data['error'] = "Invalid url parameters"
-            status_code = "400"
-        else:
-            with sessionScope() as session:
-                try:
-                    data['readings'], data['source'] = self.filterReadings(session, inputs)
-                except ValueError as e:
-                    data['error'] = str(e)
-
-        cherrypy.response.status = status_code
-        logging.info("Finished GET request to readings.")
-        return json.dumps(data, indent=4)
-
-    def POST(self):
-        """
-        Inserts the readings into the database.  Expects a json object in data section of the http request and the object must have a readings key.
-
-        :returns: Dictionary --
-            'error':   <error str if applicable>
-            'readings': [List of readings]
-        """
-        logging.info("POST request to readings.")
-
-        cherrypy.response.headers['Content-Type'] = 'application/json'
-        data = {}
-        status_code = "200"
-
-        try:
-            reading_data = json.load(cherrypy.request.body)
-        except (ValueError, TypeError):
-            logging.error("Request body is not in JSON format.")
-            data['error'] = "Bad json"
-            cherrypy.response.status = status_code
-            return json.dumps(data, indent=4)
-
-        logging.debug("Request body: %s", str(reading_data))
-
-        with sessionScope() as session:
-            try:
-                data = insertReadings(reading_data['readings'], session)
-            except KeyError:
-                logging.error("No readings in request body to insert.")
-                data['error'] = "No readings to insert"
-
-        cherrypy.response.status = status_code
-        logging.info("Finished POST request to readings.")
-        return json.dumps(data, indent=4)
-
-    def DELETE(self, datastream_id=None):
-        """
-        Deletes all sensor readings for a given datastream.
-
-        :returns: A JSON object with an 'error' key if an error occured or 'readings' key if delete was successful.
-        """
-        logging.info("DELETE request to readings with datastream_id {}".format(datastream_id))
-
-        cherrypy.response.headers['Content-Type'] = 'application/json'
-        data = {}
-
-        statusCode = "200"
-
-        if datastream_id is not None:
-            with sessionScope() as session:
-                try:
-                    deleted_readings = deleteReadingsByDatastream(datastream_id, session)
-                    data['readings'] = deleted_readings
-                except Exception as e:
-                    error_string = "Unexpected error while deleting readings by datastream: {}".format(e)
-                    logging.exception(error_string)
-                    logging.info(error_string)
-                    data['error'] = error_string
-                    statusCode = "400"
-
-        cherrypy.response.status = statusCode
-        logging.info("Finished DELETE request to datastreams.")
-        return json.dumps(data, indent=4)
-
 
 def insertReadings(readings, session):
 
@@ -370,48 +370,48 @@ def insertReadings(readings, session):
     data['failed_insertions'] = data['insertions_attempted'] - data['successfull_insertions']
     return data
 
+    def deleteReadingsByDatastream(datastream_id, session):
+        """
+        Deletes all readings with the datastream id `datastream_id`.
+        :param datastream_id: id of the datastream to delete all of the readings for
+        :type datastream_id: int
+        :param session: Existing context into a sqlalchemy database session. Can be created by a call to `sessionScope()`
+        :type session: context object from `sessionScope()`
+        :returns: A list of the deleted readings
 
-def deleteReadingsByDatastream(datastream_id, session):
-    """
-    Deletes all readings with the datastream id `datastream_id`.
-    :param datastream_id: id of the datastream to delete all of the readings for
-    :type datastream_id: int
-    :param session: Existing context into a sqlalchemy database session. Can be created by a call to `sessionScope()`
-    :type session: context object from `sessionScope()`
-    :returns: A list of the deleted readings
-
-    .. seealso::
-        `models.DataStream`
-        `models.SensorReading`
-        `readings.DELETE`
-    """
-    try:
-        readings = session.query(SensorReading).filter_by(datastream=datastream_id).all()
-    except NoResultFound:
-        logging.debug("No readings found to delete for datastream {}".format(datastream_id))
+        .. seealso::
+            `models.DataStream`
+            `models.SensorReading`
+            `readings.DELETE`
+        """
+        try:
+            readings = session.query(SensorReading).filter_by(datastream=datastream_id).all()
+        except NoResultFound:
+            logging.debug("No readings found to delete for datastream {}".format(datastream_id))
+            return []
+        else:
+            logging.debug("Deleting sensor readings for datastream {}".format(datastream_id))
+            deleted_readings = []
+            for reading in readings:
+                deleted_readings.append(reading.toDict())
+                session.delete(reading)
+            session.commit()
+            return deleted_readings
         return []
-    else:
-        logging.debug("Deleting sensor readings for datastream {}".format(datastream_id))
-        deleted_readings = []
-        for reading in readings:
-            deleted_readings.append(reading.toDict())
-            session.delete(reading)
-        session.commit()
-        return deleted_readings
-    return []
+
+# Couldn't find anywhere using this.
+
+# def incrementMean(readings):
+#     """
+#     Return the timeCenter of the increment and the mean of the readings_values within the increment as a list of 2 values
+#     """
+#     logging.debug("Using incrementMean method for reducing data.")
+#     mid_time = (readings[len(readings)-1][0] + readings[0][0])/2
+
+#     # convert to float before taking mean, because float operations are faster than decimal operations
+#     return [mid_time, sum([float(x[1]) for x in readings])/len(readings)]
 
 
-def incrementMean(readings):
-    """
-    Return the timeCenter of the increment and the mean of the readings_values within the increment as a list of 2 values
-    """
-    logging.debug("Using incrementMean method for reducing data.")
-    mid_time = (readings[len(readings)-1][0] + readings[0][0])/2
-
-    # convert to float before taking mean, because float operations are faster than decimal operations
-    return [mid_time, sum([float(x[1]) for x in readings])/len(readings)]
-
-
-reductMethods = {
-    'mean': incrementMean
-}
+# reductMethods = {
+#     'mean': incrementMean
+# }

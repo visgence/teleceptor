@@ -281,10 +281,6 @@ class DataStreams:
         """
 
         logging.debug("Updating stream with id %s with data %s", str(stream_id), str(data))
-        if session is None:
-            with sessionScope() as session:
-                stream_info = _updateStream(stream_id, data, session)
-            return stream_info
         return _updateStream(stream_id, data, session)
 
 
