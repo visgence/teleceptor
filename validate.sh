@@ -15,4 +15,4 @@ set -e
 ./webroot/node_modules/.bin/csslint ./webroot/css
 
 #run python validator
-pep8 * --max-line-length=200 ./*.py
+find ./ -name '*.py' | xargs pep8  --max-line-length=200
