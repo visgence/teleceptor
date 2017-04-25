@@ -248,8 +248,7 @@ def update_sensor_data(sensor_data, session):
         timestamp = sensor_data['timestamp']
         del sensor_data['timestamp']
 
-        sensor = Sensor(**sensor_data)
-        Sensors.createSensor(sensor, session)
+        Sensors.createSensor(sensor_data, session)
 
         sensor_data['timestamp'] = timestamp
 

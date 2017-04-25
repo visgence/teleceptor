@@ -114,9 +114,8 @@ class Sensors:
             try:
                 sensor_info = Sensors.updateSensor(sensor_id=data['uuid'], data=sensor_data, session=session)
             except NoResultFound:
-                sensor_data.pop('last_calibration', None)
-                sensor = Sensor(**sensor_data)
-                Sensors.createSensor(sensor, session)
+                # sensor_data.pop('last_calibration', None)
+                Sensors.createSensor(sensor_data, session)
             try:
                 sensor = Sensors.updateSensor(data['uuid'], data, session)
                 returnData['sensor'] = sensor
@@ -207,7 +206,7 @@ class Sensors:
 
     # expects sensor to be a Sensor() from model
     @staticmethod
-    def createSensor(sensor, session):
+    def createSensor(sensor_data, session):
         """
         Adds `sensor` to the database.
 
@@ -218,9 +217,26 @@ class Sensors:
 
         .. seealso:: `models.Sensor`
         """
+        caliTime = time.time()
+        if 'scale' in sensor_data:
+            coefs = sensor_data['scale']
+            del sensor_data['scale']
+        elif 'last_calibration' in sensor_data:
+            coefs = sensor_data['last_calibration']['coefficients']
+            caliTime = sensor_data['last_calibration']['timestamp']
+        else:
+            coefs = [1, 0]
+        sensor = Sensor(**sensor_data)
+        # print sensor.toDict()
+        calib = Calibration(sensor_id=sensor.toDict()['uuid'], timestamp=caliTime, coefficients=str(coefs))
+        # print calib.toDict()
+        sensor.last_calibration = calib
+        sensor.last_calibration_id = calib.id
         logging.debug("Creating sensor %s", str(sensor))
         session.add(sensor)
+        session.add(calib)
         session.commit()
+        return sensor
 
     @staticmethod
     def updateSensor(sensor_id, data, session):
@@ -355,6 +371,8 @@ def _updateSensor(sensor_id, data, session):
             # we want to keep using a Sensor, not the dict, so look it up
             # TODO: This is pretty smelly, but should work for now. Maybe in the future we want updateCalibration and _updateCalibration return a Sensor, or find some other way to update it.
             sensor = session.query(Sensor).filter_by(uuid=sensor_id).one()
+        elif 'scale' in key:
+            continue
         elif key in models.SENSORWHITELIST:
             setattr(sensor, key, value)
     session.add(sensor)
