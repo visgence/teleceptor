@@ -15,7 +15,11 @@ var app = angular.module('teleceptor', [
 .config(['$routeProvider', '$locationProvider', '$httpProvider', function($routeProvider, $locationProvider, $httpProvider){
     $routeProvider.otherwise({redirectTo: '/'});
     $routeProvider.when('/', {
-        templateUrl: 'base.html',
-        reloadOnSearch: false
+      templateUrl: 'base.html',
+      reloadOnSearch: false
     });
+    $routeProvider.when('/generate_json', {
+      templateUrl: 'generate_json.html',
+      reloadOnSearch: false
+    })
 }]);
