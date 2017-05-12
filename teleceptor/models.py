@@ -1,5 +1,6 @@
 """
-Models contains what information will be stored in the database for each component of the project (such as the necessary attributes to be stored for a sensor).  Not all classes will have a toDict()/to_dict() function.
+Models contains what information will be stored in the database for each component of the project (such as the necessary attributes to be stored for a sensor).
+Not all classes will have a toDict()/to_dict() function.
 This module cannot be run independently as it just describes the structure of the database.
 
 Authors: Bretton Murphy

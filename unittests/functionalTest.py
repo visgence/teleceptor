@@ -4,8 +4,9 @@ import json
 import requests
 import time
 
-#local
+# local
 from abstractTest import AbstractTeleceptorTest, URL
+
 
 class TestTeleceptor(AbstractTeleceptorTest):
 
@@ -56,7 +57,26 @@ class TestTeleceptor(AbstractTeleceptorTest):
         """
         Assumes a sensor with uuid volts does exist.
         """
-        requestData = {"uuid":"1", "message": {"id":1, "message": "true", "message_queue_id": 1, "timeout":1, "read": False}, "last_calibration": {"coefficients": [0,1], "timestamp": 1}, "sensor_IOtype": False, "sensor_type": "bool", "last_value": "last", "name": "v", "units": "V", "model": "m", "description": "desc", "last_calibration_id": 1, "message_queue_id": 1, "message_queue": 1, "meta_data": "MetaData"}
+        requestData = {
+            "uuid": "1", "message": {
+                "id": 1, "message": "true", "message_queue_id": 1, "timeout": 1, "read": False
+            },
+            "last_calibration": {
+                "coefficients": [0, 1],
+                "timestamp": 1
+            },
+            "sensor_IOtype":  False,
+            "sensor_type": "bool",
+            "last_value": "last",
+            "name": "v",
+            "units": "V",
+            "model": "m",
+            "description": "desc",
+            "last_calibration_id": 1,
+            "message_queue_id": 1,
+            "message_queue": 1,
+            "meta_data": "MetaData"
+        }
         r = requests.put(URL + "/api/sensors/volts", data=json.dumps(requestData))
         self.assertTrue(r.status_code == requests.codes.ok)
         sensors = r.json()
@@ -106,7 +126,6 @@ class TestTeleceptor(AbstractTeleceptorTest):
         self.assertTrue('messages' in responsedata['message_queue'])
         self.assertTrue(len(responsedata['message_queue']['messages']) == 0)
 
-
     def test09_messages_get_correct_sensor_has_messages(self):
         """
         Tests when a get is made to a sensor with messages added.
@@ -123,7 +142,7 @@ class TestTeleceptor(AbstractTeleceptorTest):
         self.assertTrue('message_queue' in responsedata)
         self.assertTrue('messages' in responsedata['message_queue'])
         self.assertTrue(len(responsedata['message_queue']['messages']) > 0)
-        self.assertTrue(responsedata['message_queue']['messages'][-1]['message'] == True)
+        self.assertTrue(responsedata['message_queue']['messages'][-1]['message'] if True)
 
     def test10_messages_get_incorrect_sensor(self):
         r = requests.get(URL + "api/messages/1")
@@ -141,7 +160,6 @@ class TestTeleceptor(AbstractTeleceptorTest):
         self.assertTrue('message_queues' in responsedata)
         self.assertTrue(len(responsedata['message_queues']) > 0)
 
-
     """
     Tests for station api
     """
@@ -154,13 +172,25 @@ class TestTeleceptor(AbstractTeleceptorTest):
         caltime = time.time()
         examplevalue = 22
 
-        #note here that a sensor's full uuid is the concatenation
-        #of its mote uuid and its name
-        #Since the uuid of our test sensor is volts, we will leave the
-        #mote uuid empty. A uuid field must still be included, however.
+        # note here that a sensor's full uuid is the concatenation
+        # of its mote uuid and its name
+        # Since the uuid of our test sensor is volts, we will leave the
+        # mote uuid empty. A uuid field must still be included, however.
 
-        jsonExample = [{"info":{"uuid":"", "name":"myfirstmote","description":"My first mote","out":[],
-        "in":[{"name":"volts","sensor_type":"float","timestamp":caltime,"meta_data":{}}]},"readings":[["volts",examplevalue,time.time()]]}]
+        jsonExample = [{
+            "info": {
+                "uuid": "",
+                "name": "myfirstmote",
+                "description": "My first mote",
+                "out": [],
+                "in":[{
+                    "name": "volts",
+                    "sensor_type": "float",
+                    "timestamp": caltime,
+                    "meta_data": {}
+                }]
+            },
+            "readings": [["volts", examplevalue, time.time()]]}]
 
         r = requests.post(URL + "/api/station", data=json.dumps(jsonExample))
         self.assertTrue(r.status_code == requests.codes.ok)
@@ -184,8 +214,20 @@ class TestTeleceptor(AbstractTeleceptorTest):
         caltime = time.time()
         examplevalue = 22
 
-        jsonExample = [{"info":{"uuid":"", "name":"myfirstmote","description":"My first mote","out":[],
-        "in":[{"name":"volts","sensor_type":"float","timestamp":caltime,"meta_data":{}}]},"readings":[["volts",examplevalue,time.time()]]}]
+        jsonExample = [{
+            "info": {
+                "uuid": "",
+                "name": "myfirstmote",
+                "description": "My first mote",
+                "out": [],
+                "in":[{
+                    "name": "volts",
+                    "sensor_type": "float",
+                    "timestamp": caltime,
+                    "meta_data": {}
+                }]
+            },
+            "readings": [["volts", examplevalue, time.time()]]}]
 
         r = requests.post(URL + "/api/station", data=json.dumps(jsonExample))
         self.assertTrue(r.status_code == requests.codes.ok)
@@ -206,8 +248,20 @@ class TestTeleceptor(AbstractTeleceptorTest):
         """
         caltime = time.time()
         examplevalue = 22
-        jsonExample = [{"info":{"uuid":"", "name":"myfirstmote","description":"My first mote","in":[],
-        "out":[{"name":"volts","sensor_type":"float","timestamp":caltime,"meta_data":{}}]},"readings":[["volts",examplevalue,time.time()]]}]
+        jsonExample = [{
+            "info": {
+                "uuid": "",
+                "name": "myfirstmote",
+                "description": "My first mote",
+                "in": [],
+                "out":[{
+                    "name": "volts",
+                    "sensor_type": "float",
+                    "timestamp": caltime,
+                    "meta_data": {}
+                }]
+            },
+            "readings": [["volts", examplevalue, time.time()]]}]
 
         r = requests.post(URL + "/api/station", data=json.dumps(jsonExample))
         self.assertTrue(r.status_code == requests.codes.ok)
@@ -223,8 +277,9 @@ class TestTeleceptor(AbstractTeleceptorTest):
     def test15_station_post_empty_readings(self):
         caltime = time.time()
         examplevalue = 22
-        jsonExample = [{"info":{"uuid":"", "name":"myfirstmote","description":"My first mote","in":[],
-        "out":[{"name":"volts","sensor_type":"float","timestamp":caltime,"meta_data":{}}]},"readings":[]}]
+        jsonExample = [{
+            "info": {"uuid": "", "name": "myfirstmote", "description": "My first mote", "in": [],
+                     "out":[{"name": "volts", "sensor_type": "float", "timestamp": caltime, "meta_data": {}}]}, "readings": []}]
 
         r = requests.post(URL + "/api/station", data=json.dumps(jsonExample))
         self.assertTrue(r.status_code == requests.codes.ok)
@@ -237,8 +292,8 @@ class TestTeleceptor(AbstractTeleceptorTest):
     def test16_station_post_no_readings(self):
         caltime = time.time()
         examplevalue = 22
-        jsonExample = [{"info":{"uuid":"", "name":"myfirstmote","description":"My first mote","in":[],
-        "out":[{"name":"volts","sensor_type":"float","timestamp":caltime,"meta_data":{}}]}}]
+        jsonExample = [{"info": {"uuid": "", "name": "myfirstmote", "description": "My first mote", "in": [],
+                        "out":[{"name": "volts", "sensor_type": "float", "timestamp": caltime, "meta_data": {}}]}}]
 
         r = requests.post(URL + "/api/station", data=json.dumps(jsonExample))
         self.assertFalse(r.status_code == requests.codes.ok)
@@ -248,7 +303,7 @@ class TestTeleceptor(AbstractTeleceptorTest):
         Tests when a sensor is not in the database. A new sensor should be created.
         """
 
-        #get the number of sensors already in the database
+        # get the number of sensors already in the database
         r = requests.get(URL + "/api/sensors")
         sensors = r.json()
         self.assertTrue(r.status_code == requests.codes.ok)
@@ -258,8 +313,8 @@ class TestTeleceptor(AbstractTeleceptorTest):
 
         caltime = time.time()
         examplevalue = 22
-        jsonExample = [{"info":{"uuid":"", "name":"myfirstmote","description":"My first mote","in":[],
-        "out":[{"name":"1","sensor_type":"float","timestamp":caltime,"meta_data":{}}]},"readings":[]}]
+        jsonExample = [{"info": {"uuid": "", "name": "myfirstmote", "description": "My first mote", "in": [],
+                        "out":[{"name": "1", "sensor_type": "float", "timestamp": caltime, "meta_data": {}}]}, "readings": []}]
 
         r = requests.post(URL + "/api/station", data=json.dumps(jsonExample))
 
@@ -272,7 +327,7 @@ class TestTeleceptor(AbstractTeleceptorTest):
 
         self.assertTrue('1' == data['info'][0]['uuid'])
 
-        #check that the number of sensors has increased
+        # check that the number of sensors has increased
         r = requests.get(URL + "/api/sensors")
         sensors = r.json()
         self.assertTrue(r.status_code == requests.codes.ok)
@@ -286,7 +341,7 @@ class TestTeleceptor(AbstractTeleceptorTest):
         identity calibration function [1,0]
         """
 
-        #get the test sensor's calibration
+        # get the test sensor's calibration
         r = requests.get(URL + "/api/sensors/volts")
         self.assertTrue(r.status_code == requests.codes.ok)
         sensors = r.json()
@@ -296,14 +351,14 @@ class TestTeleceptor(AbstractTeleceptorTest):
 
         initialCalibration = sensors['sensor']['last_calibration']['coefficients']
 
-        #create new calibration
+        # create new calibration
         newCalibration = [i+1 for i in initialCalibration]
 
-        #post to station
+        # post to station
         caltime = time.time()
         examplevalue = 22
-        jsonExample = [{"info":{"uuid":"", "name":"myfirstmote","description":"My first mote","in":[],
-        "out":[{"scale": newCalibration, "name":"volts","sensor_type":"float","timestamp":caltime,"meta_data":{}}]},"readings":[]}]
+        jsonExample = [{"info": {"uuid": "", "name": "myfirstmote", "description": "My first mote", "in": [],
+                        "out":[{"scale": newCalibration, "name": "volts", "sensor_type": "float", "timestamp": caltime, "meta_data": {}}]}, "readings": []}]
 
         r = requests.post(URL + "/api/station", data=json.dumps(jsonExample))
 
@@ -318,7 +373,6 @@ class TestTeleceptor(AbstractTeleceptorTest):
         self.assertTrue(len(data['info']) > 0)
 
         self.assertTrue(data['info'][0]['last_calibration']['coefficients'] == newCalibration)
-
 
     """
     Tests for datastreams api
@@ -421,13 +475,12 @@ class TestTeleceptor(AbstractTeleceptorTest):
         self.assertTrue('readings' in data)
         self.assertTrue(len(data['readings']) > 0)
 
-        #test that every reading only has two elements. 
-        #First element is either int or float, second is always float.
+        # test that every reading only has two elements.
+        # First element is either int or float, second is always float.
         for reading in data['readings']:
             self.assertTrue(len(reading) == 2)
-            self.assertTrue(isinstance(reading[0],int) or isinstance(reading[0],float))
-            self.assertTrue(isinstance(reading[1],float))
-
+            self.assertTrue(isinstance(reading[0], int) or isinstance(reading[0], float))
+            self.assertTrue(isinstance(reading[1], float))
 
     def test25_readings_get_timeframe_with_data(self):
         """
@@ -441,9 +494,9 @@ class TestTeleceptor(AbstractTeleceptorTest):
         is not to be used in place of a direct test.
         """
 
-        #format of reading is [datastreamid, value, timestamp]
+        # format of reading is [datastreamid, value, timestamp]
         insertiontime = int(time.time())
-        sampleJson = {'readings':[[1,1,insertiontime]]}
+        sampleJson = {'readings': [[1, 1, insertiontime]]}
         r = requests.post(URL + "api/readings/", data=json.dumps(sampleJson))
 
         self.assertTrue(r.status_code == requests.codes.ok)
@@ -455,9 +508,8 @@ class TestTeleceptor(AbstractTeleceptorTest):
         self.assertTrue(data['successfull_insertions'] == 1)
         self.assertFalse(data['failed_insertions'] > 0)
 
-        #now get reading, using url arguments
+        # now get reading, using url arguments
         r = requests.get(URL + "api/readings/?start=" + str(insertiontime) + "&end=" + str(insertiontime) + "&datastream=1")
-
 
         self.assertTrue(r.status_code == requests.codes.ok)
 
@@ -478,8 +530,8 @@ class TestTeleceptor(AbstractTeleceptorTest):
 
         Assumes a datastream with id 1 exists in the database.
         """
-        #format of reading is [datastreamid, value, timestamp]
-        sampleJson = {'readings':[[1,1,time.time()]]}
+        # format of reading is [datastreamid, value, timestamp]
+        sampleJson = {'readings': [[1, 1, time.time()]]}
         r = requests.post(URL + "api/readings/", data=json.dumps(sampleJson))
 
         self.assertTrue(r.status_code == requests.codes.ok)
@@ -502,8 +554,8 @@ class TestTeleceptor(AbstractTeleceptorTest):
         so here we use the current time and current time - 1.
         """
 
-        #format of reading is [datastreamid, value, timestamp]
-        sampleJson = {'readings':[[1,1,time.time()], [1,2,time.time()-1]]}
+        # format of reading is [datastreamid, value, timestamp]
+        sampleJson = {'readings': [[1, 1, time.time()], [1, 2, time.time()-1]]}
         r = requests.post(URL + "api/readings/", data=json.dumps(sampleJson))
 
         self.assertTrue(r.status_code == requests.codes.ok)
@@ -521,8 +573,8 @@ class TestTeleceptor(AbstractTeleceptorTest):
         Tests inserting a reading with timestamp in the future. Whisper does not accept timestamps
         outside of its range, so the reading should fail to be inserted.
         """
-        #format of reading is [datastreamid, value, timestamp]
-        sampleJson = {'readings':[[1,1,time.time()+3000]]}
+        # format of reading is [datastreamid, value, timestamp]
+        sampleJson = {'readings': [[1, 1, time.time()+3000]]}
         r = requests.post(URL + "api/readings/", data=json.dumps(sampleJson))
 
         self.assertTrue(r.status_code == requests.codes.ok)
@@ -540,7 +592,7 @@ class TestTeleceptor(AbstractTeleceptorTest):
         Tests inserting a reading with a 0 timestamp (far in the past).
         Reading should not be inserted.
         """
-        sampleJson = {'readings':[[1,1,0]]}
+        sampleJson = {'readings': [[1, 1, 0]]}
         r = requests.post(URL + "api/readings/", data=json.dumps(sampleJson))
 
         self.assertTrue(r.status_code == requests.codes.ok)
@@ -553,16 +605,14 @@ class TestTeleceptor(AbstractTeleceptorTest):
         self.assertTrue(data['failed_insertions'] == 1)
         self.assertFalse(data['successfull_insertions'] == data['insertions_attempted'])
 
-
-
     def test30_readings_post_empty_readings(self):
         """
-        Tests posting an empty array of readings. 
+        Tests posting an empty array of readings.
 
         Assumes a datastream with id 1 exists in the database.
         """
-        #format of reading is [datastreamid, value, timestamp]
-        sampleJson = {'readings':[]}
+        # format of reading is [datastreamid, value, timestamp]
+        sampleJson = {'readings': []}
         r = requests.post(URL + "api/readings/", data=json.dumps(sampleJson))
 
         self.assertTrue(r.status_code == requests.codes.ok)
@@ -579,7 +629,7 @@ class TestTeleceptor(AbstractTeleceptorTest):
         """
         Tests posting with no readings. That is, the data field is an empty dictionary.
 
-        """        
+        """
         r = requests.post(URL + "api/readings/", data=json.dumps({}))
 
         self.assertFalse(r.status_code == requests.codes.ok)
@@ -607,7 +657,7 @@ class TestTeleceptor(AbstractTeleceptorTest):
 
         Assumes a sensor with uuid `volts` exists.
         """
-        #get the information about the sensor we will delete to test against.
+        # get the information about the sensor we will delete to test against.
         r = requests.get(URL + "api/sensors/volts")
 
         self.assertTrue(r.status_code == requests.codes.ok)
@@ -617,7 +667,7 @@ class TestTeleceptor(AbstractTeleceptorTest):
         self.assertTrue('sensor' in getData)
         self.assertTrue(getData['sensor']['uuid'] == "volts")
 
-        #delete the sensor
+        # delete the sensor
         r = requests.delete(URL + "api/sensors/volts")
 
         self.assertTrue(r.status_code == requests.codes.ok)
@@ -628,7 +678,7 @@ class TestTeleceptor(AbstractTeleceptorTest):
         for key in getData['sensor']:
             self.assertTrue(data['sensor'][key] == getData['sensor'][key])
 
-        #check that sensor is not retrievable from server
+        # check that sensor is not retrievable from server
         r = requests.get(URL + "api/sensors/volts")
 
         self.assertFalse(r.status_code == requests.codes.ok)
@@ -645,7 +695,7 @@ class TestTeleceptor(AbstractTeleceptorTest):
 
         Assumes a sensor with uuid `v` does not exist.
         """
-        #delete the sensor
+        # delete the sensor
         r = requests.delete(URL + "api/sensors/v")
 
         self.assertFalse(r.status_code == requests.codes.ok)
@@ -654,9 +704,6 @@ class TestTeleceptor(AbstractTeleceptorTest):
 
         self.assertTrue('error' in data)
         self.assertFalse('sensor' in data)
-
-
-
 
 
 if __name__ == "__main__":

@@ -69,13 +69,14 @@ class Teleceptor(object):
         readings = []
 
         for sensor in sensor_uuid:
-            #make request for datastream before getting readings
+            # make request for datastream before getting readings
             datastream_response = requests.get(self.teleceptor_uri + self.DATASTREAMSPATH + "?sensor={}".format(sensor))
             assert datastream_response.status_code == requests.codes.ok
             datastream_id = datastream_response.json()['datastreams'][0]['id']
 
-            #now get readings
-            readings_request = self.teleceptor_uri + self.READINGSPATH + "?datastream={}&source={}&start={}&end={}".format(datastream_id, source, int(time.mktime(start.timetuple())), int(time.mktime(end.timetuple())))
+            # now get readings
+            readings_request = self.teleceptor_uri + self.READINGSPATH + "?datastream={}&source={}&start={}&end={}".format(
+                datastream_id, source, int(time.mktime(start.timetuple())), int(time.mktime(end.timetuple())))
             print(readings_request)
             readings_response = requests.get(readings_request)
             if readings_response.status_code != requests.codes.ok:
@@ -83,7 +84,7 @@ class Teleceptor(object):
                 print(readings_response.text)
                 return None
 
-            #get the scaling function for this sensor
+            # get the scaling function for this sensor
             sensor_response = requests.get(self.teleceptor_uri + self.SENSORSPATH + "{}/".format(sensor))
             assert sensor_response.status_code == requests.codes.ok
 
@@ -98,12 +99,11 @@ class Teleceptor(object):
 
             readings.append(scaled_readings)
 
-        #currently readings is in the form [  [  [timestamp, value], [timestamp, value], ... ], [  [timestamp, value], ...], ...  ]
-        #But to pass to a dataframe, we need to turn each sensor's data into a Series
+        # currently readings is in the form [  [  [timestamp, value], [timestamp, value], ... ], [  [timestamp, value], ...], ...  ]
+        # But to pass to a dataframe, we need to turn each sensor's data into a Series
         series = []
         for idx, reading in enumerate(readings):
             series.append(Series([value[1] for value in reading], index=[datetime.fromtimestamp(timestamp[0]) for timestamp in reading], name=sensor_uuid[idx]))
-
 
         return pd.concat(series, axis=1)
 

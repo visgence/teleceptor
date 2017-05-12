@@ -98,7 +98,8 @@ def main(queryRate=60, **kwargs):
     while(1):
         # get json from device
         try:
-            info, readings = device.getReadings() # TODO: catch generic exception
+            # TODO: catch generic exception
+            info, readings = device.getReadings()
         except Exception as e:
             logging.error("An error has occured trying to getReadings: {}".format(e))
             if USE_EMAIL:
@@ -151,7 +152,8 @@ def main(queryRate=60, **kwargs):
             # do some translation from sensor mini-json to full JSON
             if "t" not in sensor and "timestamp" not in sensor:
                 sensor.update({'timestamp': 0})
-            elif "timestamp" not in sensor:# then t is in sensor, translate t to timestamp
+            # then t is in sensor, translate t to timestamp
+            elif "timestamp" not in sensor:
                 sensor['timestamp'] = sensor['t']
                 del sensor['t']
 
@@ -223,9 +225,10 @@ def updateMote(moteHandle, newValues={}):
     parsedNewValues = {}
     for sen in newValues:
         logging.debug("sen: %s", sen)
-        if newValues[sen] == None:
+        if newValues[sen] is None:
             continue
-        message = newValues[sen][-1] # get the last message (ignore others)
+        # get the last message (ignore others)
+        message = newValues[sen][-1]
         for senName, senMessage in message.items():
             if senName == "id":
                 pass

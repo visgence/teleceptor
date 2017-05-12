@@ -15,6 +15,7 @@ import shutil
 import platform
 import json
 import requests
+from subprocess import call
 from sqlalchemy import create_engine
 from sqlalchemy.engine.url import URL
 from sqlalchemy.engine import reflection
@@ -26,7 +27,7 @@ from sqlalchemy.schema import (
     DropConstraint,
 )
 import teleceptor
-from teleceptor import models, testFixtures, server, sessionManager, USE_ELASTICSEARCH
+from teleceptor import models, testFixtures, server, sessionManager, USE_ELASTICSEARCH, WEBROOT, PATH
 
 Stdin = '/dev/null'
 Stdout = '/dev/null'
@@ -50,6 +51,11 @@ def btcmote(*args):
     btcmotecmd = os.path.join(teleceptor.__path__[0], 'softSensors', 'BitcoinSensor', 'BTCMote.py')
     print btcmotecmd
     runpy.run_path(btcmotecmd, None, '__main__')
+
+
+def apiTest(*args):
+    print "Running api test."
+    runpy.run_path('unittests/apiTests.py', None, '__main__')
 
 
 def poller(*args):
@@ -223,6 +229,12 @@ def setup(*args):
         r = requests.put(teleceptor.ELASTICSEARCH_URI+'/_template/teleceptor', json=conf)
         print r
 
+    print "running node commands"
+
+    try:
+        call('npm install', cwd=WEBROOT, shell=True)
+    except:
+        print "An error occured trying to install node modules. Please make sure that NodeJs and npm are installed."
     print "Run teleceptorcmd loadfixtures for example data"
 
 
@@ -257,7 +269,8 @@ if __name__ == "__main__":
         'loadfixtures': [loadfixtures, "Load test database data"],
         'version': [displayVersion, "Display version"],
         'shell': [shell, "Ipython shell"],
-        'reset': [reset, "Same as running 'rebuild', 'setup', 'runserver' "]
+        'reset': [reset, "Same as running 'rebuild', 'setup', 'runserver' "],
+        'apitest': [apiTest, "Run tests against the api."]
     }
 
     args = sys.argv
@@ -315,10 +328,3 @@ if __name__ == "__main__":
         print "Commands Are:"
         for c in sorted(cmds):
             print "    %s : %s" % (c, cmds[c][1])
-
-
-
-
-
-
-

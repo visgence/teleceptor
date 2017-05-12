@@ -1,6 +1,6 @@
-
+/*jslint node: true */
 'use strict';
-
+var angular;
 // Declare app level module which depends on views, and components
 var app = angular.module('teleceptor', [
   'ngRoute',
