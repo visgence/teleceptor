@@ -94,7 +94,7 @@ angular.module('teleceptor.graphcontroller', [])
                 scope.graphName = streamInfo.name;
                 parent.innerHTML = "";
                 var width = elem[0].clientWidth;
-                var height = elem[0].clientHeight;
+                var height = 300;
                 var messages = "";
 
                 var min = streamInfo.min_value;

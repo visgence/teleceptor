@@ -1,4 +1,4 @@
-<div class="panel panel-default">
+<div class="panel panel-default timeWidget">
     <div class="panel-heading">
         <h3 class="panel-title">Time Controls</h3>
     </div>
@@ -8,31 +8,33 @@
                 <label>From</label>
                 <div class="dropdown">
                     <a class="dropdown-toggle" id="startdropdown" role="button" data-toggle="dropdown">
-                      <div class="input-group">
-                        <input type="text" id="startdate" name="startdate" class="form-control" ng-model="data.startdate">
-                        <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
-                      </div>
+                        <div class="input-group">
+                            <input type="text" id="startdate" name="startdate" class="form-control" ng-model="data.startdate">
+                            <span class="input-group-addon">
+                                <i class="glyphicon glyphicon-calendar" />
+                            </span>
+                        </div>
                     </a>
                     <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
-                      <datetimepicker   ng-model="data.startdate"
-                                        data-datetimepicker-config="{ dropdownSelector: '#startdropdown' }"></datetimepicker>
+                        <datetimepicker ng-model="data.startdate" data-datetimepicker-config="{ dropdownSelector: '#startdropdown' }" />
                     </ul>
-                  </div>
+                </div>
             </div>
             <div class="form-group">
                 <label>To</label>
                 <div class="dropdown">
-                    <a class="dropdown-toggle" id="enddropdown" role="button" data-toggle="dropdown" >
-                      <div class="input-group">
-                        <input type="text" id="enddate" name="enddate" class="form-control" ng-model="data.enddate">
-                        <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
-                      </div>
+                    <a class="dropdown-toggle" id="enddropdown" role="button" data-toggle="dropdown">
+                        <div class="input-group">
+                            <input type="text" id="enddate" name="enddate" class="form-control" ng-model="data.enddate">
+                            <span class="input-group-addon">
+                                <i class="glyphicon glyphicon-calendar" />
+                            </span>
+                        </div>
                     </a>
                     <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
-                      <datetimepicker   ng-model="data.enddate"
-                                        data-datetimepicker-config="{ dropdownSelector: '#enddropdown' }"></datetimepicker>
+                        <datetimepicker ng-model="data.enddate" data-datetimepicker-config="{ dropdownSelector: '#enddropdown' }" />
                     </ul>
-                  </div>
+                </div>
             </div>
             <button class="btn btn-sm btn-success" ng-click="SubmitTime()">Submit</button>
             <br>

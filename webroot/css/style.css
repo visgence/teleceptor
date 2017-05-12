@@ -2,3 +2,19 @@
     stroke: #dadada
 }
 
+.main{
+	margin-top: 60px;
+}
+
+.timeWidget{
+	height:370px;
+}
+
+.graphWidget{
+	height:370px;
+}
+
+.graph-placeholder{
+	display: block;
+}
+

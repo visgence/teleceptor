@@ -1,7 +1,8 @@
-<div id="teleceptor">
-    <div ng-controller="mainController">
-        <div class="navbar navbar-default navbar-fixed-top">
-            <div class="container-fluid">
+<div class="container-fluid">
+    <div id="teleceptor">
+        <div ng-controller="mainController">
+            <!-- Nav bar -->
+            <div class="navbar navbar-default navbar-fixed-top">
                 <div class="navbar-header">
                     <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#teleceptor-nav">
                         <span class="sr-only">Toggle navigation</span>
@@ -13,7 +14,6 @@
                         <img src="img/teleceptor_final.png">
                     </a>
                 </div>
-
                 <div class="collapse navbar-collapse" id="teleceptor-nav">
                     <ul class="navbar-nav nav">
                         <li {{ sensor_active }}>
@@ -28,31 +28,40 @@
                     </div>
                 </div>
             </div>
-        </div>
-
-        <div class="main" style="margin-top: 60px">
-            <div ng-if=mainPage==true>
-                <div class="row">
-                    <div class="col-md-3 left-col">
-                        <div ng-controller="timeController">
-                            <div ng-include="'/templates/timeWidget.html'"></div>
+            <div class="main">
+                <div ng-if=mainPage==true>
+                    <div class="row">
+                        <!-- Time controls -->
+                        <div class="col-md-3">
+                            <div ng-controller="timeController">
+                                <div ng-include="'/templates/timeWidget.html'"></div>
+                            </div>
                         </div>
-                        <div ng-controller="treeController">
-                            <div ng-include="'/templates/treeWidget.html'"></div>
+                        <!-- Graph -->
+                        <div class="col-md-9 right-col">
+                            <div ng-controller="graphController">
+                                <div ng-include="'/templates/graphWidget.html'"></div>
+                            </div>
                         </div>
                     </div>
-                    <div class="col-md-9 right-col">
-                        <div ng-controller="graphController">
-                            <div ng-include="'/templates/graphWidget.html'"></div>
+                    <div class="row">
+                        <!-- Tree controls -->
+                        <div class="col-md-3">
+                            <div ng-controller="treeController">
+                                <div ng-include="'/templates/treeWidget.html'"></div>
+                            </div>
                         </div>
-                        <div ng-controller="infoController">
-                           <div ng-include="'/templates/infoWidget.html'"></div>
+                        <!-- Stream Info -->
+                        <div class="col-md-9 right-col">
+                            <div ng-controller="infoController">
+                                <div ng-include="'/templates/infoWidget.html'"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            <div ng-if=mainPage==false>
-                <div ng-include="'/templates/jsonWidget.html'"></div>
+                <div ng-if=mainPage==false>
+                    <div ng-include="'/templates/jsonWidget.html'"></div>
+                </div>
             </div>
         </div>
     </div>
