@@ -1,95 +1,94 @@
-<div ng-repeat="template in widgets">
-    <div class="col-md-6">
-        <div class="panel panel-default">
-            <div class="panel-heading">
-                <h3 class="panel-title">{{template.title}}</h3>
-            </div>
-            <div class="panel-body">
-                <form class="form-horizontal" role="form">
-                    <div id="tabs_{{template.url}}"></div>
-                    <div ng-repeat="tab in template.items">
-                        <div id="{{tab[0].tabName}}"></div>
-                        <div id="{{tab[0].tabName}}_body">
-                            <div class="alert alert-warning" style="padding-bottom: 10px; display: none" id="{{template.url}}_warning"></div>
-                            <div ng-repeat="infoItem in tab">
-                                <div class="form-group">
-                                    <label class="col-md-5 control-label" style="padding-top: 0px">
-                                        {{infoItem.name}}
-                                    </label>
-                                    <div class="col-md-6">
-                                        <div ng-switch="infoItem.inputType">
-                                            <div ng-switch-when="text">
-                                                {{infoItem.value}}
-                                            </div>
-                                            <div ng-switch-when="input">
-                                                <div ng-if="template.editing">
-                                                    <input class="form-control" value={{infoItem.value}} id="{{template.url}}_{{$index}}""/>
+<div class="row">
+    <div ng-repeat="template in widgets">
+        <div class="col-md-6">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">{{template.title}}</h3>
+                </div>
+                <div class="panel-body">
+                    <form class="form-horizontal" role="form">
+                        <div id="tabs_{{template.url}}" />
+                        <div ng-repeat="tab in template.items">
+                            <div id="{{tab[0].tabName}}" />
+                            <div id="{{tab[0].tabName}}_body">
+                                <div class="alert alert-warning" style="padding-bottom: 10px; display: none" id="{{template.url}}_warning" />
+                                <div ng-repeat="infoItem in tab">
+                                    <div class="form-group">
+                                        <label class="col-md-5 control-label" style="padding-top: 0px">
+                                            {{infoItem.name}}
+                                        </label>
+                                        <div class="col-md-6">
+                                            <div ng-switch="infoItem.inputType">
+                                                <div ng-switch-when="text">
+                                                    {{infoItem.value}}
                                                 </div>
-                                                <div ng-if="!template.editing">
-                                                    <div ng-if="tab[0].tabName=='ManualEntry'">
-                                                        <input class="form-control" value={{infoItem.value}} id="{{infoItem.inputid}}""/>
+                                                <div ng-switch-when="input">
+                                                    <div ng-if="template.editing">
+                                                        <input class="form-control" value="{{infoItem.value}}"" id="{{template.url}}_{{$index}}" />
                                                     </div>
-                                                    <div ng-if="tab[0].tabName=='Command'">
-                                                        <div class = "col-md-1" style="height: 30px">
-                                                            <input class="form-control" type="checkbox" >
+                                                    <div ng-if="!template.editing">
+                                                        <div ng-if="tab[0].tabName=='ManualEntry'">
+                                                            <input class="form-control " value="{{infoItem.value}}"" id="{{infoItem.inputid}}" />
                                                         </div>
-                                                    </div>
-                                                    <div ng-if="tab[0].tabName!='ManualEntry' && tab[0].tabName!='Command'">
-                                                        {{infoItem.value}}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div ng-switch-when="multiple">
-                                                <div ng-repeat="path in infoItem.value">
-                                                    <div style="padding-bottom: 10px">
-                                                        <div ng-if="template.editing">
-                                                            <input class="form-control" value="{{path}}"" id="{{template.url}}_{{$index}}_{{infoItem.name}}"/>
+                                                        <div ng-if="tab[0].tabName=='Command'">
+                                                            <div class="col-md-1" style="height: 30px">
+                                                                <input class="form-control" type="checkbox" />
+                                                            </div>
                                                         </div>
-                                                        <div ng-if="!template.editing">
-                                                            {{path}}
+                                                        <div ng-if="tab[0].tabName!='ManualEntry' && tab[0].tabName!='Command'">
+                                                            {{infoItem.value}}
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <div ng-if="template.editing">
-                                                    <button class="glyphicon, glyphicon-plus" ng-click="AddPath()"></button>
+                                                <div ng-switch-when="multiple">
+                                                    <div ng-repeat="path in infoItem.value">
+                                                        <div style="padding-bottom: 10px">
+                                                            <div ng-if="template.editing">
+                                                                <input class="form-control" value="{{path}}" id="{{template.url}}_{{$index}}_{{infoItem.name}}" />
+                                                            </div>
+                                                            <div ng-if="!template.editing">
+                                                                {{path}}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div ng-if="template.editing">
+                                                        <button class="glyphicon glyphicon-plus" ng-click="AddPath()" />
+                                                    </div>
                                                 </div>
-                                            </div>
-                                            <div ng-switch-when="button">
-                                                <button type="button" class="btn btn-primary btn-sm" id="{{infoItem.btnId}}">
-                                                <span class="glyphicon glyphicon-send"></span>
-                                                {{infoItem.label}}
-                                                </button>
+                                                <div ng-switch-when="button">
+                                                    <button type="button" class="btn btn-primary btn-sm" id="{{infoItem.btnId}}">
+                                                        <span class="glyphicon glyphicon-send" /> {{infoItem.label}}
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div ng-if="currentTab==0 || template.title=='Stream Info'">
-                        <div ng-if="!template.editing">
-                            <div class="col-md-8 col-md-offset-5">
-                                <button type="button" class="btn btn-primary btn-sm" ng-click="EditFields(template.title)">
-                                <span class="glyphicon glyphicon-pencil"></span>
-                                Edit
-                                </button>
+                        <div ng-if="currentTab==0 || template.title=='Stream Info'">
+                            <div ng-if="!template.editing ">
+                                <div class="col-md-8 col-md-offset-5 ">
+                                    <button type="button " class="btn btn-primary btn-sm" ng-click="EditFields(template.title)">
+                                        <span class="glyphicon glyphicon-pencil " /> Edit
+                                    </button>
+                                </div>
+                            </div>
+                            <div ng-if="template.editing">
+                                <div class="col-md-8 col-md-offset-5">
+                                    <button type="button " class="btn btn-success btn-sm" ng-click="SaveFields(template.url)">
+                                        <span class="glyphicon glyphicon-ok" /> Save
+                                    </button>
+                                    <button type="button " class="btn btn-default btn-sm" ng-click="CancelFields(template.title)">
+                                        <span class="glyphicon glyphicon-remove " /> Cancel
+                                    </button>
+                                </div>
                             </div>
                         </div>
-                        <div ng-if="template.editing">
-                            <div class="col-md-8 col-md-offset-5">
-                                <button type="button" class="btn btn-success btn-sm" ng-click="SaveFields(template.url)">
-                                <span class="glyphicon glyphicon-ok"></span>
-                                Save
-                                </button>
-                                <button type="button" class="btn btn-default btn-sm" ng-click="CancelFields(template.title)">
-                                <span class="glyphicon glyphicon-remove"></span>
-                                Cancel
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </form>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
 </div>
+

@@ -1,0 +1,26 @@
+<div class="navbar navbar-default navbar-fixed-top">
+    <div class="navbar-header">
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#teleceptor-nav">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+        </button>
+        <a href="/#/">
+            <img src="img/teleceptor_final.png">
+        </a>
+    </div>
+    <div class="collapse navbar-collapse" id="teleceptor-nav">
+        <ul class="navbar-nav nav">
+            <li {{ sensor_active }}>
+                <a href="/#/">Sensors</a>
+            </li>
+            <li {{ generate_json_active }}>
+                <a href="/#/generate_json">Generate Json</a>
+            </li>
+        </ul>
+        <div class="navbar-form navbar-right">
+            <span>Version: 0.9.0</span>
+        </div>
+    </div>
+</div>

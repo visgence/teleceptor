@@ -1,35 +1,17 @@
 /*jslint node: true */
 'use strict';
-var angular, $;
 
 angular.module('teleceptor.maincontroller', [])
 
-.controller('mainController', ['$scope', '$location', function($scope, $location){
+.controller('mainController', ['$scope', '$location', function($scope, $location) {
     $scope.mainPage = true;
-    if($location.search().json !== undefined){
-        $scope.mainPage = false;
-    }
-
-
-    $scope.page = function(i){
-        $scope.mainPage = i;
-        if(i){
-            $location.search('json', null);
-        } else {
-            $location.search('json', 1);
-        }
-    };
 
     $scope.addInput = function() {
-        console.log("Add input clicked");
         $("#input-section").append(createSensorInput());
-
     };
 
     $scope.addOutput = function() {
-        console.log("Add output clicked");
         $("#output-section").append(createSensorOutput());
-
     };
 
     $scope.submit = function() {
@@ -48,12 +30,11 @@ angular.module('teleceptor.maincontroller', [])
             input.sensor_type = angular.element('input[name="sensor_type"]').val();
             input.units = angular.element('input[name="units"]').val();
             inputs.push(input);
-
         });
 
         $(".sensor-output").each(function(index) {
             var output = {};
-            output.name =angular.element('input[name="name"]').val();
+            output.name = angular.element('input[name="name"]').val();
             output.model = angular.element('input[name="model"]').val();
             output.description = angular.element('input[name="description"]').val();
             output.sensor_type = angular.element('input[name="sensor_type"]').val();
@@ -64,9 +45,7 @@ angular.module('teleceptor.maincontroller', [])
             scale.push(Number(angular.element('input[name="scale1"]').val()));
             scale.push(Number(angular.element('input[name="scale2"]').val()));
             output.scale = scale;
-
             outputs.push(output);
-
         });
 
         jsonData.out = outputs;
@@ -76,123 +55,104 @@ angular.module('teleceptor.maincontroller', [])
         var jsonLength = json.length;
 
         if ($('#escape').is(":checked")) {
-
             json = escape(json);
-
         }
-
-        console.log(json);
-
         $('#jsonLength').html(jsonLength);
         $('#jsonData').html(json);
         $('#jsonModal').modal('show');
-
         return false;
     };
 
+    function escape(text) {
+        return text.replace(/"/g, '\\"');
+    }
 
-function escape(text) {
-    return text.replace(/"/g, '\\"');
-}
+    function createInput(label, name) {
+        var input = $("<input/>", {
+            name: name,
+            type: "text",
+            placeholder: name,
+            "class": "form-control input-md"
+        });
 
-function createInput(label, name) {
+        label = $("<label/>", {
+            "class": "col-md-5 control-label",
+            //"for": id
+        }).html(label);
 
-    var input = $("<input/>", {
-        //id: "id",
-        name : name,
-        type : "text",
-        placeholder : name,
-        "class" : "form-control input-md"
-    });
+        var group = $("<div/>", {
+            "class": "form-group"
+        });
 
-    label = $("<label/>", {
-        "class" : "col-md-5 control-label",
-        //"for": id
-    }).html(label);
+        var col = $("<div/>", {
+            "class": "col-md-4"
+        });
 
-    var group = $("<div/>", {
-        "class" : "form-group"
-    });
+        group.append(label);
+        col.append(input);
+        group.append(col);
 
-    var col = $("<div/>", {
-        "class" : "col-md-4"
-    });
+        return group;
+    }
 
-    group.append(label);
-    col.append(input);
-    group.append(col);
+    function createButton(desc, name, toRemove) {
+        var button = $("<button/>", {
+            //id: uuid,
+            name: name,
+            "class": "btn btn-danger"
+        }).html(desc);
 
-    return group;
+        var label = $("<label/>", {
+            "class": "col-md-5 control-label",
+            //"for": id
+        }).html(desc);
 
-}
+        var group = $("<div/>", {
+            "class": "form-group"
+        });
 
-function createButton(desc, name, toRemove) {
+        var col = $("<div/>", {
+            "class": "col-md-4"
+        });
+        button.click(function() {
+            console.log("button click");
+            toRemove.remove();
+            return false;
+        });
+        group.append(label);
+        col.append(button);
+        group.append(col);
+        return group;
+    }
 
-    var button = $("<button/>", {
-        //id: uuid,
-        name : name,
-        "class" : "btn btn-danger"
-    }).html(desc);
+    function createSensorInput() {
 
-    var label = $("<label/>", {
-        "class" : "col-md-5 control-label",
-        //"for": id
-    }).html(desc);
+        var sensor = $("<div/>", {
+            "class": "sensor-input",
+            "style": "padding-bottom: 30px"
+        });
+        sensor.append(createInput("Name", "name"));
+        sensor.append(createInput("Type", "sensor_type"));
+        sensor.append(createInput("Units", "units"));
+        sensor.append(createInput("Description", "description"));
+        sensor.append(createButton("Remove", "remove", sensor));
+        return sensor;
+    }
 
-    var group = $("<div/>", {
-        "class" : "form-group"
-    });
-
-    var col = $("<div/>", {
-        "class" : "col-md-4"
-    });
-
-    button.click(function() {
-        console.log("button click");
-        toRemove.remove();
-        return false;
-    });
-
-    group.append(label);
-    col.append(button);
-    group.append(col);
-
-    return group;
-}
-
-function createSensorInput() {
-
-    var sensor = $("<div/>", {
-        "class" : "sensor-input",
-        "style" : "padding-bottom: 30px"
-    });
-
-    sensor.append(createInput("Name", "name"));
-    sensor.append(createInput("Type", "sensor_type"));
-    sensor.append(createInput("Units", "units"));
-    sensor.append(createInput("Description", "description"));
-    sensor.append(createButton("Remove", "remove", sensor));
-
-    return sensor;
-}
-
-function createSensorOutput() {
-
-    var sensor = $("<div/>", {
-        "class" : "sensor-output",
-        "style" : "padding-bottom: 30px"
-    });
-
-    sensor.append(createInput("Name", "name"));
-    sensor.append(createInput("Type", "sensor_type"));
-    sensor.append(createInput("Units", "units"));
-    sensor.append(createInput("model", "model"));
-    sensor.append(createInput("Description", "description"));
-    sensor.append(createInput("Timestamp", "timestamp"));
-    sensor.append(createInput("Scale Cof 1", "scale1"));
-    sensor.append(createInput("Scale Cof 2", "scale2"));
-    sensor.append(createButton("Remove", "remove", sensor));
-
-    return sensor;
-}
+    function createSensorOutput() {
+        var sensor = $("<div/>", {
+            "class": "sensor-output",
+            "style": "padding-bottom: 30px"
+        });
+        sensor.append(createInput("Name", "name"));
+        sensor.append(createInput("Type", "sensor_type"));
+        sensor.append(createInput("Units", "units"));
+        sensor.append(createInput("model", "model"));
+        sensor.append(createInput("Description", "description"));
+        sensor.append(createInput("Timestamp", "timestamp"));
+        sensor.append(createInput("Scale Cof 1", "scale1"));
+        sensor.append(createInput("Scale Cof 2", "scale2"));
+        sensor.append(createButton("Remove", "remove", sensor));
+        return sensor;
+    }
 }]);
