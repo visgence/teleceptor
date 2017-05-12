@@ -89,7 +89,9 @@ class DataStreams:
 
         :returns:
             data : dictionary
-                Contains an 'error' key if an error occurred with the value being a string containing the error message. Contains a 'datastreams' key if multiple datastreams are selected with the value being a list of datastreams. Contains a 'stream' key if `stream_id` selects a unique datastream with the value being the selected stream.
+                Contains an 'error' key if an error occurred with the value being a string containing the error message.
+                Contains a 'datastreams' key if multiple datastreams are selected with the value being a list of datastreams.
+                Contains a 'stream' key if `stream_id` selects a unique datastream with the value being the selected stream.
                 `data` is returned in the `response.text` section of the HTTP response, if this function is called through the cherrypy API.
 
         .. seealso::
@@ -124,19 +126,16 @@ class DataStreams:
                 'stream':  A single stream
         """
         logging.debug("GET request to datastreams.")
-
         cherrypy.response.headers['Content-Type'] = 'application/json'
         data = {}
         statusCode = "200"
-
-        if stream_id is not None:
-            logging.debug("Request for datastream with id %s", str(stream_id))
-            with sessionScope() as s:
+        with sessionScope() as s:
+            if stream_id is not None:
+                logging.debug("Request for datastream with id %s", str(stream_id))
                 try:
                     stream = s.query(DataStream).filter_by(id=stream_id).one()
                 except NoResultFound:
                     logging.error("Stream with id %s does not exist.", str(stream_id))
-
                     data['error'] = "Stream with id %s doesn't exist." % stream_id
                 else:
                     logging.debug("Found stream with id %s: %s", str(stream_id), str(stream.toDict()))
@@ -149,18 +148,16 @@ class DataStreams:
                         data['path'] = []
                         for i in path:
                             data['path'].append(i.toDict())
-        else:
-            logging.debug("Request for all datastreams with parameters %s", str(filter_arguments))
-            inputs = clean_inputs(filter_arguments)
-            if len(filter_arguments) > 0 and inputs is None:
-                logging.error("Provided url parameters are invalid: %s", str(filter_arguments))
-                data['error'] = "Invalid url parameters"
             else:
-                logging.debug("Parameters are valid.")
-                with sessionScope() as s:
+                logging.debug("Request for all datastreams with parameters %s", str(filter_arguments))
+                inputs = clean_inputs(filter_arguments)
+                if len(filter_arguments) > 0 and inputs is None:
+                    logging.error("Provided url parameters are invalid: %s", str(filter_arguments))
+                    data['error'] = "Invalid url parameters"
+                else:
+                    logging.debug("Parameters are valid.")
                     datastreams = s.query(DataStream).filter_by(**inputs).all()
                     data['datastreams'] = [i.toDict() for i in datastreams]
-
         cherrypy.response.status = statusCode
         return json.dumps(data, indent=4)
 
@@ -179,7 +176,8 @@ class DataStreams:
         :param stream_id: The UUID of a datastream
         :type stream_id: str
 
-        :returns: Dictionary -- A JSON object with an 'error' key if an error occured or 'datastream' key if update succeeded. If 'error', the value is an error string. If 'datastream', the value is a JSON object representing the updated datastream in the database.
+        :returns: Dictionary -- A JSON object with an 'error' key if an error occured or 'datastream' key if update succeeded.
+        If 'error', the value is an error string. If 'datastream', the value is a JSON object representing the updated datastream in the database.
 
         .. seealso:: `models.DataStream`
 
@@ -196,14 +194,15 @@ class DataStreams:
 
         logging.debug("Request body: %s", data)
 
-        try:
-            stream = DataStreams.updateStream(stream_id, data)
-            returnData['stream'] = stream
-        except NoResultFound:
-            logging.error("Stream with id %s doesn't exist.", str(stream_id))
-            returnData['error'] = "Stream with id %s doesn't exist." % stream_id
+        with sessionScope() as session:
+            try:
+                stream = DataStreams.updateStream(stream_id, data, session)
+                returnData['stream'] = stream
+            except NoResultFound:
+                logging.error("Stream with id %s doesn't exist.", str(stream_id))
+                returnData['error'] = "Stream with id %s doesn't exist." % stream_id
 
-        cherrypy.response.status = statusCode
+            cherrypy.response.status = statusCode
 
         logging.debug("Finished PUT request to datastream.")
         return json.dumps(returnData, indent=4)
@@ -219,18 +218,16 @@ class DataStreams:
         :type stream_id: int
 
         :returns:
-            A JSON object with an 'error' key if an error occured or 'datastream' key if update succeeded. If 'error', the value is an error string. If 'datastream', the value is a JSON object representing the deleted DataStream in the database.
+            A JSON object with an 'error' key if an error occured or 'datastream' key if update succeeded.
+            If 'error', the value is an error string. If 'datastream', the value is a JSON object representing the deleted DataStream in the database.
 
         .. seealso::
             `models.DataStream`
         """
         logging.debug("DELETE request to datastreams for stream with id {}".format(stream_id))
-
         cherrypy.response.headers['Content-Type'] = 'application/json'
         data = {}
-
         statusCode = "200"
-
         with sessionScope() as s:
             try:
                 deletedStream = deleteDatastream(s, stream_id)
@@ -270,7 +267,7 @@ class DataStreams:
             logging.error("Provided datastream to createDatastream method is None.")
 
     @staticmethod
-    def updateStream(stream_id, data, session=None):
+    def updateStream(stream_id, data, session):
         """
         Updates stream with id `stream_id` with new key/values in `data`. Note that this function will incur a db lookup.
 
@@ -288,10 +285,6 @@ class DataStreams:
         """
 
         logging.debug("Updating stream with id %s with data %s", str(stream_id), str(data))
-        if session is None:
-            with sessionScope() as session:
-                stream_info = _updateStream(stream_id, data, session)
-            return stream_info
         return _updateStream(stream_id, data, session)
 
 
@@ -373,28 +366,21 @@ def clean_inputs(inputs):
             :returns:
                 Dictionary with valid parameters taken from provided inputs.
         """
-
         validInputs = {
             'sensor': '^[a-zA-Z0-9_.]+$'
         }
-
         valueConversions = {
             'null': None
         }
-
         safeInputs = {}
-
         for key, value in inputs.iteritems():
-            if not key in validInputs:
+            if key not in validInputs:
                 return None
-
             if value in valueConversions:
                 value = valueConversions[value]
             elif re.match(validInputs[key], value) is None:
                 return None
-
             safeInputs[key] = value
-
         return safeInputs
 
 
@@ -413,12 +399,11 @@ def get_datastream(datastream_id, session=None):
         noResultFound: If no datastream matches the datastream_id.
     """
     if session is None:
-        with sessionScope() as session:
-            stream = session.query(DataStream).filter_by(id=datastream_id).one()
-            return stream.toDict()
-    else:
-        stream = session.query(DataStream).filter_by(id=datastream_id).one()
-        return stream.toDict()
+        with sessionScope() as s:
+            session = s
+
+    stream = session.query(DataStream).filter_by(id=datastream_id).one()
+    return stream.toDict()
 
 
 def get_datastream_by_sensorid(sensor_id, session=None):
@@ -436,12 +421,10 @@ def get_datastream_by_sensorid(sensor_id, session=None):
         NoResultFound: If no datastream matches the datastream_id.
     """
     if session is None:
-        with sessionScope() as session:
-            stream = session.query(DataStream).filter_by(sensor=sensor_id).one()
-            return stream.toDict()
-    else:
-        stream = session.query(DataStream).filter_by(sensor=sensor_id).one()
-        return stream.toDict()
+        with sessionScope() as s:
+            session = s
+    stream = session.query(DataStream).filter_by(sensor=sensor_id).one()
+    return stream.toDict()
 
 
 def filter_datastreams(session=None, **filter_args):
@@ -456,9 +439,7 @@ def filter_datastreams(session=None, **filter_args):
     """
     inputs = clean_inputs(filter_args)
     if session is None:
-        with sessionScope() as session:
-            streams = session.query(DataStream).filter_by(inputs).all()
-            return [stream.toDict() for stream in streams]
-    else:
-        streams = session.query(DataStream).filter_by(inputs).all()
-        return [stream.toDict() for stream in streams]
+        with sessionScope() as s:
+            session = s
+    streams = session.query(DataStream).filter_by(inputs).all()
+    return [stream.toDict() for stream in streams]

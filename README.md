@@ -1,5 +1,5 @@
-#Teleceptor
-####2014 Visgence Inc.
+# Teleceptor
+#### 2014 Visgence Inc.
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -13,11 +13,11 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-#Design Goals
+# Design Goals
 
 
-#Getting Started (Ubuntu and Raspberry Pi)
-##Dependencies
+# Getting Started (Ubuntu and Raspberry Pi)
+## Dependencies
 ```
 jinja2
 sqlalchemy
@@ -27,29 +27,29 @@ requests
 psycopg2
 pyserial
 ```
-##Setting Up Teleceptor
+## Setting Up Teleceptor
 1. Pull the latest version of Teleceptor from GitHub.
 2. To install a local config customizable first run ```./teleceptorcmd copyconfig``` app will print path
 3. Start up Elastic Search, Kibana, and Postgres and in your config, make sure they Everything is pointing to the correct destination.
 4. In teleceptor folder, run command ```./teleceptorcmd setup``` and wait until _Done!_ is printed.
   * **Note:** All commands should be run in the teleceptor folder unless installed with pip or setuptools
 5. Run command ```./teleceptorcmd runserver 0.0.0.0:8000```. You will now be running teleceptor as a local host.
-6. Open up either a Chrome or Mozilla Firefox browser and go to page [http://0.0.0.0:8000/] (http://0.0.0.0:8000/)
-  * If you do not have any sensors connected, you should see two default sensors producing a graph per tab with random data.
+6. Open up either a Chrome or Mozilla Firefox browser and go to page http://0.0.0.0:8000/
+  * If you do not have any sensors connected, you can run the loadfixtures command below.
 7. Set up desired sensors and start collecting data.(_See below for setting up sensors_)
 
-##Example Data
+## Example Data
 The ```./teleceptorcmd loadfixtures``` command will run a program that will create two datastreams and fill them with an hours worth of data in the form of a sine curve.
 
-##Example Sensor
+## Example Sensor
 The ```./teleceptorcmd btcmote``` command will run a program that requests data from http://blockchain.info/ticker and sends the data to teleceptor.
 
 
-#Sensor Firmware
+# Sensor Firmware
 Sensor firmware can be found in the [firmware](https://github.com/visgence/teleceptor/tree/master/firmware) folder. Download the appropriate firmware for your type of sensor, and then upload it to your sensor.
 
 
-##Setting Up Sensors
+## Setting Up Sensors
 1. Plug in your sensor through a USB port.
 * Make sure you have the most current firmware for your sensor. (_See **Sensor Firmware**._)
 2. Run command ```./teleceptorcmd serialPoller PathOfSensor```. This will begin to look for sensors via USB ports.
@@ -57,7 +57,7 @@ Note: On OS X, to find the name of your sensor, in terminal, type ```ls /dev/```
 
 
 
-#Teleceptor Front-End Usage
+# Teleceptor Front-End Usage
 * To view sensor data that has been collected, click on a sensor under the _Sensors_ tab.
 * To look at a certain time period of data, select a range under the _Time Controls_ tab.
   * :star: Specific data can also be viewed by passing the mouse on the graph to observe data points and the time it was collected.

@@ -58,9 +58,9 @@ class Root(object):
             for i in dsList['datastreams']:
                 if(i['sensor'] == sensor_name):
                     datastream = i
+            activeSensor['datastream'] = datastream
 
         cherrypy.response.headers['Content-Type'] = 'text/html'
-        activeSensor['datastream'] = datastream
 
         returnData = {
             "sysdata": sysdata_dict,

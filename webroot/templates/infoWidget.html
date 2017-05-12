@@ -1,18 +1,16 @@
-
- <div ng-repeat="template in widgets">
+<div ng-repeat="template in widgets">
     <div class="col-md-6">
         <div class="panel panel-default">
             <div class="panel-heading">
                 <h3 class="panel-title">{{template.title}}</h3>
             </div>
             <div class="panel-body">
-
                 <form class="form-horizontal" role="form">
                     <div id="tabs_{{template.url}}"></div>
                     <div ng-repeat="tab in template.items">
-                        <div id={{tab[0].tabName}}></div>
-                        <div id={{tab[0].tabName}}_body>
-                            <div class="alert alert-warning" style="padding-bottom: 10px; display: none" id={{template.url}}_warning></div>
+                        <div id="{{tab[0].tabName}}"></div>
+                        <div id="{{tab[0].tabName}}_body">
+                            <div class="alert alert-warning" style="padding-bottom: 10px; display: none" id="{{template.url}}_warning"></div>
                             <div ng-repeat="infoItem in tab">
                                 <div class="form-group">
                                     <label class="col-md-5 control-label" style="padding-top: 0px">
@@ -24,12 +22,12 @@
                                                 {{infoItem.value}}
                                             </div>
                                             <div ng-switch-when="input">
-                                                <div ng-if=template.editing>
-                                                    <input class="form-control" value={{infoItem.value}} id={{template.url}}_{{$index}}></input>
+                                                <div ng-if="template.editing">
+                                                    <input class="form-control" value={{infoItem.value}} id="{{template.url}}_{{$index}}""/>
                                                 </div>
-                                                <div ng-if=!template.editing>
+                                                <div ng-if="!template.editing">
                                                     <div ng-if="tab[0].tabName=='ManualEntry'">
-                                                        <input class="form-control" value={{infoItem.value}} id={{infoItem.inputid}}></input>
+                                                        <input class="form-control" value={{infoItem.value}} id="{{infoItem.inputid}}""/>
                                                     </div>
                                                     <div ng-if="tab[0].tabName=='Command'">
                                                         <div class = "col-md-1" style="height: 30px">
@@ -44,22 +42,22 @@
                                             <div ng-switch-when="multiple">
                                                 <div ng-repeat="path in infoItem.value">
                                                     <div style="padding-bottom: 10px">
-                                                        <div ng-if=template.editing>
-                                                            <input class="form-control" value={{path}} id={{template.url}}_{{$index}}_{{infoItem.name}}></input>
+                                                        <div ng-if="template.editing">
+                                                            <input class="form-control" value="{{path}}"" id="{{template.url}}_{{$index}}_{{infoItem.name}}"/>
                                                         </div>
-                                                        <div ng-if=!template.editing>
-                                                           {{path}}
+                                                        <div ng-if="!template.editing">
+                                                            {{path}}
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <div ng-if=template.editing>
+                                                <div ng-if="template.editing">
                                                     <button class="glyphicon, glyphicon-plus" ng-click="AddPath()"></button>
                                                 </div>
                                             </div>
                                             <div ng-switch-when="button">
-                                                <button type="button" class="btn btn-primary btn-sm" id={{infoItem.btnId}}>
-                                                    <span class="glyphicon glyphicon-send"></span>
-                                                    {{infoItem.label}}
+                                                <button type="button" class="btn btn-primary btn-sm" id="{{infoItem.btnId}}">
+                                                <span class="glyphicon glyphicon-send"></span>
+                                                {{infoItem.label}}
                                                 </button>
                                             </div>
                                         </div>
@@ -69,30 +67,29 @@
                         </div>
                     </div>
                     <div ng-if="currentTab==0 || template.title=='Stream Info'">
-                        <div ng-if=!template.editing>
+                        <div ng-if="!template.editing">
                             <div class="col-md-8 col-md-offset-5">
                                 <button type="button" class="btn btn-primary btn-sm" ng-click="EditFields(template.title)">
-                                    <span class="glyphicon glyphicon-pencil"></span>
-                                    Edit
+                                <span class="glyphicon glyphicon-pencil"></span>
+                                Edit
                                 </button>
                             </div>
                         </div>
-                        <div ng-if=template.editing>
+                        <div ng-if="template.editing">
                             <div class="col-md-8 col-md-offset-5">
                                 <button type="button" class="btn btn-success btn-sm" ng-click="SaveFields(template.url)">
-                                    <span class="glyphicon glyphicon-ok"></span>
-                                    Save
+                                <span class="glyphicon glyphicon-ok"></span>
+                                Save
                                 </button>
                                 <button type="button" class="btn btn-default btn-sm" ng-click="CancelFields(template.title)">
-                                    <span class="glyphicon glyphicon-remove"></span>
-                                    Cancel
+                                <span class="glyphicon glyphicon-remove"></span>
+                                Cancel
                                 </button>
                             </div>
                         </div>
-                     </div>
+                    </div>
                 </form>
             </div>
         </div>
     </div>
 </div>
-

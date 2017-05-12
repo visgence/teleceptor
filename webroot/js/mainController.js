@@ -1,4 +1,6 @@
+/*jslint node: true */
 'use strict';
+var angular, $;
 
 angular.module('teleceptor.maincontroller', [])
 
@@ -67,8 +69,8 @@ angular.module('teleceptor.maincontroller', [])
 
         });
 
-        jsonData["out"] = outputs;
-        jsonData["in"] = inputs;
+        jsonData.out = outputs;
+        jsonData.in = inputs;
 
         var json = JSON.stringify(jsonData);
         var jsonLength = json.length;
@@ -193,5 +195,4 @@ function createSensorOutput() {
 
     return sensor;
 }
-
 }]);

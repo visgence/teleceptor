@@ -1,5 +1,7 @@
+/*jslint node: true */
 'use strict';
 
+var angular, $;
 angular.module('teleceptor.timecontroller', ['ui.bootstrap.datetimepicker'])
 
 .controller('timeController', ['$scope', '$location', 'timeService', '$timeout', function($scope, $location, timeService, $timeout){

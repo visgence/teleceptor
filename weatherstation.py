@@ -86,7 +86,9 @@ def update():
                     if a.toDict()['name'] == "{}-{}".format(i, newData['head']['fields'][b]['name']):
                         sensor = session.query(Sensor).filter(Sensor.uuid == "{}-{}".format(i, newData['head']['fields'][b]['name'])).one()
                         for c in newData['data']:
-                            newReading = SensorReading(datastream=a.toDict()['id'], sensor=sensor.toDict()['uuid'], timestamp=dp.parse(c['time']).strftime('%s'), value=c['vals'][b])
+                            newReading = SensorReading(
+                                    datastream=a.toDict()['id'], sensor=sensor.toDict()['uuid'],
+                                    timestamp=dp.parse(c['time']).strftime('%s'), value=c['vals'][b])
                             session.add(newReading)
         session.commit()
 

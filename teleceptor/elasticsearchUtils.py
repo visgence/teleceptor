@@ -14,9 +14,12 @@ import logging
 import requests
 from datetime import datetime
 from pyelasticsearch import ElasticSearch
-from teleceptor import ELASTICSEARCH_URI# = "http://192.168.99.100:9200/"
-from teleceptor import ELASTICSEARCH_INDEX# = 'teleceptor'
-from teleceptor import ELASTICSEARCH_DOC# = 'teledata'
+# = "http://192.168.99.100:9200/"
+from teleceptor import ELASTICSEARCH_URI
+# = 'teleceptor'
+from teleceptor import ELASTICSEARCH_INDEX
+# = 'teledata'
+from teleceptor import ELASTICSEARCH_DOC
 from teleceptor import USE_DEBUG
 from teleceptor.timeAggregationUtils import getElasticSearchAggregationLevel
 
@@ -166,7 +169,7 @@ def getReadings(ds, start, end, points=None):
     # query['aggs'] = {'values': {'date_histogram': {'field': '@timestamp', 'interval': '1m'}}}
 
     # final_query = {'filter': {'and': [
-        # {key: query[key]} for key in query
+    # {key: query[key]} for key in query
     # ]}}
     # final_query['sort'] = [{'@timestamp': {'order': 'asc'}}]
     '''
@@ -205,7 +208,8 @@ def get_elastic(elastic_buffer, index_info=None):
     """
     es = ElasticSearch(ELASTICSEARCH_URI)
     # we actually use filter instead of query, since we want exact results
-    result = es.search(elastic_buffer, index=index_info)#{'filter': elastic_buffer, '_source': ['@timestamp', 'value']})
+    # {'filter': elastic_buffer, '_source': ['@timestamp', 'value']})
+    result = es.search(elastic_buffer, index=index_info)
 
     logging.debug("Got elasticsearch results: {}".format(result))
 
@@ -217,7 +221,8 @@ if __name__ == "__main__":
     Generate a simple sine wave
     """
     days = 30
-    period = 12*60 # min
+    # min
+    period = 12*60
     max = 1023
 
     start = time.time() - (days*period*2*60)

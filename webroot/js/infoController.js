@@ -1,5 +1,6 @@
+/*jslint node: true */
 'use strict';
-
+var angular, $, document;
 angular.module('teleceptor.infocontroller', [])
 
 .controller('infoController', ['$scope', '$http', 'infoService', '$compile', '$timeout', 'apiService', '$window', 'timeService', function($scope, $http, infoService, $compile, $timeout, apiService, $window, timeService){
@@ -17,7 +18,7 @@ angular.module('teleceptor.infocontroller', [])
     });
 
     function cleanWidgets(){
-        var cur = []
+        var cur = [];
         for(var i in $scope.widgets){
             var add = true;
             for(var j in cur){
@@ -33,11 +34,11 @@ angular.module('teleceptor.infocontroller', [])
 
             }
             if(add){
-                cur.push($scope.widgets[i])
+                cur.push($scope.widgets[i]);
             }
         }
         $scope.widgets = [];
-        $scope.widgets = cur
+        $scope.widgets = cur;
     }
 
     $scope.$watch(function(){
@@ -222,12 +223,12 @@ angular.module('teleceptor.infocontroller', [])
         var myDiv;
         for(var i in $scope.widgets){
             if($scope.widgets[i].items.length > 1){
-                var myDiv = angular.element("#tabs_"+$scope.widgets[i].url);
+                myDiv = angular.element("#tabs_"+$scope.widgets[i].url);
                 if(myDiv.length === 0) return;
                 var wrapper = "<ul class='nav nav-tabs'>";
                 for(var j in $scope.widgets[i].items){
                     wrapper += "<li ";
-                    if(j == 0) wrapper += "class='active'";
+                    if(j === 0) wrapper += "class='active'";
                     //make sure that the first item of each tab has the tabname property!
                     wrapper += "><a class='btn btn-link' id='"+ $scope.widgets[i].items[j][0].tabName +"_tab' ng-click='ChangeTab(" + j +")'>"+ $scope.widgets[i].items[j][0].tabName + "</a></li>";
                 }
@@ -250,7 +251,7 @@ angular.module('teleceptor.infocontroller', [])
             }
         }
         if(myDiv !== undefined){
-            angular.element('#tabs_sensors').append(myDiv)
+            angular.element('#tabs_sensors').append(myDiv);
         }
     }
 
@@ -409,53 +410,51 @@ angular.module('teleceptor.infocontroller', [])
     }, 1000);
 
     function exportData(readings){
-            var time_start = timeService.getValues().start;
-            var time_end = timeService.getValues().end;
-            var sensorInfo = infoService.getSensorInfo();
-            if(readings === null){
-                readings = infoService.getReadingsInfo().readings;
-            }
+        var time_start = timeService.getValues().start;
+        var time_end = timeService.getValues().end;
+        var sensorInfo = infoService.getSensorInfo();
+        if(readings === null){
+            readings = infoService.getReadingsInfo().readings;
+        }
 
-            var scaledReadings = [];
-            for(var i = 0; i < readings.length; i++){
-                scaledReadings.push(readings[i][1] * sensorInfo.last_calibration.coefficients[0] + sensorInfo.last_calibration.coefficients[1]);
-            }
+        var scaledReadings = [];
+        var i;
+        for(i = 0; i < readings.length; i++){
+            scaledReadings.push(readings[i][1] * sensorInfo.last_calibration.coefficients[0] + sensorInfo.last_calibration.coefficients[1]);
+        }
 
-            // actual delimiter characters for CSV format
-            var colDelim = ',';
-            var rowDelim = '\r\n';
+        // actual delimiter characters for CSV format
+        var colDelim = ',';
+        var rowDelim = '\r\n';
 
-            //build csv string
-            var csv = "";
-            csv += "timestamp" + colDelim + "UUID" + colDelim + "value" + colDelim + "scaled value" + colDelim + "units" + rowDelim;
-            for(var i=0; i < readings.length; i++){
-                csv += readings[i][0] + colDelim + sensorInfo.uuid + colDelim + readings[i][1] + colDelim + scaledReadings[i] + colDelim + sensorInfo.units + rowDelim;
-            }
-            // Data URI
-            var today = new Date();
+        //build csv string
+        var csv = "";
+        csv += "timestamp" + colDelim + "UUID" + colDelim + "value" + colDelim + "scaled value" + colDelim + "units" + rowDelim;
+        for(i=0; i < readings.length; i++){
+            csv += readings[i][0] + colDelim + sensorInfo.uuid + colDelim + readings[i][1] + colDelim + scaledReadings[i] + colDelim + sensorInfo.units + rowDelim;
+        }
+        // Data URI
+        var today = new Date();
 
-            var downloadFilename = sensorInfo.uuid + "_" + today.getMonth() +1 + "-" + today.getDate() + "-" + today.getFullYear() + "_" + today.getHours() + ":" + today.getMinutes() + ".csv";
-            //actually download
-            var link = document.createElement("a");
-            link.download = downloadFilename;
-            link.href = 'data:application/csv;charset=utf-8,' + encodeURIComponent(csv);
-            link.click();
+        var downloadFilename = sensorInfo.uuid + "_" + today.getMonth() +1 + "-" + today.getDate() + "-" + today.getFullYear() + "_" + today.getHours() + ":" + today.getMinutes() + ".csv";
+        //actually download
+        var link = document.createElement("a");
+        link.download = downloadFilename;
+        link.href = 'data:application/csv;charset=utf-8,' + encodeURIComponent(csv);
+        link.click();
     }
 
     function sendCommand(){
         var sensorInfo = infoService.getSensorInfo();
         //post new value to commands api
         var payload = {
-            "message": angular.element('#commandInput')[0].value
-           ,"duration": 60000,
-           "sensor_id": sensorInfo.uuid
+            "message": angular.element('#commandInput')[0].value,
+            "duration": 60000,
+            "sensor_id": sensorInfo.uuid
         };
-
         apiService.post("messages/", payload).then(function(response){
             console.log("the response was:");
             console.log(response);
         });
-
     }
-
 }]);
