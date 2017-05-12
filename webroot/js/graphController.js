@@ -87,6 +87,10 @@ angular.module('teleceptor.graphcontroller', [])
                 var streamInfo = infoService.getStreamInfo();
                 var sensorInfo = infoService.getSensorInfo();
                 if(streamInfo.name === undefined) return;
+                if(data.readings[0] === undefined){
+                    $('#graph-container').html("<div class='alert alert-warning'>Couldn't find any data in current time range</div>");
+                    return;
+                }
                 scope.graphName = streamInfo.name;
                 parent.innerHTML = "";
                 var width = elem[0].clientWidth;
