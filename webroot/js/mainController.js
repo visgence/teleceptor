@@ -1,6 +1,5 @@
 /*jslint node: true */
 'use strict';
-var angular, $;
 
 angular.module('teleceptor.maincontroller', [])
 

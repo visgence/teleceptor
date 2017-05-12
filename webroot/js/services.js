@@ -1,6 +1,9 @@
+/*jslint node: true */
+'use strict';
+
 angular.module('teleceptor.services', [])
 
-.factory('timeService', function(){
+.factory('timeService', function() {
     var values = {
         start: null,
         end: null
@@ -8,19 +11,19 @@ angular.module('teleceptor.services', [])
 
     return {
         values: values,
-        getValues: function(){
+        getValues: function() {
             return values;
         },
-        setStart: function(newStart){
-             values.start = parseInt(newStart);
+        setStart: function(newStart) {
+            values.start = parseInt(newStart);
         },
-        setEnd: function(newEnd){
+        setEnd: function(newEnd) {
             values.end = parseInt(newEnd);
         }
     };
 })
 
-.factory('infoService', function(){
+.factory('infoService', function() {
     var sensorInfo;
     var streamInfo;
     var readingsInfo;
@@ -28,50 +31,50 @@ angular.module('teleceptor.services', [])
     return {
         streamInfo: streamInfo,
         sensorInfo: sensorInfo,
-        getStreamInfo: function(){
+        getStreamInfo: function() {
             return streamInfo;
         },
-        setStreamInfo: function(newInfo){
+        setStreamInfo: function(newInfo) {
             streamInfo = newInfo;
         },
-        resetStreamInfo: function(){
+        resetStreamInfo: function() {
             streamInfo = null;
         },
-        getSensorInfo: function(){
+        getSensorInfo: function() {
             return sensorInfo;
         },
-        setSensorInfo: function(newInfo){
+        setSensorInfo: function(newInfo) {
             sensorInfo = newInfo;
         },
-        resetSensorInfo: function(){
+        resetSensorInfo: function() {
             sensorInfo = null;
         },
-        getReadingsInfo: function(){
+        getReadingsInfo: function() {
             return readingsInfo;
         },
-        setReadingsInfo: function(newInfo){
+        setReadingsInfo: function(newInfo) {
             readingsInfo = newInfo;
         },
-        resetReadingsInfo: function(){
+        resetReadingsInfo: function() {
             readingsInfo = null;
         }
     };
 })
 
-.factory('apiService', ['$http', function($http){
+.factory('apiService', ['$http', function($http) {
     var urlBase = '/api/';
     var apiService = {};
 
-    apiService.get = function(Str){
-        return $http.get(urlBase+Str);
+    apiService.get = function(Str) {
+        return $http.get(urlBase + Str);
     };
 
-    apiService.put = function(Str, params){
-        return $http.put(urlBase+Str, params);
+    apiService.put = function(Str, params) {
+        return $http.put(urlBase + Str, params);
     };
 
-    apiService.post = function(Str, params){
-        return $http.post(urlBase+Str, params);
+    apiService.post = function(Str, params) {
+        return $http.post(urlBase + Str, params);
     };
 
     return apiService;
