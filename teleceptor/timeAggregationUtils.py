@@ -7,11 +7,10 @@ Authors: Victor Szczepanski
 
 from sys import maxsize
 
-aggregation_levels = {(0, 120): 1,
-                      (121, 120*60): 10,
-                      (120*60, 3*3600): 60,
-                      (3*3600, 3*24*3600): 300,
-                      (3*24*3600, maxsize): 3600
+aggregation_levels = {(0, 3600): 10,                    # 0 to an hour, 10 seconds
+                      (3600, 7*24*3600): 60,            # an hour to a week, 1 minute
+                      (7*24*3600, 30*24*3600): 60*10,   # a week to 30 days, 10 minutes
+                      (30*24*3600, maxsize): 60*60      # longer than 30 days, an hour
                       }
 """Defines the aggregation levels used by Teleceptor.
  The form is (period_start, period_end): aggregation_value.
@@ -66,9 +65,11 @@ def getElasticSearchAggregationLevel(start, end):
     aggregation_period = getAggregationLevel(start, end)
     if aggregation_period < 60:
         return "{}s".format(aggregation_period)
-    if aggregation_period < 60*60: # One hour
+    if aggregation_period < 60*60:
+        # One hour
         return "{}m".format(aggregation_period/60.0)
-    if aggregation_period < 60*60*24: # One day
+    if aggregation_period < 60*60*24:
+        # One day
         return "{}h".format((aggregation_period/60.0)/60.0)
     return "{}d".format(((aggregation_period/60.0)/60.0)/24.0)
 

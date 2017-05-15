@@ -1,7 +1,7 @@
 led / optimized / DLL files
 __pycache__/
 *.py[cod]
-
+*~
 # C extensions
 *.so
 
@@ -51,3 +51,10 @@ target/
 
 # OSX
 *.DS_Store
+
+#NPM
+bower_components/
+node_modules/
+
+config/config.json
+database/

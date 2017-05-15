@@ -23,12 +23,16 @@ if teleceptor.USEPG:
 else:
     engine = "sqlite:///" + teleceptor.DBFILE
 
+testEngine = "sqlite:///" + teleceptor.TESTDBFILE
+
 
 @contextmanager
 def sessionScope():
     """Provide a transactional scope around a series of operations."""
-
-    db = create_engine(engine)
+    if teleceptor.isTesting:
+        db = create_engine(testEngine)
+    else:
+        db = create_engine(engine)
     Session = sessionmaker(bind=db)
     session = Session()
 

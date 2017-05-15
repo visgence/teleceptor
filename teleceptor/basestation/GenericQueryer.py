@@ -15,12 +15,14 @@ import logging
 import requests
 from requests import ConnectionError
 import os
-
+import smtplib
+from email.MIMEMultipart import MIMEMultipart
+from email.MIMEText import MIMEText
 
 # local imports
 import teleceptor
 from teleceptor.basestation import TCPMote, SerialMote
-
+from teleceptor import USE_EMAIL, EMAIL_FROM, EMAIL_TO, EMAIL_PW
 
 serverURL = "http://localhost:" + str(teleceptor.PORT) + "/api/station/"
 serverDeleteURL = "http://localhost:" + str(teleceptor.PORT) + "/api/messages/"
@@ -95,7 +97,26 @@ def main(queryRate=60, **kwargs):
 
     while(1):
         # get json from device
-        info, readings = device.getReadings() # TODO: catch generic exception
+        try:
+            # TODO: catch generic exception
+            info, readings = device.getReadings()
+        except Exception as e:
+            logging.error("An error has occured trying to getReadings: {}".format(e))
+            if USE_EMAIL:
+                msg = MIMEMultipart()
+                msg['From'] = EMAIL_FROM
+                msg['To'] = EMAIL_TO
+                msg['Subject'] = "Teleceptor error"
+                body = "the current device has stopping taking readings\n\nError message:\n{}\n\nSensor info:\n{}".format(e, device)
+                msg.attach(MIMEText(body, 'plain'))
+
+                server = smtplib.SMTP('smtp.gmail.com', 587)
+                server.starttls()
+                server.login(EMAIL_FROM, EMAIL_PW)
+                text = msg.as_string()
+                server.sendmail(EMAIL_FROM, EMAIL_TO, text)
+                server.quit()
+            return
 
         try:
             info = json.loads(info)
@@ -131,7 +152,8 @@ def main(queryRate=60, **kwargs):
             # do some translation from sensor mini-json to full JSON
             if "t" not in sensor and "timestamp" not in sensor:
                 sensor.update({'timestamp': 0})
-            elif "timestamp" not in sensor:# then t is in sensor, translate t to timestamp
+            # then t is in sensor, translate t to timestamp
+            elif "timestamp" not in sensor:
                 sensor['timestamp'] = sensor['t']
                 del sensor['t']
 
@@ -203,9 +225,10 @@ def updateMote(moteHandle, newValues={}):
     parsedNewValues = {}
     for sen in newValues:
         logging.debug("sen: %s", sen)
-        if newValues[sen] == None:
+        if newValues[sen] is None:
             continue
-        message = newValues[sen][-1] # get the last message (ignore others)
+        # get the last message (ignore others)
+        message = newValues[sen][-1]
         for senName, senMessage in message.items():
             if senName == "id":
                 pass

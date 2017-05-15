@@ -1,0 +1,19 @@
+{
+  "name": "teleceptor",
+  "private": true,
+  "version": "0.0.0",
+  "description": "New Teleceptor UI",
+  "repository": "https://github.com/angular/angular-seed",
+  "license": "MIT",
+  "devDependencies": {
+    "angular-mocks": "^1.4.8",
+    "bower": "^1.4.1",
+    "csslint": "^1.0.1",
+    "htmlhint": "^0.9.13",
+    "jshint": "^2.9.4"
+  },
+  "scripts": {
+    "postinstall": "bower install --config.interactive=false"
+  }
+}
+

@@ -1,5 +1,5 @@
 """
-Provides a function that returns an integer code representing the health/status of a given datastream. 
+Provides a function that returns an integer code representing the health/status of a given datastream.
 May be run from the commandline.
 
 Sample Usage:
@@ -11,12 +11,14 @@ Sample Usage:
 Args:
     teleceptorURI (str): the URI for the base teleceptor server. Defaults to http://localhost:80/
     id optional(int): the datastream id to check.
-    useSQL (bool): flag to use sql or elasticsearch for testing. If True, will request sql data from teleceptor. If False, will request elasticsearch data.
+    useSQL (bool): flag to use sql or elasticsearch for testing. If True, will request sql data from teleceptor.
+    If False, will request elasticsearch data.
     minutes (float): the number of minutes in the past from now to request data for.
     sensor_uuid optional(str): the uuid of the sensor. If present, will request the datastream id before performing main check.
 
 Return:
-    (int): a nagios compatible code. 0 for ok, 1 for no data, but successful connection, 2 for failed connection, and 3 for any other exception
+    (int): a nagios compatible code. 0 for ok, 1 for no data, but successful connection,
+    2 for failed connection, and 3 for any other exception
 """
 
 import argparse
@@ -34,12 +36,14 @@ def run_check(datastream_id, teleceptorURI, useSQL, minutes, sensor_uuid=None):
     Args:
         id (int): the datastream id to check.
         teleceptorURI (str): the URI for the base teleceptor server. Defaults to http://localhost:80/
-        useSQL (bool): flag to use sql or elasticsearch for testing. If True, will request sql data from teleceptor. If False, will request elasticsearch data.
+        useSQL (bool): flag to use sql or elasticsearch for testing. If True, will request sql data from teleceptor.
+        If False, will request elasticsearch data.
         minutes (float): the number of minutes in the past from now to request data for.
         sensor_uuid optional(str): the uuid of the sensor. If present, will request the datastream id before performing main check.
 
     Return:
-        (int): a nagios compatible code. 0 for ok, 1 for no data, but successful connection, 2 for failed connection, and 3 for any other exception
+        (int): a nagios compatible code. 0 for ok, 1 for no data, but successful connection,
+        2 for failed connection, and 3 for any other exception
     """
     return_code = 0
 
@@ -101,9 +105,15 @@ def run_check(datastream_id, teleceptorURI, useSQL, minutes, sensor_uuid=None):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Test the health of a given datastream.')
-    parser.add_argument('teleceptorURI', type=str, help='URI for the teleceptor server. Defaults to http://localhost:80', default='http://localhost:80')
+    parser.add_argument(
+        'teleceptorURI', type=str,
+        help='URI for the teleceptor server. Defaults to http://localhost:80',
+        default='http://localhost:80')
     parser.add_argument('--id', type=int, help='ID of the datastream to test.')
-    parser.add_argument('-sql', '--useSQL', action='store_true', help='True to request SQL data. False to request Elasticsearch data.', default=False)
+    parser.add_argument(
+        '-sql', '--useSQL', action='store_true',
+        help='True to request SQL data. False to request Elasticsearch data.',
+        default=False)
     parser.add_argument('-m', '--minutes', type=float, help='The number of minutes in the past from now to request data for.', default=30.0)
     parser.add_argument('--uuid', type=str, help='The uuid of the sensor. If present, overrides the --id, if --id is present.')
     args = parser.parse_args()

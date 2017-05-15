@@ -1,5 +1,6 @@
 {
     "DBFILE": "database/base_station.db",
+    "TESTDBFILE": "database/test.db",
     "USEPG": true,
     "PGSQLDBHOST": "pg",
     "PGSQLDBNAME": "tele",
@@ -11,11 +12,15 @@
     "PORT": 8000,
     "LOG": "teleceptor.log",
     "TCP_POLLER_HOSTS": [],
-    "USE_DEBUG": false,
+    "USE_DEBUG": true,
     "SUPRESS_SERVER_OUTPUT": false,
     "USE_SQL_ALWAYS": false,
     "USE_ELASTICSEARCH": true,
     "ELASTICSEARCH_URI": "http://elasticsearch:9200/",
     "ELASTICSEARCH_INDEX": "teleceptor",
-    "ELASTICSEARCH_DOC": "teledata"
+    "ELASTICSEARCH_DOC": "teledata",
+    "USE_EMAIL": false,
+    "EMAIL_FROM": "",
+    "EMAIL_TO": "",
+    "EMAIL_PW": ""
 }
