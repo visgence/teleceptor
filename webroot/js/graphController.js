@@ -87,8 +87,11 @@ angular.module('teleceptor.graphcontroller', [])
                 var sensorInfo = infoService.getSensorInfo();
                 if (streamInfo.name === undefined) return;
                 if (data.readings[0] === undefined) {
-                    $('#graph-container').html("<div class='alert alert-warning'>Couldn't find any data in current time range</div>");
+                    $('#warning_message').html("<div class='alert alert-warning'>Couldn't find any data in current time range</div>");
+                    $(parent).html('')
                     return;
+                } else {
+                    $('#warning_message').html("");
                 }
                 scope.graphName = streamInfo.name;
                 parent.innerHTML = "";
@@ -134,11 +137,8 @@ angular.module('teleceptor.graphcontroller', [])
                     .classed("svg-content-responsive", true);
 
                 if (data.readings.length === 0) {
-                    newChart.append("g").append("text")
-                        .text("No data exists for this time range.")
-                        .attr("class", "ChartTitle-Text")
-                        .attr("x", margin.left)
-                        .attr("y", height / 2);
+                    $('#warning_message').html("<div class='alert alert-warning'>Couldn't find any data in current time range</div>");
+                    $(parent).html('')
                     return;
                 }
 
