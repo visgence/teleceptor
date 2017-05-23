@@ -1,38 +1,41 @@
 <div class="container-fluid">
-    <div id="teleceptor">
-        <div ng-controller="mainController">
-            <div ng-include="'/templates/navbar.html'" />
-            <div class="main">
-                <div class="row">
-                    <!-- Time controls -->
-                    <div class="col-md-3">
-                        <div ng-controller="timeController">
-                            <div ng-include="'/templates/timeWidget.html'"></div>
+    <div ng-controller="mainController">
+        <div ng-include="'/templates/navbar.html'" />
+        <div class="main">
+            <div class="row">
+                <div class="col-md-2" style="padding: 4px">
+                    <div class="left-col">
+                        <!-- Time controls -->
+                        <div class="card">
+                            <div ng-controller="timeController">
+                                <div ng-include="'/templates/timeWidget.html'" />
+                            </div>
                         </div>
-                    </div>
-                    <!-- Graph -->
-                    <div class="col-md-9 right-col">
-                        <div ng-controller="graphController">
-                            <div ng-include="'/templates/graphWidget.html'"></div>
+                        <!-- Tree controls -->
+                        <div class="card">
+                            <div ng-controller="treeController">
+                                <div ng-include="'/templates/treeWidget.html'" />
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="row">
-                    <!-- Tree controls -->
-                    <div class="col-md-3">
-                        <div ng-controller="treeController">
-                            <div ng-include="'/templates/treeWidget.html'"></div>
+                <div class="col-md-10" style="padding: 4px">
+                    <div class="right-col">
+                        <!-- Graph -->
+                        <div class="card">
+                            <div ng-controller="graphController">
+                                <div ng-include="'/templates/graphWidget.html'" />
+                            </div>
                         </div>
-                    </div>
-                    <!-- Stream Info -->
-                    <div class="col-md-9 right-col">
-                        <div ng-controller="infoController">
-                            <div ng-include="'/templates/infoWidget.html'"></div>
+                        <!-- Stream Info -->
+                        <div class="card">
+                            <div ng-controller="infoController">
+                                <div ng-include="'/templates/infoWidget.html'" />
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 </div>
