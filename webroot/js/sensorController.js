@@ -33,9 +33,7 @@ angular.module('teleceptor.sensorcontroller', ['frapontillo.bootstrap-switch'])
         if (v.sensor_type === "output") {
             $scope.isActive = true;
             //We need to set the preliminary state
-        }
-        return
-        updateInfo();
+        }        
     }
 
     $scope.ChangeTab = function(event, tab) {
@@ -53,132 +51,56 @@ angular.module('teleceptor.sensorcontroller', ['frapontillo.bootstrap-switch'])
     };
 
     $scope.CommandSwitch = function(){
+
     }
 
-
-
-
-
-
-  
-
-    
-
-
-
-
-
-
-
-
-
-
-    function updateInfo() {
-        var myDiv;
-        for (var i in $scope.widgets) {
-            if ($scope.widgets[i].items.length > 1) {
-                myDiv = angular.element("#tabs_" + $scope.widgets[i].url);
-                if (myDiv.length === 0) return;
-                var wrapper = "<ul class='nav nav-tabs'>";
-                for (var j in $scope.widgets[i].items) {
-                    wrapper += "<li ";
-                    if (j === 0) wrapper += "class='active'";
-                    //make sure that the first item of each tab has the tabname property!
-                    wrapper += "><a class='btn btn-link' id='" + $scope.widgets[i].items[j][0].tabName + "_tab' ng-click='ChangeTab(" + j + ")'>" + $scope.widgets[i].items[j][0].tabName + "</a></li>";
-                }
-                wrapper += "</ul><br>";
-                myDiv.html("");
-                myDiv.append($compile(wrapper)($scope));
+    $scope.SaveFields = function() {
+        console.log($scope.sensor)
+        var updateData = {};
+        var url = "sensors";
+        var editableFields = ['last_calibration', 'units', 'description', 'uuid']
+        
+        for(var i in $scope.sensor){
+            if(!(editableFields.includes(i))) continue;
+            if($scope.sensor[i] === "-" || $scope.sensor[i] === ""){
+                updateData[i] = null;
+            } else {
+                updateData[i] = $scope.sensor[i];
             }
         }
-        for (var x in $scope.widgets) {
-            for (var y in $scope.widgets[x].items) {
-                var head = angular.element("#tabs_" + $scope.widgets[x].url);
-                var body = angular.element("#" + $scope.widgets[x].items[y][0].tabName + "_body");
-                if (y === "0") {
-                    head.addClass("active");
-                    body.css("display", "block");
-                } else {
-                    body.css("display", "none");
-                    head.removeClass("active");
-                }
-            }
+        if(updateData.last_calibration !== null){
+            updateData.last_calibration.timestamp = Date.now()/1000
         }
-        if (myDiv !== undefined) {
-            angular.element('#tabs_sensors').append(myDiv);
-        }
-    }
-
-    
+        
 
 
 
-    $scope.SaveFields = function(template) {
-        var updates = {
-            "type": template
-        };
-        var url = "";
-        var cancel = false;
-        for (var i in $scope.widgets) {
-            if ($scope.widgets[i].url === template) {
-                url = $scope.widgets[i].url + "/";
-                if ($scope.widgets[i].url === "datastreams") {
-                    url += "?stream_id=" + $scope.widgets[i].id;
-                } else {
-                    url += $scope.widgets[i].uuid;
-                }
 
-                for (var j in $scope.widgets[i].items[0]) {
-                    if ($scope.widgets[i].items[0][j].inputType === "input") {
-                        updates[$scope.widgets[i].items[0][j].name.toLowerCase()] = $("#" + template + "_" + j)[0].value.toLowerCase();
-                    }
-                    if ($scope.widgets[i].items[0][j].inputType === "multiple") {
-                        updates[$scope.widgets[i].items[0][j].name.toLowerCase()] = [];
-                        for (var k in $scope.widgets[i].items[0][j].value) {
-                            var str = "#" + template + "_" + k + "_" + $scope.widgets[i].items[0][j].name;
-                            var newPath = $(str)[0].value.toLowerCase();
-                            if (newPath === "") {
-                                continue;
-                            }
-                            if (newPath[0] != '/') {
-                                ShowWarning(template, "Paths must begin with a '/'");
-                                cancel = true;
-                            }
-                            if (newPath[newPath.length - 1] == '/') {
-                                ShowWarning(template, "Paths must not end with a '/'");
-                                cancel = true;
-                            }
 
-                            var temp = newPath.split('/');
-                            for (k in temp) {
-                                if (/[~`!#$%\^&*+=\-\[\]\\';,/{}|\\":<>\?]/g.test(temp[k])) {
-                                    ShowWarning(template, "Paths cannot have any special characters");
-                                    cancel = true;
-                                }
-                            }
-                            updates[$scope.widgets[i].items[0][j].name.toLowerCase()].push($(str)[0].value.toLowerCase());
-                        }
-                        if (updates[$scope.widgets[i].items[0][j].name.toLowerCase()].length === 0) {
-                            updates[$scope.widgets[i].items[0][j].name.toLowerCase()].push("/new_sensors");
-                        }
-                    }
-                }
 
-            }
-        }
-        if (cancel) return;
-        if (updates.type == "sensors") {
-            updates.last_calibration = {
-                "coefficients": JSON.parse(updates.calibration)
-            };
-        }
-        apiService.put(url, updates).then(function successCallback(response) {
-            $window.location.reload();
+
+        console.log(updateData)
+        apiService.put(url, updateData).then(function successCallback(response) {
+            console.log(response)
         }, function errorCallback(response) {
             console.log("Error Occured: ", response.data);
 
         });
     };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     function ShowWarning(tag, msg) {
         angular.element("#" + tag + "_warning").html(msg).css('display', 'block');

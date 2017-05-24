@@ -53,7 +53,7 @@ angular.module('teleceptor.streamcontroller', [])
     };
 
     $scope.SaveFields = function() {
-        var url = "/datastreams";
+        var url = "datastreams";
 
         var updateData = {};
         for(var i in $scope.stream){

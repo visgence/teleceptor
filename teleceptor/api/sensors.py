@@ -129,7 +129,7 @@ class Sensors:
         return json.dumps(returnData, indent=4)
 
     @require()
-    def PUT(self, sensor_id):
+    def PUT(self):
         """
         Updates the sensor with uuid `sensor_id`.
 
@@ -156,15 +156,18 @@ class Sensors:
             # no json object to decode, just use an empty dictionary
             data = {}
 
+        print "we got:"
+        print data
+
         logging.debug("Request body: %s", data)
 
         with sessionScope() as session:
             try:
-                sensor = Sensors.updateSensor(sensor_id, data, session)
+                sensor = Sensors.updateSensor(data, session)
                 returnData['sensor'] = sensor
             except NoResultFound:
-                logging.error("Sensor with id %s doesn't exist.", str(sensor_id))
-                returnData['error'] = "Sensor with id %s doesn't exist." % sensor_id
+                logging.error("Sensor with id %s doesn't exist.", str(data['uuid']))
+                returnData['error'] = "Sensor with id %s doesn't exist." % data['uuid']
 
         cherrypy.response.status = statusCode
 
@@ -239,7 +242,7 @@ class Sensors:
         return sensor
 
     @staticmethod
-    def updateSensor(sensor_id, data, session):
+    def updateSensor(data, session):
         """
         Updates sensor with id `sensor_id` with new key/values in `data`. Note that this function will incur a db lookup.
 
@@ -257,8 +260,8 @@ class Sensors:
             whitelist = ["sensor_IOtype", "sensor_type", "name", "units", ""]
         """
 
-        logging.debug("Updating sensor with id %s with data %s", str(sensor_id), str(data))
-        return _updateSensor(sensor_id, data, session)
+        logging.debug("Updating sensor with id %s with data %s", str(data['uuid']), str(data))
+        return _updateSensor(data, session)
 
     @staticmethod
     def updateCalibration(sensor, coefficients, timestamp, session):
@@ -347,11 +350,12 @@ def getAllSensors(session):
     return [s.toDict() for s in sensors]
 
 
-def _updateSensor(sensor_id, data, session):
+def _updateSensor(data, session):
     blacklist = ("uuid", "message")
-    sensor = session.query(Sensor).filter_by(uuid=sensor_id).one()
+    sensor = session.query(Sensor).filter_by(uuid=data['uuid']).one()
     for key, value in data.iteritems():
         logging.debug("Key: {}, Value: {}".format(key, value))
+        print("Key: {}, Value: {}".format(key, value))
         if key in blacklist:
             logging.debug("Request to updateSensor included blacklisted key %s", str(key))
             continue
@@ -370,7 +374,7 @@ def _updateSensor(sensor_id, data, session):
             sensor = Sensors.updateCalibration(sensor.toDict(), value['coefficients'], value['timestamp'], session)
             # we want to keep using a Sensor, not the dict, so look it up
             # TODO: This is pretty smelly, but should work for now. Maybe in the future we want updateCalibration and _updateCalibration return a Sensor, or find some other way to update it.
-            sensor = session.query(Sensor).filter_by(uuid=sensor_id).one()
+            sensor = session.query(Sensor).filter_by(uuid=data['uuid']).one()
         elif 'scale' in key:
             continue
         elif key in models.SENSORWHITELIST:

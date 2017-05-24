@@ -35,26 +35,18 @@
                         </button>
                     </div>
                     <div ng-if="editing" style="margin-top: 9px">
+                        <div class="info-static">{{sensor.uuid}}</div>
+                        <div class="info-static">{{sensor.model}}</div>
+                        <div class="info-static">{{sensor.name}}</div>
                         <div class="info-edit">
-                            <input value="{{sensor.uuid}}">
+                            <input ng-model="sensor.description" value="{{sensor.description}}">
                         </div>
                         <div class="info-edit">
-                            <input value="{{sensor.model}}">
+                            <input ng-model="sensor.units" value="{{sensor.units}}">
                         </div>
+                        <div class="info-static">{{sensor.last_calibration.timestamp}}</div>
                         <div class="info-edit">
-                            <input value="{{sensor.name}}">
-                        </div>
-                        <div class="info-edit">
-                            <input value="{{sensor.description}}">
-                        </div>
-                        <div class="info-edit">
-                            <input value="{{sensor.units}}">
-                        </div>
-                        <div class="info-edit">
-                            <input value="{{sensor.last_calibration.timestamp}}">
-                        </div>
-                        <div class="info-edit">
-                            <input value="{{sensor.last_calibration.coefficients}}">
+                            <input ng-model="sensor.last_calibration.coefficients" value="{{sensor.last_calibration.coefficients}}">
                         </div>
                     </div>
                 </div>
@@ -115,20 +107,8 @@
                 </div>
                 <div class="col-md-6">
                     <div class="btn-row">
-                             <input
-                                id="bsSwitch"
-                                bs-switch
-                                ng-model="isSelected"
-                                switch-active="{{ isActive }}"
-                                type="checkbox"
-                                switch-on-text="On"
-                                switch-off-text="Off"
-                                switch-animate="true"
-                                switch-change="CommandSwitch()">
-
-</div>
-
-                    
+                        <input id="bsSwitch" bs-switch ng-model="isSelected" switch-active="{{ isActive }}" type="checkbox" switch-on-text="On" switch-off-text="Off" switch-animate="true" switch-change="CommandSwitch()">
+                    </div>
                 </div>
             </div>
         </div>
@@ -148,94 +128,3 @@
         </div>
     </div>
 </div>
-<!-- 
-    <div class="row">
-        <div ng-repeat="template in widgets">
-            <div class="col-md-6">
-                <div class="card clearfix">
-                    <div class="card-title">
-                        {{template.title}}
-                    </div>
-                    <div id="tabs_{{template.url}}" />
-                    <div ng-repeat="tab in template.items">
-                        <div id="{{tab[0].tabName}}" />
-                        <div id="{{tab[0].tabName}}_body">
-                            <div class="alert alert-warning" style="padding-bottom: 10px; display: none" id="{{template.url}}_warning" />
-                            <div ng-repeat="infoItem in tab">
-                                <div class="form-group">
-                                    <label class="col-md-5 control-label" style="padding-top: 0px">
-                                        {{infoItem.name}}
-                                    </label>
-                                    <div class="col-md-6">
-                                        <div ng-switch="infoItem.inputType">
-                                            <div ng-switch-when="text">
-                                                {{infoItem.value}}
-                                            </div>
-                                            <div ng-switch-when="input">
-                                                <div ng-if="template.editing">
-                                                    <input class="form-control" value="{{infoItem.value}}" " id="{{template.url}}_{{$index}} " />
-                                                    </div>
-                                                    <div ng-if="!template.editing ">
-                                                        <div ng-if="tab[0].tabName=='ManualEntry' ">
-                                                            <input class="form-control " value="{{infoItem.value}} "" id="{{infoItem.inputid}}" />
-                                                </div>
-                                                <div ng-if="tab[0].tabName=='Command'">
-                                                    <div class="col-md-1" style="height: 30px">
-                                                        <input class="form-control" type="checkbox" />
-                                                    </div>
-                                                </div>
-                                                <div ng-if="tab[0].tabName!='ManualEntry' && tab[0].tabName!='Command'">
-                                                    {{infoItem.value}}
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div ng-switch-when="multiple">
-                                            <div ng-repeat="path in infoItem.value">
-                                                <div style="padding-bottom: 10px">
-                                                    <div ng-if="template.editing">
-                                                        <input class="form-control" value="{{path}}" id="{{template.url}}_{{$index}}_{{infoItem.name}}" />
-                                                    </div>
-                                                    <div ng-if="!template.editing">
-                                                        {{path}}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div ng-if="template.editing">
-                                                <button class="glyphicon glyphicon-plus" ng-click="AddPath()" />
-                                            </div>
-                                        </div>
-                                        <div ng-switch-when="button">
-                                            <button type="button" class="btn btn-primary btn-sm" id="{{infoItem.btnId}}">
-                                                <span class="glyphicon glyphicon-send" /> {{infoItem.label}}
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        </div>
-                    </div>
-                    <div ng-if="currentTab==0 || template.title=='Stream Info'">
-                        <div ng-if="!template.editing ">
-                            <div class="col-md-8 col-md-offset-5 ">
-                                <button type="button " class="btn btn-primary btn-sm" ng-click="EditFields(template.title)">
-                                    <span class="glyphicon glyphicon-pencil " /> Edit
-                                </button>
-                            </div>
-                        </div>
-                        <div ng-if="template.editing">
-                            <div class="col-md-8 col-md-offset-5">
-                                <button type="button " class="btn btn-success btn-sm" ng-click="SaveFields(template.url)">
-                                    <span class="glyphicon glyphicon-ok" /> Save
-                                </button>
-                                <button type="button " class="btn btn-default btn-sm" ng-click="CancelFields(template.title)">
-                                    <span class="glyphicon glyphicon-remove " /> Cancel
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div> -->

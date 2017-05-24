@@ -194,9 +194,6 @@ class DataStreams:
 
         logging.debug("Request body: %s", data)
 
-        print"\nwe got:\n"
-        print data
-
         with sessionScope() as session:
             try:
                 stream = DataStreams.updateStream(data, session)
