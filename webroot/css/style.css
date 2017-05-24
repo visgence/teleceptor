@@ -1,3 +1,7 @@
+.main {
+    margin-top: 60px;
+}
+
 .left-col {
     margin-left: 17px;
 }
@@ -41,12 +45,44 @@
     text-align: center;
 }
 
-.tick line {
-    stroke: #dadada
+.info-title{
+	font-weight: bolder;
+	text-align: right;
+	margin: 10px;
 }
 
-.main {
-    margin-top: 60px;
+.info-static {
+	margin: 10px;
+	display: block
+}
+
+.info-edit {
+	margin: 4px;
+	display: block
+}
+
+.btn-group {
+	margin-top: 10px;
+	
+}
+
+.edit-buttons {
+    left: 40%;
+    width: 20%;
+    position: relative;
+    vertical-align: middle;
+    display: inline-block;
+    margin-top: 6px;
+}
+
+.btn-row {
+    margin: 4px;
+    float: left;
+    margin-top: 10px
+}
+
+.tick line {
+    stroke: #dadada
 }
 
 .graph-placeholder {
