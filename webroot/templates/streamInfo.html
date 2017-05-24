@@ -23,7 +23,7 @@
                     <div class="info-static">{{stream.max_value}}</div>
                     <div class="info-static">{{stream.sensor}}</div>
                     <div ng-repeat="path in stream.paths">
-                        <div class="info-static">{{path}}</div>
+                        <div class="info-static">{{path.url}}</div>
                     </div>
                     <button type="button " class="btn btn-primary btn-sm" ng-click="EditFields()">
                         <span class="glyphicon glyphicon-pencil " /> Edit
@@ -32,23 +32,21 @@
                 <div ng-if="editing">
                     <div class="info-static">{{stream.id}}</div>
                     <div class="info-edit">
-                        <input value="{{stream.name}}">
+                        <input ng-model="stream.name" value="{{stream.name}}">
                     </div>
                     <div class="info-edit">
-                        <input value="{{stream.description}}">
+                        <input ng-model="stream.description" value="{{stream.description}}">
                     </div>
                     <div class="info-edit">
-                        <input value="{{stream.min_value}}">
+                        <input ng-model="stream.min_value" value="{{stream.min_value}}">
                     </div>
                     <div class="info-edit">
-                        <input value="{{stream.max_value}}">
+                        <input ng-model="stream.max_value" value="{{stream.max_value}}">
                     </div>
-                    <div class="info-edit">
-                        <input value="{{stream.sensor}}">
-                    </div>
+                     <div class="info-static">{{stream.sensor}}</div>
                     <div ng-repeat="path in stream.paths">
                         <div class="info-edit">
-                            <input value="{{path}}">
+                            <input ng-model="path.url">
                         </div>
                     </div>
                     <button type="button " class="btn btn-sm" ng-click="AddPath()">

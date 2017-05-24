@@ -20,12 +20,23 @@ angular.module('teleceptor.streamcontroller', [])
 
     function LoadStream(v) {
         if (v === undefined) return;
+        var dataToDisplay = {};
         for(var i in v){
             if(v[i] === null){
-                v[i] = "-";
+                dataToDisplay[i] = "-";
+            } else if(i === 'paths') {
+                dataToDisplay.paths = [];
+                for(var j in v[i]){
+                    dataToDisplay.paths.push({
+                        url: v[i][j]
+                    });
+                }
+            } else {
+                dataToDisplay[i] = v[i];
+            
             }
         }
-        $scope.stream = v;
+        $scope.stream = dataToDisplay;
         return
     }
 
@@ -38,72 +49,33 @@ angular.module('teleceptor.streamcontroller', [])
     };
 
     $scope.AddPath = function() {
-        $scope.stream.paths[Object.keys($scope.stream.paths).length] = "/new_path_" + Object.keys($scope.stream.paths).length
+        $scope.stream.paths.push({url: "/new_path_" + $scope.stream.paths.length});
     };
 
     $scope.SaveFields = function() {
-        var updates = {
+        var url = "/datastreams";
 
-        };
+        var updateData = {};
+        for(var i in $scope.stream){
+            if($scope.stream[i] === "-" || $scope.stream[i] === ""){
+                updateData[i] = null;
+            } else if (i === 'paths'){
+                updateData['paths'] = []
+                for(var j in $scope.stream[i]){
+                    updateData['paths'][j] = $scope.stream[i][j].url
+                }
+            } else {
+                updateData[i] = $scope.stream[i];
+            
+            }
+        }
 
-        //     if ($scope.widgets[i].url === template) {
-        //         url = $scope.widgets[i].url + "/";
-        //         if ($scope.widgets[i].url === "datastreams") {
-        //             url += "?stream_id=" + $scope.widgets[i].id;
-        //         } else {
-        //             url += $scope.widgets[i].uuid;
-        //         }
-
-        //         for (var j in $scope.widgets[i].items[0]) {
-        //             if ($scope.widgets[i].items[0][j].inputType === "input") {
-        //                 updates[$scope.widgets[i].items[0][j].name.toLowerCase()] = $("#" + template + "_" + j)[0].value.toLowerCase();
-        //             }
-        //             if ($scope.widgets[i].items[0][j].inputType === "multiple") {
-        //                 updates[$scope.widgets[i].items[0][j].name.toLowerCase()] = [];
-        //                 for (var k in $scope.widgets[i].items[0][j].value) {
-        //                     var str = "#" + template + "_" + k + "_" + $scope.widgets[i].items[0][j].name;
-        //                     var newPath = $(str)[0].value.toLowerCase();
-        //                     if (newPath === "") {
-        //                         continue;
-        //                     }
-        //                     if (newPath[0] != '/') {
-        //                         ShowWarning(template, "Paths must begin with a '/'");
-        //                         return;
-        //                     }
-        //                     if (newPath[newPath.length - 1] == '/') {
-        //                         ShowWarning(template, "Paths must not end with a '/'");
-        //                         return;
-        //                     }
-
-        //                     var temp = newPath.split('/');
-        //                     for (k in temp) {
-        //                         if (/[~`!#$%\^&*+=\-\[\]\\';,/{}|\\":<>\?]/g.test(temp[k])) {
-        //                             ShowWarning(template, "Paths cannot have any special characters");
-        //                             return;
-        //                         }
-        //                     }
-        //                     updates[$scope.widgets[i].items[0][j].name.toLowerCase()].push($(str)[0].value.toLowerCase());
-        //                 }
-        //                 if (updates[$scope.widgets[i].items[0][j].name.toLowerCase()].length === 0) {
-        //                     updates[$scope.widgets[i].items[0][j].name.toLowerCase()].push("/new_sensors");
-        //                 }
-        //             }
-        //         }
-
-        //     }
-        // // }
-        // if (cancel) return;
-        // if (updates.type == "sensors") {
-        //     updates.last_calibration = {
-        //         "coefficients": JSON.parse(updates.calibration)
-        //     };
-        // }
-        // apiService.put(url, updates).then(function successCallback(response) {
-        //     $window.location.reload();
-        // }, function errorCallback(response) {
-        //     console.log("Error Occured: ", response.data);
-
-        // });
+        apiService.put(url, updateData).then(function successCallback(response) {
+            console.log('done')
+            console.log(response)
+        }, function errorCallback(response) {
+            console.log("Error Occured: ", response.data);
+        });
     };
 
     function ShowWarning(tag, msg) {

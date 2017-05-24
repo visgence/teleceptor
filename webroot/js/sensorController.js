@@ -23,7 +23,6 @@ angular.module('teleceptor.sensorcontroller', ['frapontillo.bootstrap-switch'])
 
     function LoadSensor(v) {
         if (v === undefined) return;
-        console.log(v);
         for(var i in v){
             if(v[i] === null){
                 v[i] = "-";
@@ -54,7 +53,6 @@ angular.module('teleceptor.sensorcontroller', ['frapontillo.bootstrap-switch'])
     };
 
     $scope.CommandSwitch = function(){
-        console.log('heasdfre')
     }
 
 

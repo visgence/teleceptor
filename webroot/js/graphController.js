@@ -120,6 +120,7 @@ angular.module('teleceptor.graphcontroller', [])
                     messages = "Due to min/max values set, some points may not be seen.";
                 }
 
+
                 var unitSize = " " + getFormat(realMax).length;
 
                 var margin = { top: 20, right: 10, bottom: 20, left: 10 + (unitSize * 7) };
