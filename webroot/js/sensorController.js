@@ -51,8 +51,38 @@ angular.module('teleceptor.sensorcontroller', ['frapontillo.bootstrap-switch'])
         $scope.editing = false;
     };
 
-    $scope.CommandSwitch = function(){
+    $scope.SendData = function() {
+        var sensorInfo = infoService.getSensorInfo();
+        var id = sensorInfo.uuid;
+        var newValue = angular.element('#manualEntry')[0].value;
+        var time = (new Date()).getTime() / 1000;
 
+        var sensorReading = {
+            "name": id,
+            "sensor_type": sensorInfo.sensor_type,
+            "timestamp": time,
+            "meta_data": {}
+        };
+
+        var payload = [{
+            "info": {
+                "uuid": "",
+                "name": sensorInfo.name,
+                "description": sensorInfo.description,
+                "out": (sensorInfo.isInput ? [] : [sensorReading]),
+                "in": (sensorInfo.isInput ? [sensorReading] : [])
+            },
+            "readings": [
+                [id, newValue, time]
+            ]
+        }];
+        apiService.post("station", payload).then(function(response) {
+            console.log(response);
+        });
+    };
+
+    $scope.CommandSwitch = function(){
+        sendCommand();
     };
 
     $scope.ExportEs = function(){
@@ -185,7 +215,7 @@ angular.module('teleceptor.sensorcontroller', ['frapontillo.bootstrap-switch'])
         var sensorInfo = infoService.getSensorInfo();
         //post new value to commands api
         var payload = {
-            "message": angular.element('#commandInput')[0].value,
+            "message": angular.element('#bsSwitch')[0].value,
             "duration": 60000,
             "sensor_id": sensorInfo.uuid
         };

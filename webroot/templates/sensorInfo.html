@@ -71,12 +71,12 @@
                 </div>
                 <div class="col-md-6" style="margin-top: 7px">
                     <div class="info-edit">
-                        <input placeholder="Enter new data point">
+                        <input id="manualEntry" placeholder="Enter new data point">
                     </div>
                 </div>
             </div>
             <div class="edit-buttons">
-                <button type="button" class="btn btn-success btn-sm" style="margin-left: 3px;">
+                <button type="button" ng-click="SendData()" class="btn btn-success btn-sm" style="margin-left: 3px;">
                     <span class="glyphicon glyphicon-send" /> Send
                 </button>
             </div>
@@ -88,12 +88,12 @@
                 </div>
                 <div class="col-md-6">
                     <div class="row">
-                        <button type="button" class="btn btn-success btn-sm btn-row" ng-click="SaveFields()">
+                        <button type="button" class="btn btn-success btn-sm btn-row" ng-click="ExportSQL()">
                             <span class="glyphicon glyphicon-send" /> SQL
                         </button>
                     </div>
                     <div class="row">
-                        <button type="button" class="btn btn-success btn-sm btn-row" ng-click="SaveFields()">
+                        <button type="button" class="btn btn-success btn-sm btn-row" ng-click="ExportES()">
                             <span class="glyphicon glyphicon-ok" /> Elastic Search
                         </button>
                     </div>
