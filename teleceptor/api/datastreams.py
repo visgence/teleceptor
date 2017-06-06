@@ -167,7 +167,7 @@ class DataStreams:
         pass
 
     @require()
-    def PUT(self, stream_id=None):
+    def PUT(self):
         """
         Updates the stream with uuid `stream_id`.
 
@@ -196,11 +196,11 @@ class DataStreams:
 
         with sessionScope() as session:
             try:
-                stream = DataStreams.updateStream(stream_id, data, session)
+                stream = DataStreams.updateStream(data, session)
                 returnData['stream'] = stream
             except NoResultFound:
-                logging.error("Stream with id %s doesn't exist.", str(stream_id))
-                returnData['error'] = "Stream with id %s doesn't exist." % stream_id
+                logging.error("Stream with id %s doesn't exist.", str(data['id']))
+                returnData['error'] = "Stream with id %s doesn't exist." % data['id']
 
             cherrypy.response.status = statusCode
 
@@ -267,7 +267,7 @@ class DataStreams:
             logging.error("Provided datastream to createDatastream method is None.")
 
     @staticmethod
-    def updateStream(stream_id, data, session):
+    def updateStream(data, session):
         """
         Updates stream with id `stream_id` with new key/values in `data`. Note that this function will incur a db lookup.
 
@@ -284,8 +284,8 @@ class DataStreams:
 
         """
 
-        logging.debug("Updating stream with id %s with data %s", str(stream_id), str(data))
-        return _updateStream(stream_id, data, session)
+        logging.debug("Updating stream with id %s with data %s", str(data['id']), str(data))
+        return _updateStream(data, session)
 
 
 def deleteDatastream(session, datastream_id):
@@ -320,19 +320,20 @@ def deleteDatastream(session, datastream_id):
     return None
 
 
-def _updateStream(stream_id, data, session):
-    stream = session.query(DataStream).filter_by(id=stream_id).one()
-    paths = session.query
+def _updateStream(data, session):
+    stream = session.query(DataStream).filter_by(id=data['id']).one()
     for key, value in data.iteritems():
+        if key == "id":
+            continue
         if key == "paths":
             currentPaths = stream.toDict()['paths']
             newPaths = data[key]
             toDelete = set(currentPaths) - set(newPaths)
             toAdd = set(newPaths) - set(currentPaths)
             for i in toDelete:
-                session.delete(session.query(Path).filter_by(datastream_id=stream_id, path=i)[0])
+                session.delete(session.query(Path).filter_by(datastream_id=data['id'], path=i)[0])
             for j in toAdd:
-                session.add(Path(datastream_id=stream_id, path=j))
+                session.add(Path(datastream_id=data['id'], path=j))
             session.commit()
             continue
         if key != 'uuid':

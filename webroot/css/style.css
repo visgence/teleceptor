@@ -1,20 +1,85 @@
-.tick line{
+.main {
+    margin-top: 60px;
+}
+
+.left-col {
+    margin-left: 17px;
+}
+
+.right-col {
+    margin-right: 17px;
+}
+
+.card {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 -1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+    margin-bottom: 10px;
+    padding: 10px;
+    transition: all .2s ease-in-out;
+}
+
+.card-title {
+    font-size: 11pt;
+    font-weight: bolder;
+    margin-bottom: 10px;
+}
+
+.dropdown {
+    margin-bottom: 6px
+}
+
+.btn-success {
+    display: block;
+    float: right;
+}
+
+.list-group {
+    margin-bottom: 0
+}
+
+.graph-title {
+    font-size: 13pt;
+    text-align: center;
+}
+
+.info-title {
+    font-weight: bolder;
+    margin: 10px;
+    text-align: right;
+}
+
+.info-static {
+    display: block;
+    margin: 10px;
+}
+
+.info-edit {
+    display: block;
+    margin: 4px;
+}
+
+.btn-group {
+    margin-top: 10px;
+}
+
+.edit-buttons {
+    display: inline-block;
+    left: 40%;
+    margin-top: 6px;
+    position: relative;
+    vertical-align: middle;
+    width: 20%;
+}
+
+.btn-row {
+    float: left;
+    margin: 4px;
+    margin-top: 10px
+}
+
+.tick line {
     stroke: #dadada
 }
 
-.main{
-	margin-top: 60px;
+.graph-placeholder {
+    display: block;
 }
-
-.timeWidget{
-	height:370px;
-}
-
-.graphWidget{
-	height:370px;
-}
-
-.graph-placeholder{
-	display: block;
-}
-

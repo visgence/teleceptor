@@ -1,8 +1,6 @@
-<div class="panel panel-default graphWidget">
-    <div class="panel-heading">
-        <h3 class="panel-title">{{graphName}}</h3>
-    </div>
-    <div class="panel-body">
+<div ng-controller="graphController">
+    <div class="graphWidget">
+        <div class="card-title graph-title">{{graphName}}</div>
         <div id="graph-container">
             <graph class="graph-placeholder" />
             <div id="warning_message" />

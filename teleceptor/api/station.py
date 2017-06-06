@@ -243,7 +243,7 @@ def update_sensor_data(sensor_data, session):
 
     # Update sensors (and create if needed)
     try:
-        sensor_info = Sensors.updateSensor(sensor_id=uuid, data=sensor_data, session=session)
+        sensor_info = Sensors.updateSensor(data=sensor_data, session=session)
     except NoResultFound:
         timestamp = sensor_data['timestamp']
         del sensor_data['timestamp']

@@ -32,23 +32,27 @@ def main():
                 "name": "in1",
                 "sensor_type": "float",
                 "timestamp": 30000,
-                "meta_data": {}
+                "meta_data": {
+                    'meta title': 'meta description'
+                }
             }, {
                 "name": "in2",
                 "sensor_type": "float",
                 "timestamp": 30000,
-                "meta_data": {}
+                "meta_data": {
+                    'meta title': 'meta description'
+                }
             }]
         },
         "readings": [
             ["in1", 99, time()],
-            ["in1", 129, time()-20],
-            ["in1", 29, time()-40],
+            ["in1", 129, time() - 20],
+            ["in1", 29, time() - 40],
         ]
     }]
     timeRanges = {
         '2hour': 7200,
-        "day":  86400,
+        "day": 86400,
         "week": 604800,
         "month": 18144000
     }
@@ -61,8 +65,8 @@ def main():
 
     counter = 0
     while now >= lastWeek:
-        jsonExample[0]["readings"].append(["in1", 400 * math.sin(0.1*counter), now])
-        jsonExample[0]["readings"].append(["in2", 600 * math.sin(0.1*counter), now])
+        jsonExample[0]["readings"].append(["in1", 400 * math.sin(0.1 * counter), now])
+        jsonExample[0]["readings"].append(["in2", 600 * math.sin(0.1 * counter), now])
         now -= 60
         counter += 1
 

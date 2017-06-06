@@ -7,7 +7,8 @@ var app = angular.module('teleceptor', [
     'teleceptor.timecontroller',
     'teleceptor.treecontroller',
     'teleceptor.graphcontroller',
-    'teleceptor.infocontroller',
+    'teleceptor.streamcontroller',
+    'teleceptor.sensorcontroller',
     'teleceptor.services',
     'teleceptor.maincontroller'
 ])
