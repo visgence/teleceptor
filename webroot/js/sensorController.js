@@ -3,10 +3,10 @@
 
 angular.module('teleceptor.sensorcontroller', ['frapontillo.bootstrap-switch'])
 
-.controller('sensorController', ['$scope', '$http', 'infoService', '$compile', '$timeout', 'apiService', '$window', 'timeService', function($scope, $http, infoService, $compile, $timeout, apiService, $window, timeService) {
+.controller('sensorController', ['$scope', '$http', 'infoService', '$compile', '$timeout', 'apiService', '$window', 'timeService', '$location', function($scope, $http, infoService, $compile, $timeout, apiService, $window, timeService, $location) {
     // tabs:
     // config, entry, export, command, metatdata
-    $scope.tab = 'config'
+    $scope.tab = 'config';
     $scope.isSelected = 'yep'; //For the bootstrap switch in command.
     $scope.isActive = "false";
 
@@ -29,7 +29,6 @@ angular.module('teleceptor.sensorcontroller', ['frapontillo.bootstrap-switch'])
             }
         }
         $scope.sensor = v;
-        console.log($scope.sensor)
 
         if (v.sensor_type === "output") {
             $scope.isActive = true;
@@ -39,27 +38,27 @@ angular.module('teleceptor.sensorcontroller', ['frapontillo.bootstrap-switch'])
 
     $scope.ChangeTab = function(event, tab) {
         $scope.tab = tab;
-        $('.nav-tabs li').removeClass('active')
-        $(event.target.parentNode).toggleClass('active')
+        $('.nav-tabs li').removeClass('active');
+        $(event.target.parentNode).toggleClass('active');
     };
 
     $scope.EditFields = function() {
         $scope.editing = true;
+        $scope.previous_coefficients = $scope.sensor.last_calibration.coefficients;
     };
 
     $scope.CancelFields = function() {
-        $scope.editing = false
+        $scope.editing = false;
     };
 
     $scope.CommandSwitch = function(){
 
-    }
+    };
 
     $scope.SaveFields = function() {
-        console.log($scope.sensor)
         var updateData = {};
         var url = "sensors";
-        var editableFields = ['last_calibration', 'units', 'description', 'uuid']
+        var editableFields = ['last_calibration', 'units', 'description', 'uuid'];
         
         for(var i in $scope.sensor){
             if(!(editableFields.includes(i))) continue;
@@ -69,12 +68,13 @@ angular.module('teleceptor.sensorcontroller', ['frapontillo.bootstrap-switch'])
                 updateData[i] = $scope.sensor[i];
             }
         }
-        if(updateData.last_calibration !== null){
-            updateData.last_calibration.timestamp = Date.now()/1000
+        if(updateData.last_calibration.coefficients !== $scope.previous_coefficients){
+            updateData.last_calibration.timestamp = Date.now()/1000;
         }
         
         apiService.put(url, updateData).then(function successCallback(response) {
-            console.log(response)
+            $scope.editing = false;
+            location.reload();
         }, function errorCallback(response) {
             console.log("Error Occured: ", response.data);
 

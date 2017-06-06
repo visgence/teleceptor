@@ -33,7 +33,7 @@
 }
 
 .list-group {
-    margin-bottom: 0px
+    margin-bottom: 0
 }
 
 .graph-title {
@@ -41,39 +41,38 @@
     text-align: center;
 }
 
-.info-title{
-	font-weight: bolder;
-	text-align: right;
-	margin: 10px;
+.info-title {
+    font-weight: bolder;
+    margin: 10px;
+    text-align: right;
 }
 
 .info-static {
-	margin: 10px;
-	display: block
+    display: block;
+    margin: 10px;
 }
 
 .info-edit {
-	margin: 4px;
-	display: block
+    display: block;
+    margin: 4px;
 }
 
 .btn-group {
-	margin-top: 10px;
-	
+    margin-top: 10px;
 }
 
 .edit-buttons {
+    display: inline-block;
     left: 40%;
-    width: 20%;
+    margin-top: 6px;
     position: relative;
     vertical-align: middle;
-    display: inline-block;
-    margin-top: 6px;
+    width: 20%;
 }
 
 .btn-row {
-    margin: 4px;
     float: left;
+    margin: 4px;
     margin-top: 10px
 }
 

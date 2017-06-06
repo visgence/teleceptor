@@ -3,7 +3,7 @@
 
 angular.module('teleceptor.streamcontroller', [])
 
-.controller('streamController', ['$scope', '$http', 'infoService', '$compile', '$timeout', 'apiService', '$window', 'timeService', function($scope, $http, infoService, $compile, $timeout, apiService, $window, timeService) {
+.controller('streamController', ['$scope', '$http', 'infoService', '$compile', '$timeout', 'apiService', '$window', 'timeService', '$location', function($scope, $http, infoService, $compile, $timeout, apiService, $window, timeService, $location) {
 
     $scope.stream = {};
     $scope.editing = false;
@@ -37,7 +37,7 @@ angular.module('teleceptor.streamcontroller', [])
             }
         }
         $scope.stream = dataToDisplay;
-        return
+        return;
     }
 
     $scope.EditFields = function() {
@@ -45,7 +45,7 @@ angular.module('teleceptor.streamcontroller', [])
     };
         
     $scope.CancelFields = function() {
-        $scope.editing = false
+        $scope.editing = false;
     };
 
     $scope.AddPath = function() {
@@ -60,19 +60,18 @@ angular.module('teleceptor.streamcontroller', [])
             if($scope.stream[i] === "-" || $scope.stream[i] === ""){
                 updateData[i] = null;
             } else if (i === 'paths'){
-                updateData['paths'] = []
+                updateData.paths = [];
                 for(var j in $scope.stream[i]){
-                    updateData['paths'][j] = $scope.stream[i][j].url
+                    updateData.paths[j] = $scope.stream[i][j].url;
                 }
             } else {
                 updateData[i] = $scope.stream[i];
-            
             }
         }
 
         apiService.put(url, updateData).then(function successCallback(response) {
-            console.log('done')
-            console.log(response)
+            $scope.editing = false;
+            location.reload();
         }, function errorCallback(response) {
             console.log("Error Occured: ", response.data);
         });

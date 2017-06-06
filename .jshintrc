@@ -2,7 +2,8 @@
     "globals": {
         "$": false,
         "angular": false,
-        "document": false
+        "document": false,
+        "location": false
     },
     "strict": true
 }
