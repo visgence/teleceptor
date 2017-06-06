@@ -41,6 +41,7 @@ angular.module('teleceptor.streamcontroller', [])
     }
 
     $scope.EditFields = function() {
+        $('#warning-message').css('display', 'none');
         $scope.editing = true;
     };
         
@@ -56,22 +57,38 @@ angular.module('teleceptor.streamcontroller', [])
         var url = "datastreams";
 
         var updateData = {};
+        var hasErrors = false;
         for(var i in $scope.stream){
             if($scope.stream[i] === "-" || $scope.stream[i] === ""){
                 updateData[i] = null;
             } else if (i === 'paths'){
                 updateData.paths = [];
                 for(var j in $scope.stream[i]){
+                    if($scope.stream[i][j].url === "") continue;
+                    if(! $scope.stream[i][j].url.startsWith('/')){
+                        $('#warning-message').css('display', 'block');
+                        $('#warning-message').html('Paths must begin with a "/".');
+                        hasErrors = true;
+                        continue;
+                    }
+                    if($scope.stream[i][j].url.includes(' ')){
+                        $('#warning-message').css('display', 'block');
+                        $('#warning-message').html('Paths cannot have any spaces.');
+                        hasErrors = true;
+                        continue;
+                    }
                     updateData.paths[j] = $scope.stream[i][j].url;
                 }
             } else {
                 updateData[i] = $scope.stream[i];
             }
         }
-
+        if(hasErrors){
+            return;
+        }
         apiService.put(url, updateData).then(function successCallback(response) {
             $scope.editing = false;
-            location.reload();
+            // location.reload();
         }, function errorCallback(response) {
             console.log("Error Occured: ", response.data);
         });

@@ -42,7 +42,7 @@ angular.module('teleceptor.treecontroller', [])
     });
 
     function MakeTreeStructure(data, stream, curUrl, pathId) {
-        if (curUrl.length === 1) {
+        if (curUrl.length <= 1) {
             if (!(curUrl[0] in data)) data[curUrl[0]] = [];
             stream.pathId = pathId;
             data[curUrl[0]].push(stream);
