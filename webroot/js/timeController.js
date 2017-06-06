@@ -59,7 +59,9 @@ angular.module('teleceptor.timecontroller', ['ui.bootstrap.datetimepicker'])
         } else if (isNaN(endTime)) {
             endTime = startTime + 86400000;
         }
-
+        $scope.data = {};
+        $scope.data.startdate = new Date(parseInt(startTime));
+        $scope.data.enddate = new Date(parseInt(endTime));
         timeService.setStart(startTime);
         timeService.setEnd(endTime);
         $location.search('startTime', startTime);
@@ -77,7 +79,10 @@ angular.module('teleceptor.timecontroller', ['ui.bootstrap.datetimepicker'])
             clearInterval(intervalId);
             $scope.showTimer = false;
         }
-        if (type === undefined) type = "day";
+        if (type === undefined){ 
+            type = "day";
+            $location.search().time = 'day';
+        }
         angular.element("#" + type + "Btn").addClass('active');
     }
 
