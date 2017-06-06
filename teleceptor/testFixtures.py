@@ -32,12 +32,16 @@ def main():
                 "name": "in1",
                 "sensor_type": "float",
                 "timestamp": 30000,
-                "meta_data": {}
+                "meta_data": {
+                    'meta title': 'meta description'
+                }
             }, {
                 "name": "in2",
                 "sensor_type": "float",
                 "timestamp": 30000,
-                "meta_data": {}
+                "meta_data": {
+                    'meta title': 'meta description'
+                }
             }]
         },
         "readings": [
