@@ -55,6 +55,19 @@ angular.module('teleceptor.sensorcontroller', ['frapontillo.bootstrap-switch'])
 
     };
 
+    $scope.ExportEs = function(){
+        var start = timeService.getValues().start;
+        var end = timeService.getValues().end;
+        var readingsUrl = "readings?datastream=" + infoService.getStreamInfo().id + "&start=" + parseInt(start / 1000) + "&end=" + parseInt(end / 1000) + "&source=ElasticSearch";
+        apiService.get(readingsUrl).then(function(readingsResponse) {
+            exportData(readingsResponse);
+        });
+    };
+
+    $scope.ExportSQL = function(){
+        exportData(null);
+    };
+
     $scope.SaveFields = function() {
         var updateData = {};
         var url = "sensors";
