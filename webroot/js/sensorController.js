@@ -29,6 +29,7 @@ angular.module('teleceptor.sensorcontroller', ['frapontillo.bootstrap-switch'])
             }
         }
         $scope.sensor = v;
+        console.log($scope.sensor)
 
         if (v.sensor_type === "output") {
             $scope.isActive = true;
@@ -72,14 +73,6 @@ angular.module('teleceptor.sensorcontroller', ['frapontillo.bootstrap-switch'])
             updateData.last_calibration.timestamp = Date.now()/1000
         }
         
-
-
-
-
-
-
-
-        console.log(updateData)
         apiService.put(url, updateData).then(function successCallback(response) {
             console.log(response)
         }, function errorCallback(response) {
@@ -87,20 +80,6 @@ angular.module('teleceptor.sensorcontroller', ['frapontillo.bootstrap-switch'])
 
         });
     };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     function ShowWarning(tag, msg) {
         angular.element("#" + tag + "_warning").html(msg).css('display', 'block');

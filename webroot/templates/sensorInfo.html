@@ -115,13 +115,13 @@
         <div ng-if="tab == 'metadata'">
             <div class="row">
                 <div class="col-md-6">
-                    <div ng-repeat="meta in sensor.metadata">
-                        <div class="info-title">{{meta.name}}</div>
+                    <div ng-repeat="(key, val) in sensor.meta_data">
+                        <div class="info-title">{{key}}</div>
                     </div>
                 </div>
                 <div class="col-md-6">
-                    <div ng-repeat="meta in sensor.metadata">
-                        <div class="info-static">{{meta.value}}</div>
+                    <div ng-repeat="(key, val) in sensor.meta_data">
+                        <div class="info-static">{{val}}</div>
                     </div>
                 </div>
             </div>
