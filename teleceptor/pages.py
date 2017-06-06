@@ -7,15 +7,14 @@ Authors: Victor Szczepanski
 """
 
 # System Imports
+import os.path
 import cherrypy
-import jinja2
 import logging
 
 # local Imports
 from teleceptor import WEBROOT
 from teleceptor import USE_DEBUG
 from teleceptor.auth import AuthController, require
-env = jinja2.Environment(loader=jinja2.FileSystemLoader(searchpath=WEBROOT))
 
 
 class Root(object):
@@ -27,21 +26,8 @@ class Root(object):
         logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s', level=logging.INFO)
 
     @require()
-    def index(self, sensor_name=None, *args, **kwargs):
-
+    def index(self, *args, **kwargs):
         cherrypy.response.headers['Content-Type'] = 'text/html'
-        returnData = {}
-        returnData.update(**kwargs)
-        t = env.get_template("index.html")
-        return t.render(returnData)
+        return open(os.path.join(WEBROOT, "index.html"))
 
     index.exposed = True
-
-    @require()
-    def generateJson(self, **kwargs):
-        t = env.get_template("generateJson.html")
-
-        cherrypy.response.headers['Content-Type'] = 'text/html'
-        return t.render({})
-
-    generateJson.exposed = True
