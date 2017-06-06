@@ -11,15 +11,12 @@ angular.module('teleceptor.timecontroller', ['ui.bootstrap.datetimepicker'])
         $($event.target).addClass('active');
         refreshing = false;
         clearInterval(intervalId);
-        $('#startdate')[0].value = "";
-        $('#enddate')[0].value = "";
         $timeout(function() {
             $scope.intervalTimer = 60;
             switch (time) {
                 case 0:
                     $location.search('time', 'custom');
-                    setTimes(null, null);
-                    $scope.showTimer = false;
+
                     break;
                 case 1:
                     $location.search('time', 'hour');

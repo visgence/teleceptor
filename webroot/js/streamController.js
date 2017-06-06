@@ -88,7 +88,7 @@ angular.module('teleceptor.streamcontroller', [])
         }
         apiService.put(url, updateData).then(function successCallback(response) {
             $scope.editing = false;
-            // location.reload();
+            location.reload();
         }, function errorCallback(response) {
             console.log("Error Occured: ", response.data);
         });
