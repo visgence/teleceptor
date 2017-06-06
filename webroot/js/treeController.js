@@ -26,6 +26,7 @@ angular.module('teleceptor.treecontroller', [])
         var i = 0;
         var ds = $location.search().ds;
         var source = $location.search().source;
+        if(ds === undefined && source === undefined) return;
         while (!nodeFound && i < 500) {
             i++;
             var node = $('#myTree').treeview('getNode', i);

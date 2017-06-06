@@ -17,13 +17,11 @@ angular.module('teleceptor.graphcontroller', [])
             var isLoading = false;
 
             scope.$on('$routeUpdate', function() {
-                console.log('getting here')
                 GetData();
             });
             scope.$watch(function() {
                 return infoService.getStreamInfo();
             }, function() {
-                console.log('getting there')
                 GetData();
             });
 
@@ -93,7 +91,7 @@ angular.module('teleceptor.graphcontroller', [])
                 if (streamInfo.name === undefined) return;
                 if (data.readings[0] === undefined) {
                     $('#warning_message').html("<div class='alert alert-warning'>Couldn't find any data in current time range</div>");
-                    $(parent).html('')
+                    $(parent).html('');
                     return;
                 } else {
                     $('#warning_message').html("");
@@ -143,7 +141,7 @@ angular.module('teleceptor.graphcontroller', [])
 
                 if (data.readings.length === 0) {
                     $('#warning_message').html("<div class='alert alert-warning'>Couldn't find any data in current time range</div>");
-                    $(parent).html('')
+                    $(parent).html('');
                     return;
                 }
 
