@@ -19,7 +19,6 @@
 # Getting Started (Ubuntu and Raspberry Pi)
 ## Dependencies
 ```
-jinja2
 sqlalchemy
 pip
 cherrypy (pip install --no-use-wheel cherrypy on windows)

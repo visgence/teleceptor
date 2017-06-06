@@ -14,7 +14,7 @@ RUN apt-get -y install python-dev && apt-get clean
 RUN apt-get -y install libpq-dev && apt-get clean
 
 #pip dependicies
-RUN pip install sqlalchemy cherrypy requests whisper pySerial jinja2 pyelasticsearch psycopg2
+RUN pip install sqlalchemy cherrypy requests pySerial pyelasticsearch psycopg2
 
 RUN apt-get -y install vim curl && apt-get clean
 #Install teleceptor software as teleceptor user

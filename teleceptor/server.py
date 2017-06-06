@@ -2,6 +2,7 @@
 The server that runs Teleceptor
 
 Authors: Evan Salazar
+         Cyrille Gindreau
 
 """
 
@@ -9,15 +10,32 @@ Authors: Evan Salazar
 import os
 import sys
 import cherrypy
-from cherrypy.lib.static import serve_file
+import logging
 
 # Local Imports
-from teleceptor import WEBROOT, PORT, SUPRESS_SERVER_OUTPUT
-from teleceptor.auth import AuthController, require, member_of, name_is
-from teleceptor.pages import Root
+from teleceptor import WEBROOT, PORT, SUPRESS_SERVER_OUTPUT, USE_DEBUG
+from teleceptor.auth import AuthController, require
+from teleceptor.api import ResourceApi
 
 PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.append(PATH)
+
+
+class Root(object):
+    auth = AuthController()
+    api = ResourceApi()
+
+    if USE_DEBUG:
+        logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s', level=logging.DEBUG)
+    else:
+        logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s', level=logging.INFO)
+
+    @require()
+    def index(self, *args, **kwargs):
+        cherrypy.response.headers['Content-Type'] = 'text/html'
+        return open(os.path.join(WEBROOT, "index.html"))
+
+    index.exposed = True
 
 
 def get_cp_config():
@@ -57,6 +75,7 @@ def runserver(config):
     cherrypy.server.socket_port = PORT
     cherrypy.engine.start()
     cherrypy.engine.block()
+
 
 if __name__ == "__main__":
     runserver(get_cp_config())
