@@ -3,4 +3,12 @@
 
 angular.module('teleceptor.maincontroller', [])
 
-.controller('mainController',  function() {});
+
+.controller('mainController', ['$scope', 'apiService', function($scope, apiService) {
+    $scope.mainPage = true;
+
+    apiService.get('sysdata').then(function(response){
+        $scope.versionNumber = response.data.version;
+    });
+}]);
+
