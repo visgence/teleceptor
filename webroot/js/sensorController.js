@@ -3,7 +3,7 @@
 
 angular.module('teleceptor.sensorcontroller', ['frapontillo.bootstrap-switch'])
 
-.controller('sensorController', ['$scope', '$http', 'infoService', '$compile', '$timeout', 'apiService', '$window', 'timeService', '$location', function($scope, $http, infoService, $compile, $timeout, apiService, $window, timeService, $location) {
+.controller('sensorController', ['$scope', 'infoService', '$timeout', 'apiService', 'timeService', '$location', function($scope, infoService, $timeout, apiService, timeService, $location) {
     // tabs:
     // config, entry, export, command, metatdata
     $scope.tab = 'config';

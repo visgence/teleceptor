@@ -3,7 +3,7 @@
 
 angular.module('teleceptor.streamcontroller', [])
 
-.controller('streamController', ['$scope', '$http', 'infoService', '$compile', '$timeout', 'apiService', '$window', 'timeService', '$location', function($scope, $http, infoService, $compile, $timeout, apiService, $window, timeService, $location) {
+.controller('streamController', ['$scope', 'infoService', 'apiService', '$location', function($scope, infoService, apiService, $location) {
 
     $scope.stream = {};
     $scope.editing = false;

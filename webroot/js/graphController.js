@@ -9,7 +9,7 @@ angular.module('teleceptor.graphcontroller', [])
     }, 1000);
 }])
 
-.directive('graph', ['$location', '$window', '$http', 'timeService', 'infoService', 'apiService', '$timeout', function($location, $window, $http, timeService, infoService, apiService, $timeout) {
+.directive('graph', ['$location', '$window', 'timeService', 'infoService', 'apiService', '$timeout', function($location, $window, timeService, infoService, apiService, $timeout) {
     return {
         restrict: 'E',
         link: function(scope, elem, attrs) {
