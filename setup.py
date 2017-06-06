@@ -17,7 +17,7 @@
 
 # !/usr/bin/env python
 import os
-import glob
+from teleceptor import __version__
 from setuptools import setup, find_packages
 
 # Get version from version file
@@ -31,7 +31,6 @@ datafiles = [(d, [os.path.join(d, f) for f in files]) for d, folders, files in o
 # for t in [(d, [os.path.join(d, f) for f in files]) for d,folders,files in os.walk(templatesdir)]:
 #     datafiles.append(t)
 
-datafiles.append(('whisperData', [os.path.join('whisperData', 'blank.txt')]))
 datafiles.append(('database', [os.path.join('database', 'blank.txt')]))
 datafiles.append(('config', [os.path.join('config', 'defaults.json')]))
 datafiles.append(('server_startup'))
@@ -44,7 +43,7 @@ setup(
     name='teleceptor',
     scripts=["teleceptorcmd"],
     version=__version__,
-    install_requires=['sqlalchemy', 'cherrypy', 'requests', 'pySerial', 'jinja2'],
+    install_requires=['sqlalchemy', 'cherrypy', 'requests', 'pySerial'],
     zip_safe=False,
     platforms='any',
     url='https://github.com/visgence/teleceptor',
