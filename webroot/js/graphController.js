@@ -88,6 +88,7 @@ angular.module('teleceptor.graphcontroller', [])
             function drawGraph(parent, data) {
                 var streamInfo = infoService.getStreamInfo();
                 var sensorInfo = infoService.getSensorInfo();
+                if(streamInfo === undefined) return;
                 if (streamInfo.name === undefined) return;
                 if (data.readings[0] === undefined) {
                     $('#warning_message').html("<div class='alert alert-warning'>Couldn't find any data in current time range</div>");
