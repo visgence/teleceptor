@@ -14,13 +14,16 @@ angular.module('teleceptor.graphcontroller', [])
         restrict: 'E',
         link: function(scope, elem, attrs) {
             var d3 = $window.d3;
+            var isLoading = false;
 
             scope.$on('$routeUpdate', function() {
+                console.log('getting here')
                 GetData();
             });
             scope.$watch(function() {
                 return infoService.getStreamInfo();
             }, function() {
+                console.log('getting there')
                 GetData();
             });
 
@@ -31,7 +34,8 @@ angular.module('teleceptor.graphcontroller', [])
             function GetData() {
                 if ($location.search().ds === undefined) return;
                 if (infoService.getStreamInfo() === undefined) return;
-
+                if(isLoading) return;
+                isLoading = true;
                 var start = $location.search().startTime;
                 var end = $location.search().endTime;
                 if (start === undefined) {
@@ -67,6 +71,7 @@ angular.module('teleceptor.graphcontroller', [])
                             scope.$apply(function() {
                                 infoService.setReadingsInfo(readingsResponse.data);
                                 drawGraph(elem[0], readingsResponse.data);
+                                isLoading = false;
                             });
                         });
 
