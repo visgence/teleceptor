@@ -3,8 +3,12 @@
 
 angular.module('teleceptor.maincontroller', [])
 
-.controller('mainController', ['$scope', '$location', function($scope, $location) {
+.controller('mainController', ['$scope', '$location', 'apiService', function($scope, $location, apiService) {
     $scope.mainPage = true;
+
+    apiService.get('sysdata').then(function(response){
+        $scope.versionNumber = response.data.version;
+    })
 
     $scope.addInput = function() {
         $("#input-section").append(createSensorInput());
