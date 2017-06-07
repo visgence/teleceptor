@@ -9,6 +9,7 @@ import cherrypy
 import json
 import requests
 import logging
+from delorean import parse
 
 # Local Imports
 from readings import SensorReadings
@@ -40,22 +41,21 @@ class Query():
         with sessionScope() as session:
             for i in queryData['targets']:
                 sensor = sensors.getSensor(i['target'], session)
-                print sensor
                 datastream = datastreams.get_datastream_by_sensorid(i['target'], session)
-                print 'ds:'
-                print datastream
-                readings = sr.filterReadings(session, {'datastream': datastream['id']})
-
+                readingParams = {
+                    'datastream': datastream['id'],
+                    'start': parse(queryData['range']['from']).epoch,
+                    'end': parse(queryData['range']['to']).epoch
+                }
+                readings = sr.filterReadings(session, readingParams)
                 newObj = {
                     "target": i['target'],
                     "datapoints": []
                 }
                 for j in readings[0]:
-                    print j
                     newObj['datapoints'].append([j[1], int(j[0] * 1000)])
 
                 response.append(newObj)
-        print json.dumps(readings, indent=2)
 
         return json.dumps(response)
 
