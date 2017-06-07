@@ -48,7 +48,6 @@ class Query():
                     'end': int(delorean.Delorean(dateutil.parser.parse(queryData['range']['to'])).epoch)
                 }
 
-                print 'converted: {} to: {}'.format(queryData['range']['from'], readingParams['start'])
                 readings = sr.filterReadings(session, readingParams)
                 newObj = {
                     "target": i['target'],
