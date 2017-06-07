@@ -9,7 +9,8 @@ import cherrypy
 import json
 import requests
 import logging
-from delorean import parse
+import delorean
+import dateutil.parser
 
 # Local Imports
 from readings import SensorReadings
@@ -29,7 +30,6 @@ class Query():
         try:
             queryData = json.load(cherrypy.request.body)
             logging.debug("Got data:")
-            print json.dumps(queryData, indent=4)
         except (ValueError, TypeError):
             logging.error("Request data is not JSON: %s", cherrypy.request.body)
             statusCode = "400"
@@ -44,16 +44,20 @@ class Query():
                 datastream = datastreams.get_datastream_by_sensorid(i['target'], session)
                 readingParams = {
                     'datastream': datastream['id'],
-                    'start': parse(queryData['range']['from']).epoch,
-                    'end': parse(queryData['range']['to']).epoch
+                    'start': int(delorean.Delorean(dateutil.parser.parse(queryData['range']['from'])).epoch),
+                    'end': int(delorean.Delorean(dateutil.parser.parse(queryData['range']['to'])).epoch)
                 }
+
+                print 'converted: {} to: {}'.format(queryData['range']['from'], readingParams['start'])
                 readings = sr.filterReadings(session, readingParams)
                 newObj = {
                     "target": i['target'],
                     "datapoints": []
                 }
+                coefficients = eval(sensor['last_calibration']['coefficients'])
                 for j in readings[0]:
-                    newObj['datapoints'].append([j[1], int(j[0] * 1000)])
+                    val = j[1] * coefficients[0] + coefficients[1]
+                    newObj['datapoints'].append([val, int(j[0] * 1000)])
 
                 response.append(newObj)
 

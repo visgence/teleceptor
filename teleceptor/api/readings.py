@@ -271,6 +271,8 @@ class SensorReadings:
                 del params[key]
 
         data_source = "None"
+        print "we are here"
+        print paramsCopy
         if source is not None:
             if USE_ELASTICSEARCH and source == "ElasticSearch":
                 logging.debug('Getting Elasticsearch data.')
