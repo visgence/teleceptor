@@ -17,6 +17,7 @@ from readings import SensorReadings
 from teleceptor.sessionManager import sessionScope
 import sensors
 import datastreams
+from datastreams import DataStreams
 
 
 class Query():
@@ -73,7 +74,8 @@ class Search():
         cherrypy.response.headers['Content-Type'] = 'application/json'
 
         response = []
-        streams = requests.get('http://localhost:8000/api/datastreams').json()
+        ds = DataStreams()
+        streams = json.loads(ds.GET())
         for i in streams['datastreams']:
             response.append({"text": i['name'], "value": i['id']})
         return json.dumps(response)
