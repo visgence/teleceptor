@@ -40,8 +40,9 @@ class Query():
         response = []
         with sessionScope() as session:
             for i in queryData['targets']:
-                sensor = sensors.getSensor(i['target'], session)
-                datastream = datastreams.get_datastream_by_sensorid(i['target'], session)
+
+                datastream = datastreams.get_datastream_by_name(i['target'], session)
+                sensor = sensors.getSensor(datastream['sensor'], session)
                 readingParams = {
                     'datastream': datastream['id'],
                     'start': int(delorean.Delorean(dateutil.parser.parse(queryData['range']['from'])).epoch),

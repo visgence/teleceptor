@@ -428,6 +428,27 @@ def get_datastream_by_sensorid(sensor_id, session=None):
     return stream.toDict()
 
 
+def get_datastream_by_name(datastream_name, session=None):
+    """
+    Tries to get a datastream from the database with the provided sensor_id.
+    Optionally uses a provided session context to interact with the database.
+
+    :param sensor_id: ID of the sensor to retrieve the datastream for.
+    :param session:
+
+    :returns:
+        The dictionary view of the datastream.
+
+    :raises:
+        NoResultFound: If no datastream matches the datastream_id.
+    """
+    if session is None:
+        with sessionScope() as s:
+            session = s
+    stream = session.query(DataStream).filter_by(name=datastream_name).one()
+    return stream.toDict()
+
+
 def filter_datastreams(session=None, **filter_args):
     """
     Tries to get all datastreams from the database.
