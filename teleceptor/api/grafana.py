@@ -7,7 +7,6 @@
 # System Imports
 import cherrypy
 import json
-import requests
 import logging
 import delorean
 import dateutil.parser
@@ -54,7 +53,11 @@ class Query():
                     "target": i['target'],
                     "datapoints": []
                 }
-                coefficients = eval(sensor['last_calibration']['coefficients'])
+                if type(sensor['last_calibration']['coefficients']) == unicode:
+                    coefficients = json.loads(sensor['last_calibration']['coefficients'])
+                else:
+                    coefficients = sensor['last_calibration']['coefficients']
+
                 for j in readings[0]:
                     val = j[1] * coefficients[0] + coefficients[1]
                     newObj['datapoints'].append([val, int(j[0] * 1000)])
