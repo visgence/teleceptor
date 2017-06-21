@@ -120,3 +120,23 @@ if "USE_ELASTICSEARCH" in conf:
         ELASTICSEARCH_DOC = conf["ELASTICSEARCH_DOC"]
 else:
     USE_ELASTICSEARCH = False
+
+if "USE_EMAIL" in conf:
+    USE_EMAIL = conf["USE_EMAIL"]
+else:
+    USE_EMAIL = False
+
+if "EMAIL_FROM" in conf:
+    EMAIL_FROM = conf["EMAIL_FROM"]
+else:
+    EMAIL_FROM = False
+
+if "EMAIL_TO" in conf:
+    EMAIL_TO = conf["EMAIL_TO"]
+else:
+    EMAIL_TO = False
+
+if "EMAIL_PW" in conf:
+    EMAIL_PW = conf["EMAIL_PW"]
+else:
+    EMAIL_PW = False
