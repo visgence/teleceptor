@@ -156,9 +156,6 @@ class Sensors:
             # no json object to decode, just use an empty dictionary
             data = {}
 
-        print "we got:"
-        print data
-
         logging.debug("Request body: %s", data)
 
         with sessionScope() as session:
@@ -230,9 +227,7 @@ class Sensors:
         else:
             coefs = [1, 0]
         sensor = Sensor(**sensor_data)
-        # print sensor.toDict()
         calib = Calibration(sensor_id=sensor.toDict()['uuid'], timestamp=caliTime, coefficients=str(coefs))
-        # print calib.toDict()
         sensor.last_calibration = calib
         sensor.last_calibration_id = calib.id
         logging.debug("Creating sensor %s", str(sensor))
@@ -355,7 +350,6 @@ def _updateSensor(data, session):
     sensor = session.query(Sensor).filter_by(uuid=data['uuid']).one()
     for key, value in data.iteritems():
         logging.debug("Key: {}, Value: {}".format(key, value))
-        print("Key: {}, Value: {}".format(key, value))
         if key in blacklist:
             logging.debug("Request to updateSensor included blacklisted key %s", str(key))
             continue
