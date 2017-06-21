@@ -1,0 +1,11 @@
+[Unit]
+Description=teleceptor
+After=postgresql-9.6.service
+
+[Service]
+User=teleceptor
+ExecStart=/usr/bin/python /home/teleceptor/teleceptor/teleceptorcmd runserver
+WorkingDirectory=/home/teleceptor/teleceptor
+
+[Install]
+WantedBy=multi-user.target

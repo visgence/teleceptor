@@ -55,7 +55,6 @@ Sensor firmware can be found in the [firmware](https://github.com/visgence/telec
 Note: On OS X, to find the name of your sensor, in terminal, type ```ls /dev/```. This will give you a list of all sensors currently connected. To use the serialPoller then, you would type ```./teleceptorcmd serialPoller /dev/tty.myUSBSensor1234```.
 
 
-
 # Teleceptor Front-End Usage
 * To view sensor data that has been collected, click on a sensor under the _Sensors_ tab.
 * To look at a certain time period of data, select a range under the _Time Controls_ tab.
@@ -69,3 +68,13 @@ Note: On OS X, to find the name of your sensor, in terminal, type ```ls /dev/```
  * **Mozilla Firefox**: _ctrl+Shift+R_ will reload the page without cache and/or _ctrl+Shift+Delete_ -> Details -> Cache checkbox -> Clear Now
 
 
+## Setting up an mFi
+* cd .ssh
+* ssh-keygen
+* cat id_rsa.pub
+* copy the key given
+* ssh to mFi
+* vim authorized_keys
+* paste key
+* chmod 600 authorized_keys
+* enter 'save' in command line
