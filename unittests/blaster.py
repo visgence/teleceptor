@@ -8,22 +8,17 @@ import copy
 # Where is the teleceptor api
 TELECEPTOR_URL = "http://localhost:8000/api/station"
 
-# Use api
-USE_API = True
+# How many stream do you want
+NUMBER_OF_STREAMS = 10
 
-NUMBER_OF_STREAMS_PER_POST = 1
-# How many stream to poll from.
-NUMBER_OF_STREAMS = 1
+# For how many hours should there be data
+TIME_IN_HOURS = 24 * 30
 
-RATE_OF_POST = 60
-# For how many days should there be data
-TIME_IN_DAYS = 365
+# how much time should be put into a single post request (in minutes)
+TIME_PER_POST = 24
 
-startTime = 0
-curTime = 0
-
-# Generic reading outline:
-# READING[0]['readings'] = [['in1', value, date]]
+# In hours
+TIME_OF_PERIOD = 24
 
 Stream = {
     "info": {
@@ -48,28 +43,30 @@ InSensor = {
 
 if __name__ == "__main__":
     curTime = time.time()
-    request = []
-    pointCount = 0
-
+    totalPointCount = 0
+    # Create inital object
+    newStream = copy.deepcopy(Stream)
+    newStream['info']['uuid'] = str(uuid.uuid4())
+    lastDate = time.time()
+    timeTracker = time.time()
     for i in range(0, NUMBER_OF_STREAMS):
-        newStream = copy.deepcopy(Stream)
-        newStream['info']['uuid'] = str(uuid.uuid4())
         newStream['info']['in'].append(copy.deepcopy(InSensor))
-        print i
-        newStream['info']['in'][0]['name'] = str(uuid.uuid4())
-        for i in range(0, TIME_IN_DAYS):
-            for j in range(0, 60*24):
-                newDate = curTime - (i*86400) - (j*60)
-                newValue = math.sin(0.1 * pointCount) + 3.0
-                newStream['readings'].append([newStream['info']['in'][0]['name'], newValue, newDate])
-                pointCount += 1
+        newStream['info']['in'][i]['name'] = str(uuid.uuid4())
+
+    print timeTracker
+    for i in range(0, TIME_IN_HOURS/TIME_PER_POST):
+        newStream['readings'] = []
+        request = []
+        for k in range(0, TIME_PER_POST*60):
+            timeTracker -= 60
+            newDate = timeTracker
+            # (pi * 1/number of seconds in a period/2 * date) + 3 for offset
+            newValue = math.sin(math.pi * (1.0/(TIME_OF_PERIOD/2 * 60 * 60)) * newDate) + 3.0
+            for j in range(0, NUMBER_OF_STREAMS):
+                newStream['readings'].append([newStream['info']['in'][j]['name'], newValue, newDate])
+                totalPointCount += 1
         request.append(newStream)
+        requests.post(TELECEPTOR_URL, data=json.dumps(request))
 
-    print "{} datapoints have been made.".format(pointCount)
-    print "Took {} seconds in time to create the request object.".format(time.time() - curTime)
-    postTime = time.time()
-
-    requests.post(TELECEPTOR_URL, data=json.dumps(request))
-
-    print "post took {} seconds.".format(time.time() - postTime)
+    print "{} datapoints have been made.".format(totalPointCount)
     print "Total running time of program was {} seconds.".format(time.time() - curTime)
