@@ -12,11 +12,10 @@ Poller can be run with or without the server.
 import multiprocessing
 import time
 import logging
-import socket
 
 # Local Imports
 from teleceptor import TCP_POLLER_HOSTS, USE_DEBUG
-from teleceptor.basestation import GenericQueryer, TCPMote
+from teleceptor.basestation import GenericQueryer
 
 
 def tcpDevices(previousDevices, devices):
@@ -33,7 +32,7 @@ def tcpDevices(previousDevices, devices):
 
         logging.debug("Began process.")
 
-    return [p.name for p in multiprocessing.active_children()]
+    return [pr.name for pr in multiprocessing.active_children()]
 
 
 if __name__ == "__main__":

@@ -1,8 +1,8 @@
 """
 testFixtures.py
 
-Authors: Victor Szczepanski
-         Cyrille Gindreau
+Authors: Victor Szczepanski (Visgence Inc.)
+         Cyrille Gindreau (Visgence Inc.)
 
 Adds two sensors and two datastreams
 Then adds sensor readings in the form of a sine curve.
@@ -17,10 +17,8 @@ import requests
 
 
 def main():
-    """
-    Loads two sensors, two datastreams, and some readings
+    # Loads two sensors, two datastreams, and some readings
 
-    """
     serverURL = "http://0.0.0.0:8000/api/station"
     jsonExample = [{
         "info": {

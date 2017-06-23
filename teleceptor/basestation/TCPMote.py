@@ -12,7 +12,6 @@ updateValues(newValues) //Accepts a dictionary of sensorName: value pairs. Retur
 
 """
 import socket
-from requests import ConnectionError
 import json
 import logging
 
@@ -20,7 +19,7 @@ import logging
 class TCPMote():
     def __init__(self, host, port, timeout=3, debug=False):
         """
-        Initializes the TCP socket connection. Required arguments are host and port
+        Initializes the TCP socket connection. Required arguments are host and port.
         host -- The IP address of the Teleimperium-like device as a string. For example 192.168.55.12
         port -- The port of the Teleimperium-like device. For example 2000
         timeout -- The timeout, in seconds, to wait for TCP communications.
@@ -42,7 +41,7 @@ class TCPMote():
         self._device = s.makefile()
         self.metadata = {'host': host, 'port': port}
 
-        logging.info("Created mote with metadata %s", str(self.metadata))
+        logging.debug("Created mote with metadata %s", str(self.metadata))
 
         logging.debug("Trying to read any ack characters...")
         try:
@@ -50,6 +49,7 @@ class TCPMote():
 
         except socket.timeout as e:
             logging.debug("No Hello Line")
+            logging.debug(e)
 
     def getReadings(self):
         """
@@ -83,6 +83,7 @@ class TCPMote():
         except socket.timeout as e:
             # try again
             logging.debug("Timed out trying to read from device. Trying again...")
+            logging.debug(e)
             try:
                 logging.debug("Writing %...")
                 self._device.write('%')
@@ -99,6 +100,7 @@ class TCPMote():
                 logging.debug("Read line %s", readings)
             except socket.timeout as st:
                 logging.error("Timed out trying to read from device twice. Device may be unresponsive.")
+                logging.debug(st)
                 return None, None
 
         return info, readings

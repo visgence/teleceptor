@@ -1,3 +1,12 @@
+"""
+Data collection from xBee radios.
+Authors: Cyrille Gindreau (Visgence Inc.)
+
+xBee radio must be set in api mode to be able to receive frames.
+Makes use of Teleceptor api to insert data so server must be running.
+
+TODO: Make platform independent. Currently set to run from OSX.
+"""
 import serial
 import json
 import logging
@@ -8,6 +17,7 @@ import requests
 from xbee import ZigBee
 from multiprocessing import Process
 
+from teleceptor import USE_DEBUG
 
 TELECEPTOR_URL = "http://localhost:8000/api/station"
 
@@ -22,8 +32,8 @@ def PollDevice(serialId):
         logging.debug('Getting data.')
         try:
             packet = xbee.wait_read_frame()
-            # logging.info("Frame received")
-            # logging.debug(packet)
+            logging.debug("Frame received")
+            logging.debug(packet)
             SendToTeleceptor(packet)
         except Exception, e:
             logging.error('Error getting data')
@@ -64,7 +74,10 @@ def SendToTeleceptor(packet):
 
 
 if __name__ == "__main__":
-    logging.basicConfig(format='%(asctime)s %(levelname)s:%(message)s', level=logging.INFO)
+    if USE_DEBUG:
+        logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s', level=logging.DEBUG)
+    else:
+        logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s', level=logging.INFO)
     logging.info('Starting xBee poller.')
     pollRate = 60
     currentDevices = {}
@@ -75,7 +88,7 @@ if __name__ == "__main__":
             curPort = i.split('.')[1]
             if curPort.startswith('usb'):
                 if curPort not in currentDevices:
-                    logging.info('New device found!')
+                    logging.debug('New device found!')
                     p = Process(target=PollDevice, args=(curPort, ))
                     p.start()
                     currentDevices[curPort] = p

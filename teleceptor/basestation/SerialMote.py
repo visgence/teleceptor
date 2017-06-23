@@ -27,6 +27,7 @@ class SerialMote(serial.Serial):
 
     All Visgence motes use a baudrate of 9600.
     """
+
     def __init__(self, deviceName, timeout=3, baudRate=9600, debug=False):
         """
         Initializes the mote. Required arguments are deviceName and timeout.
@@ -49,7 +50,7 @@ class SerialMote(serial.Serial):
         time.sleep(5)
 
         logging.debug("Finished creating serial object as self")
-        logging.info("Created mote %s with timeout %s seconds and baudrate %s", deviceName, str(timeout), str(baudRate))
+        logging.debug("Created mote %s with timeout %s seconds and baudrate %s", deviceName, str(timeout), str(baudRate))
 
         # get reading to make sure device is alive
         info = ""
@@ -64,8 +65,7 @@ class SerialMote(serial.Serial):
             # failed device
             logging.error("Serial Exception, device may not be connected or has failed. \n %s", str(se))
             raise se
-        logging.info("\nWe're here\n")
-        logging.info("serial info: {}".format(info))
+        logging.debug("serial info: {}".format(info))
         info = json.loads(info)
 
         self.uuid = info['uuid']

@@ -34,6 +34,7 @@ class User(Base):
     active : bool
     password : str
     """
+
     __tablename__ = "user"
 
     id = Column(Integer, primary_key=True)
@@ -48,9 +49,8 @@ class User(Base):
 
 
 class Session(Base):
-    """
-        Currently unused.
-    """
+    # Currently unused.
+
     __tablename__ = "session"
 
     id = Column(Integer, primary_key=True)
@@ -72,6 +72,7 @@ class SensorReading(Base):
     timestamp : BigInt
         The time that the reading was taken.
     """
+
     __tablename__ = "sensorreading"
 
     id = Column(Integer, primary_key=True)
@@ -92,7 +93,8 @@ class SensorReading(Base):
 
 class MessageQueue(Base):
     """
-    Each sensor will have it's own unique message queue with its own identification number. The message queue can contain many messages.  Message handling can be found in messages.
+    Each sensor will have it's own unique message queue with its own identification number.
+    The message queue can contain many messages.  Message handling can be found in messages.
 
     id : int
         Uniquely identifies the MessageQueue.
@@ -101,6 +103,7 @@ class MessageQueue(Base):
     sensor_id : str
         Used to identify a MessageQueue to a Sensor.
     """
+
     __tablename__ = "messagequeue"
 
     id = Column(Integer, primary_key=True)
@@ -138,6 +141,7 @@ class Message(Base):
     read : bool
         Indicates whether the Message as been sent to the basestation or read/acknowledged in some other way.
     """
+
     __tablename__ = "message"
 
     id = Column(Integer, primary_key=True)
@@ -182,6 +186,7 @@ class Sensor(Base):
     _meta_data : str
         Any extra information about the sensor.
     """
+
     __tablename__ = "sensor"
 
     uuid = Column(Text, primary_key=True)
@@ -247,6 +252,7 @@ class DataStream(Base):
     description : str
         Some information that describes the datastream.  Currently unused.
     """
+
     __tablename__ = "datastream"
 
     id = Column(Integer, primary_key=True)
@@ -286,6 +292,7 @@ class Path(Base):
     path : str
         The path String.
     """
+
     __tablename__ = "streampath"
 
     id = Column(Integer, primary_key=True)
@@ -313,6 +320,7 @@ class Calibration(Base):
     coefficients: str
         Describes the coefficients of a polynomial function to a apply to the readings.  Order of coefficients is in decreasing polynomial degree (e.g. [1, 0] represents the polynomial 1*x + 0)
     """
+
     __tablename__ = "calibration"
 
     id = Column(Integer, primary_key=True)

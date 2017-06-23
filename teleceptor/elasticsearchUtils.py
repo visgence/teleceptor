@@ -4,23 +4,12 @@ Authors: Victor Szczepanski
 
 
 """
-import json
-import sys
-import os
-import csv
 import time
 import math
 import logging
 import requests
-from datetime import datetime
 from pyelasticsearch import ElasticSearch
-# = "http://192.168.99.100:9200/"
-from teleceptor import ELASTICSEARCH_URI
-# = 'teleceptor'
-from teleceptor import ELASTICSEARCH_INDEX
-# = 'teledata'
-from teleceptor import ELASTICSEARCH_DOC
-from teleceptor import USE_DEBUG
+from teleceptor import ELASTICSEARCH_URI, ELASTICSEARCH_INDEX, ELASTICSEARCH_DOC, USE_DEBUG
 from teleceptor.timeAggregationUtils import getElasticSearchAggregationLevel
 
 if USE_DEBUG:
@@ -78,7 +67,7 @@ def getReadings(ds, start, end, points=None):
     """
     aggregation_string = getElasticSearchAggregationLevel(int(start), int(end))
 
-    logging.info("Aggregating on every {}".format(aggregation_string))
+    logging.debug("Aggregating on every {}".format(aggregation_string))
 
     # need to scale incoming start and end, since elasticsearch keeps the timestamp in ms
     start = int(start) * 1000
@@ -194,7 +183,7 @@ def getReadings(ds, start, end, points=None):
 
 def get_elastic(elastic_buffer, index_info=None):
     """
-    Make a query to elasticsearch with args in `elastic_buffer`
+    Make a query to elasticsearch with args in `elastic_buffer`.
 
     :parma elastic_buffer: The query json to provide to elastic search.
     :type elastic_buffer: dictionary

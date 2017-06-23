@@ -1,11 +1,12 @@
 """
+SessionManager.py.
+
 Authors: Victor Szczepanski
 
 """
 
 # System Imports
 import teleceptor
-import models
 from contextlib import contextmanager
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -39,7 +40,7 @@ def sessionScope():
     try:
         yield session
         session.commit()
-    except:
+    except Exception:
         session.rollback()
         raise
     finally:

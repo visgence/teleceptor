@@ -1,8 +1,8 @@
 """
-The server that runs Teleceptor
+The server that runs Teleceptor.
 
-Authors: Evan Salazar
-         Cyrille Gindreau
+Authors: Evan Salazar (Visgence Inc.)
+         Cyrille Gindreau (Visgence Inc.)
 
 """
 
@@ -10,10 +10,9 @@ Authors: Evan Salazar
 import os
 import sys
 import cherrypy
-import logging
 
 # Local Imports
-from teleceptor import WEBROOT, PORT, SUPRESS_SERVER_OUTPUT, USE_DEBUG
+from teleceptor import WEBROOT, PORT, SUPRESS_SERVER_OUTPUT
 from teleceptor.auth import AuthController, require
 from teleceptor.api import ResourceApi
 
@@ -25,11 +24,6 @@ class Root(object):
     auth = AuthController()
     api = ResourceApi()
 
-    if USE_DEBUG:
-        logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s', level=logging.DEBUG)
-    else:
-        logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s', level=logging.INFO)
-
     @require()
     def index(self, *args, **kwargs):
         cherrypy.response.headers['Content-Type'] = 'text/html'
@@ -39,12 +33,13 @@ class Root(object):
 
 
 def get_cp_config():
-    """Creates config file for server
+    """Creates config file for server.
 
     :returns:
         a dictionary with the server settings
 
     """
+
     config = {
         '/': {
             'tools.staticdir.on': True,
@@ -60,7 +55,8 @@ def get_cp_config():
 
 
 def runserver(config):
-    """Runs a cherrypy server
+    """
+    Runs a cherrypy server.
 
     :param server: configuration file
 

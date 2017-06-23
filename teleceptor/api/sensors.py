@@ -2,6 +2,7 @@
     Authors: Bretton Murphy (Visgence, Inc.)
              Victor Szczepanski (Visgence, Inc.)
              Jessica Greenling (Visgence, Inc.)
+             Cyrille Gindreau (Visgence, Inc.)
 
     Resource endpoint for Sensors that is used as part of the RESTful api.  Handles
     the creation, updating, and retrieval of Sensors.
@@ -14,8 +15,6 @@
 # System Imports
 import cherrypy
 import json
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.exc import NoResultFound
 import time
 import logging
@@ -322,7 +321,7 @@ def deleteSensor(sensor_id, session):
 
 def getSensor(sensor_id, session):
     """
-    :param sensor_id: The id of the sensor to query on
+    :param sensor_id: The id of the sensor to query on.
     "param session: Optional session context. If None, this function creates its own context. Otherwise, uses this context.
 
     :returns: Dictionary -- A dictionary representing the sensor (as described in Models.Sensor) if found, else None
@@ -381,7 +380,7 @@ def _updateSensor(data, session):
 
 def _updateCalibration(sensor, coefficients, timestamp, session):
     updateNeeded = False
-    # logging.info("Trying to update sensor %s with coefficiencts %s with new coefficients %s", str(sensor['uuid']), str(sensor['last_calibration']['coefficients']), str(coefficients))
+    # logging.debug("Trying to update sensor %s with coefficiencts %s with new coefficients %s", str(sensor['uuid']), str(sensor['last_calibration']['coefficients']), str(coefficients))
 
     if 'last_calibration' not in sensor or 'id' not in sensor['last_calibration'] or sensor['last_calibration']['id'] is None:
         # sensor doesn't have a calibration id, so we need to make a new calibration
@@ -413,7 +412,7 @@ def _updateCalibration(sensor, coefficients, timestamp, session):
                     updateNeeded = True
         except (NoResultFound, KeyError) as e:
             logging.debug("No calibration found for sensor %s. Creating new calibration...", str(sensor))
-
+            logging.debug(e)
             Cal = Calibration(coefficients=coefficients, timestamp=timestamp, sensor_id=sensor['uuid'])
             session.add(Cal)
             session.commit()

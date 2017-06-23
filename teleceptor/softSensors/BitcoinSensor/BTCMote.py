@@ -1,10 +1,8 @@
-"""
-
-"""
 
 import requests
 import json
 import time
+import logging
 
 import teleceptor
 
@@ -15,11 +13,16 @@ caltime = time.time()
 
 
 def main():
+    if teleceptor.USE_DEBUG:
+        logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s', level=logging.DEBUG)
+    else:
+        logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s', level=logging.INFO)
+
     # loop forever getting 15 minute rate updates
     while True:
         data = getData()
         if data is None:
-            # equests failed or JSON was garbled
+            # requests failed or JSON was garbled
             time.sleep(queryrate)
             continue
         motestring = {
@@ -42,26 +45,27 @@ def main():
             motestring['info']['out'][-1]["timestamp"] = caltime
             motestring['info']['out'][-1]["sensor_type"] = "float"
             readings['readings'].append([d, data[d], time.time()])
-            print(d, data[d])
+            logging.debug(d, data[d])
         postmessage = [{'info': motestring['info'], 'readings':readings['readings']}]
 
         for sensor in postmessage[0]['info']['in']:
             sensor.update({'meta_data': {'unixtime': time.time(), 'pid': 2, 'tty': "Web", "complex": {"nested": ["Hi", "Bye"]}}})
         for sensor in postmessage[0]['info']['out']:
             sensor.update({'meta_data': {'unixtime': time.time(), 'pid': 2, 'tty': "Web", "complex": {"nested": ["Hi", "Bye"]}}})
-        print(postmessage)
+        logging.debug(postmessage)
         response = requests.post(teleceptorURL, data=json.dumps(postmessage))
-        print(response)
+        logging.debug(response)
         time.sleep(queryrate)
 
 
 def getData():
     data = requests.get(blockchainURL)
-    print(data)
+    logging.debug(data)
     jdata = None
     try:
         jdata = json.loads(data.content)
-    except:
+    except Exception, e:
+        logging.error(e)
         return None
 
     return jdata['USD']
