@@ -1,8 +1,9 @@
 """
-Authors: Cyrille Gindreau
+Authors: Cyrille Gindreau (Visgence, Inc.).
+
+Takes a device name as argument and passes it to GenericQueryer
 """
 from teleceptor.basestation import GenericQueryer
-import sys
 
 
 if __name__ == "__main__":

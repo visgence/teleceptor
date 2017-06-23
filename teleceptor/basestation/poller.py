@@ -22,10 +22,9 @@ import multiprocessing
 import subprocess
 import time
 import logging
-from serial import SerialException, SerialTimeoutException
 
 # Local Imports
-from teleceptor.basestation import GenericQueryer, SerialMote
+from teleceptor.basestation import GenericQueryer
 from teleceptor import USE_DEBUG
 
 
@@ -48,7 +47,7 @@ def grepfinddevices(previousDevices=[]):
             continue
         if dev in previousDevices:
             continue
-        logging.info("Found new device %s", dev)
+        logging.debug("Found new device %s", dev)
         devpath = "/dev/" + dev
 
         bashcommand = "udevadm info -a -n " + devpath

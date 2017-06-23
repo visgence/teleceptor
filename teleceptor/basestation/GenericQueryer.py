@@ -192,7 +192,7 @@ def main(queryRate=60, **kwargs):
             logging.error("Error connecting to server. Caching data: %s", str(payloads[-1]))
             continue
 
-        logging.info("Server response: %s", str(response.text))
+        logging.debug("Server response: %s", str(response.text))
 
         if response.status_code == requests.codes.ok:
             responseData = json.loads(response.text)
