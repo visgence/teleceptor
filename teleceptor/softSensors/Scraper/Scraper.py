@@ -1,14 +1,22 @@
-from lxml import html
 import urllib2
 from bs4 import BeautifulSoup as bs
 import json
 import requests
 import time
 import argparse
+import logging
+
+import teleceptor
+
 parser = argparse.ArgumentParser()
 parser.add_argument("-h, --host", help="The host where the data will be scraped from. Ex: 192.168.0.1")
 parser.add_argument("-t, --teleceptor", help="The location of the teleceptor server. Ex: http://localhost:8080/teleceptor")
 args = parser.parse_args()
+
+if teleceptor.USE_DEBUG:
+    logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s', level=logging.DEBUG)
+else:
+    logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s', level=logging.INFO)
 
 
 def getPageData(ip):
@@ -40,7 +48,7 @@ def getPageData(ip):
         elif idx is 5:
             newObj['ReceiveDataRate'] = newval
         else:
-            print "Something went wrong!"
+            logging.error("Index out of range.")
 
     # Unfortunately, the site has no ids or class closer than copybold for the Link Capacity, that's why I'm looking directly and the indices here
     for idx, val in enumerate(soup.find_all(class_='copybold')):
@@ -88,6 +96,6 @@ if __name__ == "__main__":
         if args.teleceptor:
             response = sendData(returnObj, args.teleceptor)
         else:
-            print "Cound not complete request, a teleceptor url is needed. Use --help for usage."
+            logging.info("Cound not complete request, a teleceptor url is needed. Use --help for usage.")
     else:
-        print "Could not complete request, a host ip number is needed. Use --help for usage."
+        print logging.info("Could not complete request, a host ip number is needed. Use --help for usage.")
