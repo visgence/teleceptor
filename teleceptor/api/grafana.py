@@ -14,6 +14,7 @@ import dateutil.parser
 # Local Imports
 from readings import SensorReadings
 from teleceptor.sessionManager import sessionScope
+from teleceptor import USE_DEBUG
 import sensors
 import datastreams
 from datastreams import DataStreams
@@ -21,6 +22,11 @@ from datastreams import DataStreams
 
 class Query():
     exposed = True
+
+    if USE_DEBUG:
+        logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s', level=logging.DEBUG)
+    else:
+        logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s', level=logging.INFO)
 
     def GET(self, *args, **kwargs):
         return "query"
@@ -30,6 +36,7 @@ class Query():
         try:
             queryData = json.load(cherrypy.request.body)
             logging.debug("Got data:")
+            logging.debug(queryData)
         except (ValueError, TypeError):
             logging.error("Request data is not JSON: %s", cherrypy.request.body)
             statusCode = "400"

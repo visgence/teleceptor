@@ -4,6 +4,7 @@ datastreams.py
 Authors: Victor Szczepanski
          Bretton Murphy
          Jessica Greenling
+         Cyrille Gindreau
 
  Resource endpoint for DataStreams that is used as part of the RESTful api.  Handles
     the creation, updating, and retrieval of Datastreams.
@@ -58,7 +59,7 @@ import re
 import logging
 
 # Local Imports
-from teleceptor.models import DataStream, Sensor, Path
+from teleceptor.models import DataStream, Path
 from teleceptor.sessionManager import sessionScope
 from teleceptor import USE_DEBUG, USE_ELASTICSEARCH
 from teleceptor.auth import require
@@ -289,7 +290,8 @@ class DataStreams:
 
 
 def deleteDatastream(session, datastream_id):
-    """ Deletes a datastream with the given `datastream_id` and its associated sensor.
+    """
+    Deletes a datastream with the given `datastream_id` and its associated sensor.
 
 
     :param session: Existing context into a sqlalchemy database session. Can be created by a call to `sessionScope()`
@@ -361,28 +363,29 @@ def _updateStream(data, session):
 
 
 def clean_inputs(inputs):
-        """
-            Checks that the supplied inputs only contains valid parameters for filtering Datadatastreams.
+    """
+    Checks that the supplied inputs only contains valid parameters for filtering Datadatastreams.
 
-            :returns:
-                Dictionary with valid parameters taken from provided inputs.
-        """
-        validInputs = {
-            'sensor': '^[a-zA-Z0-9_.]+$'
-        }
-        valueConversions = {
-            'null': None
-        }
-        safeInputs = {}
-        for key, value in inputs.iteritems():
-            if key not in validInputs:
-                return None
-            if value in valueConversions:
-                value = valueConversions[value]
-            elif re.match(validInputs[key], value) is None:
-                return None
-            safeInputs[key] = value
-        return safeInputs
+    :returns:
+        Dictionary with valid parameters taken from provided inputs.
+    """
+
+    validInputs = {
+        'sensor': '^[a-zA-Z0-9_.]+$'
+    }
+    valueConversions = {
+        'null': None
+    }
+    safeInputs = {}
+    for key, value in inputs.iteritems():
+        if key not in validInputs:
+            return None
+        if value in valueConversions:
+            value = valueConversions[value]
+        elif re.match(validInputs[key], value) is None:
+            return None
+        safeInputs[key] = value
+    return safeInputs
 
 
 def get_datastream(datastream_id, session=None):

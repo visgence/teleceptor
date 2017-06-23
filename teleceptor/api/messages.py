@@ -3,6 +3,7 @@ messages.py
 
     Authors: Victor Szczepanski
              Jessica Greenling
+             Cyrille Gindreau
 
     This module handles message sending, receiving, and deleting.
 
@@ -26,7 +27,6 @@ import logging
 # Local Imports
 from teleceptor.models import Sensor, MessageQueue, Message
 from teleceptor.sessionManager import sessionScope
-from teleceptor.auth import require
 from teleceptor import USE_DEBUG
 
 
@@ -247,7 +247,7 @@ class Messages:
 
 def getMessages(sensor_id, session, by_timestamp=False, unread_only=False):
     """
-    Returns a list of all messages (read and not read) for the sensor with id `sensor_id`
+    Returns a list of all messages (read and not read) for the sensor with id `sensor_id`.
 
     :param sensor_id: The id of the sensor to get all messages for.
     :type sensor_id: int
@@ -298,9 +298,9 @@ def getMessages(sensor_id, session, by_timestamp=False, unread_only=False):
 
 
 def getAllMessages(session):
-    """
-    Returns a list of message queues for all sensors.
-    """
+
+    # Returns a list of message queues for all sensors.
+
     message_queues = session.query(MessageQueue).all()
     return [message_queue.to_dict() for message_queue in message_queues]
 
@@ -322,7 +322,7 @@ def addMessage(sensor_id, message, duration, session):
         ValueError: If type of message is not valid for sensor with id `sensor_id`
     """
     try:
-        sensor = s.query(Sensor).filter_by(uuid=sensor_id).one()
+        sensor = session.query(Sensor).filter_by(uuid=sensor_id).one()
     except NoResultFound:
         raise NoResultFound("No such Sensor with id %s" % str(sensor_id))
     else:
@@ -330,7 +330,7 @@ def addMessage(sensor_id, message, duration, session):
         if msg_queue is None:
             logging.debug("Sensor has no message queue. Creating one...")
             sensor.message_queue = MessageQueue(sensor_id=sensor.uuid)
-            s.commit()
+            session.commit()
             logging.debug("Completed message queue creation.")
             msg_queue = sensor.message_queue
 
@@ -345,12 +345,12 @@ def addMessage(sensor_id, message, duration, session):
         msg.message = json.dumps(message)
         msg.timeout = time() + duration
         logging.debug("Adding message to database: %s", str(msg.to_dict()))
-        s.add(msg)
-        s.commit()
+        session.add(msg)
+        session.commit()
 
         logging.debug("Adding message to message queue...")
         msg_queue.messages.append(msg)
-        s.commit()
+        session.commit()
         logging.debug("Completed adding message.")
         logging.debug("Returning added message: %s", str(msg.to_dict()))
         return msg.to_dict()
@@ -361,6 +361,7 @@ def deleteMessage(sensor_id, message_id, session):
         sensor = session.query(Sensor).filter_by(uuid=sensor_id).one()
     except NoResultFound as e:
         logging.error("Sensor with id %s does not exist", str(sensor_id))
+        logging.debug(e)
         raise NoResultFound("Sensor with id %s does not exist", str(sensor_id))
     else:
         msgQueue = sensor.message_queue

@@ -5,6 +5,7 @@
         Bretton Murphy (Visgence, Inc.)
         Victor Szczepanski (Visgence, Inc.)
         Jessica Greenling (Visgence, Inc.)
+        Cyrille Gindreau (Visgence, Inc.)
 
     Resource endpoint for accepting POST requests that is used as part of the RESTful api.
     Handles the delegation of tasks to other api modules. Specifically, this api should be used for posting new sensor readings with sensor readings.
@@ -36,23 +37,19 @@
 
 # System Imports
 import cherrypy
-from time import time
+import logging
 from sqlalchemy.orm.exc import NoResultFound
 try:
     import simplejson as json
 except ImportError:
     import json
 
-
-import logging
-
 # Local Imports
-from teleceptor.models import DataStream, Sensor, Message, MessageQueue, Path
+from teleceptor.models import DataStream, Path
 from teleceptor.sessionManager import sessionScope
 from teleceptor.api.sensors import Sensors
 from teleceptor.api.datastreams import DataStreams
 from teleceptor.api import readings, datastreams, sensors, messages
-from teleceptor.api.readings import SensorReadings
 from teleceptor import USE_DEBUG
 
 

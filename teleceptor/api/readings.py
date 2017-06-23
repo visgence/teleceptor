@@ -1,10 +1,11 @@
 """
-readings.py
+    readings.py
 
     Authors: Bretton Murphy
              Evan Salazar
              Victor Szczepanski
              Jessica Greenling
+             Cyrille Gindreau
 
     Resource endpoint for SensorReadings that is used as part of the RESTful api.  Handles
     the creation and retrieval of SensorReadings.
@@ -30,7 +31,7 @@ import re
 import logging
 
 # Local Imports
-from teleceptor import SQLDATA, SQLREADTIME, USE_DEBUG, USE_SQL_ALWAYS, USE_ELASTICSEARCH
+from teleceptor import SQLDATA, SQLREADTIME, USE_DEBUG, USE_ELASTICSEARCH
 from teleceptor.models import SensorReading, DataStream
 from teleceptor.sessionManager import sessionScope
 if USE_ELASTICSEARCH:
@@ -90,7 +91,7 @@ class SensorReadings:
                     'readings': [List of readings]
                 }
         """
-        logging.info("GET request to readings.")
+        logging.debug("GET request to readings.")
 
         cherrypy.response.headers['Content-Type'] = 'application/json'
         status_code = "200"
@@ -109,7 +110,7 @@ class SensorReadings:
                     data['error'] = str(e)
 
         cherrypy.response.status = status_code
-        logging.info("Finished GET request to readings.")
+        logging.debug("Finished GET request to readings.")
         return json.dumps(data, indent=4)
 
     def POST(self):
@@ -120,7 +121,7 @@ class SensorReadings:
             'error':   <error str if applicable>
             'readings': [List of readings]
         """
-        logging.info("POST request to readings.")
+        logging.debug("POST request to readings.")
 
         cherrypy.response.headers['Content-Type'] = 'application/json'
         data = {}
@@ -144,7 +145,7 @@ class SensorReadings:
                 data['error'] = "No readings to insert"
 
         cherrypy.response.status = status_code
-        logging.info("Finished POST request to readings.")
+        logging.debug("Finished POST request to readings.")
         return json.dumps(data, indent=4)
 
     def DELETE(self, datastream_id=None):
@@ -153,7 +154,7 @@ class SensorReadings:
 
         :returns: A JSON object with an 'error' key if an error occured or 'readings' key if delete was successful.
         """
-        logging.info("DELETE request to readings with datastream_id {}".format(datastream_id))
+        logging.debug("DELETE request to readings with datastream_id {}".format(datastream_id))
 
         cherrypy.response.headers['Content-Type'] = 'application/json'
         data = {}
@@ -167,13 +168,12 @@ class SensorReadings:
                     data['readings'] = deleted_readings
                 except Exception as e:
                     error_string = "Unexpected error while deleting readings by datastream: {}".format(e)
-                    logging.exception(error_string)
-                    logging.info(error_string)
+                    logging.error(error_string)
                     data['error'] = error_string
                     statusCode = "400"
 
         cherrypy.response.status = statusCode
-        logging.info("Finished DELETE request to datastreams.")
+        logging.debug("Finished DELETE request to datastreams.")
         return json.dumps(data, indent=4)
 
     @staticmethod
@@ -183,7 +183,7 @@ class SensorReadings:
             Ex: [ [timestamp1, value1], [timestamp2, value2], ...]
 
             :returns: Array -- SensorReadings values in the denoted format.
-         """
+        """
 
         logging.debug("Condensing SensorReading objects to simple [timestamp, value] format: %s", str(readings))
         data = []
@@ -305,7 +305,6 @@ class SensorReadings:
 
 
 def insertReadings(readings, session):
-
     """
     Tries to insert the readings provided into database, and optionally into the SQL database if SQLDATA is set.
 
@@ -332,8 +331,9 @@ def insertReadings(readings, session):
             streamId = reading[DS]
             rawVal = reading[VAL]
             timestamp = reading[TIME]
-        except:
+        except Exception, e:
             logging.error("Error separating %s into streamId, rawVal, and timestamp.", str(reading))
+            logging.debug(e)
             continue
         # If no sensor value then skip this reading
         if rawVal is None or rawVal == "":
