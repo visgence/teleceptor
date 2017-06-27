@@ -10,5 +10,4 @@ angular.module('teleceptor.maincontroller', [])
     apiService.get('sysdata').then(function(response){
         $scope.versionNumber = response.data.version;
     });
-}]);
-
+},]);

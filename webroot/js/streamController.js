@@ -19,7 +19,7 @@ angular.module('teleceptor.streamcontroller', [])
                     dataToDisplay.paths = [];
                     for (var j in v[i]) {
                         dataToDisplay.paths.push({
-                            url: v[i][j]
+                            url: v[i][j],
                         });
                     }
                 } else {
@@ -52,7 +52,7 @@ angular.module('teleceptor.streamcontroller', [])
 
         $scope.AddPath = function() {
             $scope.stream.paths.push({
-                url: "/new_path_" + $scope.stream.paths.length
+                url: "/new_path_" + $scope.stream.paths.length,
             });
         };
 
@@ -96,4 +96,5 @@ angular.module('teleceptor.streamcontroller', [])
                 console.log("Error Occured: ", response.data);
             });
         };
-    }]);
+    },
+  ]);

@@ -7,7 +7,8 @@ angular.module('teleceptor.graphcontroller', [])
         $timeout(function() {
             $location.search('reload', parseInt(Date.now() / 1000));
         }, 1000);
-    }])
+    },
+  ])
 
     .directive('graph', ['$location', '$window', 'timeService', 'infoService', 'apiService', '$timeout', function($location, $window, timeService, infoService, apiService, $timeout) {
         return {
@@ -111,7 +112,7 @@ angular.module('teleceptor.graphcontroller', [])
                         top: 20,
                         right: 10,
                         bottom: 20,
-                        left: 10 + (unitSize * 7)
+                        left: 10 + (unitSize * 7),
                     };
                     width = width - margin.left - margin.right;
                     if (width < 0) return;
@@ -145,12 +146,12 @@ angular.module('teleceptor.graphcontroller', [])
                     scope.newGraph.warning = "";
 
                     var xScale = d3.scaleTime()
-                        .domain([new Date(start), new Date(end)])
-                        .rangeRound([0, width]);
+                        .domain([new Date(start), new Date(end),])
+                        .rangeRound([0, width,]);
 
                     var yScale = d3.scaleLinear()
-                        .domain([min, max + (max - min) * 0.1])
-                        .rangeRound([height, margin.bottom]);
+                        .domain([min, max + (max - min) * 0.1,])
+                        .rangeRound([height, margin.bottom,]);
 
                     function getTic() {
                         var Ticks = [];
@@ -480,6 +481,6 @@ angular.module('teleceptor.graphcontroller', [])
                 angular.element($window).bind('resize', function() {
                     drawGraph(elem[0], infoService.getReadingsInfo());
                 });
-            }
+            },
         };
-    }]);
+    },]);

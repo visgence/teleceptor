@@ -6,7 +6,7 @@ angular.module('teleceptor.services', [])
     .factory('timeService', function() {
         var values = {
             start: null,
-            end: null
+            end: null,
         };
 
         return {
@@ -19,7 +19,7 @@ angular.module('teleceptor.services', [])
             },
             setEnd: function(newEnd) {
                 values.end = parseInt(newEnd);
-            }
+            },
         };
     })
 
@@ -57,7 +57,7 @@ angular.module('teleceptor.services', [])
             },
             resetReadingsInfo: function() {
                 readingsInfo = null;
-            }
+            },
         };
     })
 
@@ -78,4 +78,5 @@ angular.module('teleceptor.services', [])
         };
 
         return apiService;
-    }]);
+    },
+  ]);

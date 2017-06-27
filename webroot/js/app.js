@@ -15,7 +15,7 @@ var app = angular.module('teleceptor', [ // jshint ignore:line
 
     .config(['$routeProvider', function($routeProvider) {
         $routeProvider.otherwise({
-            redirectTo: '/'
+            redirectTo: '/',
         });
         $routeProvider.when('/', {
             templateUrl: 'base.html',
@@ -25,4 +25,5 @@ var app = angular.module('teleceptor', [ // jshint ignore:line
             templateUrl: 'generate_json.html',
             reloadOnSearch: false,
         });
-    }]);
+    },
+  ]);

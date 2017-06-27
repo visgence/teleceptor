@@ -1,7 +1,7 @@
 /*jslint node: true */
 'use strict';
 
-angular.module('teleceptor.sensorcontroller', ['frapontillo.bootstrap-switch'])
+angular.module('teleceptor.sensorcontroller', ['frapontillo.bootstrap-switch',])
 
     .controller('sensorController', ['$scope', 'infoService', '$timeout', 'apiService', 'timeService', function($scope, infoService, $timeout, apiService, timeService) {
         // tabs:
@@ -62,7 +62,7 @@ angular.module('teleceptor.sensorcontroller', ['frapontillo.bootstrap-switch'])
                 "name": id,
                 "sensor_type": sensorInfo.sensor_type,
                 "timestamp": time,
-                "meta_data": {}
+                "meta_data": {},
             };
 
             var payload = [{
@@ -70,24 +70,22 @@ angular.module('teleceptor.sensorcontroller', ['frapontillo.bootstrap-switch'])
                     "uuid": "",
                     "name": sensorInfo.name,
                     "description": sensorInfo.description,
-                    "out": (sensorInfo.isInput ? [] : [sensorReading]),
-                    "in": (sensorInfo.isInput ? [sensorReading] : [])
+                    "out": (sensorInfo.isInput ? [] : [sensorReading,]),
+                    "in": (sensorInfo.isInput ? [sensorReading,] : []),
                 },
                 "readings": [
-                    [id, newValue, time]
-                ]
-            }];
+                    [id, newValue, time,],
+                ],
+            },];
             apiService.post("station", payload).then(function(response) {
                 console.log(response);
             });
         };
 
-
-
         $scope.SaveFields = function() {
             var updateData = {};
             var url = "sensors";
-            var editableFields = ['last_calibration', 'units', 'description', 'uuid'];
+            var editableFields = ['last_calibration', 'units', 'description', 'uuid',];
 
             for (var i in $scope.sensor) {
                 if (!(editableFields.includes(i))) continue;
@@ -149,7 +147,7 @@ angular.module('teleceptor.sensorcontroller', ['frapontillo.bootstrap-switch'])
             var payload = {
                 "message": angular.element('#bsSwitch')[0].value,
                 "duration": 60000,
-                "sensor_id": sensorInfo.uuid
+                "sensor_id": sensorInfo.uuid,
             };
             apiService.post("messages/", payload).then(function(response) {
                 console.log("the response was:");
@@ -196,7 +194,7 @@ angular.module('teleceptor.sensorcontroller', ['frapontillo.bootstrap-switch'])
                     "name": id,
                     "sensor_type": sensorInfo.sensor_type,
                     "timestamp": time,
-                    "meta_data": {}
+                    "meta_data": {},
                 };
 
                 var payload = [{
@@ -204,13 +202,13 @@ angular.module('teleceptor.sensorcontroller', ['frapontillo.bootstrap-switch'])
                         "uuid": "",
                         "name": sensorInfo.name,
                         "description": sensorInfo.description,
-                        "out": (sensorInfo.isInput ? [] : [sensorReading]),
-                        "in": (sensorInfo.isInput ? [sensorReading] : [])
+                        "out": (sensorInfo.isInput ? [] : [sensorReading,]),
+                        "in": (sensorInfo.isInput ? [sensorReading,] : []),
                     },
                     "readings": [
-                        [id, newValue, time]
-                    ]
-                }];
+                        [id, newValue, time,],
+                    ],
+                },];
 
                 apiService.post("station", payload).then(function(response) {
                     console.log(response);
@@ -220,4 +218,5 @@ angular.module('teleceptor.sensorcontroller', ['frapontillo.bootstrap-switch'])
                 sendCommand();
             });
         }, 1000);
-    }]);
+    },
+  ]);

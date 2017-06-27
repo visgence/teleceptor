@@ -3,7 +3,7 @@
         "$": false,
         "angular": false,
         "document": false,
-        "location": false,
+        "location": false
     },
     "strict": true,
     "eqeqeq": true,
@@ -12,4 +12,5 @@
     "trailingcomma": true,
     "undef": true,
     "unused": true,
+    "elision": true
 }

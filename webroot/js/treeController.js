@@ -38,7 +38,7 @@ angular.module('teleceptor.treecontroller', [])
         for (var i in data) {
             $scope.nodeCount++;
             var newObj = {
-                "color": "#333"
+                "color": "#333",
             };
             if (data.constructor === Array) {
                 newObj.info = data[i];
@@ -105,10 +105,10 @@ angular.module('teleceptor.treecontroller', [])
                 color: "#333",
                 expandIcon: "glyphicon glyphicon-folder-close glyphs",
                 emptyIcon: "glyphicon glyphicon-minus",
-                collapseIcon: "glyphicon glyphicon-folder-open glyphs"
+                collapseIcon: "glyphicon glyphicon-folder-open glyphs",
 
             });
-            $('#myTree').treeview('collapseAll', { silent: true });
+            $('#myTree').treeview('collapseAll', { silent: true, });
             BuildPathSetWidget(response.data.datastreams);
             var curStream = $location.search().ds;
 
@@ -128,7 +128,7 @@ angular.module('teleceptor.treecontroller', [])
 
             $('#myTree').on('nodeSelected', function(event, data) {
                 if (data.info === undefined) {
-                    $('#myTree').treeview('expandNode', [data.nodeId, { levels: 2, silent: true }]);
+                    $('#myTree').treeview('expandNode', [data.nodeId, { levels: 2, silent: true, },]);
                 } else {
                     SelectTreeNode(data.info);
                 }
@@ -136,7 +136,7 @@ angular.module('teleceptor.treecontroller', [])
 
             $('#myTree').on('nodeUnselected', function(event, data) {
                 if (data.info === undefined) {
-                    $('#myTree').treeview('collapseNode', [data.nodeId, { levels: 2, ignoreChildren: false }]);
+                    $('#myTree').treeview('collapseNode', [data.nodeId, { levels: 2, ignoreChildren: false, },]);
                 }
             });
 
@@ -177,8 +177,8 @@ angular.module('teleceptor.treecontroller', [])
             if (node.info === undefined) continue;
             if (source !== node.info.source) continue;
             if (parseInt(ds) !== parseInt(node.info.id)) continue;
-            $('#myTree').treeview('selectNode', [i, { silent: true }]);
-            $('#myTree').treeview('revealNode', [i, { silent: true }]);
+            $('#myTree').treeview('selectNode', [i, { silent: true, },]);
+            $('#myTree').treeview('revealNode', [i, { silent: true, },]);
             infoService.resetStreamInfo();
             infoService.setStreamInfo(node.info);
             break;
@@ -186,4 +186,5 @@ angular.module('teleceptor.treecontroller', [])
     });
 
     RequestTree();
-}]);
+},
+]);
