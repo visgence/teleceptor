@@ -3,48 +3,11 @@
 
 angular.module('teleceptor.treecontroller', [])
 
-.controller('treeController', ['$scope', '$location', '$http', '$compile', 'apiService', 'infoService', '$timeout', '$window', function($scope, $location, $http, $compile, apiService, infoService, $timeout, $window) {
+.controller('treeController', ['$scope', '$location', '$http', '$compile', 'apiService', 'infoService', '$timeout', function($scope, $location, $http, $compile, apiService, infoService, $timeout) {
     $scope.pathSetSelection = $location.search().pathSet;
     if ($scope.pathSetSelection === undefined) {
         $scope.pathSetSelection = 0;
     }
-
-    $scope.ChangePath = function(e) {
-        if (e == "next")
-            e = $scope.pathSetSelection + 1;
-        if (e == "previous") {
-            e = $scope.pathSetSelection - 1;
-        }
-        $scope.pathSetSelection = e;
-        $location.search('pathSet', e);
-
-        RequestTree();
-    };
-
-    $scope.$on('$routeUpdate', function() {
-      console.log('here')
-        var nodeFound = false;
-        var i = 0;
-        var ds = $location.search().ds;
-        if (ds === undefined) {
-          $location.search('ds', 1);
-          return;
-        }
-        var source = $location.search().source;
-        if(ds === undefined && source === undefined) return;
-        while (!nodeFound && i < 500) {
-            i++;
-            var node = $('#myTree').treeview('getNode', i);
-            if (node.info === undefined) continue;
-            if (source !== node.info.source) continue;
-            if (parseInt(ds) !== parseInt(node.info.id)) continue;
-            $('#myTree').treeview('selectNode', [i, { silent: true }]);
-            $('#myTree').treeview('revealNode', [i, { silent: true }]);
-            infoService.resetStreamInfo();
-            infoService.setStreamInfo(node.info);
-            break;
-        }
-    });
 
     function MakeTreeStructure(data, stream, curUrl, pathId) {
         if (curUrl.length <= 1) {
@@ -57,6 +20,64 @@ angular.module('teleceptor.treecontroller', [])
         var temp = curUrl.shift();
         data[temp] = MakeTreeStructure(data[temp], stream, curUrl, pathId);
         return data;
+    }
+
+    function SelectTreeNode(info) {
+        if (info === undefined) return;
+        infoService.resetStreamInfo();
+        infoService.setStreamInfo(info);
+        $timeout(function() {
+            $scope.$apply(function() {
+                $location.search('ds', info.id);
+            });
+        });
+    }
+
+    function GetTree(data) {
+        var arr = [];
+        for (var i in data) {
+            $scope.nodeCount++;
+            var newObj = {
+                "color": "#333"
+            };
+            if (data.constructor === Array) {
+                newObj.info = data[i];
+                newObj.text = data[i].name;
+                newObj.selectable = true;
+            } else {
+                newObj.text = i;
+                newObj.nodes = GetTree(data[i]);
+                newObj.selectable = false;
+            }
+            arr.push(newObj);
+        }
+        return arr;
+    }
+
+    function BuildPathSetWidget(data) {
+        var val = 0;
+        for (var a in data) {
+            if (data[a].paths.length > val) {
+                val = data[a].paths.length;
+            }
+        }
+        if (val <= 1) return;
+        var wrapper = "<nav aria-label='Page navigation'><ul class='pagination'>";
+        var currentSet = $location.search().pathSet;
+        if (currentSet === undefined) currentSet = 1;
+        for (var i = 0; i < val; i++) {
+            if (i > 7) {
+                //make arrows and break;
+                break;
+            }
+            var newButton = "<li><button class='btn btn-default";
+            if (currentSet - 1 === i) newButton += " active";
+            newButton += "' ng-click=ChangePath(" + (i + 1) + ")>" + (i + 1) + "</button></li>";
+            wrapper += newButton;
+        }
+        angular.element('#pathSetPaginator').html("");
+
+        angular.element('#pathSetPaginator').append($compile(wrapper)($scope));
     }
 
     function RequestTree() {
@@ -128,63 +149,41 @@ angular.module('teleceptor.treecontroller', [])
         });
     }
 
-    function SelectTreeNode(info) {
-        if (info === undefined) return;
-        infoService.resetStreamInfo();
-        infoService.setStreamInfo(info);
-        $timeout(function() {
-            $scope.$apply(function() {
-                $location.search('ds', info.id);
-            });
-        });
-    }
-
-    function GetTree(data) {
-        var arr = [];
-        for (var i in data) {
-            $scope.nodeCount++;
-            var newObj = {
-                "color": "#333"
-            };
-            if (data.constructor === Array) {
-                newObj.info = data[i];
-                newObj.text = data[i].name;
-                newObj.selectable = true;
-            } else {
-                newObj.text = i;
-                newObj.nodes = GetTree(data[i]);
-                newObj.selectable = false;
-            }
-            arr.push(newObj);
+    $scope.ChangePath = function(e) {
+        if (e === "next")
+            e = $scope.pathSetSelection + 1;
+        if (e === "previous") {
+            e = $scope.pathSetSelection - 1;
         }
-        return arr;
-    }
+        $scope.pathSetSelection = e;
+        $location.search('pathSet', e);
 
-    function BuildPathSetWidget(data) {
-        var val = 0;
-        for (var a in data) {
-            if (data[a].paths.length > val) {
-                val = data[a].paths.length;
-            }
-        }
-        if (val <= 1) return;
-        var button = "<li><a href='#'></a></li>";
-        var wrapper = "<nav aria-label='Page navigation'><ul class='pagination'>";
-        var currentSet = $location.search().pathSet;
-        if (currentSet === undefined) currentSet = 1;
-        for (var i = 0; i < val; i++) {
-            if (i > 7) {
-                //make arrows and break;
-                break;
-            }
-            var newButton = "<li><button class='btn btn-default";
-            if (currentSet - 1 === i) newButton += " active";
-            newButton += "' ng-click=ChangePath(" + (i + 1) + ")>" + (i + 1) + "</button></li>";
-            wrapper += newButton;
-        }
-        angular.element('#pathSetPaginator').html("");
+        RequestTree();
+    };
 
-        angular.element('#pathSetPaginator').append($compile(wrapper)($scope));
-    }
+    $scope.$on('$routeUpdate', function() {
+        var nodeFound = false;
+        var i = 0;
+        var ds = $location.search().ds;
+        if (ds === undefined) {
+          $location.search('ds', 1);
+          return;
+        }
+        var source = $location.search().source;
+        if(ds === undefined && source === undefined) return;
+        while (!nodeFound && i < 500) {
+            i++;
+            var node = $('#myTree').treeview('getNode', i);
+            if (node.info === undefined) continue;
+            if (source !== node.info.source) continue;
+            if (parseInt(ds) !== parseInt(node.info.id)) continue;
+            $('#myTree').treeview('selectNode', [i, { silent: true }]);
+            $('#myTree').treeview('revealNode', [i, { silent: true }]);
+            infoService.resetStreamInfo();
+            infoService.setStreamInfo(node.info);
+            break;
+        }
+    });
+
     RequestTree();
 }]);
