@@ -5,5 +5,11 @@
         "document": false,
         "location": false
     },
-    "strict": true
+    "strict": true,
+    "eqeqeq": true,
+    "latedef": true,
+    "shadow": "inner",
+    "trailingcomma": true,
+    "undef": true,
+    "unused": true
 }
