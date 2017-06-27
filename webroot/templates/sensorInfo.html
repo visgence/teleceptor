@@ -40,14 +40,14 @@
                           <div class="info-static">{{sensor.model}}</div>
                           <div class="info-static">{{sensor.name}}</div>
                           <div class="info-edit">
-                              <input ng-model="sensor.description" value="{{sensor.description}}">
+                              <input ng-model="sensor.description" value="{{sensor.description}}" />
                           </div>
                           <div class="info-edit">
-                              <input ng-model="sensor.units" value="{{sensor.units}}">
+                              <input ng-model="sensor.units" value="{{sensor.units}}" />
                           </div>
                           <div class="info-static">{{sensor.last_calibration.timestamp}}</div>
                           <div class="info-edit">
-                              <input ng-model="sensor.last_calibration.coefficients" value="{{sensor.last_calibration.coefficients}}">
+                              <input ng-model="sensor.last_calibration.coefficients" value="{{sensor.last_calibration.coefficients}}" />
                           </div>
                       </div>
                   </div>
@@ -72,7 +72,7 @@
                   </div>
                   <div class="col-md-6" style="margin-top: 7px">
                       <div class="info-edit">
-                          <input id="manualEntry" placeholder="Enter new data point">
+                          <input id="manualEntry" placeholder="Enter new data point" />
                       </div>
                   </div>
               </div>
@@ -108,7 +108,7 @@
                   </div>
                   <div class="col-md-6">
                       <div class="btn-row">
-                          <input id="bsSwitch" bs-switch ng-model="isSelected" switch-active="{{ isActive }}" type="checkbox" switch-on-text="On" switch-off-text="Off" switch-animate="true" switch-change="CommandSwitch()">
+                          <bs-switch id="bsSwitch" ng-model="isSelected" switch-active="{{ isActive }}" type="checkbox" switch-on-text="On" switch-off-text="Off" switch-animate="true" switch-change="CommandSwitch()" />
                       </div>
                   </div>
               </div>
