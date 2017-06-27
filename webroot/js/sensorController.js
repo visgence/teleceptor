@@ -11,7 +11,6 @@ angular.module('teleceptor.sensorcontroller', ['frapontillo.bootstrap-switch'])
     $scope.isActive = "false";
     $scope.ShowInfo = false;
 
-
     $scope.$watch(function() {
         return infoService.getSensorInfo();
     }, function(v) {

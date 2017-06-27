@@ -45,7 +45,7 @@
                         <div class="info-edit">
                             <input ng-model="stream.max_value" value="{{stream.max_value}}">
                         </div>
-                         <div class="info-static">{{stream.sensor}}</div>
+                        <div class="info-static">{{stream.sensor}}</div>
                         <div ng-repeat="path in stream.paths">
                             <div class="info-edit">
                                 <input ng-model="path.url">
@@ -70,7 +70,7 @@
             </div>
         </div>
     </div>
-    <div ng-show!="ShowInfo">
+    <div ng-hide="ShowInfo">
         <div class="card alert alert-danger">
             There are currently no streams.
         </div>

@@ -22,9 +22,14 @@ angular.module('teleceptor.treecontroller', [])
     };
 
     $scope.$on('$routeUpdate', function() {
+      console.log('here')
         var nodeFound = false;
         var i = 0;
         var ds = $location.search().ds;
+        if (ds === undefined) {
+          $location.search('ds', 1);
+          return;
+        }
         var source = $location.search().source;
         if(ds === undefined && source === undefined) return;
         while (!nodeFound && i < 500) {

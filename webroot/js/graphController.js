@@ -131,6 +131,8 @@ angular.module('teleceptor.graphcontroller', [])
 
                 var margin = { top: 20, right: 10, bottom: 20, left: 10 + (unitSize * 7) };
                 width = width - margin.left - margin.right;
+                if (width < 0) return;
+
                 height = height - margin.top - margin.bottom;
 
                 var newChart = d3.select(parent)
