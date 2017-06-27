@@ -7,6 +7,7 @@ angular.module('teleceptor.streamcontroller', [])
 
     $scope.stream = {};
     $scope.editing = false;
+    $scope.ShowInfo = false;
 
     $scope.$watch(function() {
         return infoService.getStreamInfo();
@@ -33,10 +34,11 @@ angular.module('teleceptor.streamcontroller', [])
                 }
             } else {
                 dataToDisplay[i] = v[i];
-            
+
             }
         }
         $scope.stream = dataToDisplay;
+        $scope.ShowInfo = true;
         return;
     }
 
@@ -44,7 +46,7 @@ angular.module('teleceptor.streamcontroller', [])
         $('#warning-message').css('display', 'none');
         $scope.editing = true;
     };
-        
+
     $scope.CancelFields = function() {
         $scope.editing = false;
     };

@@ -15,6 +15,7 @@ angular.module('teleceptor.graphcontroller', [])
         link: function(scope, elem, attrs) {
             var d3 = $window.d3;
             var isLoading = false;
+            scope.ShowInfo = false;
 
             scope.$on('$routeUpdate', function() {
                 GetData();
@@ -86,6 +87,7 @@ angular.module('teleceptor.graphcontroller', [])
             }
 
             function drawGraph(parent, data) {
+              scope.ShowInfo = true;
                 var streamInfo = infoService.getStreamInfo();
                 var sensorInfo = infoService.getSensorInfo();
                 if(streamInfo === undefined) return;

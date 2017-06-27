@@ -1,71 +1,78 @@
 <div ng-controller="streamController">
-    <div class="card">
-        <div class="card-title">
-            Stream Info
-        </div>
-        <div class="alert alert-warning" id="warning-message" style="display: none;" />
-        <div class="row">
-            <div class="col-md-6">
-                <!-- float right, do bold -->
-                <div class="info-title">ID</div>
-                <div class="info-title"> Name</div>
-                <div class="info-title">Description</div>
-                <div class="info-title">Minimum Value</div>
-                <div class="info-title">Maximum Value</div>
-                <div class="info-title">Sensor Name</div>
-                <div class="info-title">Paths</div>
+    <div ng-show="ShowInfo">
+        <div class="card">
+            <div class="card-title">
+                Stream Info
             </div>
-            <div class="col-md-6">
-                <div ng-if="!editing">
-                    <div class="info-static">{{stream.id}}</div>
-                    <div class="info-static">{{stream.name}}</div>
-                    <div class="info-static">{{stream.description}}</div>
-                    <div class="info-static">{{stream.min_value}}</div>
-                    <div class="info-static">{{stream.max_value}}</div>
-                    <div class="info-static">{{stream.sensor}}</div>
-                    <div ng-repeat="path in stream.paths">
-                        <div class="info-static">{{path.url}}</div>
-                    </div>
-                    <button type="button " class="btn btn-primary btn-sm" ng-click="EditFields()">
-                        <span class="glyphicon glyphicon-pencil " /> Edit
-                    </button>
+            <div class="alert alert-warning" id="warning-message" style="display: none;" />
+            <div class="row">
+                <div class="col-md-6">
+                    <!-- float right, do bold -->
+                    <div class="info-title">ID</div>
+                    <div class="info-title"> Name</div>
+                    <div class="info-title">Description</div>
+                    <div class="info-title">Minimum Value</div>
+                    <div class="info-title">Maximum Value</div>
+                    <div class="info-title">Sensor Name</div>
+                    <div class="info-title">Paths</div>
                 </div>
-                <div ng-if="editing">
-                    <div class="info-static">{{stream.id}}</div>
-                    <div class="info-edit">
-                        <input ng-model="stream.name" value="{{stream.name}}">
-                    </div>
-                    <div class="info-edit">
-                        <input ng-model="stream.description" value="{{stream.description}}">
-                    </div>
-                    <div class="info-edit">
-                        <input ng-model="stream.min_value" value="{{stream.min_value}}">
-                    </div>
-                    <div class="info-edit">
-                        <input ng-model="stream.max_value" value="{{stream.max_value}}">
-                    </div>
-                     <div class="info-static">{{stream.sensor}}</div>
-                    <div ng-repeat="path in stream.paths">
-                        <div class="info-edit">
-                            <input ng-model="path.url">
+                <div class="col-md-6">
+                    <div ng-if="!editing">
+                        <div class="info-static">{{stream.id}}</div>
+                        <div class="info-static">{{stream.name}}</div>
+                        <div class="info-static">{{stream.description}}</div>
+                        <div class="info-static">{{stream.min_value}}</div>
+                        <div class="info-static">{{stream.max_value}}</div>
+                        <div class="info-static">{{stream.sensor}}</div>
+                        <div ng-repeat="path in stream.paths">
+                            <div class="info-static">{{path.url}}</div>
                         </div>
+                        <button type="button " class="btn btn-primary btn-sm" ng-click="EditFields()">
+                            <span class="glyphicon glyphicon-pencil " /> Edit
+                        </button>
                     </div>
-                    <button type="button " class="btn btn-sm" ng-click="AddPath()">
-                        <span class="glyphicon glyphicon-plus" /> 
+                    <div ng-if="editing">
+                        <div class="info-static">{{stream.id}}</div>
+                        <div class="info-edit">
+                            <input ng-model="stream.name" value="{{stream.name}}">
+                        </div>
+                        <div class="info-edit">
+                            <input ng-model="stream.description" value="{{stream.description}}">
+                        </div>
+                        <div class="info-edit">
+                            <input ng-model="stream.min_value" value="{{stream.min_value}}">
+                        </div>
+                        <div class="info-edit">
+                            <input ng-model="stream.max_value" value="{{stream.max_value}}">
+                        </div>
+                         <div class="info-static">{{stream.sensor}}</div>
+                        <div ng-repeat="path in stream.paths">
+                            <div class="info-edit">
+                                <input ng-model="path.url">
+                            </div>
+                        </div>
+                        <button type="button " class="btn btn-sm" ng-click="AddPath()">
+                            <span class="glyphicon glyphicon-plus" />
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div ng-if="editing">
+                <div class=" edit-buttons">
+                    <button type="button " class="btn btn-success btn-sm" ng-click="SaveFields()">
+                        <span class="glyphicon glyphicon-ok" /> Save
+                    </button>
+
+                    <button type="button " class="btn btn-default btn-sm" ng-click="CancelFields()">
+                        <span class="glyphicon glyphicon-remove " /> Cancel
                     </button>
                 </div>
             </div>
         </div>
-        <div ng-if="editing">
-            <div class=" edit-buttons">
-                <button type="button " class="btn btn-success btn-sm" ng-click="SaveFields()">
-                    <span class="glyphicon glyphicon-ok" /> Save
-                </button>
-
-                <button type="button " class="btn btn-default btn-sm" ng-click="CancelFields()">
-                    <span class="glyphicon glyphicon-remove " /> Cancel
-                </button>
-            </div>
+    </div>
+    <div ng-show!="ShowInfo">
+        <div class="card alert alert-danger">
+            There are currently no streams.
         </div>
     </div>
 </div>

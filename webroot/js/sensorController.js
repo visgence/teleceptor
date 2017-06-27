@@ -9,6 +9,7 @@ angular.module('teleceptor.sensorcontroller', ['frapontillo.bootstrap-switch'])
     $scope.tab = 'config';
     $scope.isSelected = 'yep'; //For the bootstrap switch in command.
     $scope.isActive = "false";
+    $scope.ShowInfo = false;
 
 
     $scope.$watch(function() {
@@ -29,11 +30,12 @@ angular.module('teleceptor.sensorcontroller', ['frapontillo.bootstrap-switch'])
             }
         }
         $scope.sensor = v;
+        $scope.ShowInfo = true;
 
         if (v.sensor_type === "output") {
             $scope.isActive = true;
             //We need to set the preliminary state
-        }        
+        }
     }
 
     $scope.ChangeTab = function(event, tab) {
@@ -102,7 +104,7 @@ angular.module('teleceptor.sensorcontroller', ['frapontillo.bootstrap-switch'])
         var updateData = {};
         var url = "sensors";
         var editableFields = ['last_calibration', 'units', 'description', 'uuid'];
-        
+
         for(var i in $scope.sensor){
             if(!(editableFields.includes(i))) continue;
             if($scope.sensor[i] === "-" || $scope.sensor[i] === ""){
@@ -114,7 +116,7 @@ angular.module('teleceptor.sensorcontroller', ['frapontillo.bootstrap-switch'])
         if(updateData.last_calibration.coefficients !== $scope.previous_coefficients){
             updateData.last_calibration.timestamp = Date.now()/1000;
         }
-        
+
         apiService.put(url, updateData).then(function successCallback(response) {
             $scope.editing = false;
             location.reload();
@@ -128,7 +130,6 @@ angular.module('teleceptor.sensorcontroller', ['frapontillo.bootstrap-switch'])
         angular.element("#" + tag + "_warning").html(msg).css('display', 'block');
     }
 
-    
     $timeout(function() {
         angular.element('#exportEsBtn').on("click", function() {
             var start = timeService.getValues().start;
