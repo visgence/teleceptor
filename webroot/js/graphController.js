@@ -80,7 +80,7 @@ angular.module('teleceptor.graphcontroller', [])
                     }
                     scope.graphName = streamInfo.name;
                     parent.innerHTML = "";
-                    var width = elem[0].clientWidth;
+                    var width = window.outerWidth * 0.8
                     var height = 300;
                     var messages = "";
 
@@ -105,7 +105,6 @@ angular.module('teleceptor.graphcontroller', [])
                         messages = "Due to min/max values set, some points may not be seen.";
                     }
 
-
                     var unitSize = " " + getFormat(realMax).length;
 
                     var margin = {
@@ -116,7 +115,6 @@ angular.module('teleceptor.graphcontroller', [])
                     };
                     width = width - margin.left - margin.right;
                     if (width < 0) return;
-
                     height = height - margin.top - margin.bottom;
 
                     var newChart = d3.select(parent)
