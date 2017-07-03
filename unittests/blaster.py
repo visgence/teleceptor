@@ -9,10 +9,10 @@ import copy
 TELECEPTOR_URL = "http://localhost:8000/api/station"
 
 # How many stream do you want
-NUMBER_OF_STREAMS = 10
+NUMBER_OF_STREAMS = 1
 
 # For how many hours should there be data
-TIME_IN_HOURS = 24 * 30
+TIME_IN_HOURS = 24 * 365
 
 # how much time should be put into a single post request (in minutes)
 TIME_PER_POST = 24
@@ -55,6 +55,7 @@ if __name__ == "__main__":
 
     print timeTracker
     for i in range(0, TIME_IN_HOURS/TIME_PER_POST):
+        print 'post {} of {}'.format(i, TIME_IN_HOURS/TIME_PER_POST)
         newStream['readings'] = []
         request = []
         for k in range(0, TIME_PER_POST*60):
