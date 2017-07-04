@@ -6,7 +6,7 @@ SENSOR_URL = "http://localhost:8000/api/sensors"
 STREAM_URL = "http://localhost:8000/api/datastreams"
 READING_URL = "http://localhost:8000/api/readings"
 
-Range = 24 * 366
+Range = 24 * 100
 
 if __name__ == "__main__":
 
