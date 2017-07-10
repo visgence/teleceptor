@@ -8,6 +8,9 @@ import time
 import math
 import logging
 import requests
+import json
+import jsonlines
+from elasticsearch import Elasticsearch as ES
 from pyelasticsearch import ElasticSearch
 from teleceptor import ELASTICSEARCH_URI, ELASTICSEARCH_INDEX, ELASTICSEARCH_DOC, USE_DEBUG
 from teleceptor.timeAggregationUtils import getElasticSearchAggregationLevel
@@ -196,14 +199,29 @@ def get_elastic(elastic_buffer, index_info=None):
         May want to pass in a list of indicies to search on
 
     """
-    es = ElasticSearch(ELASTICSEARCH_URI)
-    # we actually use filter instead of query, since we want exact results
-    # {'filter': elastic_buffer, '_source': ['@timestamp', 'value']})
-    result = es.search(elastic_buffer, index=index_info)
 
-    logging.debug("Got elasticsearch results: {}".format(result))
+    data = ""
+    for i in index_info:
+        data += "{"
+        data += "'index': '{}'".format(i)
+        data += "}\n"
+        data += "{}".format(elastic_buffer)
+        data += "}\n"
 
-    return [(bucket['key']/1000, bucket['1']['value']) for bucket in result['aggregations']['2']['buckets']]
+    data = data.replace("'", '"').replace('True', 'true')
+
+    url = ELASTICSEARCH_URI + '_msearch'
+    headers = {'Content-Type': 'application/x-ndjson'}
+
+    response = requests.post(url, data=data, headers=headers).json()
+
+    logging.debug("Got elasticsearch results: {}".format(response))
+    returnArr = []
+
+    for i in response['responses']:
+        returnArr = returnArr + [(bucket['key']/1000, bucket['1']['value']) for bucket in i['aggregations']['2']['buckets']]
+
+    return returnArr
 
 
 class ElasticSession:
