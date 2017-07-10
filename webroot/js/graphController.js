@@ -436,7 +436,6 @@ angular.module('teleceptor.graphcontroller', [])
                             if (readingsResponse.data.readings === undefined) {
                                 angular.element("#warning_message").text("Error: No indices found in current range.");
                             }
-                            infoService.setReadingsInfo(readingsResponse.data);
 
                             var coefs = sensorInfoResponse.data.sensor.last_calibration.coefficients;
                             if (coefs.toString().startsWith('[')) {
@@ -444,6 +443,13 @@ angular.module('teleceptor.graphcontroller', [])
                             } else {
                                 coefs = JSON.parse("[" + coefs + "]");
                             }
+                            if(readingsResponse.data.readings === undefined){
+                              $('#warning_message').html("<div class='alert alert-warning'>Couldn't find any data in current time range</div>");
+                              $(parent).html('');
+                              scope.ShowInfo = true;
+                              return;
+                            }
+
                             for (var j = 0; j < readingsResponse.data.readings.length; j++) {
                                 readingsResponse.data.readings[j][1] *= coefs[0];
                                 readingsResponse.data.readings[j][1] += coefs[1];
