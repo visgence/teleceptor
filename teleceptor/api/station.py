@@ -235,7 +235,7 @@ def update_motes(mote_datas, session):
             reading[0] = sensor_datastream_ids[mote['info']['uuid'] + reading[0]]
 
         readings.insertReadings(mote['readings'], session=session, es_session=es_session)
-    
+
     es_session.commit()
     return new_values, updated_sensors
 

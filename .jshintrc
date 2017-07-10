@@ -3,7 +3,8 @@
         "$": false,
         "angular": false,
         "document": false,
-        "location": false
+        "location": false,
+        "window": false
     },
     "strict": true,
     "eqeqeq": true,
