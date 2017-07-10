@@ -80,7 +80,7 @@ angular.module('teleceptor.graphcontroller', [])
                     }
                     scope.graphName = streamInfo.name;
                     parent.innerHTML = "";
-                    var width = window.outerWidth * 0.8
+                    var width = window.outerWidth * 0.8;
                     var height = 300;
                     var messages = "";
 
