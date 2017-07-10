@@ -135,10 +135,6 @@ angular.module('teleceptor.graphcontroller', [])
 
                     var start = timeService.getValues().start;
                     var end = timeService.getValues().end;
-                    if (elem[0].clientHeight < 100) {
-                        start = Date.now() - 84000000;
-                        end = Date.now();
-                    }
 
                     scope.newGraph = {};
                     scope.newGraph.warning = "";
@@ -417,7 +413,8 @@ angular.module('teleceptor.graphcontroller', [])
 
                 function GetData() {
                     if ($location.search().ds === undefined) return;
-                    if (infoService.getStreamInfo() === undefined) return;
+                    var streamInfo = infoService.getStreamInfo();
+                    if (streamInfo === undefined) return;
                     if (isLoading) return;
                     isLoading = true;
                     var start = $location.search().startTime;
@@ -431,14 +428,15 @@ angular.module('teleceptor.graphcontroller', [])
                     timeService.setStart(start);
                     timeService.setEnd(end);
 
-                    apiService.get("sensors?sensor_id=" + infoService.getStreamInfo().sensor).then(function(sensorInfoResponse) {
+                    apiService.get("sensors?sensor_id=" + streamInfo.sensor).then(function(sensorInfoResponse) {
 
                         infoService.setSensorInfo(sensorInfoResponse.data.sensor);
-                        var readingsUrl = "readings?datastream=" + infoService.getStreamInfo().id + "&start=" + parseInt(start / 1000) + "&end=" + parseInt(end / 1000);
+                        var readingsUrl = "readings?datastream=" + streamInfo.id + "&start=" + parseInt(start / 1000) + "&end=" + parseInt(end / 1000);
                         apiService.get(readingsUrl).then(function(readingsResponse) {
                             if (readingsResponse.data.readings === undefined) {
                                 angular.element("#warning_message").text("Error: No indices found in current range.");
                             }
+                            infoService.setReadingsInfo(readingsResponse.data);
 
                             var coefs = sensorInfoResponse.data.sensor.last_calibration.coefficients;
                             if (coefs.toString().startsWith('[')) {
@@ -453,7 +451,6 @@ angular.module('teleceptor.graphcontroller', [])
 
                             $timeout(function() {
                                 scope.$apply(function() {
-                                    infoService.setReadingsInfo(readingsResponse.data);
                                     drawGraph(elem[0], readingsResponse.data);
                                     isLoading = false;
                                 });
@@ -468,11 +465,6 @@ angular.module('teleceptor.graphcontroller', [])
                 }
 
                 scope.$on('$routeUpdate', function() {
-                    GetData();
-                });
-                scope.$watch(function() {
-                    return infoService.getStreamInfo();
-                }, function() {
                     GetData();
                 });
 

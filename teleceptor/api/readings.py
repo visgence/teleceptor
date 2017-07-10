@@ -286,10 +286,7 @@ class SensorReadings:
             else:
                 raise ValueError("Selected source {} is incompatible with USE_ELASTICSEARCH setting {}".format(source))
         else:
-            if SQLDATA and (int(end) - int(start) < SQLREADTIME):
-                logging.debug("Request time %s less than SQLREADTIME %s. Getting high-resolution data.", str((int(end) - int(start))), str(SQLREADTIME))
-                data_source = "SQL"
-            elif USE_ELASTICSEARCH and (int(end) - int(start) > SQLREADTIME):
+            if USE_ELASTICSEARCH:
                 logging.debug('Getting Elasticsearch data.')
                 data_source = "ElasticSearch"
             else:

@@ -239,6 +239,7 @@ def update_motes(mote_datas, session):
 
     if USE_ELASTICSEARCH:
         es_session.commit()
+
     return new_values, updated_sensors
 
 

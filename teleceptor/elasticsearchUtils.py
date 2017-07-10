@@ -188,7 +188,7 @@ def get_elastic(elastic_buffer, index_info=None):
 
     response = requests.post(url, data=data, headers=headers).json()
 
-    logging.debug("Got elasticsearch results: {}".format(response))
+    # logging.debug("Got elasticsearch results: {}".format(response))
 
     return [(bucket['key']/1000, bucket['1']['value']) for bucket in response['responses'][0]['aggregations']['2']['buckets']]
 

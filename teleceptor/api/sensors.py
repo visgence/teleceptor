@@ -301,7 +301,7 @@ def deleteSensor(sensor_id, session):
 
     .. seealso::
         `models.Sensor`
-        `sensors.DELETE`
+        `sensors.DELETE
     """
     logging.debug("Deleting sensor %s", sensor_id)
 
@@ -354,7 +354,7 @@ def _updateSensor(data, session):
             continue
         if 'last_calibration' in key:
             logging.debug("value: {} and type: {}".format(value, type(value)))
-            if type(value['coefficients']) != type(str()):
+            if isinstance(value['coefficients'], basestring):
                     value['coefficients'] = json.dumps(value['coefficients'])
 
             # if no timestamp, create timestamp
