@@ -10,10 +10,15 @@
     "bower": "^1.4.1",
     "csslint": "^1.0.1",
     "htmlhint": "^0.9.13",
-    "jshint": "^2.9.4"
+    "jshint": "^2.9.4",
+    "pre-push": "0.1.1"
   },
   "scripts": {
-    "postinstall": "bower install --config.interactive=false"
-  }
-}
+    "postinstall": "bower install --config.interactive=false",
+    "lint": "sh ../validate.sh && exit 0"
 
+  },
+  "pre-push": [
+    "lint"
+  ]
+}
