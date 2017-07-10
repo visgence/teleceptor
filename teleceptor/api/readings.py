@@ -34,8 +34,9 @@ import logging
 from teleceptor import SQLDATA, SQLREADTIME, USE_DEBUG, USE_ELASTICSEARCH
 from teleceptor.models import SensorReading, DataStream
 from teleceptor.sessionManager import sessionScope
-#if USE_ELASTICSEARCH:
+# if USE_ELASTICSEARCH:
 from teleceptor.elasticsearchUtils import getReadings as esGetReadings
+from teleceptor.ESSession import ElasticSession
 
 
 class SensorReadings:
@@ -125,6 +126,9 @@ class SensorReadings:
         cherrypy.response.headers['Content-Type'] = 'application/json'
         data = {}
         status_code = "200"
+        es_session = None
+        if USE_ELASTICSEARCH:
+            es_session = ElasticSession()
 
         try:
             reading_data = json.load(cherrypy.request.body)
@@ -138,11 +142,13 @@ class SensorReadings:
 
         with sessionScope() as session:
             try:
-                data = insertReadings(reading_data['readings'], session)
+                data = insertReadings(reading_data['readings'], session, es_session)
             except KeyError:
                 logging.error("No readings in request body to insert.")
                 data['error'] = "No readings to insert"
 
+        if USE_ELASTICSEARCH:
+            es_session.commit()
         cherrypy.response.status = status_code
         logging.debug("Finished POST request to readings.")
         return json.dumps(data, indent=4)
@@ -178,10 +184,10 @@ class SensorReadings:
     @staticmethod
     def condense(readings):
         """
-            Takes an array of SensorReading objects and returns back a array of arrays.
-            Ex: [ [timestamp1, value1], [timestamp2, value2], ...]
+        Takes an array of SensorReading objects and returns back a array of arrays.
+        Ex: [ [timestamp1, value1], [timestamp2, value2], ...]
 
-            :returns: Array -- SensorReadings values in the denoted format.
+        :returns: Array -- SensorReadings values in the denoted format.
         """
 
         logging.debug("Condensing SensorReading objects to simple [timestamp, value] format: %s", str(readings))
@@ -194,13 +200,13 @@ class SensorReadings:
 
     def cleanInputs(self, params):
         """
-            Checks that the supplied params only contains valid key/value parameters for filtering readings and
-            performing any special operations on them.
+        Checks that the supplied params only contains valid key/value parameters for filtering readings and
+        performing any special operations on them.
 
-            :param params: Check file doc for list of valid arguments
+        :param params: Check file doc for list of valid arguments
 
-            :returns: Dictionary -- Dict with clean parameters and None if any parameter was unrecognized or the parameter
-                did not have a correct value format.
+        :returns: Dictionary -- Dict with clean parameters and None if any parameter was unrecognized or the parameter
+            did not have a correct value format.
         """
         logging.debug("Validating parameters: %s", str(params))
         valueConversions = {
@@ -303,7 +309,7 @@ class SensorReadings:
         return readings, data_source
 
 
-def insertReadings(readings, session, es_session):
+def insertReadings(readings, session, es_session=None):
     """
     Tries to insert the readings provided into database, and optionally into the SQL database if SQLDATA is set.
 

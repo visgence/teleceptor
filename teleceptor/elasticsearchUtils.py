@@ -9,11 +9,9 @@ import math
 import logging
 import requests
 import json
-import jsonlines
-from elasticsearch import Elasticsearch as ES
-from pyelasticsearch import ElasticSearch
-from teleceptor import ELASTICSEARCH_URI, ELASTICSEARCH_INDEX, ELASTICSEARCH_DOC, USE_DEBUG
+from teleceptor import ELASTICSEARCH_URI, USE_DEBUG
 from teleceptor.timeAggregationUtils import getElasticSearchAggregationLevel
+
 
 if USE_DEBUG:
     logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s', level=logging.DEBUG)
@@ -21,29 +19,12 @@ else:
     logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s', level=logging.INFO)
 
 
-def insert_elastic(elastic_buffer):
-
-    es = ElasticSearch(ELASTICSEARCH_URI)
-
-    docs = []
-    for doc in elastic_buffer:
-        t = time.gmtime(int(doc['@timestamp']/1000))
-        index = ELASTICSEARCH_INDEX + "-" + str(t.tm_year).zfill(2) + "." + str(t.tm_mon).zfill(2) + "." + str(t.tm_mday).zfill(2)
-        docs.append(es.index_op(doc, index=index, doc_type=ELASTICSEARCH_DOC))
-    if len(docs) > 0:
-        try:
-            es.bulk(docs)
-            logging.debug("inserted %d records" % (len(docs)))
-        except Exception as e:
-            logging.error("Insert Exception " + str(e))
-
-
-def insertReading(ds, value, timestamp=None):
+def insertReading(ds, value, session, timestamp=None):
     if timestamp is None:
         timestamp = int(time.time())
 
     data = {"@timestamp": int(timestamp*1000), "value": value, "ds": ds}
-    insert_elastic([data])
+    session.insertEsReading([data])
 
 
 def getReadings(ds, start, end, points=None):
@@ -211,23 +192,6 @@ def get_elastic(elastic_buffer, index_info=None):
 
     return [(bucket['key']/1000, bucket['1']['value']) for bucket in response['responses'][0]['aggregations']['2']['buckets']]
 
-
-class ElasticSession:
-
-    def __init__(self):
-        self.buffer = []
-
-    def insertReading(self, ds, value, timestamp=None):
-        if timestamp is None:
-            timestamp = int(time.time())
-
-        data = {"@timestamp": int(timestamp*1000), "value": value, "ds": ds}
-        self.buffer.append(data)
-
-    def commit(self):
-        if len(self.buffer) > 0:
-            logging.debug("Inserting {} to elasticsearch".format(len(self.buffer)))
-            insert_elastic(self.buffer)
 
 if __name__ == "__main__":
     """

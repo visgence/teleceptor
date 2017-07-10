@@ -50,8 +50,8 @@ from teleceptor.sessionManager import sessionScope
 from teleceptor.api.sensors import Sensors
 from teleceptor.api.datastreams import DataStreams
 from teleceptor.api import readings, datastreams, sensors, messages
-from teleceptor.elasticsearchUtils import ElasticSession
-from teleceptor import USE_DEBUG
+from teleceptor.ESSession import ElasticSession
+from teleceptor import USE_DEBUG, USE_ELASTICSEARCH
 
 
 class Station:
@@ -171,7 +171,8 @@ def update_motes(mote_datas, session):
     logging.debug("Updating motes %s", str(mote_datas))
     new_values = {}
     updated_sensors = []
-    es_session = ElasticSession()
+    if USE_ELASTICSEARCH:
+        es_session = ElasticSession()
 
     for mote in mote_datas:
         if 'info' not in mote:
@@ -235,8 +236,9 @@ def update_motes(mote_datas, session):
             reading[0] = sensor_datastream_ids[mote['info']['uuid'] + reading[0]]
 
         readings.insertReadings(mote['readings'], session=session, es_session=es_session)
-    
-    es_session.commit()
+
+    if USE_ELASTICSEARCH:
+        es_session.commit()
     return new_values, updated_sensors
 
 
