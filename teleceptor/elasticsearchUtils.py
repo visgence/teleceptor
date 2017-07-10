@@ -200,15 +200,7 @@ def get_elastic(elastic_buffer, index_info=None):
 
     """
 
-    data = ""
-    for i in index_info:
-        data += "{"
-        data += "'index': '{}'".format(i)
-        data += "}\n"
-        data += "{}".format(elastic_buffer)
-        data += "}\n"
-
-    data = data.replace("'", '"').replace('True', 'true')
+    data = "{}\n{}\n".format(json.dumps({"index": index_info}), json.dumps(elastic_buffer))
 
     url = ELASTICSEARCH_URI + '_msearch'
     headers = {'Content-Type': 'application/x-ndjson'}
@@ -216,12 +208,8 @@ def get_elastic(elastic_buffer, index_info=None):
     response = requests.post(url, data=data, headers=headers).json()
 
     logging.debug("Got elasticsearch results: {}".format(response))
-    returnArr = []
 
-    for i in response['responses']:
-        returnArr = returnArr + [(bucket['key']/1000, bucket['1']['value']) for bucket in i['aggregations']['2']['buckets']]
-
-    return returnArr
+    return [(bucket['key']/1000, bucket['1']['value']) for bucket in response['responses'][0]['aggregations']['2']['buckets']]
 
 
 class ElasticSession:
