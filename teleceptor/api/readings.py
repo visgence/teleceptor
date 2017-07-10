@@ -34,7 +34,7 @@ import logging
 from teleceptor import SQLDATA, SQLREADTIME, USE_DEBUG, USE_ELASTICSEARCH
 from teleceptor.models import SensorReading, DataStream
 from teleceptor.sessionManager import sessionScope
-#if USE_ELASTICSEARCH:
+# if USE_ELASTICSEARCH:
 from teleceptor.elasticsearchUtils import getReadings as esGetReadings
 
 

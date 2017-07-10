@@ -62,7 +62,7 @@ def getElasticSearchAggregationLevel(start, end):
 
     :returns: str -- The aggregation period in ElasticSearch format, in the lowest common division.
     """
-    aggregation_period = getAggregationLevel(start, end)
+    aggregation_period = getAggregationLevel(start/1000, end/1000)
     print "\nhere\n"
     print aggregation_period
     if aggregation_period < 60:
