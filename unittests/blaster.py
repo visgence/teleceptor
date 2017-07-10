@@ -15,7 +15,7 @@ NUMBER_OF_STREAMS = 1
 TIME_IN_HOURS = 24 * 365
 
 # how much time should be put into a single post request (in minutes)
-TIME_PER_POST = 24
+TIME_PER_POST = 10
 
 # In hours
 TIME_OF_PERIOD = 24

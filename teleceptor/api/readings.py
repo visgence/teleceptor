@@ -34,9 +34,8 @@ import logging
 from teleceptor import SQLDATA, SQLREADTIME, USE_DEBUG, USE_ELASTICSEARCH
 from teleceptor.models import SensorReading, DataStream
 from teleceptor.sessionManager import sessionScope
-if USE_ELASTICSEARCH:
-    from teleceptor.elasticsearchUtils import getReadings as esGetReadings
-    from teleceptor.elasticsearchUtils import insertReading as esInsert
+#if USE_ELASTICSEARCH:
+from teleceptor.elasticsearchUtils import getReadings as esGetReadings
 
 
 class SensorReadings:
@@ -304,7 +303,7 @@ class SensorReadings:
         return readings, data_source
 
 
-def insertReadings(readings, session):
+def insertReadings(readings, session, es_session):
     """
     Tries to insert the readings provided into database, and optionally into the SQL database if SQLDATA is set.
 
@@ -351,7 +350,7 @@ def insertReadings(readings, session):
         try:
             logging.debug("Inserting into database with streamId %s, rawVal %s, and timestamp %s", str(streamId), str(rawVal), str(timestamp))
             if USE_ELASTICSEARCH:
-                esInsert(streamId, rawVal, timestamp)
+                es_session.insertReading(streamId, rawVal, timestamp)
 
             if SQLDATA:
                 logging.debug("Creating new sensor reading in SQL database...")
