@@ -9,6 +9,7 @@ import math
 import logging
 import requests
 import json
+
 from teleceptor import ELASTICSEARCH_URI, USE_DEBUG
 from teleceptor.timeAggregationUtils import getElasticSearchAggregationLevel
 

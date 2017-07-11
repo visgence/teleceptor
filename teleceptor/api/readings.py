@@ -31,7 +31,7 @@ import re
 import logging
 
 # Local Imports
-from teleceptor import SQLDATA, SQLREADTIME, USE_DEBUG, USE_ELASTICSEARCH
+from teleceptor import SQLDATA, USE_DEBUG, USE_ELASTICSEARCH
 from teleceptor.models import SensorReading, DataStream
 from teleceptor.sessionManager import sessionScope
 # if USE_ELASTICSEARCH:
@@ -139,6 +139,7 @@ class SensorReadings:
             return json.dumps(data, indent=4)
 
         logging.debug("Request body: %s", str(reading_data))
+        es_session = ElasticSession()
 
         with sessionScope() as session:
             try:
