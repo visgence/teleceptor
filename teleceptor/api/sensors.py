@@ -73,11 +73,6 @@ class Sensors:
 
     @require()
     def POST(self):
-        # What you should be doing:
-        # in post, look for a uuid.
-        # check if database has said sensor,
-        # if so, try update
-        # if not, create a new one.
 
         logging.debug("POST request to sensors.")
 

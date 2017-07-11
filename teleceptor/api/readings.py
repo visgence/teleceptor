@@ -139,7 +139,6 @@ class SensorReadings:
             return json.dumps(data, indent=4)
 
         logging.debug("Request body: %s", str(reading_data))
-        es_session = ElasticSession()
 
         with sessionScope() as session:
             try:
