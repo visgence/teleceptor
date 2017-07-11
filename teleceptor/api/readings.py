@@ -31,7 +31,7 @@ import re
 import logging
 
 # Local Imports
-from teleceptor import SQLDATA, USE_DEBUG, USE_ELASTICSEARCH, SQLREADTIME
+from teleceptor import SQLDATA, USE_DEBUG, USE_ELASTICSEARCH, SQLREADTIME, USE_SQL_ALWAYS
 from teleceptor.models import SensorReading, DataStream
 from teleceptor.sessionManager import sessionScope
 # if USE_ELASTICSEARCH:
@@ -277,7 +277,10 @@ class SensorReadings:
                 del params[key]
 
         data_source = "None"
-        if source is not None:
+        if USE_SQL_ALWAYS:
+            logging.debug("Getting SQL high-resolution data.")
+            data_source = "SQL"
+        elif source is not None:
             if USE_ELASTICSEARCH and source == "ElasticSearch":
                 logging.debug('Getting Elasticsearch data.')
                 data_source = source
