@@ -31,7 +31,7 @@ import re
 import logging
 
 # Local Imports
-from teleceptor import SQLDATA, USE_DEBUG, USE_ELASTICSEARCH
+from teleceptor import SQLDATA, USE_DEBUG, USE_ELASTICSEARCH, SQLREADTIME
 from teleceptor.models import SensorReading, DataStream
 from teleceptor.sessionManager import sessionScope
 # if USE_ELASTICSEARCH:
@@ -281,13 +281,19 @@ class SensorReadings:
             if USE_ELASTICSEARCH and source == "ElasticSearch":
                 logging.debug('Getting Elasticsearch data.')
                 data_source = source
-            elif source == "SQL":
+            elif SQLDATA and source == "SQL":
                 logging.debug("Getting SQL high-resolution data.")
                 data_source = source
             else:
-                raise ValueError("Selected source {} is incompatible with USE_ELASTICSEARCH setting {}".format(source))
+                raise ValueError("Selected source {} USE_ELASTICSEARCH setting: {}, SQLDATA setting: {}".format(source, USE_ELASTICSEARCH, SQLDATA))
         else:
-            if USE_ELASTICSEARCH:
+            if SQLDATA and (int(end) - int(start) < SQLREADTIME):
+                logging.debug("Request time %s less than SQLREADTIME %s. Getting high-resolution data.", str((int(end) - int(start))), str(SQLREADTIME))
+                data_source = "SQL"
+            elif USE_ELASTICSEARCH and (int(end) - int(start) > SQLREADTIME):
+                logging.debug('Getting Elasticsearch data.')
+                data_source = "ElasticSearch"
+            elif not SQLDATA:
                 logging.debug('Getting Elasticsearch data.')
                 data_source = "ElasticSearch"
             else:

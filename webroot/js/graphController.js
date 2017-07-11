@@ -445,7 +445,7 @@ angular.module('teleceptor.graphcontroller', [])
                             }
                             if(readingsResponse.data.readings === undefined){
                               $('#warning_message').html("<div class='alert alert-warning'>Couldn't find any data in current time range</div>");
-                              $(parent).html('');
+                              $(elem[0]).html('');
                               scope.ShowInfo = true;
                               return;
                             }
