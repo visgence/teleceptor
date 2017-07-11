@@ -10,24 +10,24 @@ Data-sources:
   * Soft sensors
 
 Database support:
-	* SQL
-	* Postgres
-	* ElasticSearch
+  * SQL
+  * Postgres
+  * ElasticSearch
 
 # Getting Started (Ubuntu and Raspberry Pi)
 ## Dependencies
-```
-pip
-node
-npm
-```
+  * pip
+  * node
+  * npm
+
+
 ## Setting Up Teleceptor
 1. git clone https://github.com/visgence/teleceptor.git
 2. pip install -r requirements.txt
 3. To install a local config customizable first run ```./teleceptorcmd copyconfig``` app will print path
 4. In your config, you can set your Postgres and ElasticSearch settings.
-5. In teleceptor folder, run command ```./teleceptorcmd setup``` and wait until _Done!_ is printed.
-6. Run command ```./teleceptorcmd runserver 0.0.0.0:8000```. You will now be running teleceptor at http://localhost:8000/
+5. In the Teleceptor folder, run command ```./teleceptorcmd setup``` and wait until _Done!_ is printed.
+6. Run command ```./teleceptorcmd runserver 0.0.0.0:8000```. You will now be running Teleceptor at http://localhost:8000/
 7. To load test data, run ```./teleceptorcmd loadfixtures```.
 8. Set up desired sensors and start collecting data.(_See below for setting up sensors_)
 
@@ -35,7 +35,7 @@ npm
 The ```./teleceptorcmd loadfixtures``` command will run a program that will create two datastreams and fill them with an hours worth of data in the form of a sine curve.
 
 ## Example Sensor
-The ```./teleceptorcmd btcmote``` command will run a program that requests data from http://blockchain.info/ticker and sends the data to teleceptor.
+The ```./teleceptorcmd btcmote``` command will run a program that requests data from http://blockchain.info/ticker and sends the data to Teleceptor.
 
 
 # Sensor Firmware
@@ -58,7 +58,7 @@ Note: To find the name of your sensor, in a terminal window, type ```ls /dev/```
 * Some information about the sensor is editable and will change the graph accordingly such as _Units_ or _Calibration_.
   * Be sure to save after editing so the configuration information to be available later.
   * _Metadata_ cannot be changed. However, you can change it in the firmware and then re-upload the firmware to the sensor. (_See Teleceptor Concepts_)
-* If you download updates from teleceptor but and are not sure if the webpage is up-to-date as well, clear your web browser's cache:
+* If you download updates from Teleceptor but and are not sure if the webpage is up-to-date as well, clear your web browser's cache:
   * **Chrome:** Right-click in a blank spot on the page -> Inspect element -> Settings (gear symbol) -> Disable cache (while DevTools is open) -> Refresh the page
  * **Mozilla Firefox**: _ctrl+Shift+R_ will reload the page without cache and/or _ctrl+Shift+Delete_ -> Details -> Cache checkbox -> Clear Now
 
@@ -77,15 +77,15 @@ Note: To find the name of your sensor, in a terminal window, type ```ls /dev/```
 # Teleceptor Concepts
 
 ## Sensor
-The source location that posts data to the teleceptor station api. Base data must include the sensors uuid and the names for each input/output source.
+The source location that posts data to the Teleceptor station api. Base data must include the sensors uuid and the names for each input/output source.
 You can find example firmware and software in the SensorExamples folder.
 
 ## Datastream
-Datastreams connect sensors to readings. If a sensor should fail or need to be replaced, it's uuid will change however its stream and history should remain intact. They also serve as an orginazational tool for the front end.
-Datastreams are automatically created when a Sensor posts to the teleceptor station api.
+Datastreams connect sensors to readings. If a sensor should fail or need to be replaced, it's uuid will change however its stream and history should remain intact. They also serve as an organizational tool for the front end.
+Datastreams are automatically created when a Sensor posts to the Teleceptor station api.
 
 ## Sensor Reading
-The raw value coming from a sensor attached to a timestamp of when the reading occured and the data stream that it is connected to.
+The raw value coming from a sensor attached to a timestamp of when the reading occurred and the data stream that it is connected to.
 
 In the teleceptor/api folder, you will find a more detailed guide on how the api works.
 

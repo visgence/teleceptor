@@ -7,12 +7,12 @@ teleceptorurl/api/station
 
 Handles incoming data from a basestation by updating (or creating) sensor information, including metadata and calibration. Additionally updates sensor readings, if any.
 
-####Params:
+#### Params:
 A JSON array formatted string stored in the data section of the HTTP POST request.
 It is not optional, but some elements can be omitted. The JSON object should be a list, even if there is only one element in it.
 The full format is listed in the TeleceptorStandardFormat ReadMe.
 
-####Returns:
+#### Returns:
 A JSON object with either a key 'error' or 'newValues'. In the case of 'error', the value is an error string.
 In the case of 'newValues', the value is an object with key/value pairs as "sensorname" : messagelist, where messagelist is all unread, unexpired messages for the sensor with name sensorname.
 The receiving function must determine how to handle the messages (e.g. to consider only the newest message, or to use all messages.)
@@ -37,7 +37,7 @@ In the case of 'error', the value is an error string.
 In the case of 'datastream', the value is a list of selected datastreams.
 
 teleceptorurl/api/datastreams/<stream_id>/
-Obtain a single Datastream for the given stream_id.
+Obtain a single datastream for the given stream_id.
 Returns:
 A JSON object with either a key 'error' or 'stream'.
 In the case of 'error', the value is an error string.
@@ -57,9 +57,9 @@ Returns a JSON object with an 'error' key if an error occurred or 'datastream' k
 If 'error', the value is an error string. If 'datastream', the value is a JSON object representing the updated datastream in the database.
 
 
-##SensorReadings
+## SensorReadings
 
-###GET
+### GET
 
 teleceptorurl/api/sensor
 Returns a list of all the sensors in the database
@@ -68,7 +68,7 @@ teleceptorurl/api/sensor/sensor_id=sensor
 returns all of the sensor data for sensor with sensor_id
 
 
-##PUT
+## PUT
 
 teleceptorurl/api/sensor
 Creates or updates a sensor model in the database.
@@ -81,7 +81,7 @@ Expects a json object with key 'uuid' with the sensors uuid and any of the follo
     "meta_data" - Any metadata needed, can be a nested dictionary
 
 
-##SensorReadings
+## SensorReadings
 
 ### GET
 
