@@ -9,7 +9,7 @@ import copy
 TELECEPTOR_URL = "http://localhost:8000/api/station"
 
 # How many stream do you want
-NUMBER_OF_STREAMS = 20
+NUMBER_OF_STREAMS = 1
 
 # For how many hours should there be data
 TIME_IN_HOURS = 24 * 365

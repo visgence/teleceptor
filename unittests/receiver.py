@@ -6,7 +6,7 @@ SENSOR_URL = "http://localhost:8000/api/sensors"
 STREAM_URL = "http://localhost:8000/api/datastreams"
 READING_URL = "http://localhost:8000/api/readings"
 
-Range = 24
+Range = 24 * 200
 
 if __name__ == "__main__":
 
@@ -29,11 +29,9 @@ if __name__ == "__main__":
     print "it took {} seconds to retrive each stream seperatly.".format(time.time() - start)
 
     print "Readings test."
-    params = {
-        'datastream': 1,
-        'start': time.time() - Range * 3600,
-        'end': time.time()
-    }
+
+    url = "{}?datastream={}&start={}&end={}".format(READING_URL, 1, int(time.time() - Range*3600 - 20), int(time.time()))
+    print url
     start = time.time()
-    response = requests.GET(READING_URL, json.dumps(params)).json()
+    response = requests.get(url).json()
     print "it took {} seconds to retrive {} readings.".format(time.time() - start, len(response['readings']))

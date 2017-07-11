@@ -95,7 +95,6 @@ class Sensors:
 
         if 'uuid' not in data:
             return json.dumps({'error': 'A UUID is needed.'}, indent=4)
-
         sensor_data = {
             "sensor_IOtype": False,
             "name": data["uuid"],
@@ -111,12 +110,12 @@ class Sensors:
 
         with sessionScope() as session:
             try:
-                sensor_info = Sensors.updateSensor(sensor_id=data['uuid'], data=sensor_data, session=session)
+                sensor_info = Sensors.updateSensor(data=sensor_data, session=session)
             except NoResultFound:
                 # sensor_data.pop('last_calibration', None)
                 Sensors.createSensor(sensor_data, session)
             try:
-                sensor = Sensors.updateSensor(data['uuid'], data, session)
+                sensor = Sensors.updateSensor(data, session)
                 returnData['sensor'] = sensor
             except NoResultFound:
                 logging.error("Sensor with id %s doesn't exist.", str(data['uuid']))
@@ -223,8 +222,10 @@ class Sensors:
         elif 'last_calibration' in sensor_data:
             coefs = sensor_data['last_calibration']['coefficients']
             caliTime = sensor_data['last_calibration']['timestamp']
+            sensor_data.pop('last_calibration')
         else:
             coefs = [1, 0]
+
         sensor = Sensor(**sensor_data)
         calib = Calibration(sensor_id=sensor.toDict()['uuid'], timestamp=caliTime, coefficients=str(coefs))
         sensor.last_calibration = calib
@@ -301,7 +302,7 @@ def deleteSensor(sensor_id, session):
 
     .. seealso::
         `models.Sensor`
-        `sensors.DELETE`
+        `sensors.DELETE
     """
     logging.debug("Deleting sensor %s", sensor_id)
 
@@ -354,7 +355,7 @@ def _updateSensor(data, session):
             continue
         if 'last_calibration' in key:
             logging.debug("value: {} and type: {}".format(value, type(value)))
-            if type(value['coefficients']) != type(str()):
+            if isinstance(value['coefficients'], basestring):
                     value['coefficients'] = json.dumps(value['coefficients'])
 
             # if no timestamp, create timestamp

@@ -80,7 +80,7 @@ angular.module('teleceptor.graphcontroller', [])
                     }
                     scope.graphName = streamInfo.name;
                     parent.innerHTML = "";
-                    var width = window.outerWidth * 0.8
+                    var width = window.outerWidth * 0.8;
                     var height = 300;
                     var messages = "";
 
@@ -135,10 +135,6 @@ angular.module('teleceptor.graphcontroller', [])
 
                     var start = timeService.getValues().start;
                     var end = timeService.getValues().end;
-                    if (elem[0].clientHeight < 100) {
-                        start = Date.now() - 84000000;
-                        end = Date.now();
-                    }
 
                     scope.newGraph = {};
                     scope.newGraph.warning = "";
@@ -417,7 +413,8 @@ angular.module('teleceptor.graphcontroller', [])
 
                 function GetData() {
                     if ($location.search().ds === undefined) return;
-                    if (infoService.getStreamInfo() === undefined) return;
+                    var streamInfo = infoService.getStreamInfo();
+                    if (streamInfo === undefined) return;
                     if (isLoading) return;
                     isLoading = true;
                     var start = $location.search().startTime;
@@ -431,10 +428,10 @@ angular.module('teleceptor.graphcontroller', [])
                     timeService.setStart(start);
                     timeService.setEnd(end);
 
-                    apiService.get("sensors?sensor_id=" + infoService.getStreamInfo().sensor).then(function(sensorInfoResponse) {
+                    apiService.get("sensors?sensor_id=" + streamInfo.sensor).then(function(sensorInfoResponse) {
 
                         infoService.setSensorInfo(sensorInfoResponse.data.sensor);
-                        var readingsUrl = "readings?datastream=" + infoService.getStreamInfo().id + "&start=" + parseInt(start / 1000) + "&end=" + parseInt(end / 1000);
+                        var readingsUrl = "readings?datastream=" + streamInfo.id + "&start=" + parseInt(start / 1000) + "&end=" + parseInt(end / 1000);
                         apiService.get(readingsUrl).then(function(readingsResponse) {
                             if (readingsResponse.data.readings === undefined) {
                                 angular.element("#warning_message").text("Error: No indices found in current range.");
@@ -446,6 +443,13 @@ angular.module('teleceptor.graphcontroller', [])
                             } else {
                                 coefs = JSON.parse("[" + coefs + "]");
                             }
+                            if(readingsResponse.data.readings === undefined){
+                              $('#warning_message').html("<div class='alert alert-warning'>Couldn't find any data in current time range</div>");
+                              $(elem[0]).html('');
+                              scope.ShowInfo = true;
+                              return;
+                            }
+
                             for (var j = 0; j < readingsResponse.data.readings.length; j++) {
                                 readingsResponse.data.readings[j][1] *= coefs[0];
                                 readingsResponse.data.readings[j][1] += coefs[1];
@@ -453,7 +457,6 @@ angular.module('teleceptor.graphcontroller', [])
 
                             $timeout(function() {
                                 scope.$apply(function() {
-                                    infoService.setReadingsInfo(readingsResponse.data);
                                     drawGraph(elem[0], readingsResponse.data);
                                     isLoading = false;
                                 });
@@ -468,11 +471,6 @@ angular.module('teleceptor.graphcontroller', [])
                 }
 
                 scope.$on('$routeUpdate', function() {
-                    GetData();
-                });
-                scope.$watch(function() {
-                    return infoService.getStreamInfo();
-                }, function() {
                     GetData();
                 });
 

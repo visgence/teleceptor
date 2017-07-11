@@ -8,9 +8,11 @@ import time
 import math
 import logging
 import requests
-from pyelasticsearch import ElasticSearch
-from teleceptor import ELASTICSEARCH_URI, ELASTICSEARCH_INDEX, ELASTICSEARCH_DOC, USE_DEBUG
+import json
+
+from teleceptor import ELASTICSEARCH_URI, USE_DEBUG
 from teleceptor.timeAggregationUtils import getElasticSearchAggregationLevel
+
 
 if USE_DEBUG:
     logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s', level=logging.DEBUG)
@@ -18,29 +20,12 @@ else:
     logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s', level=logging.INFO)
 
 
-def insert_elastic(elastic_buffer):
-
-    es = ElasticSearch(ELASTICSEARCH_URI)
-
-    docs = []
-    for doc in elastic_buffer:
-        t = time.gmtime(int(doc['@timestamp']/1000))
-        index = ELASTICSEARCH_INDEX + "-" + str(t.tm_year).zfill(2) + "." + str(t.tm_mon).zfill(2) + "." + str(t.tm_mday).zfill(2)
-        docs.append(es.index_op(doc, index=index, doc_type=ELASTICSEARCH_DOC))
-    if len(docs) > 0:
-        try:
-            es.bulk(docs)
-            logging.debug("inserted %d records" % (len(docs)))
-        except Exception as e:
-            logging.error("Insert Exception " + str(e))
-
-
-def insertReading(ds, value, timestamp=None):
+def insertReading(ds, value, session, timestamp=None):
     if timestamp is None:
         timestamp = int(time.time())
 
     data = {"@timestamp": int(timestamp*1000), "value": value, "ds": ds}
-    insert_elastic([data])
+    session.insertEsReading([data])
 
 
 def getReadings(ds, start, end, points=None):
@@ -92,6 +77,7 @@ def getReadings(ds, start, end, points=None):
     # Example kibana query: {"index":["teleceptor-2015.09.28","teleceptor-2015.09.29"],"search_type":"count","ignore_unavailable":True}
     # {"size":0,"query":{"filtered":{"query":{"query_string":{"analyze_wildcard":true,"query":"ds:1"}},"filter":{"bool":{"must":[{"range":{"@timestamp":{"gte":1443407578481,"lte":1443493978481,"format":"epoch_millis"}}}],"must_not":[]}}}},"aggs":{"2":{"date_histogram":{"field":"@timestamp","interval":"1m","time_zone":"America/Denver","min_doc_count":1,"extended_bounds":{"min":1443407578481,"max":1443493978481}},"aggs":{"1":{"avg":{"field":"value"}}}}}}
 
+    logging.debug("res.json: {}", res.json())
     index_query = res.json()['indices'].keys()
 
     if len(index_query) == 0:
@@ -195,14 +181,17 @@ def get_elastic(elastic_buffer, index_info=None):
         May want to pass in a list of indicies to search on
 
     """
-    es = ElasticSearch(ELASTICSEARCH_URI)
-    # we actually use filter instead of query, since we want exact results
-    # {'filter': elastic_buffer, '_source': ['@timestamp', 'value']})
-    result = es.search(elastic_buffer, index=index_info)
 
-    logging.debug("Got elasticsearch results: {}".format(result))
+    data = "{}\n{}\n".format(json.dumps({"index": index_info}), json.dumps(elastic_buffer))
 
-    return [(bucket['key']/1000, bucket['1']['value']) for bucket in result['aggregations']['2']['buckets']]
+    url = ELASTICSEARCH_URI + '_msearch'
+    headers = {'Content-Type': 'application/x-ndjson'}
+
+    response = requests.post(url, data=data, headers=headers).json()
+
+    # logging.debug("Got elasticsearch results: {}".format(response))
+
+    return [(bucket['key']/1000, bucket['1']['value']) for bucket in response['responses'][0]['aggregations']['2']['buckets']]
 
 
 if __name__ == "__main__":
