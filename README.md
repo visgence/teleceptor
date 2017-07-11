@@ -14,7 +14,7 @@ Database support:
   * Postgres
   * ElasticSearch
 
-# Getting Started (Ubuntu and Raspberry Pi)
+# Getting Started
 ## Dependencies
   * pip
   * node

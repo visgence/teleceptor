@@ -23,6 +23,7 @@ The receiving function must determine how to handle the messages (e.g. to consid
 ### GET:
 
 teleceptorurl/api/datastreams/
+
 Obtain a list of all available Datastreams .
 Returns:
 A JSON object with either a key 'error' or 'datastreams'.
@@ -30,6 +31,7 @@ In the case of 'error', the value is an error string.
 In the case of 'datastreams', the value is a list of all datastreams.
 
 teleceptorurl/api/datastreams/?sensor=value1&sensor=value2&...
+
 Obtain a list of all available datastreams filtered by sensor uuid arguments.
 Returns:
 A JSON object with either a key 'error' or 'datastreams'.
@@ -37,6 +39,7 @@ In the case of 'error', the value is an error string.
 In the case of 'datastream', the value is a list of selected datastreams.
 
 teleceptorurl/api/datastreams/<stream_id>/
+
 Obtain a single datastream for the given stream_id.
 Returns:
 A JSON object with either a key 'error' or 'stream'.
@@ -46,6 +49,7 @@ In the case of 'stream', the value will be a single stream
 ### PUT
 
 teleceptorurl/api/datastreams/stream_id
+
 Updates the stream with stream_id.
 
 Using the JSON formatted data in the HTTP request body, updates the datastream information in the database.
@@ -62,15 +66,18 @@ If 'error', the value is an error string. If 'datastream', the value is a JSON o
 ### GET
 
 teleceptorurl/api/sensor
+
 Returns a list of all the sensors in the database
 
 teleceptorurl/api/sensor/sensor_id=sensor
+
 returns all of the sensor data for sensor with sensor_id
 
 
 ## PUT
 
 teleceptorurl/api/sensor
+
 Creates or updates a sensor model in the database.
 Expects a json object with key 'uuid' with the sensors uuid and any of the following optional arguments:
     "sensor_IOtype" - Is the sensor an input or output sensor
@@ -86,10 +93,12 @@ Expects a json object with key 'uuid' with the sensors uuid and any of the follo
 ### GET
 
 /api/readings/
+
 Obtain a list of available SensorReadings.
 Returns a JSON object with an 'error' key if an error occurred or 'readings' key of time, value arrays and a 'source' key that list the source of the readings.
 
 teleceptorurl/api/readings?arg1=foo&arg2=bar&etc..
+
 Obtain a list of available SensorReadings filtered by url arguments.
 Filter Arguments:
     'stream' (Numeric) - id of DataStream
@@ -101,6 +110,7 @@ Returns a JSON object with an 'error' key if an error occurred or 'readings' key
 ### POST
 
 teleceptorurl/api/readings
+
 Adds (a) reading(s) to a stream.
 Expects a json object with key 'readings' which is an array of tuples (datastreamid, value, timestamp)
 
