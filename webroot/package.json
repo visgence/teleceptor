@@ -3,22 +3,17 @@
   "private": true,
   "version": "0.0.0",
   "description": "New Teleceptor UI",
-  "repository": "https://github.com/angular/angular-seed",
+  "repository": "https://github.com/visgence/teleceptor",
   "license": "MIT",
   "devDependencies": {
-    "angular-mocks": "^1.4.8",
-    "bower": "^1.4.1",
-    "csslint": "^1.0.1",
-    "htmlhint": "^0.9.13",
-    "jshint": "^2.9.4",
-    "pre-push": "0.1.1"
+    "angular-mocks": "1.6.5",
+    "bower": "1.8.0",
+    "csslint": "1.0.5",
+    "htmlhint": "0.9.13",
+    "jshint": "2.9.5"
   },
   "scripts": {
     "postinstall": "bower install --config.interactive=false",
     "lint": "sh ../validate.sh && exit 0"
-
-  },
-  "pre-push": [
-    "lint"
-  ]
+  }
 }

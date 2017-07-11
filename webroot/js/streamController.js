@@ -57,7 +57,7 @@ angular.module('teleceptor.streamcontroller', [])
         };
 
         $scope.SaveFields = function() {
-            var url = "datastreams";
+
 
             var updateData = {};
             var hasErrors = false;
@@ -89,6 +89,7 @@ angular.module('teleceptor.streamcontroller', [])
             if (hasErrors) {
                 return;
             }
+            var url = "datastreams/" + updateData.id;
             apiService.put(url, updateData).then(function successCallback() {
                 $scope.editing = false;
                 location.reload();

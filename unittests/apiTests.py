@@ -35,12 +35,16 @@ session = None
 
 def TestReading(app):
     logging.info("Begin reading tests")
-    failures = TestReadingPost(app)
-    if teleceptor.USE_ELASTICSEARCH is False:
-        logging.info('Elasticsearch not in use, begin TestReadingGet')
-        failures = failures + TestReadingGet(app)
+    if teleceptor.SQLDATA:
+        failures = TestReadingPost(app)
+        if teleceptor.USE_ELASTICSEARCH is False or teleceptor.USE_SQL_ALWAYS:
+            logging.info('Elasticsearch not in use, begin TestReadingGet')
+            failures = failures + TestReadingGet(app)
+        else:
+            logging.info('Elasticsearch testing has not yet been implemented, skipping TestReadingGet')
     else:
-        logging.info('Elasticsearch testing has not yet been implemented, skipping TestReadingGet')
+        logging.info("SQLDATA is set to false, skipping reading post tests.")
+        failures = []
     logging.info("Reading tests completed")
     return failures
 
@@ -977,8 +981,12 @@ def CreateStations(app):
 
 
 def AddReadings(app):
-    # Should create 1000 readings for each sensor.
+    # Should create 100 readings for each sensor.
     # Note: the errors about blacklisted key is to be expected.
+    # Note: depends on SQLDATA set to true
+    if not teleceptor.SQLDATA:
+        logging.info('SQLDATA set to false, skipping test.')
+        return []
     motes = []
     for i in range(0, 10):
         uuid = "station_test_{}".format(i)

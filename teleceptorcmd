@@ -25,7 +25,7 @@ from sqlalchemy.schema import (
     DropConstraint,
 )
 import teleceptor
-from teleceptor import models, testFixtures, server, sessionManager, USE_ELASTICSEARCH, WEBROOT
+from teleceptor import models, testFixtures, server, sessionManager, USE_ELASTICSEARCH, WEBROOT, SQLDATA, USE_SQL_ALWAYS, USEPG
 
 Stdin = '/dev/null'
 Stdout = '/dev/null'
