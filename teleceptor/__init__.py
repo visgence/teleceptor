@@ -140,3 +140,9 @@ if "EMAIL_PW" in conf:
     EMAIL_PW = conf["EMAIL_PW"]
 else:
     EMAIL_PW = False
+
+if not USE_ELASTICSEARCH and not SQLDATA:
+    raise "Either USE_ELASTICSEARCH or SQLDATA need to be set to true."
+
+if USE_SQL_ALWAYS and not SQLDATA:
+    raise "SQLDATA must be set to true if USE_SQL_ALWAYS is set to true."

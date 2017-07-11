@@ -171,6 +171,7 @@ def update_motes(mote_datas, session):
     logging.debug("Updating motes %s", str(mote_datas))
     new_values = {}
     updated_sensors = []
+    es_session = None
     if USE_ELASTICSEARCH:
         es_session = ElasticSession()
 
