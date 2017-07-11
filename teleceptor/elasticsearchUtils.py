@@ -9,8 +9,6 @@ import math
 import logging
 import requests
 import json
-import jsonlines
-from elasticsearch import Elasticsearch as ES
 from pyelasticsearch import ElasticSearch
 from teleceptor import ELASTICSEARCH_URI, ELASTICSEARCH_INDEX, ELASTICSEARCH_DOC, USE_DEBUG
 from teleceptor.timeAggregationUtils import getElasticSearchAggregationLevel

@@ -36,7 +36,7 @@ from teleceptor.models import SensorReading, DataStream
 from teleceptor.sessionManager import sessionScope
 # if USE_ELASTICSEARCH:
 from teleceptor.elasticsearchUtils import getReadings as esGetReadings
-
+from teleceptor.elasticsearchUtils import ElasticSession
 
 class SensorReadings:
     exposed = True
@@ -135,10 +135,11 @@ class SensorReadings:
             return json.dumps(data, indent=4)
 
         logging.debug("Request body: %s", str(reading_data))
+        es_session = ElasticSession()
 
         with sessionScope() as session:
             try:
-                data = insertReadings(reading_data['readings'], session)
+                data = insertReadings(reading_data['readings'], session, es_session)
             except KeyError:
                 logging.error("No readings in request body to insert.")
                 data['error'] = "No readings to insert"

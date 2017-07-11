@@ -168,7 +168,7 @@ class DataStreams:
         pass
 
     @require()
-    def PUT(self):
+    def PUT(self, stream_id=None):
         """
         Updates the stream with uuid `stream_id`.
 
@@ -192,9 +192,11 @@ class DataStreams:
         except ValueError:
             # no json object to decode, just use an empty dictionary
             data = {}
+        if stream_id is None:
+            return json.dumps({'error': 'no id'})
 
         logging.debug("Request body: %s", data)
-
+        data['id'] = stream_id
         with sessionScope() as session:
             try:
                 stream = DataStreams.updateStream(data, session)

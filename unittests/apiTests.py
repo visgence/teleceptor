@@ -34,9 +34,13 @@ session = None
 
 
 def TestReading(app):
-    logging.info("Being reading tests")
+    logging.info("Begin reading tests")
     failures = TestReadingPost(app)
-    failures = failures + TestReadingGet(app)
+    if teleceptor.USE_ELASTICSEARCH is False:
+        logging.info('Elasticsearch not in use, begin TestReadingGet')
+        failures = failures + TestReadingGet(app)
+    else:
+        logging.info('Elasticsearch testing has not yet been implemented, skipping TestReadingGet')
     logging.info("Reading tests completed")
     return failures
 
@@ -168,6 +172,7 @@ def PostReadingDSValTime(app):
     failures = []
     try:
         response = app.post_json('/api/readings/', json.loads(reading))
+
         if response.json['successfull_insertions'] != 1:
             failures.append({
                 'TestName': "PostReadingDSValTime",
@@ -272,7 +277,7 @@ def GetReadingsWithStart(app):
                 'ErrorGiven': "The should be readings returned"
             })
         else:
-            q = session.query(SensorReading)
+            session.query(SensorReading)
             for i in response.json['readings']:
                 if i[0] < time.time()-70*60:
                     failures.append({
@@ -297,7 +302,7 @@ def GetReadingsWithEnd(app):
                 'ErrorGiven': "The should be readings returned"
             })
         else:
-            q = session.query(SensorReading)
+            session.query(SensorReading)
             for i in response.json['readings']:
                 if i[0] > time.time()-30*60:
                     failures.append({
@@ -322,7 +327,7 @@ def GetReadingsWithBoth(app):
                 'ErrorGiven': "The should be readings returned"
             })
         else:
-            q = session.query(SensorReading)
+            session.query(SensorReading)
             for i in response.json['readings']:
                 if i[0] < time.time()-70*60 or i[0] > time.time()-30*60:
                     failures.append({
@@ -371,7 +376,7 @@ def GetReadingsForSensorWithStart(app):
                 'ErrorGiven': "The should be readings returned"
             })
         else:
-            q = session.query(SensorReading).filter_by(datastream=1)
+            session.query(SensorReading).filter_by(datastream=1)
             for i in response.json['readings']:
                 if i[0] < int(time.time()-70*60):
                     failures.append({
@@ -396,7 +401,7 @@ def GetReadingsForSensorWithEnd(app):
                 'ErrorGiven': "The should be readings returned"
             })
         else:
-            q = session.query(SensorReading).filter_by(datastream=1)
+            session.query(SensorReading).filter_by(datastream=1)
             for i in response.json['readings']:
                 if i[0] > int(time.time()-30*60):
                     failures.append({
@@ -421,7 +426,7 @@ def GetReadingsForSensorWithBoth(app):
                 'ErrorGiven': "The should be readings returned"
             })
         else:
-            q = session.query(SensorReading).filter_by(datastream=1)
+            session.query(SensorReading).filter_by(datastream=1)
             for i in response.json['readings']:
                 if i[0] < int(time.time()-70*60) or i[0] > int(time.time()-30*60):
                     failures.append({
@@ -712,6 +717,7 @@ def AddSensor(app):
         'uuid': "sensor_test_0",
     })
     failures = doSensorPost(sensor)
+    return failures
 
     test = session.query(Sensor).filter_by(uuid='sensor_test_0').first()
     if test is None:
@@ -738,7 +744,7 @@ def AddSensorWithCalibration(app):
             'TestName': "AddSensorWithCalibration",
             'ErrorGiven': "query was None."
         })
-    elif str(test.toDict()['last_calibration']['coefficients']) != "[10,10]":
+    elif str(test.toDict()['last_calibration']['coefficients']) != "[10, 10]":
         failures.append({
             'TestName': "AddSensorWithCalibration",
             'ErrorGiven': "coefficients wern't recorded properly."
@@ -762,7 +768,7 @@ def AddSensorNoId(app):
             'TestName': "AddSensorNoId",
             'ErrorGiven': "Sensor doesn't exist when it should from test #1"
         })
-    elif 'last_calibration' in test.toDict():
+    elif test.toDict()['last_calibration']['coefficients'] != [1, 0]:
         failures.append({
             'TestName': "AddSensorNoId",
             'ErrorGiven': "coefficients were added when they shouldn't have been."
