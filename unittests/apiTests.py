@@ -37,9 +37,10 @@ def TestReading(app):
     logging.info("Begin reading tests")
     failures = TestReadingPost(app)
     if teleceptor.USE_ELASTICSEARCH is False:
+        logging.info('Elasticsearch not in use, begin TestReadingGet')
         failures = failures + TestReadingGet(app)
     else:
-        logging.info('Elastic search testing has not yet been implemented, skipping TestReadingGet')
+        logging.info('Elasticsearch testing has not yet been implemented, skipping TestReadingGet')
     logging.info("Reading tests completed")
     return failures
 
