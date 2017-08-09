@@ -112,17 +112,26 @@ export default class sensorController { // ', ['frapontillo.bootstrap-switch',])
             sendCommand();
         };
 
-        this.$scope.ExportEs = () => {
-            const start = this.$location.search().start;
-            const end = this.$location.search().end;
+        this.$scope.ExportES = () => {
+            let start = this.$location.search().start;
+            if (start === undefined) {
+                start = new Date().getTime() - 24 * 60 * 60 * 1000;
+            }
+            let end = this.$location.search().end;
+            if (end === undefined) {
+                end = new Date().getTime();
+            }
+            console.log(start, end);
+
             const readingsUrl = 'readings?datastream=' +
-                infoService.getStream().id +
+                this.infoService.getStream().id +
                 '&start=' + parseInt(start / 1000) +
                 '&end=' + parseInt(end / 1000) +
                 '&source=ElasticSearch';
+            console.log(readingsUrl)
             this.apiService.get(readingsUrl)
                 .then((success) => {
-                    exportData(success);
+                    this.exportData(success.data.readings);
                 })
                 .catch((error) => {
                     console.log('error');
@@ -131,37 +140,34 @@ export default class sensorController { // ', ['frapontillo.bootstrap-switch',])
         };
 
         this.$scope.ExportSQL = () => {
-            exportData(null);
-        };
-
-        // CONVERT TO SCOPE
-        $('#exportEsBtn').on('click', () => {
-            const start = this.$location.search().start;
-            const end = this.$location.search().end;
+            let start = this.$location.search().start;
+            if (start === undefined) {
+                start = new Date().getTime() - 24 * 60 * 60 * 1000;
+            }
+            let end = this.$location.search().end;
+            if (end === undefined) {
+                end = new Date().getTime();
+            }
             const readingsUrl = 'readings?datastream=' +
                 this.infoService.getStream().id +
                 '&start=' + parseInt(start / 1000) +
                 '&end=' + parseInt(end / 1000) +
-                '&source=ElasticSearch';
+                '&source=SQL';
             this.apiService.get(readingsUrl)
                 .then((success) => {
-                    exportData(success);
+                    this.exportData(success.data.readings);
                 })
                 .catch((error) => {
                     console.log('error');
                     console.log(error);
                 });
-        });
+        };
 
-        $('#exportSqlBtn').on('click', () => {
-            exportData(null);
-        });
 
-        // CONVERT TO SCOPE
-        $('#send_data').on('click', () => {
-            const sensorInfo = infoService.getSensor();
+        this.$scope.EntrySend = () => {
+            const sensorInfo = this.$scope.sensor;
             const id = sensorInfo.uuid;
-            const newValue = angular.element('#manEntry')[0].value;
+            const newValue = this.$scope.EntryValue;
             const time = (new Date()).getTime() / 1000;
 
             const sensorReading = {
@@ -186,13 +192,13 @@ export default class sensorController { // ', ['frapontillo.bootstrap-switch',])
 
             this.apiService.post('station', payload)
                 .then((success) => {
-                    console.log(response);
+                    console.log(success);
                 })
                 .catch((error) => {
                     console.log('error');
                     console.log(error);
                 });
-        });
+        };
 
         // CONVERT TO SCOPE
         $('#sendCommand').on('click', () => {
@@ -219,17 +225,17 @@ export default class sensorController { // ', ['frapontillo.bootstrap-switch',])
             });
     }
 
-    // UNTESTED
     exportData(readings) {
-        const sensorInfo = infoService.getSensor();
+        const sensorInfo = this.$scope.sensor;
         if (readings === null) {
-            readings = infoService.getReadings();
+            readings = this.infoService.getReadings();
         }
 
         const scaledReadings = [];
+        const coefficients = sensorInfo.last_calibration.coefficients.replace('[', '').replace(']', '').replace(' ', '').split(',');
         let i;
         for (i = 0; i < readings.length; i++) {
-            scaledReadings.push(readings[i][1] * sensorInfo.last_calibration.coefficients[0] + sensorInfo.last_calibration.coefficients[1]);
+            scaledReadings.push(readings[i][1] * parseInt(coefficients[0]) + parseInt(coefficients[1]));
         }
 
         // actual delimiter characters for CSV format
