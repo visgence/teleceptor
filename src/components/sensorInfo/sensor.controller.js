@@ -82,14 +82,15 @@ export default class sensorController { // ', ['frapontillo.bootstrap-switch',])
             const url = 'sensors';
             const editableFields = ['last_calibration', 'units', 'description', 'uuid'];
 
-            this.$scope.sensor.forEach((i) => {
-                if (!(editableFields.includes(i))) {
+            console.log(this.$scope)
+            Object.keys(this.$scope.sensor).forEach((key) => {
+                if (!(editableFields.includes(key))) {
                     return;
                 }
-                if (this.$scope.sensor[i] === '-' || this.$scope.sensor[i] === '') {
-                    updateData[i] = null;
+                if (this.$scope.sensor[key] === '-' || this.$scope.sensor[key] === '') {
+                    updateData[key] = null;
                 } else {
-                    updateData[i] = this.$scope.sensor[i];
+                    updateData[key] = this.$scope.sensor[key];
                 }
             });
             if (updateData.last_calibration.coefficients !== this.$scope.previous_coefficients) {
@@ -98,7 +99,7 @@ export default class sensorController { // ', ['frapontillo.bootstrap-switch',])
 
             this.apiService.put(url, updateData)
                 .then((success) => {
-                    $scope.editing = false;
+                    this.$scope.editing = false;
                     // TODO: This needs to be better, a simple refresh of sensor info and maybe the graph units.
                     location.reload();
                 })
