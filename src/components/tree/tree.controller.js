@@ -21,10 +21,10 @@ export default class treeController {
                 word: this.$scope.searchWords,
                 filter: this.$scope.searchFilter,
             };
-            this.apiService.get('datastream/?word=' + data.word + '&filter=' + data.filter)
+            this.apiService.get('datastreams/?word=' + data.word + '&filter=' + data.filter)
                 .then((success) => {
-                    // needs reset of info service?
-                    const treeStructure = this.MakeTreeStructure(success.data);
+                    const pathsArray = this.GeneratePathArray(success.data);
+                    const treeStructure = this.MakeTreeStructure(pathsArray);
                     this.RenderTree(treeStructure);
                 }).catch((error) => {
                     console.log('error');
@@ -34,10 +34,10 @@ export default class treeController {
     }
 
     LoadData() {
-        this.apiService.get('datastream')
+        this.apiService.get('datastreams')
             .then((success) => {
-                const paths = success.data;
-                const treeStructure = this.MakeTreeStructure(paths);
+                const pathsArray = this.GeneratePathArray(success.data);
+                const treeStructure = this.MakeTreeStructure(pathsArray);
                 this.RenderTree(treeStructure);
             })
             .catch((error) => {
@@ -45,6 +45,18 @@ export default class treeController {
                 $('#tree-message').toggleClass('alert-danger');
                 $('#tree-message').html('Something went wrong gettin data from the server, check the console for details.');
             });
+    }
+
+    // [[path, id, name]]
+    GeneratePathArray(data) {
+        console.log(data);
+        const pathArr = [];
+        data.datastreams.forEach((stream) => {
+            stream.paths.forEach((path) => {
+                pathArr.push([path, stream.id, stream.name]);
+            });
+        });
+        return pathArr
     }
 
 
