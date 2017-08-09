@@ -79,11 +79,11 @@ export default class streamController {
     }
 
     LoadStream() {
-        const curStream = this.$location.search().ds;
+        const curStream = this.$location.search().datastream;
         if (curStream === undefined) {
             return;
         }
-        this.apiService.get('datastream/' + curStream)
+        this.apiService.get('datastreams/' + curStream)
             .then((success) => {
                 const dataToDisplay = {};
                 const stream = success.data.stream;

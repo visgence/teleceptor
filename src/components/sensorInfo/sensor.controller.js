@@ -201,7 +201,7 @@ export default class sensorController { // ', ['frapontillo.bootstrap-switch',])
 
     // This needs to wait for stream info to be set, then make request by sensor uuid
     LoadSensor(sensor) {
-        this.apiService.get('sensor/' + sensor)
+        this.apiService.get('sensors/' + sensor)
             .then((success) => {
                 this.$scope.sensor = success.data.sensor;
                 this.$scope.ShowInfo = true;

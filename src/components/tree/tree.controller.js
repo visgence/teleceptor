@@ -53,10 +53,10 @@ export default class treeController {
         const pathArr = [];
         data.datastreams.forEach((stream) => {
             stream.paths.forEach((path) => {
-                pathArr.push([path, stream.id, stream.name]);
+                pathArr.push([path + '/' + stream.name, stream.id, stream.name]);
             });
         });
-        return pathArr
+        return pathArr;
     }
 
 
