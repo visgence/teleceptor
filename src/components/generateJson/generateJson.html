@@ -1,0 +1,91 @@
+<div class="container-fluid">
+    <div id="teleceptor">
+        <div ng-include="'/templates/navbar.html'"></div>
+
+        <div class="page-host">
+            <h3>Generate JSON Config for Sensor</h3>
+            <form class="form-horizontal">
+                <fieldset>
+                    <!-- Form Name -->
+                    <legend>
+                        Parameters
+                    </legend>
+                    <div class="form-group">
+                        <label class="col-md-4 control-label" for="uuid">UUID</label>
+                        <div class="col-md-4">
+                            <input id="uuid" name="uuid" type="text" placeholder="uuid" class="form-control input-md" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-md-4 control-label" for="textinput">Model</label>
+                        <div class="col-md-4">
+                            <input id="model" name="model" type="text" placeholder="model" class="form-control input-md" />
+                        </div>
+                    </div>
+                    <!-- Text input-->
+                    <div class="form-group">
+                        <label class="col-md-4 control-label" for="description">Description</label>
+                        <div class="col-md-4">
+                            <input id="description" name="description" type="text" placeholder="description" class="form-control input-md" />
+                        </div>
+                    </div>
+                    <!-- Button -->
+                    <div class="form-group">
+                        <label class="col-md-4 control-label" for="add-input">Add Output</label>
+                        <div class="col-md-4">
+                            <button id="add-output" type="button" name="add-output" class="btn btn-primary" ng-click="addOutput()">
+                                Add
+                            </button>
+                        </div>
+                    </div>
+                    <div id="output-section" class="section"></div>
+                    <!-- Button -->
+                    <div class="form-group">
+                        <label class="col-md-4 control-label" for="add-input">Add Input</label>
+                        <div class="col-md-4">
+                            <button id="add-input" type="button" name="add-input" class="btn btn-primary" ng-click="addInput()">
+                                Add
+                            </button>
+                        </div>
+                    </div>
+                    <div id="input-section" class="section"></div>
+                    <!-- Multiple Checkboxes (inline) -->
+                    <div class="form-group">
+                        <label class="col-md-4 control-label" for="Escape">Escape</label>
+                        <div class="col-md-4">
+                            <label class="checkbox-inline" for="Escape-0">
+                                <input type="checkbox" name="Escape" id="escape" value="" />
+                                    yes
+                              </label>
+                        </div>
+                    </div>
+                    <!-- Button -->
+                    <div class="form-group">
+                        <label class="col-md-4 control-label" for="generate">Generate JSON</label>
+                        <div class="col-md-4">
+                            <input type="submit" id="generate" name="generate" class="btn btn-success" ng-click="submit()" />
+                        </div>
+                    </div>
+                </fieldset>
+            </form>
+            <div class="modal fade" id="json-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                            <h4 class="modal-title">
+                                JSON Data (Length <span id="json-length"></span> Bytes)
+                            </h4>
+                        </div>
+                        <div class="modal-body">
+                            <pre id="json-data"></pre>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

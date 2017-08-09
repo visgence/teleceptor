@@ -12,7 +12,7 @@ import softSensors
 PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 
 # Path to WEBROOT and Template are part of application
-WEBROOT = os.path.abspath(os.path.join(PATH, 'webroot'))
+WEBROOT = os.path.abspath(os.path.join(PATH, 'static'))
 TEMPLATES = os.path.abspath(os.path.join(PATH, 'templates'))
 
 # Set config path based on system

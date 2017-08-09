@@ -1,0 +1,36 @@
+@import '../constants';
+
+.graph-card {
+    height: 100%;
+}
+
+.tick {
+    line {
+        stroke: $grey;
+    }
+
+    text {
+        fill: $dark-grey;
+    }
+}
+
+.graph-container {
+    background-color: $white;
+    height: 350px;
+}
+
+.graph-message {
+    display: none;
+}
+
+.graph-message-display {
+    background-color: $light-yellow;
+    color: $dark-grey;
+    display: block;
+
+    h3 {
+        margin: 0;
+        padding: 20px;
+    }
+    margin: 0;
+}

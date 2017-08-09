@@ -1,0 +1,81 @@
+@import '../components/constants';
+
+.stretch {
+    height: 100%;
+    padding-bottom: 16px;
+    width: 100%;
+}
+
+.header-override {
+    min-height: 46px;
+}
+@media (max-width: 960px) {
+    &.flex-20 {
+        &.flex-override {
+            max-width: 100%;
+        }
+    }
+}
+@media (max-width: 960px) {
+    &.flex-80 {
+        &.flex-override {
+            max-width: 100%;
+        }
+    }
+}
+
+.list-content {
+    padding: 0 10px 10px;
+}
+
+.card-content {
+    background-color: $white;
+    border: 4px;
+    overflow: hidden;
+    padding: 10px 15px;
+}
+
+md-toolbar {
+    h3 {
+        margin-top: 10px;
+    }
+
+    &:not(.md-menu-toolbar) {
+        &.card-header {
+            background-color: $primary;
+            border-top-left-radius: 4px;
+            border-top-right-radius: 4px;
+            padding-left: 15px;
+            padding-top: 10px;
+        }
+    }
+}
+
+.md-button {
+    &.md-primary {
+        &.md-raised {
+            &.primary-button {
+                background-color: $primary;
+                color: $white;
+                float: right;
+            }
+        }
+    }
+
+    &.secondary-button {
+        float: right;
+    }
+}
+
+
+.input-override {
+    margin-bottom: 0;
+    margin-top: 10px;
+}
+
+// some error thing that screws up input
+md-input-container {
+    .md-errors-spacer {
+        display: none;
+    }
+}
