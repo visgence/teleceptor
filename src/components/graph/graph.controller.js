@@ -68,16 +68,16 @@ export default class graphController {
             if (max < data.readings[j][1]) {
                 max = data.readings[j][1];
             }
-
-            if (start > data.readings[j][0]) {
-                start = data.readings[j][0];
-            }
-            if (end < data.readings[j][0]) {
-                end = data.readings[j][0];
-            }
         }
         start *= 1000;
         end *= 1000;
+
+        if (this.$location.search().start !== undefined) {
+            start = parseInt(this.$location.search().start * 1000);
+        }
+        if (this.$location.search().end !== undefined) {
+            end = parseInt(this.$location.search().end * 1000);
+        }
 
         const unitSize = ' ' + this.FormatText(max).length;
 
@@ -182,8 +182,28 @@ export default class graphController {
             lastPoint = data.readings[j][0];
         }
         meanTimes.sort();
+        const meanTime = meanTimes[parseInt(meanTimes.length / 2)];
+        let last = 0;
 
         const lineFunction = d3.line()
+            .defined((d) => {
+                d[0] = parseInt(d[0]);
+                if (d[0] < start / 1000 || d[0] > end / 1000) {
+                    return false;
+                }
+                if (d[1] > max || d[1] < min) {
+                    scope.newGraph.warning = 'Warning: Some data points are not shown in graph and may be causing line breaks.';
+                    return false;
+                }
+
+                const val = (d[0] - last) * 0.0001;
+                if (val > meanTime * 1.5 || val < meanTime * 0.5) {
+                    last = d[0];
+                    return false;
+                }
+                last = d[0];
+                return true;
+            })
             .x((d) => {
                 return isNaN(xScale(d[0] * 1000)) ? 0 : xScale(d[0] * 1000);
             })

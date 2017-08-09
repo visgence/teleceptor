@@ -258,10 +258,10 @@ class SensorReadings:
         for key, value in paramsCopy.iteritems():
             if key in self.validFilterArgs:
                 if key == "start":
-                    start = value
+                    start = int(value)
                     query = query.filter(SensorReading.timestamp >= value)
                 elif key == "end":
-                    end = value
+                    end = int(value)
                     query = query.filter(SensorReading.timestamp <= value)
                 elif key == "datastream":
                     uuid = value

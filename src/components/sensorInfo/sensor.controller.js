@@ -82,7 +82,6 @@ export default class sensorController { // ', ['frapontillo.bootstrap-switch',])
             const url = 'sensors';
             const editableFields = ['last_calibration', 'units', 'description', 'uuid'];
 
-            console.log(this.$scope)
             Object.keys(this.$scope.sensor).forEach((key) => {
                 if (!(editableFields.includes(key))) {
                     return;
@@ -208,7 +207,6 @@ export default class sensorController { // ', ['frapontillo.bootstrap-switch',])
     LoadSensor(sensor) {
         this.apiService.get('sensors/' + sensor)
             .then((success) => {
-                console.log(success)
                 this.$scope.sensor = success.data.sensor;
                 this.$scope.ShowInfo = true;
 
