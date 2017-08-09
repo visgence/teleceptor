@@ -326,6 +326,7 @@ def deleteDatastream(session, datastream_id):
 
 def _updateStream(data, session):
     stream = session.query(DataStream).filter_by(id=data['id']).one()
+    print stream.toDict()
     for key, value in data.iteritems():
         if key == "id":
             continue
@@ -340,7 +341,7 @@ def _updateStream(data, session):
                 session.add(Path(datastream_id=data['id'], path=j))
             session.commit()
             continue
-        if key != 'uuid':
+        if key != 'uuid' or key != 'id':
             if key == "minimum value":
                 if len(value) > 0:
                     value = float(value)

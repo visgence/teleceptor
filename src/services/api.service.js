@@ -11,4 +11,7 @@ export default class apiService {
     post(endpoint, data) {
         return this.$http.post('/api/' + endpoint, data);
     }
+    put(endpoint, data) {
+        return this.$http.put('/api/' + endpoint, data);
+    }
 }

@@ -32,14 +32,13 @@ export default class streamController {
         this.$scope.SaveFields = () => {
             const updateData = {};
             let hasErrors = false;
-            this.$scope.stream.forEach((i) => {
-                if (i === '-' || i === '') {
-                    updateData[i] = null;
-                } else if (i === 'paths') {
+            Object.keys(this.$scope.stream).forEach((key) => {
+                if (this.$scope.stream[key] === '-' || this.$scope.stream[key] === '') {
+                    updateData[key] = null;
+                } else if (key === 'paths') {
                     updateData.paths = [];
-                    i.forEach((j) => {
+                    this.$scope.stream[key].forEach((j) => {
                         if (j.url === '') {
-
                             return;
                         }
                         if (!j.url.startsWith('/')) {
@@ -54,18 +53,18 @@ export default class streamController {
                             hasErrors = true;
                             return;
                         }
-                        updateData.paths[j] = j.url;
+                        updateData.paths.push(j.url);
                     });
                 } else {
-                    updateData[i] = i;
+                    updateData[key] = this.$scope.stream[key];
                 }
             });
 
             if (hasErrors) {
                 return;
             }
-            const url = 'datastream/' + updateData.id;
-            this.apiService.post(url, updateData)
+            const url = 'datastreams/' + updateData.id;
+            this.apiService.put(url, updateData)
                 .then((success) => {
                     this.$scope.editing = false;
                     location.reload();
