@@ -11,7 +11,7 @@ export default class graphController {
 
         // watch window resize
         angular.element($window).bind('resize', () => {
-            if ($location.search().ds !== undefined) {
+            if ($location.search().datastream !== undefined) {
                 this.drawGraph(infoService.getReadings());
             }
         });
@@ -20,15 +20,14 @@ export default class graphController {
     }
 
     getData() {
-        const datastream = this.$location.search().ds;
+        const datastream = this.$location.search().datastream;
         if (datastream === undefined) {
             $('#graph-message').toggleClass('graph-message-display');
             $('#graph-message').html('<h3>Please select a stream.</h3>');
             return;
         }
 
-        const url = 'reading/?' + location.href.split('?')[1];
-
+        const url = 'readings/?' + location.href.split('?')[1];
         this.apiService.get(url)
             .then((success) => {
                 if (success.data.error !== undefined) {

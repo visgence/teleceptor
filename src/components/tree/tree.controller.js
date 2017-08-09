@@ -132,12 +132,12 @@ export default class treeController {
                 return;
             }
             this.$scope.$apply(() => {
-                this.$location.search('ds', data.id);
+                this.$location.search('datastream', data.id);
             });
 
         });
 
-        const curStream = parseInt(this.$location.search().ds);
+        const curStream = parseInt(this.$location.search().datastream);
         if (!isNaN(curStream)) {
             $('#my-tree').treeview('getEnabled', 1).forEach((node) => {
                 if (node.id === curStream) {
