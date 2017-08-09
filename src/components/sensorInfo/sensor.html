@@ -151,10 +151,7 @@
                                     <div class="md-ripple-container"></div>
                                 </md-button>
                             </md-list-item>
-
                         </md-list>
-
-
                     </md-tab-body>
                 </md-tab>
                 <!-- End of Export tab -->
@@ -166,7 +163,7 @@
                         <md-list>
                             <md-list-item>
                                 <h5>{{sensor.name}}</h5> <span flex></span>
-                                <md-switch ng-disabled="{{ isActive }}" ng-true = "CommandSwitch()" aria-label="Command switch" ng-model="disabledModel">
+                                <md-switch ng-disabled="{ isActive }" ng-true = "CommandSwitch()" aria-label="Command switch" ng-model="disabledModel">
                                 </md-switch>
 
                             </md-list-item>
@@ -195,7 +192,6 @@
                 </md-tab>
                 <!-- End of Metadata tab -->
             </md-tabs>
-
         </md-content>
     </md-card>
 </div>

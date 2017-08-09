@@ -128,7 +128,6 @@ export default class sensorController { // ', ['frapontillo.bootstrap-switch',])
                 '&start=' + parseInt(start / 1000) +
                 '&end=' + parseInt(end / 1000) +
                 '&source=ElasticSearch';
-            console.log(readingsUrl)
             this.apiService.get(readingsUrl)
                 .then((success) => {
                     this.exportData(success.data.readings);
@@ -162,7 +161,6 @@ export default class sensorController { // ', ['frapontillo.bootstrap-switch',])
                     console.log(error);
                 });
         };
-
 
         this.$scope.EntrySend = () => {
             const sensorInfo = this.$scope.sensor;
@@ -210,12 +208,15 @@ export default class sensorController { // ', ['frapontillo.bootstrap-switch',])
     LoadSensor(sensor) {
         this.apiService.get('sensors/' + sensor)
             .then((success) => {
+                console.log(success)
                 this.$scope.sensor = success.data.sensor;
                 this.$scope.ShowInfo = true;
 
                 if (success.data.sensor_type === 'output') {
                     this.$scope.isActive = true;
                     // We need to set the preliminary state
+                } else {
+                    this.$scope.isActive = false;
                 }
                 $('#sensor-card').css('visibility', 'visible');
             })
