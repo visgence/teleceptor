@@ -53,8 +53,8 @@ target/
 *.DS_Store
 
 #NPM
-bower_components/
 node_modules/
+webpack-stats.json
 
 config/config.json
 database/
