@@ -1,30 +1,37 @@
 <md-card class="tree-card" flex>
-  <md-toolbar class="card-header md-primary header-override">
-    <h3 class>Search</h3>
-  </md-toolbar>
+    <md-toolbar class="card-header md-primary header-override">
+        <h3 class>Search</h3>
+    </md-toolbar>
     <div class="alert hidden" id="tree-message"> </div>
     <md-content class="tree-card-content">
-            <div class="input-group">
-                <div class="input-group-btn">
-                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        <div class="input-group">
+            <div class="input-group-btn">
+                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                       {{searchFilter}}<span class="caret"></span>
                     </button>
-                    <ul class="dropdown-menu">
-                        <li>
-                            <div class="dropdown-btn" ng-click="searchFilter = 'Stream'">Stream</div>
-                        </li>
-                        <li>
-                            <div class="dropdown-btn" ng-click="searchFilter = 'Sensor'">Sensor</div>
-                        </li>
-                        <li>
-                            <div class="dropdown-btn" ng-click="searchFilter = 'Folder'">Folder</div>
-                        </li>
-                    </ul>
-                </div>
-                <input type="text" class="form-control" ng-model="searchWords" ng-change="searchInput()" aria-label="..." placeholder="Search..." />
+                <ul class="dropdown-menu">
+                    <li>
+                        <div class="dropdown-btn" ng-click="searchFilter = 'Stream'">Stream</div>
+                    </li>
+                    <li>
+                        <div class="dropdown-btn" ng-click="searchFilter = 'Sensor'">Sensor</div>
+                    </li>
+                    <li>
+                        <div class="dropdown-btn" ng-click="searchFilter = 'Folder'">Folder</div>
+                    </li>
+                </ul>
             </div>
-        <div class="tree-container">
-            <div id="my-tree"></div>
-          </div>
+            <input type="text" class="form-control" ng-model="searchWords" ng-change="searchInput()" aria-label="..." placeholder="Search..." />
+        </div>
+
+        <ng-show ng-show="Matches">
+            <div class="tree-container">
+                <div id="my-tree"></div>
+            </div>
+        </ng-show>
+
+        <ng-hide ng-hide="Matches">
+        <md-list-item><h4>No Matches<ng-show ng-show="isEmpty">, Empty Search Field</ng-show></h4></md-list-item>        
+    </ng-hide>
     </md-content>
 </md-card>
