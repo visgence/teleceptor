@@ -21,7 +21,11 @@ export default class apiService {
     CleanSensorData(data) {
         Object.keys(data).forEach((key) => {
             if (key === 'last_calibration') {
-                const coefficients = data[key].coefficients.split(',');
+
+                let coefficients = data[key].coefficients;
+                if (coefficients.constructor !== Array) {
+                    coefficients = coefficients.split(',');
+                }
                 const cleanCoefficients = [];
                 coefficients.forEach((coef) => {
                     // only allow 0-9, -, .
