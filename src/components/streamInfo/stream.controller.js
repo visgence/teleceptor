@@ -64,15 +64,11 @@ export default class streamController {
                 return;
             }
             const url = 'datastreams/' + updateData.id;
-            this.apiService.put(url, updateData)
-                .then((success) => {
-                    this.$scope.editing = false;
-                    location.reload();
-                })
-                .catch((error) => {
-                    console.log('Error');
-                    console.log(error);
-                });
+            const success = this.apiService.put(url, updateData);
+            if (success.error === undefined) {
+                this.$scope.editing = false;
+                location.reload();
+            }
         };
         this.LoadStream();
     }

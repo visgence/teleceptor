@@ -9,13 +9,26 @@ export default class apiService {
         return this.$http.get('/api/' + endpoint);
     }
     post(endpoint, data) {
-        return this.$http.post('/api/' + endpoint, data);
+        this.$http.post('/api/' + endpoint, data)
+            .then((success) => {
+                return success;
+            })
+            .catch((error) => {
+                return {error: error}
+            })
     }
     put(endpoint, data) {
         if (endpoint.startsWith('sensors')) {
             data = this.CleanSensorData(data);
         }
-        return this.$http.put('/api/' + endpoint, data);
+        this.$http.put('/api/' + endpoint, data)
+            .then((success) => {
+                return success
+            })
+            .catch((error) => {
+                console.log(error);
+                return {error: error}
+            })
     }
 
     CleanSensorData(data) {

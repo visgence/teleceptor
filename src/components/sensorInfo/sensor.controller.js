@@ -67,18 +67,10 @@ export default class sensorController { // ', ['frapontillo.bootstrap-switch',])
                     [id, newValue, time],
                 ],
             }];
-            this.apiService.post('station', payload)
-                .then((success) => {
-                    console.log(success);
-                })
-                .catch((error) => {
-                    console.log('error');
-                    console.log(error);
-                });
+            this.apiService.post('station', payload);
         };
 
         this.$scope.SaveFields = () => {
-            console.log(this.$scope.sensor)
             const updateData = {};
             const url = 'sensors';
             const editableFields = ['last_calibration', 'units', 'description', 'uuid'];
@@ -97,17 +89,12 @@ export default class sensorController { // ', ['frapontillo.bootstrap-switch',])
                 updateData.last_calibration.timestamp = Date.now() / 1000;
             }
 
-            console.log(updateData.last_calibration)
-
-            this.apiService.put(url, updateData)
-                .then((success) => {
-                    this.$scope.editing = false;
-                    // TODO: This needs to be better, a simple refresh of sensor info and maybe the graph units.
-                    location.reload();
-                })
-                .catch((error) => {
-                    console.log('Error Occured: ', error.data);
-                });
+            const success = this.apiService.put(url, updateData)
+            if (success.error === undefined) {
+                this.$scope.editing = false;
+                // TODO: This needs to be better, a simple refresh of sensor info and maybe the graph units.
+                location.reload();
+            }
         };
 
         this.$scope.CommandSwitch = () => {
@@ -165,14 +152,7 @@ export default class sensorController { // ', ['frapontillo.bootstrap-switch',])
                 ],
             }];
 
-            this.apiService.post('station', payload)
-                .then((success) => {
-                    console.log(success);
-                })
-                .catch((error) => {
-                    console.log('error');
-                    console.log(error);
-                });
+            this.apiService.post('station', payload);
         };
 
         // CONVERT TO SCOPE
@@ -258,14 +238,6 @@ export default class sensorController { // ', ['frapontillo.bootstrap-switch',])
             duration: 60000,
             sensor_id: sensorInfo.uuid,
         };
-        apiService.post('messages/', payload)
-            .then((success) => {
-                console.log('the response was:');
-                console.log(success);
-            })
-            .catch((error) => {
-                console.log('error');
-                console.log(error);
-            });
+        apiService.post('messages/', payload);
     }
 }
