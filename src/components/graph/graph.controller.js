@@ -16,15 +16,12 @@ export default class graphController {
             }
         });
 
-
         this.$scope.$watch(() => this.infoService.getSensor(), (nv, ov) => {
             if (nv === undefined) {
                 return;
             }
             this.getData();
-
         });
-
     }
 
     getData() {
@@ -77,8 +74,6 @@ export default class graphController {
 
         let min = data.readings[0][1];
         let max = data.readings[0][1];
-        let start = data.readings[0][0];
-        let end = data.readings[data.readings.length - 1][0];
         let j = 0;
         for (j = 0; j < data.readings.length; j++) {
             if (min > data.readings[j][1]) {
@@ -88,8 +83,10 @@ export default class graphController {
                 max = data.readings[j][1];
             }
         }
-        start *= 1000;
-        end *= 1000;
+        let start = new Date().getTime() - 60 * 60 * 6 * 1000;
+        let end = new Date().getTime();
+
+        console.log(start, end)
 
         if (this.$location.search().start !== undefined) {
             start = parseInt(this.$location.search().start * 1000);
