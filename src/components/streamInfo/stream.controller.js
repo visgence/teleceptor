@@ -1,10 +1,11 @@
+import {ShowSuccess, ShowError} from '../../utilites/dialogs.utils';
+
 export default class streamController {
 
-    constructor(infoService, apiService, $scope, $location, $mdDialog, $mdToast, $interval) {
+    constructor(infoService, apiService, $scope, $location, $mdToast, $mdDialog) {
         'ngInject';
         this.$scope = $scope;
         this.$location = $location;
-        this.$interval = $interval;
         this.apiService = apiService;
         this.infoService = infoService;
         this.$mdDialog = $mdDialog;
@@ -14,7 +15,6 @@ export default class streamController {
     $onInit() {
 
         this.$scope.stream = {};
-        this.$scope.success = true;
         this.$scope.editing = false;
         this.$scope.ShowInfo = false;
 
@@ -35,6 +35,7 @@ export default class streamController {
 
         this.$scope.SaveFields = () => {
             const updateData = {};
+            let hasErrors = false;
             Object.keys(this.$scope.stream).forEach((key) => {
                 if (this.$scope.stream[key] === '-' || this.$scope.stream[key] === '') {
                     updateData[key] = null;
@@ -45,14 +46,12 @@ export default class streamController {
                             return;
                         }
                         if (!j.url.startsWith('/')) {
-                            $('#warning-message').css('display', 'block');
-                            $('#warning-message').html('Paths must begin with a "/".');
+                            ShowError(this.$mdDialog, 'Paths must begin with a "/".');
                             hasErrors = true;
                             return;
                         }
                         if (j.url.includes(' ')) {
-                            $('#warning-message').css('display', 'block');
-                            $('#warning-message').html('Paths cannot have any spaces.');
+                            ShowError(this.$mdDialog, 'Paths cannot have any spaces.');
                             hasErrors = true;
                             return;
                         }
@@ -63,40 +62,21 @@ export default class streamController {
                 }
             });
 
-
+            if (hasErrors) {
+                return;
+            }
             const url = 'datastreams/' + updateData.id;
             this.apiService.put(url, updateData)
                 .then((success) => {
-
-                    this.$mdToast.show(
-                        this.$mdToast.simple()
-                            .textContent('Changes Successfully Saved')
-                            .position('center top')
-                            .hideDelay(1000),
-                    );
+                    ShowSuccess(this.$mdToast);
                     this.$scope.editing = false;
-                    this.$interval(() => {
-                        location.reload();
-                    }, 1200);
-
+                    // location.reload();
                 })
                 .catch((error) => {
-                    this.$mdDialog.show(
-                        this.$mdDialog.alert()
-                            .parent(angular.element(document.querySelector('#popupContainer')))
-                            .clickOutsideToClose(true)
-                            .title('Error Saving Fields')
-                            .textContent('Error: ' + error)
-                            .ariaLabel('Alert Dialog Demo')
-                            .ok('Close'),
-                    );
-                    console.log('Error');
-                    console.log(error);
+                    ShowError(this.$mdDialog, error);
                 });
         };
         this.LoadStream();
-        console.log(location);
-
     }
 
     LoadStream() {
@@ -128,8 +108,7 @@ export default class streamController {
                 $('#stream-card').css('visibility', 'visible');
             })
             .catch((error) => {
-                console.log('error');
-                console.log(error);
+                ShowError(this.$mdDialog, error);
             });
     }
 }

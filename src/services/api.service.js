@@ -1,8 +1,12 @@
 export default class apiService {
-    constructor($http) {
+    constructor($http, $interval, $mdDialog, $mdToast) {
         'ngInject';
 
         this.$http = $http;
+
+        this.$mdDialog = $mdDialog;
+        this.$interval = $interval;
+        this.$mdToast = $mdToast;
     }
 
     get(endpoint) {

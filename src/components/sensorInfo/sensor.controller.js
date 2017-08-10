@@ -1,15 +1,16 @@
+import {ShowSuccess, ShowError} from '../../utilites/dialogs.utils';
+
 export default class sensorController { // ', ['frapontillo.bootstrap-switch',])
 
-    constructor(infoService, apiService, $scope, $location, $mdDialog, $mdToast, $interval) {
+    constructor(infoService, apiService, $scope, $location, $mdToast, $mdDialog) {
         'ngInject';
 
         this.$scope = $scope;
         this.$location = $location;
         this.apiService = apiService;
         this.infoService = infoService;
-        this.$mdDialog = $mdDialog;
-        this.$interval = $interval;
         this.$mdToast = $mdToast;
+        this.$mdDialog = $mdDialog;
 
         this.$scope.$watch(() => this.infoService.getStream(), (nv, ov) => {
             if (nv === undefined) {
@@ -72,16 +73,14 @@ export default class sensorController { // ', ['frapontillo.bootstrap-switch',])
             }];
             this.apiService.post('station', payload)
                 .then((success) => {
-                    console.log(success);
+                    ShowSuccess(this.$mdToast);
                 })
                 .catch((error) => {
-                    console.log('error');
-                    console.log(error);
+                    ShowError(this.$mdDialog, error);
                 });
         };
 
         this.$scope.SaveFields = () => {
-            console.log(this.$scope.sensor);
             const updateData = {};
             const url = 'sensors';
             const editableFields = ['last_calibration', 'units', 'description', 'uuid'];
@@ -100,25 +99,13 @@ export default class sensorController { // ', ['frapontillo.bootstrap-switch',])
                 updateData.last_calibration.timestamp = Date.now() / 1000;
             }
 
-            console.log(updateData.last_calibration);
-
             this.apiService.put(url, updateData)
                 .then((success) => {
-
-                    this.$mdToast.show(
-                        this.$mdToast.simple()
-                            .textContent('Changes Successfully Saved')
-                            .position('center top')
-                            .hideDelay(1000),
-                    );
+                    ShowSuccess(this.$mdToast);
                     this.$scope.editing = false;
-                    this.$interval(() => {
-                        location.reload();
-                    }, 1200);
-                    // TODO: This needs to be better, a simple refresh of sensor info and maybe the graph units.
                 })
                 .catch((error) => {
-                    console.log('Error Occured: ', error.data);
+                    ShowError(this.$mdDialog, error);
                 });
         };
 
@@ -135,7 +122,6 @@ export default class sensorController { // ', ['frapontillo.bootstrap-switch',])
             if (end === undefined) {
                 end = new Date().getTime();
             }
-            console.log(start, end);
             const readingsUrl = 'readings?datastream=' +
                 this.infoService.getStream().id +
                 '&start=' + parseInt(start / 1000) +
@@ -146,8 +132,7 @@ export default class sensorController { // ', ['frapontillo.bootstrap-switch',])
                     this.exportData(success.data.readings);
                 })
                 .catch((error) => {
-                    console.log('error');
-                    console.log(error);
+                    ShowError(this.$mdDialog, error);
                 });
         };
 
@@ -179,11 +164,10 @@ export default class sensorController { // ', ['frapontillo.bootstrap-switch',])
 
             this.apiService.post('station', payload)
                 .then((success) => {
-                    console.log(success);
+                    ShowSuccess(this.$mdToast, 'Point has been entered.');
                 })
                 .catch((error) => {
-                    console.log('error');
-                    console.log(error);
+                    ShowError(this.$mdDialog, error);
                 });
         };
 
@@ -210,8 +194,7 @@ export default class sensorController { // ', ['frapontillo.bootstrap-switch',])
                 $('#sensor-card').css('visibility', 'visible');
             })
             .catch((error) => {
-                console.log('error');
-                console.log(error);
+                ShowError(error);
             });
     }
 
@@ -272,12 +255,10 @@ export default class sensorController { // ', ['frapontillo.bootstrap-switch',])
         };
         apiService.post('messages/', payload)
             .then((success) => {
-                console.log('the response was:');
-                console.log(success);
+                ShowSuccess(this.$mdToast);
             })
             .catch((error) => {
-                console.log('error');
-                console.log(error);
+                ShowError(this.$mdDialog, error);
             });
     }
 }
