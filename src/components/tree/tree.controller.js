@@ -26,7 +26,8 @@ export default class treeController {
                     const pathsArray = this.GeneratePathArray(success.data);
                     const treeStructure = this.MakeTreeStructure(pathsArray);
                     this.RenderTree(treeStructure);
-                }).catch((error) => {
+                })
+                .catch((error) => {
                     console.log('error');
                     console.log(error);
                 });
