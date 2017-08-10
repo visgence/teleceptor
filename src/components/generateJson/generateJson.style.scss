@@ -1,3 +1,17 @@
+@import '../constants';
+
 .section {
     margin-left: 10px;
+}
+
+.md-button {
+    &.md-primary {
+        &.md-raised {
+            &.json-button {
+                background-color: $primary;
+                color: $white;
+                float: left;
+            }
+        }
+    }
 }

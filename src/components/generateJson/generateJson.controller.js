@@ -1,46 +1,100 @@
 export default class generateJsonController {
-    constructor($scope) {
+    constructor($scope, $mdDialog) {
         'ngInject';
 
         this.$scope = $scope;
+        this.$mdDialog = $mdDialog;
 
     }
     $onInit() {
+        this.$scope.inputItems = [];
+        this.$scope.outputItems = [];
+        this.$scope.escape = false;
+
+        //  intialize input object
         this.$scope.addInput = () => {
-            $('#input-section').append(this.createSensorInput());
+            this.$scope.inputItems.push({
+                name: '',
+                type: '',
+                units: '',
+                description: '',
+            });
+
         };
 
+        //  pop top object on remove button press
+        this.$scope.removeInput = () => {
+
+            this.$scope.inputItems.pop();
+
+        };
+
+        this.$scope.removeOutput = () => {
+
+            this.$scope.outputItems.pop();
+
+        };
+
+        //  intialize output objects
         this.$scope.addOutput = () => {
-            $('#output-section').append(this.createSensorOutput());
+            this.$scope.outputItems.push({
+                name: '',
+                model: '',
+                type: '',
+                units: '',
+                description: '',
+                scale_cof: '',
+            });
         };
 
+        //  on submit button press
         this.$scope.submit = () => {
             const jsonData = {};
 
-            jsonData.uuid = $('#uuid').val();
-            jsonData.model = $('#model').val();
-            jsonData.description = $('#description').val();
+            jsonData.uuid = this.$scope.uuid;
+            jsonData.model = this.$scope.model;
+            jsonData.description = this.$scope.description;
 
             const inputs = [];
             const outputs = [];
-            $('.sensor-input').each((index) => {
+
+            //  loops to pull correct items out of input/output object arrays.
+            for (let i = 0; i < this.$scope.inputItems.length; i++) {
                 const input = {};
-                input.name = $('input[name="name"]').val();
-                input.description = $('input[name="description"]').val();
-                input.sensor_type = $('input[name="sensor_type"]').val();
-                input.units = $('input[name="units"]').val();
+                input.name = this.$scope.inputItems[i].name;
+                input.description = this.$scope.inputItems[i].description;
+                input.sensor_type = this.$scope.inputItems[i].sensor_type;
+                input.units = this.$scope.inputItems[i].units;
                 inputs.push(input);
-            });
+            }
+
+            for (let i = 0; i < this.$scope.outputItems.length; i++) {
+                const output = {};
+
+                output.name = this.$scope.outputItems[i].name;
+                output.model = this.$scope.outputItems[i].model;
+                output.description = this.$scope.outputItems[i].description;
+                output.sensor_type = this.$scope.outputItems[i].type;
+                output.units = this.$scope.outputItems[i].units;
+
+                let coefficients = this.$scope.outputItems[i].scale_cof;
+                coefficients = coefficients.split(',');
+                const cleanCoefficients = [];
+
+                coefficients.forEach((coefficients) => {
+                    // only allow 0-9, -, .
+                    cleanCoefficients.push(coefficients.replace(/[^0-9\-\.]/g, ''));
+                });
+
+                output.scale = {
+                    coefficients: cleanCoefficients,
+                    timestamp: new Date().getTime(),
+                };
+
+                outputs.push(output);
+            }
 
             $('.sensor-output').each((index) => {
-                const output = {};
-                output.name = $('input[name="name"]').val();
-                output.model = $('input[name="model"]').val();
-                output.description = $('input[name="description"]').val();
-                output.sensor_type = $('input[name="sensor_type"]').val();
-                output.units = $('input[name="units"]').val();
-                output.timestamp = Number($('input[name="timestamp"]').val());
-
                 const scale = [];
                 scale.push(Number($('input[name="scale1"]').val()));
                 scale.push(Number($('input[name="scale2"]').val()));
@@ -54,104 +108,27 @@ export default class generateJsonController {
             let json = JSON.stringify(jsonData);
             const jsonLength = json.length;
 
-            if ($('#escape').is(':checked')) {
+            //  check if escape has been checked
+            if (this.$scope.escape) {
                 json = this.escape(json);
             }
-            $('#json-length').html(jsonLength);
-            $('#json-data').html(json);
-            $('#json-modal').modal('show');
+
+            // use material alert dialog to present finished JSON
+            this.$mdDialog.show(
+                this.$mdDialog.alert()
+                    .parent(angular.element(document.querySelector('#popupContainer')))
+                    .clickOutsideToClose(true)
+                    .title('JSON Data, Length ' + jsonLength + ' bytes')
+                    .textContent(json)
+                    .ariaLabel('Alert Dialog Demo')
+                    .ok('Close'),
+            );
             return false;
         };
+
     }
     escape(text) {
         return text.replace(/"/g, '\\"');
     }
 
-    createInput(label, name) {
-        const input = $('<input/>', {
-            name: name,
-            type: 'text',
-            placeholder: name,
-            class: 'form-control input-md',
-        });
-
-        label = $('<label/>', {
-            class: 'col-md-5 control-label',
-            // 'for': id
-        }).html(label);
-
-        const group = $('<div/>', {
-            class: 'form-group',
-        });
-
-        const col = $('<div/>', {
-            class: 'col-md-4',
-        });
-
-        group.append(label);
-        col.append(input);
-        group.append(col);
-
-        return group;
-    }
-
-    createButton(desc, name, toRemove) {
-        const button = $('<button/>', {
-            // id: uuid,
-            name: name,
-            class: 'btn btn-danger',
-        }).html(desc);
-
-        const label = $('<label/>', {
-            class: 'col-md-5 control-label',
-            // 'for': id
-        }).html(desc);
-
-        const group = $('<div/>', {
-            class: 'form-group',
-        });
-
-        const col = $('<div/>', {
-            class: 'col-md-4',
-        });
-        button.click(() => {
-            console.log('button click');
-            toRemove.remove();
-            return false;
-        });
-        group.append(label);
-        col.append(button);
-        group.append(col);
-        return group;
-    }
-
-    createSensorInput() {
-        const sensor = $('<div/>', {
-            class: 'sensor-input',
-            style: 'padding-bottom: 30px',
-        });
-        sensor.append(this.createInput('Name', 'name'));
-        sensor.append(this.createInput('Type', 'sensor_type'));
-        sensor.append(this.createInput('Units', 'units'));
-        sensor.append(this.createInput('Description', 'description'));
-        sensor.append(this.createButton('Remove', 'remove', sensor));
-        return sensor;
-    }
-
-    createSensorOutput() {
-        const sensor = $('<div/>', {
-            class: 'sensor-output',
-            style: 'padding-bottom: 30px',
-        });
-        sensor.append(this.createInput('Name', 'name'));
-        sensor.append(this.createInput('Type', 'sensor_type'));
-        sensor.append(this.createInput('Units', 'units'));
-        sensor.append(this.createInput('model', 'model'));
-        sensor.append(this.createInput('Description', 'description'));
-        sensor.append(this.createInput('Timestamp', 'timestamp'));
-        sensor.append(this.createInput('Scale Cof 1', 'scale1'));
-        sensor.append(this.createInput('Scale Cof 2', 'scale2'));
-        sensor.append(this.createButton('Remove', 'remove', sensor));
-        return sensor;
-    }
 }

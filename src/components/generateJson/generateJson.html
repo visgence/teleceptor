@@ -1,91 +1,133 @@
-<div class="container-fluid">
-    <div id="teleceptor">
-        <div ng-include="'/templates/navbar.html'"></div>
+<navcomponent>
+</navcomponent>
+<div class="generate-json" layout="column" layout-gt-sm="row">
+    <div layout="column" flex="33">
+        <md-card sensor-card md-theme="default">
+            <md-toolbar class="card-header md-primary">
+                <h3>Generate JSON</h3>
+                <!--"toolbar" used as card header-->
+            </md-toolbar>
+            <md-content class="card-content md" layout="column">
+                <md-input-container class="input-container">
+                    <label>UUID</label>
+                    <input aria-label="UUID Field to generate JSON" name="uuid" ng-model="uuid" />
+                </md-input-container>
 
-        <div class="page-host">
-            <h3>Generate JSON Config for Sensor</h3>
-            <form class="form-horizontal">
-                <fieldset>
-                    <!-- Form Name -->
-                    <legend>
-                        Parameters
-                    </legend>
-                    <div class="form-group">
-                        <label class="col-md-4 control-label" for="uuid">UUID</label>
-                        <div class="col-md-4">
-                            <input id="uuid" name="uuid" type="text" placeholder="uuid" class="form-control input-md" />
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label class="col-md-4 control-label" for="textinput">Model</label>
-                        <div class="col-md-4">
-                            <input id="model" name="model" type="text" placeholder="model" class="form-control input-md" />
-                        </div>
-                    </div>
-                    <!-- Text input-->
-                    <div class="form-group">
-                        <label class="col-md-4 control-label" for="description">Description</label>
-                        <div class="col-md-4">
-                            <input id="description" name="description" type="text" placeholder="description" class="form-control input-md" />
-                        </div>
-                    </div>
-                    <!-- Button -->
-                    <div class="form-group">
-                        <label class="col-md-4 control-label" for="add-input">Add Output</label>
-                        <div class="col-md-4">
-                            <button id="add-output" type="button" name="add-output" class="btn btn-primary" ng-click="addOutput()">
-                                Add
-                            </button>
-                        </div>
-                    </div>
-                    <div id="output-section" class="section"></div>
-                    <!-- Button -->
-                    <div class="form-group">
-                        <label class="col-md-4 control-label" for="add-input">Add Input</label>
-                        <div class="col-md-4">
-                            <button id="add-input" type="button" name="add-input" class="btn btn-primary" ng-click="addInput()">
-                                Add
-                            </button>
-                        </div>
-                    </div>
-                    <div id="input-section" class="section"></div>
-                    <!-- Multiple Checkboxes (inline) -->
-                    <div class="form-group">
-                        <label class="col-md-4 control-label" for="Escape">Escape</label>
-                        <div class="col-md-4">
-                            <label class="checkbox-inline" for="Escape-0">
-                                <input type="checkbox" name="Escape" id="escape" value="" />
-                                    yes
-                              </label>
-                        </div>
-                    </div>
-                    <!-- Button -->
-                    <div class="form-group">
-                        <label class="col-md-4 control-label" for="generate">Generate JSON</label>
-                        <div class="col-md-4">
-                            <input type="submit" id="generate" name="generate" class="btn btn-success" ng-click="submit()" />
-                        </div>
-                    </div>
-                </fieldset>
-            </form>
-            <div class="modal fade" id="json-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-                            <h4 class="modal-title">
-                                JSON Data (Length <span id="json-length"></span> Bytes)
-                            </h4>
-                        </div>
-                        <div class="modal-body">
-                            <pre id="json-data"></pre>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                        </div>
-                    </div>
+                <md-input-container class="input-container md-block">
+                    <label>Model</label>
+                    <input aria-label="Model field for to generate JSON" name="model" ng-model="model" />
+                </md-input-container>
+
+                <md-input-container class="input-container">
+                    <label>Description</label>
+                    <input aria-label="Description field to generate JSON" name="units" ng-model="description" />
+                </md-input-container>
+
+                <md-checkbox aria-label="Escape checkbox for escape character in the JSON" ng-model="escape">
+                    Escape
+                </md-checkbox>
+
+                <div layout-xs="column" flex>
+                    <md-button class="json-button md-button" ng-click="addOutput()">Add Outputs</md-button>
+                    <md-button class="json-button md-button" ng-click="addInput()">Add Inputs</md-button>
+                    <md-button class="primary-button md-raised md-primary" ng-click="submit()">Submit</md-button>
                 </div>
-            </div>
+
+            </md-content>
+        </md-card>
+    </div>
+
+    <!-- second column -->
+    <div flex="33" layout="column">
+        <!-- repeat cards in collumn for every item in the inputItems object array -->
+        <div ng-repeat="item in inputItems">
+            <md-card sensor-card md-theme>
+                <md-toolbar class="card-header md-primary">
+                    <h3>Add Input</h3>
+                    <!--"toolbar" used as card header-->
+                </md-toolbar>
+                <md-content class="card-content md">
+                    <!-- <md-list> -->
+                    <div layout="column">
+                        <md-input-container class="input-container">
+                            <label>Name</label>
+                            <input aria-label="Name field for a new input" name="name" ng-model="item.name" />
+                        </md-input-container>
+
+                        <md-input-container class="input-container">
+                            <label>Type</label>
+                            <input aria-label="Type field for a new input" name="type" ng-model="item.type" />
+                        </md-input-container>
+
+                        <md-input-container class="input-container">
+                            <label>Units</label>
+                            <input aria-label="Units field for a new input" name="units" ng-model="item.units" />
+                        </md-input-container>
+
+                        <md-input-container class="input-container">
+                            <label>Description</label>
+                            <input aria-label="description field for a new input" name="description" ng-model="item.description" />
+                        </md-input-container>
+
+                    </div>
+
+                    <div layout-xs="column" flex>
+                        <md-button class="json-button md-button" ng-click="removeInput()">Remove</md-button>
+                    </div>
+                </md-content>
+            </md-card>
+        </div>
+    </div>
+
+    <!-- third column -->
+    <div flex="33" layout="column">
+        <!-- ng-repeat for every item in outputItem object array -->
+        <div ng-repeat="item in outputItems">
+            <md-card sensor-card md-theme>
+                <md-toolbar class="card-header md-primary">
+                    <h3>Add Output</h3>
+                    <!--"toolbar" used as card header-->
+                </md-toolbar>
+                <md-content class="card-content md">
+                    <!-- <md-list> -->
+
+                    <div layout="column">
+                        <md-input-container class="input-container">
+                            <label>Name</label>
+                            <input aria-label="Name field for creating a new output" name="name" ng-model="item.name" />
+                        </md-input-container>
+
+                        <md-input-container class="input-container md-block">
+                            <label>Model</label>
+                            <input aria-label="model field for creating a new output" name="model" ng-model="item.model" />
+                        </md-input-container>
+
+                        <md-input-container class="input-container">
+                            <label>Type</label>
+                            <input aria-label="type field for creating a new output" name="type" ng-model="item.type" />
+                        </md-input-container>
+
+                        <md-input-container class="input-container">
+                            <label>Units</label>
+                            <input aria-label="units field for creating a new output" name="units" ng-model="item.units" />
+                        </md-input-container>
+
+                        <md-input-container class="input-container">
+                            <label>Description</label>
+                            <input aria-label="description field for creating a new output" name="description" ng-model="item.description" />
+                        </md-input-container>
+
+                        <md-input-container class="input-container">
+                            <label>Coefficients</label>
+                            <input aria-label="coefficients field for creating a new output" name="timestamp" ng-model="item.scale_cof" />
+                        </md-input-container>
+
+                    </div>
+                    <div layout-xs="column" flex>
+                        <md-button class="json-button md-button" ng-click="removeOutput()">Remove</md-button>
+                    </div>
+                </md-content>
+            </md-card>
         </div>
     </div>
 </div>
