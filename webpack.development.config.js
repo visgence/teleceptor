@@ -4,59 +4,6 @@ const BundleTracker = require('webpack-bundle-tracker');
 const UglifyJSPlugin = require('uglifyjs-webpack-plugin'); // eslint-disable-line
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin; // eslint-disable-line
 
-// Note: Change this to NODE_ENV = Production
-const isProd = true;
-
-const plugins = [
-    // new BundleAnalyzerPlugin(),
-    new BundleTracker({
-        filename: './webpack-stats.json',
-    }),
-    new webpack.ProvidePlugin({
-        jQuery: 'jquery',
-        $: 'jquery',
-        jquery: 'jquery',
-    }),
-    new webpack.LoaderOptionsPlugin({
-        minimize: true,
-        debug: false,
-    }),
-    new webpack.optimize.CommonsChunkPlugin({
-        name: 'vendor',
-        filename: 'vendor.bundle.js',
-    }),
-    new webpack.NamedModulesPlugin(),
-];
-
-if (isProd) {
-    plugins.push(new webpack.optimize.UglifyJsPlugin({
-        compress: {
-            dead_code: true,
-            drop_debugger: true,
-            conditionals: true,
-            comparisons: true,
-            booleans: true,
-            unused: true,
-            toplevel: true,
-            if_return: true,
-            join_vars: true,
-            cascade: true,
-            collapse_vars: true,
-            reduce_vars: true,
-            warnings: true,
-            drop_console: true,
-            passes: 2
-        },
-        mangle: false
-
-    }));
-    plugins.push(new webpack.DefinePlugin({
-        'process.env': {
-            NODE_ENV: JSON.stringify('production'),
-        }
-    }));
-}
-
 module.exports = {
     entry: {
         app: './src/app.js',
@@ -78,7 +25,7 @@ module.exports = {
         filename: 'bundle-[chunkhash:8].js',
         path: path.resolve(__dirname, 'static/dist'),
     },
-    devtool: isProd ? false : 'eval-cheap-module-source-map',
+    devtool: 'eval-cheap-module-source-map',
     module: {
         rules: [{
             test: /\.js$/,
@@ -116,5 +63,24 @@ module.exports = {
             loader: 'url-loader',
         }],
     },
-    plugins: plugins,
+    plugins: [
+        // new BundleAnalyzerPlugin(),
+        new BundleTracker({
+            filename: './webpack-stats.json',
+        }),
+        new webpack.ProvidePlugin({
+            jQuery: 'jquery',
+            $: 'jquery',
+            jquery: 'jquery',
+        }),
+        new webpack.LoaderOptionsPlugin({
+            minimize: true,
+            debug: false,
+        }),
+        new webpack.optimize.CommonsChunkPlugin({
+            name: 'vendor',
+            filename: 'vendor.bundle.js',
+        }),
+        new webpack.NamedModulesPlugin(),
+    ],
 };

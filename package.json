@@ -1,5 +1,5 @@
 {
-  "author": "Cyrille Gindreau",
+  "author": "Visgence Inc.",
   "dependencies": {
     "adm-dtp": "1.2.0",
     "angular": "1.6.5",
@@ -13,7 +13,7 @@
     "d3": "4.10.0",
     "jquery": "2.2.4"
   },
-  "description": "",
+  "description": "Teleceptor is an open-source data logger and feature-rich dashboard.",
   "devDependencies": {
     "babel-cli": "6.24.1",
     "babel-core": "6.25.0",
@@ -42,11 +42,21 @@
     "webpack-bundle-analyzer": "2.9.0",
     "webpack-bundle-tracker": "0.2.0"
   },
-  "name": "teleceptor",
+  "name": "Teleceptor",
   "private": "true",
   "scripts": {
-    "build": "npm run clean && npm run watch",
+      "start": "npm run build & ./teleceptorcmd runserver",
+      "build": "npm run clean && npm run watch",
+
+      "startProduction":  "npm install && npm run buildProduction & ./teleceptorcmd runserver",
+      "buildProduction": "npm run clean && npm run webpackProduction",
+
+      "webpackProduction": "webpack --progress --config ./webpack.production.config.js",
+      "watch": "webpack --watch --progress --config ./webpack.development.config.js",
+      "webpack": "webpack --progress --config ./webpack.development.config.js",
+
     "clean": "rm -fr static/dist/",
+
     "eslint": "./node_modules/.bin/eslint src",
     "htmllint": "./node_modules/.bin/htmlhint --config .htmlhintrc src",
     "incmajorversion": "python versionControl.py -major",
@@ -54,9 +64,8 @@
     "lint": "npm run htmllint & npm run scsslint & npm run eslint & npm run pythonlint",
     "pythonlint": "find ./teleceptor -name '*.py' | xargs pep8 --max-line-length=200",
     "scsslint": "./node_modules/.bin/sass-lint src '**/*.scss' -v -q",
-    "start": "npm run build & ./teleceptorcmd runserver",
-    "watch": "webpack --watch --progress",
-    "webpack": "webpack --progress",
+
+
     "postinstall": "npm --prefix ./node_modules/node-sass/ run install"
   },
   "version": "1.8.0"
