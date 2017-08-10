@@ -17,7 +17,7 @@ export default class treeController {
         this.LoadData();
 
         this.$scope.searchInput = () => {
-            return;
+            this.$scope.treeLoaded = false;
             const data = {
                 word: this.$scope.searchWords,
                 filter: this.$scope.searchFilter,
@@ -113,6 +113,7 @@ export default class treeController {
     }
 
     RenderTree(data) {
+        console.log('start')
         $('#my-tree').treeview({
             data: data,
             showBorder: false,

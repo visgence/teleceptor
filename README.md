@@ -103,3 +103,13 @@ In the teleceptor/api folder, you will find a more detailed guide on how the api
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>
+
+
+
+
+
+
+Notes:
+we don't run webpack using the '-p' flag in production because this auto sets uglyifly to use mangle which breaks angular.
+instead we define the production environment ourselves and run uglyifly ourselves.
+Note: apparently there is a way to write angular modules in such a way that mangle can be run.

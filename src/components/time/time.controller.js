@@ -10,16 +10,20 @@ export default class timeController {
     }
 
     $onInit() {
+        const currentTime = new Date().getTime() / 1000;
         // Initialize date time pickers
         if (this.$location.search().start !== undefined) {
             this.$scope.startDate = new Date(this.$location.search().start * 1000);
+        } else {
+            this.$scope.startDate = new Date((currentTime - 60 * 60 * 6) * 1000);
         }
         if (this.$location.search().end !== undefined) {
             this.$scope.endDate = new Date(this.$location.search().end * 1000);
+        } else {
+            this.$scope.endDate = new Date(currentTime * 1000);
         }
 
         // Initialize quick time tabs
-        const currentTime = new Date().getTime() / 1000;
         const startTime = this.$location.search().start;
         const endTime = this.$location.search().end;
         this.$scope.tabSelection = 0;
