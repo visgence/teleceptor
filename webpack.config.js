@@ -5,7 +5,7 @@ const UglifyJSPlugin = require('uglifyjs-webpack-plugin'); // eslint-disable-lin
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin; // eslint-disable-line
 
 // Note: Change this to NODE_ENV = Production
-const isProd = false;
+const isProd = true;
 
 const plugins = [
     // new BundleAnalyzerPlugin(),
@@ -29,25 +29,28 @@ const plugins = [
 ];
 
 if (isProd) {
-    plugins.push(
-        new webpack.optimize.UglifyJsPlugin({
-            compress: {
-                warnings: false,
-                screw_ie8: true,
-                conditionals: true,
-                unused: true,
-                comparisons: true,
-                sequences: true,
-                dead_code: true,
-                evaluate: true,
-                if_return: true,
-                join_vars: true,
-            },
-            output: {
-                comments: false,
-            },
-        })
-    )
+    plugins.push(new webpack.optimize.UglifyJsPlugin({
+        compress: {
+            warnings: false,
+            screw_ie8: true,
+            conditionals: true,
+            unused: true,
+            comparisons: true,
+            sequences: true,
+            dead_code: true,
+            evaluate: true,
+            if_return: true,
+            join_vars: true,
+        },
+        output: {
+            comments: false,
+        },
+    }));
+    plugins.push(new webpack.DefinePlugin(
+        'process.env': {
+            NODE_ENV: JSON.stringify('production'),
+        }
+    ));
 }
 
 module.exports = {
@@ -55,11 +58,16 @@ module.exports = {
         app: './src/app.js',
         vendor: [
             'angular',
+            'angular-route',
             'd3',
             'bootstrap',
             'jquery',
-            'moment',
-            'eonasdan-bootstrap-datetimepicker',
+            'angular-material',
+            './node_modules/angular-material/angular-material.min.css',
+            './node_modules/bootstrap/dist/css/bootstrap.min.css',
+            './node_modules/adm-dtp/dist/ADM-dateTimePicker.min.css',
+            './node_modules/adm-dtp/dist/ADM-dateTimePicker.min.js',
+            './node_modules/bootstrap-treeview/dist/bootstrap-treeview.min.js'
         ],
     },
     output: {
