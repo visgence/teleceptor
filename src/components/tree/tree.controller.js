@@ -49,7 +49,6 @@ export default class treeController {
 
     // [[path, id, name]]
     GeneratePathArray(data) {
-        console.log(data);
         const pathArr = [];
         data.datastreams.forEach((stream) => {
             stream.paths.forEach((path) => {

@@ -64,7 +64,10 @@ export default class graphController {
 
         $('#graph-container').empty();
 
-        const coefs = this.infoService.getSensor().last_calibration.coefficients.split(',');
+        let coefs = this.infoService.getSensor().last_calibration.coefficients;
+        if (coefs.constructor !== Array) {
+            coefs = coefs.split(',');
+        }
         const scaledReadings = [];
         data.readings.forEach((reading) => {
             const newReading = [reading[0], reading[1] * parseFloat(coefs[0]) + parseFloat(coefs[1])];

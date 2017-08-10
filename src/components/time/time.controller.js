@@ -74,6 +74,15 @@ export default class timeController {
             this.$location.search('end', parseInt(endTime / 1000));
         };
 
+        this.$scope.ResetDates = () => {
+            this.$timeout(() => {
+                this.$scope.$apply(() => {
+                    this.$location.search('start', null);
+                    this.$location.search('end', null);
+                });
+            });
+        };
+
         this.$timeout(() => {
             this.$scope.internalSelect = false;
         }, 500);
