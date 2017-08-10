@@ -1,8 +1,12 @@
 export default class apiService {
-    constructor($http) {
+    constructor($http, $interval, $mdDialog, $mdToast) {
         'ngInject';
 
         this.$http = $http;
+
+        this.$mdDialog = $mdDialog;
+        this.$interval = $interval;
+        this.$mdToast = $mdToast;
     }
 
     get(endpoint) {
@@ -14,7 +18,9 @@ export default class apiService {
                 return success;
             })
             .catch((error) => {
-                return {error: error}
+                return {
+                    error: error
+                }
             })
     }
     put(endpoint, data) {
@@ -23,12 +29,40 @@ export default class apiService {
         }
         this.$http.put('/api/' + endpoint, data)
             .then((success) => {
+
                 return success
             })
             .catch((error) => {
                 console.log(error);
-                return {error: error}
+                return {
+                    error: error
+                }
             })
+    }
+
+    ShowSuccess() {
+        this.$mdToast.show(
+            this.$mdToast.simple()
+            .textContent('Changes Successfully Saved')
+            .position('center top')
+            .hideDelay(1000),
+        );
+        this.$scope.editing = false;
+        this.$interval(() => {
+            location.reload();
+        }, 1200);
+    }
+
+    ShowFailure() {
+        this.$mdDialog.show(
+            this.$mdDialog.alert()
+            .parent(angular.element(document.querySelector('#popupContainer')))
+            .clickOutsideToClose(true)
+            .title('Error Saving Fields')
+            .textContent('Error: ' + error)
+            .ariaLabel('Alert Dialog Demo')
+            .ok('Close'),
+        );
     }
 
     CleanSensorData(data) {

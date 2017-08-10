@@ -86,7 +86,7 @@ export default class graphController {
         let start = new Date().getTime() - 60 * 60 * 6 * 1000;
         let end = new Date().getTime();
 
-        console.log(start, end)
+        console.log(start, end);
 
         if (this.$location.search().start !== undefined) {
             start = parseInt(this.$location.search().start * 1000);

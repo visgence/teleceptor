@@ -71,6 +71,7 @@ export default class sensorController { // ', ['frapontillo.bootstrap-switch',])
         };
 
         this.$scope.SaveFields = () => {
+
             const updateData = {};
             const url = 'sensors';
             const editableFields = ['last_calibration', 'units', 'description', 'uuid'];
@@ -89,13 +90,13 @@ export default class sensorController { // ', ['frapontillo.bootstrap-switch',])
                 updateData.last_calibration.timestamp = Date.now() / 1000;
             }
 
-            const success = this.apiService.put(url, updateData)
+            const success = this.apiService.put(url, updateData);
             if (success.error === undefined) {
                 this.$scope.editing = false;
                 // TODO: This needs to be better, a simple refresh of sensor info and maybe the graph units.
                 location.reload();
             }
-        };
+        }
 
         this.$scope.CommandSwitch = () => {
             sendCommand();
@@ -110,7 +111,7 @@ export default class sensorController { // ', ['frapontillo.bootstrap-switch',])
             if (end === undefined) {
                 end = new Date().getTime();
             }
-            console.log(start, end)
+
             const readingsUrl = 'readings?datastream=' +
                 this.infoService.getStream().id +
                 '&start=' + parseInt(start / 1000) +

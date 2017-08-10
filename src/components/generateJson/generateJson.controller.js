@@ -94,14 +94,6 @@ export default class generateJsonController {
                 outputs.push(output);
             }
 
-            $('.sensor-output').each((index) => {
-                const scale = [];
-                scale.push(Number($('input[name="scale1"]').val()));
-                scale.push(Number($('input[name="scale2"]').val()));
-                output.scale = scale;
-                outputs.push(output);
-            });
-
             jsonData.out = outputs;
             jsonData.in = inputs;
 

@@ -1,16 +1,20 @@
 export default class streamController {
 
-    constructor(infoService, apiService, $scope, $location) {
+    constructor(infoService, apiService, $scope, $location, $mdDialog, $mdToast, $interval) {
         'ngInject';
         this.$scope = $scope;
         this.$location = $location;
+        this.$interval = $interval;
         this.apiService = apiService;
         this.infoService = infoService;
+        this.$mdDialog = $mdDialog;
+        this.$mdToast = $mdToast;
     }
 
     $onInit() {
 
         this.$scope.stream = {};
+        this.$scope.success = true;
         this.$scope.editing = false;
         this.$scope.ShowInfo = false;
 
@@ -31,7 +35,6 @@ export default class streamController {
 
         this.$scope.SaveFields = () => {
             const updateData = {};
-            let hasErrors = false;
             Object.keys(this.$scope.stream).forEach((key) => {
                 if (this.$scope.stream[key] === '-' || this.$scope.stream[key] === '') {
                     updateData[key] = null;
@@ -60,9 +63,6 @@ export default class streamController {
                 }
             });
 
-            if (hasErrors) {
-                return;
-            }
             const url = 'datastreams/' + updateData.id;
             const success = this.apiService.put(url, updateData);
             if (success.error === undefined) {
@@ -71,6 +71,7 @@ export default class streamController {
             }
         };
         this.LoadStream();
+        console.log(location);
     }
 
     LoadStream() {
