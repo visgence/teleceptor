@@ -31,26 +31,30 @@ const plugins = [
 if (isProd) {
     plugins.push(new webpack.optimize.UglifyJsPlugin({
         compress: {
-            warnings: false,
-            screw_ie8: true,
-            conditionals: true,
-            unused: true,
-            comparisons: true,
-            sequences: true,
             dead_code: true,
-            evaluate: true,
+            drop_debugger: true,
+            conditionals: true,
+            comparisons: true,
+            booleans: true,
+            unused: true,
+            toplevel: true,
             if_return: true,
             join_vars: true,
+            cascade: true,
+            collapse_vars: true,
+            reduce_vars: true,
+            warnings: true,
+            drop_console: true,
+            passes: 2
         },
-        output: {
-            comments: false,
-        },
+        mangle: false
+
     }));
-    plugins.push(new webpack.DefinePlugin(
+    plugins.push(new webpack.DefinePlugin({
         'process.env': {
             NODE_ENV: JSON.stringify('production'),
         }
-    ));
+    }));
 }
 
 module.exports = {
@@ -74,7 +78,7 @@ module.exports = {
         filename: 'bundle-[chunkhash:8].js',
         path: path.resolve(__dirname, 'static/dist'),
     },
-    devtool: isProd ? 'source-map' : 'eval-cheap-module-source-map',
+    devtool: isProd ? false : 'eval-cheap-module-source-map',
     module: {
         rules: [{
             test: /\.js$/,
