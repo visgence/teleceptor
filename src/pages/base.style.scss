@@ -79,3 +79,11 @@ md-input-container {
         display: none;
     }
 }
+
+md-toast {
+    &.md-center {
+        left: 50%;
+        transform: translate3d(-50%, 0, 0);
+    }
+    color: black;
+}

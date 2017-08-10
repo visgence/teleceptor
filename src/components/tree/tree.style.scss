@@ -1,4 +1,4 @@
-
+@import '../constants';
 .dropdown-btn {
     clear: both;
     display: block;
@@ -6,4 +6,24 @@
     line-height: 1.42;
     padding: 3px 20px;
     white-space: nowrap;
+}
+
+.list-group-item{
+    &.node-my-tree{
+        &.node-selected{
+            background-color: $grey !important;
+            color:$dark-grey !important;
+        }
+    }
+    &.list-group-item{
+        background-color: $white !important;
+    }
+}
+
+.tree-card-content{
+    background-color: $white;
+    border: 4px;
+    overflow: hidden;
+    padding: 10px 15px;
+    min-height: 135px;
 }

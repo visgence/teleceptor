@@ -1,12 +1,15 @@
 export default class sensorController { // ', ['frapontillo.bootstrap-switch',])
 
-    constructor(infoService, apiService, $scope, $location) {
+    constructor(infoService, apiService, $scope, $location, $mdDialog, $mdToast, $interval) {
         'ngInject';
 
         this.$scope = $scope;
         this.$location = $location;
         this.apiService = apiService;
         this.infoService = infoService;
+        this.$mdDialog = $mdDialog;
+        this.$interval = $interval;
+        this.$mdToast = $mdToast;
 
         this.$scope.$watch(() => this.infoService.getStream(), (nv, ov) => {
             if (nv === undefined) {
@@ -78,7 +81,7 @@ export default class sensorController { // ', ['frapontillo.bootstrap-switch',])
         };
 
         this.$scope.SaveFields = () => {
-            console.log(this.$scope.sensor)
+            console.log(this.$scope.sensor);
             const updateData = {};
             const url = 'sensors';
             const editableFields = ['last_calibration', 'units', 'description', 'uuid'];
@@ -97,13 +100,20 @@ export default class sensorController { // ', ['frapontillo.bootstrap-switch',])
                 updateData.last_calibration.timestamp = Date.now() / 1000;
             }
 
-            console.log(updateData.last_calibration)
+            console.log(updateData.last_calibration);
 
             this.apiService.put(url, updateData)
                 .then((success) => {
+
+                    this.$mdToast.show(
+                        this.$mdToast.simple()
+                            .textContent('Changes Successfully Saved')
+                            .position('center top')
+                            .hideDelay(1000),
+                    );
                     this.$scope.editing = false;
+                    this.$interval(function(){location.reload();}, 1200);
                     // TODO: This needs to be better, a simple refresh of sensor info and maybe the graph units.
-                    location.reload();
                 })
                 .catch((error) => {
                     console.log('Error Occured: ', error.data);
@@ -123,7 +133,7 @@ export default class sensorController { // ', ['frapontillo.bootstrap-switch',])
             if (end === undefined) {
                 end = new Date().getTime();
             }
-            console.log(start, end)
+            console.log(start, end);
             const readingsUrl = 'readings?datastream=' +
                 this.infoService.getStream().id +
                 '&start=' + parseInt(start / 1000) +
