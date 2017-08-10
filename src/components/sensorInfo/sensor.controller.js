@@ -132,7 +132,7 @@ export default class sensorController { // ', ['frapontillo.bootstrap-switch',])
                     this.exportData(success.data.readings);
                 })
                 .catch((error) => {
-                    ShowError(this.$mdDialog, error)
+                    ShowError(this.$mdDialog, error);
                 });
         };
 
@@ -164,7 +164,7 @@ export default class sensorController { // ', ['frapontillo.bootstrap-switch',])
 
             this.apiService.post('station', payload)
                 .then((success) => {
-                    ShowSuccess(this.$mdToast);
+                    ShowSuccess(this.$mdToast, 'Point has been entered.');
                 })
                 .catch((error) => {
                     ShowError(this.$mdDialog, error);

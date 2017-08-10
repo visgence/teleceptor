@@ -1,7 +1,7 @@
-function ShowSuccess($mdToast) {
+function ShowSuccess($mdToast, msg) {
     $mdToast.show(
         $mdToast.simple()
-            .textContent('Changes Successfully Saved')
+            .textContent(msg || 'Changes Successfully Saved')
             .position('center top')
             .hideDelay(1000),
     );
