@@ -78,6 +78,7 @@ export default class sensorController { // ', ['frapontillo.bootstrap-switch',])
         };
 
         this.$scope.SaveFields = () => {
+            console.log(this.$scope.sensor)
             const updateData = {};
             const url = 'sensors';
             const editableFields = ['last_calibration', 'units', 'description', 'uuid'];
@@ -96,6 +97,8 @@ export default class sensorController { // ', ['frapontillo.bootstrap-switch',])
                 updateData.last_calibration.timestamp = Date.now() / 1000;
             }
 
+            console.log(updateData.last_calibration)
+
             this.apiService.put(url, updateData)
                 .then((success) => {
                     this.$scope.editing = false;
@@ -111,7 +114,7 @@ export default class sensorController { // ', ['frapontillo.bootstrap-switch',])
             sendCommand();
         };
 
-        this.$scope.ExportES = () => {
+        this.$scope.ExportData = (source) => {
             let start = this.$location.search().start;
             if (start === undefined) {
                 start = new Date().getTime() - 24 * 60 * 60 * 1000;
@@ -120,37 +123,12 @@ export default class sensorController { // ', ['frapontillo.bootstrap-switch',])
             if (end === undefined) {
                 end = new Date().getTime();
             }
-            console.log(start, end);
-
+            console.log(start, end)
             const readingsUrl = 'readings?datastream=' +
                 this.infoService.getStream().id +
                 '&start=' + parseInt(start / 1000) +
                 '&end=' + parseInt(end / 1000) +
-                '&source=ElasticSearch';
-            this.apiService.get(readingsUrl)
-                .then((success) => {
-                    this.exportData(success.data.readings);
-                })
-                .catch((error) => {
-                    console.log('error');
-                    console.log(error);
-                });
-        };
-
-        this.$scope.ExportSQL = () => {
-            let start = this.$location.search().start;
-            if (start === undefined) {
-                start = new Date().getTime() - 24 * 60 * 60 * 1000;
-            }
-            let end = this.$location.search().end;
-            if (end === undefined) {
-                end = new Date().getTime();
-            }
-            const readingsUrl = 'readings?datastream=' +
-                this.infoService.getStream().id +
-                '&start=' + parseInt(start / 1000) +
-                '&end=' + parseInt(end / 1000) +
-                '&source=SQL';
+                '&source=' + source;
             this.apiService.get(readingsUrl)
                 .then((success) => {
                     this.exportData(success.data.readings);
@@ -207,7 +185,9 @@ export default class sensorController { // ', ['frapontillo.bootstrap-switch',])
     LoadSensor(sensor) {
         this.apiService.get('sensors/' + sensor)
             .then((success) => {
+                console.log(success.data.sensor)
                 this.$scope.sensor = success.data.sensor;
+                this.infoService.setSensor(success.data.sensor);
                 this.$scope.ShowInfo = true;
 
                 if (success.data.sensor_type === 'output') {
@@ -231,7 +211,8 @@ export default class sensorController { // ', ['frapontillo.bootstrap-switch',])
         }
 
         const scaledReadings = [];
-        const coefficients = sensorInfo.last_calibration.coefficients.replace('[', '').replace(']', '').replace(' ', '').split(',');
+        console.log(sensorInfo.last_calibration.coefficients)
+        const coefficients = sensorInfo.last_calibration.coefficients;
         let i;
         for (i = 0; i < readings.length; i++) {
             scaledReadings.push(readings[i][1] * parseInt(coefficients[0]) + parseInt(coefficients[1]));

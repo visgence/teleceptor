@@ -241,12 +241,6 @@ def loadfixtures(*args):
     testFixtures.main()
 
 
-def reset(*args):
-    rebuild(args)
-    setup(args)
-    runserver(args)
-
-
 def shell(*args):
     import IPython
     print "Starting IPython Shell"
@@ -267,7 +261,6 @@ if __name__ == "__main__":
         'loadfixtures': [loadfixtures, "Load test database data"],
         'version': [displayVersion, "Display version"],
         'shell': [shell, "Ipython shell"],
-        'reset': [reset, "Same as running 'rebuild', 'setup', 'runserver' "],
         'apitest': [apiTest, "Run tests against the api."]
     }
 

@@ -16,7 +16,15 @@ export default class graphController {
             }
         });
 
-        this.getData();
+
+        this.$scope.$watch(() => this.infoService.getSensor(), (nv, ov) => {
+            if (nv === undefined) {
+                return;
+            }
+            this.getData();
+
+        });
+
     }
 
     getData() {
@@ -55,6 +63,14 @@ export default class graphController {
         let height = 350;
 
         $('#graph-container').empty();
+
+        const coefs = this.infoService.getSensor().last_calibration.coefficients.split(',');
+        const scaledReadings = [];
+        data.readings.forEach((reading) => {
+            const newReading = [reading[0], reading[1] * parseFloat(coefs[0]) + parseFloat(coefs[1])];
+            scaledReadings.push(newReading);
+        });
+        data.readings = scaledReadings;
 
         let min = data.readings[0][1];
         let max = data.readings[0][1];

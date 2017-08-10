@@ -94,7 +94,7 @@
                                 <md-list-item>
                                     <h5>Calibration:</h5> <span flex></span>
                                     <md-input-container class="input-container input-override">
-                                        <input aria-label="Coeffecients for senor calibration" required type="number" name="last_calibration_coefficients" ng-model="sensor.last_calibration_coefficients" />
+                                        <input aria-label="Coeffecients for senor calibration" required name="last_calibration_coefficients" ng-model="sensor.last_calibration.coefficients" />
                                     </md-input-container>
                                 </md-list-item>
                                 <md-divider></md-divider>
@@ -142,11 +142,11 @@
                         <md-list>
                             <md-list-item>
                                 <h5>Export Data</h5> <span flex></span>
-                                <md-button class="primary-button md-raised md-primary md-ink-ripple" ng-click="ExportES()">
+                                <md-button class="primary-button md-raised md-primary md-ink-ripple" ng-click="ExportData('ElasticSearch')">
                                     <span class="ng-scope" /> Elastic Search
                                     <div class="md-ripple-container"></div>
                                 </md-button>
-                                <md-button class="primary-button md-raised md-primary md-ink-ripple" ng-click="ExportSQL()">
+                                <md-button class="primary-button md-raised md-primary md-ink-ripple" ng-click="ExportData('SQL')">
                                     <span class="ng-scope" /> SQL
                                     <div class="md-ripple-container"></div>
                                 </md-button>
