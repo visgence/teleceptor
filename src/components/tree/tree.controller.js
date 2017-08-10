@@ -17,6 +17,7 @@ export default class treeController {
         this.LoadData();
 
         this.$scope.searchInput = () => {
+            return;
             const data = {
                 word: this.$scope.searchWords,
                 filter: this.$scope.searchFilter,
