@@ -185,7 +185,6 @@ export default class sensorController { // ', ['frapontillo.bootstrap-switch',])
     LoadSensor(sensor) {
         this.apiService.get('sensors/' + sensor)
             .then((success) => {
-                console.log(success.data.sensor)
                 this.$scope.sensor = success.data.sensor;
                 this.infoService.setSensor(success.data.sensor);
                 this.$scope.ShowInfo = true;
@@ -211,11 +210,10 @@ export default class sensorController { // ', ['frapontillo.bootstrap-switch',])
         }
 
         const scaledReadings = [];
-        console.log(sensorInfo.last_calibration.coefficients)
-        const coefficients = sensorInfo.last_calibration.coefficients;
+        const coefficients = sensorInfo.last_calibration.coefficients.split(',');
         let i;
         for (i = 0; i < readings.length; i++) {
-            scaledReadings.push(readings[i][1] * parseInt(coefficients[0]) + parseInt(coefficients[1]));
+            scaledReadings.push(readings[i][1] * parseFloat(coefficients[0]) + parseFloat(coefficients[1]));
         }
 
         // actual delimiter characters for CSV format
