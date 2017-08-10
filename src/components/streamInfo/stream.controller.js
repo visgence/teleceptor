@@ -35,7 +35,6 @@ export default class streamController {
 
         this.$scope.SaveFields = () => {
             const updateData = {};
-            let hasErrors = false;
             Object.keys(this.$scope.stream).forEach((key) => {
                 if (this.$scope.stream[key] === '-' || this.$scope.stream[key] === '') {
                     updateData[key] = null;
@@ -73,10 +72,12 @@ export default class streamController {
                         this.$mdToast.simple()
                             .textContent('Changes Successfully Saved')
                             .position('center top')
-                            .hideDelay(1000)
-                    )
+                            .hideDelay(1000),
+                    );
                     this.$scope.editing = false;
-                    this.$interval(function(){location.reload();}, 1200);
+                    this.$interval(() => {
+                        location.reload();
+                    }, 1200);
 
                 })
                 .catch((error) => {

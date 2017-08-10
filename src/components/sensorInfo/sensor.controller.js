@@ -112,7 +112,9 @@ export default class sensorController { // ', ['frapontillo.bootstrap-switch',])
                             .hideDelay(1000),
                     );
                     this.$scope.editing = false;
-                    this.$interval(function(){location.reload();}, 1200);
+                    this.$interval(() => {
+                        location.reload();
+                    }, 1200);
                     // TODO: This needs to be better, a simple refresh of sensor info and maybe the graph units.
                 })
                 .catch((error) => {
