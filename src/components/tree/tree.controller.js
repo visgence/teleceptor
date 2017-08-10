@@ -13,6 +13,8 @@ export default class treeController {
 
         this.$scope.treeLoaded = false;
         this.$scope.searchFilter = 'Stream';
+        this.$scope.Matches = true;
+        this.$scope.isEmpty = false;
 
         this.LoadData();
 
@@ -22,16 +24,21 @@ export default class treeController {
                 word: this.$scope.searchWords,
                 filter: this.$scope.searchFilter,
             };
-            this.apiService.get('datastreams/?word=' + data.word + '&filter=' + data.filter)
-                .then((success) => {
-                    const pathsArray = this.GeneratePathArray(success.data);
-                    const treeStructure = this.MakeTreeStructure(pathsArray);
-                    this.RenderTree(treeStructure);
-                })
-                .catch((error) => {
-                    console.log('error');
-                    console.log(error);
-                });
+            if (data.word !== '') {
+                this.apiService.get('datastreams/?word=' + data.word + '&filter=' + data.filter)
+                    .then((success) => {
+                        const pathsArray = this.GeneratePathArray(success.data);
+                        const treeStructure = this.MakeTreeStructure(pathsArray);
+                        this.RenderTree(treeStructure);
+                        this.$scope.isEmpty = false;
+                    })
+                    .catch((error) => {
+                        console.log('error');
+                        console.log(error);
+                    });
+            } else {
+                this.$scope.isEmpty = true;
+            }
         };
     }
 
@@ -45,7 +52,7 @@ export default class treeController {
             .catch((error) => {
                 console.log(error);
                 $('#tree-message').toggleClass('alert-danger');
-                $('#tree-message').html('Something went wrong gettin data from the server, check the console for details.');
+                $('#tree-message').html('Something went wrong getting data from the server, check the console for details.');
             });
     }
 
@@ -127,6 +134,12 @@ export default class treeController {
             $('#my-tree').treeview('collapseAll', {
                 silent: true,
             });
+        }
+
+        if (this.$scope.nodeCount === 0) {
+            this.$scope.Matches = false;
+        } else {
+            this.$scope.Matches = true;
         }
 
         $('#my-tree').on('nodeSelected', (event, data) => {
