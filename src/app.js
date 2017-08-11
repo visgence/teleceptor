@@ -1,8 +1,8 @@
 import angular from 'angular';
 import angularRoute from 'angular-route'; // eslint-disable-line
 import './pages/base.style.scss';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import 'bootstrap';
+// import 'bootstrap/dist/css/bootstrap.min.css';
+// import 'bootstrap';
 import 'angular-material'; // eslint-disable-line
 import graphcomponent from './components/graph/graph.component';
 import treecomponent from './components/tree/tree.component';

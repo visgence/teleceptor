@@ -1,132 +1,131 @@
-<div flex layout="column">
-    <md-card stream-card md-theme="default">
-        <!--Encases entire layout in material card container-->
-        <md-toolbar class="card-header md-primary">
-            <h3>Stream Information</h3>
-            <!--"toolbar" used as card header-->
-        </md-toolbar>
-        <md-content class="card-content md">
-            <!-- under header, define text content defined as medium -->
-            <div class="alert alert-warning warning-message" id="warning-message"> </div>
-            <md-list class="list-content">
-                <div class="row">
-                    <div ng-if="!editing">
-                        <md-list class="stream-list">
-                            <md-list-item>
-                                <h5>ID:</h5> <span flex></span>
-                                <h5>{{stream.id}}</h5>
-                            </md-list-item>
-                            <md-divider></md-divider>
-                            <md-list-item>
-                                <h5>Name:</h5> <span flex></span>
-                                <h5>{{stream.name}}</h5>
-                            </md-list-item>
-                            <md-divider></md-divider>
-                            <md-list-item>
-                                <h5>Description</h5> <span flex></span>
-                                <h5>{{stream.description}}</h5>
-                            </md-list-item>
-                            <md-divider></md-divider>
-                            <md-list-item>
-                                <h5>Minimum Value:</h5> <span flex></span>
-                                <h5>{{stream.min_value}}</h5>
-                            </md-list-item>
-                            <md-divider></md-divider>
-                            <md-list-item>
-                                <h5>Maximum Value</h5> <span flex></span>
-                                <h5>{{stream.max_value}}</h5>
-                            </md-list-item>
-                            <md-divider></md-divider>
-                            <md-list-item>
-                                <h5>Sensor Name:</h5> <span flex></span>
-                                <h5>{{stream.sensor}}</h5>
-                            </md-list-item>
-                            <md-divider></md-divider>
-                            <md-list-item ng-repeat="path in stream.paths">
-                                <h5>Paths:</h5> <span flex></span>
-                                <h5>{{path.url}}</h5>
-                            </md-list-item>
-                            <md-divider></md-divider>
-                        </md-list>
-                        <md-button class="primary-button md-raised md-primary md-ink-ripple" ng-click="EditFields()">
-                            <span class="ng-scope" /> Edit
-                            <div class="md-ripple-container"></div>
-                        </md-button>
-                    </div>
-                    <div ng-if="editing">
-                        <md-list class="stream-list">
-                            <md-list-item>
-                                <h5>ID:</h5> <span flex></span>
-                                <h5>{{stream.id}}</h5>
-                            </md-list-item>
-                            <md-divider></md-divider>
-                            <md-list-item>
-                                <h5>Name:</h5> <span flex></span>
-                                <md-input-container class="input-container input-override">
-                                    <input aria-label="name field for stream name" name="name" ng-model="stream.name" />
-                                </md-input-container>
-                            </md-list-item>
-                            <md-divider></md-divider>
-                            <md-list-item>
-                                <h5>Description:</h5> <span flex></span>
-                                <md-input-container class="input-container input-override">
-                                    <input aria-label="field for stream description" name="description" ng-model="stream.description" />
-                                </md-input-container>
-                            </md-list-item>
-                            <md-divider></md-divider>
-                            <md-list-item>
-                                <h5>Minimum Value:</h5> <span flex></span>
-                                <md-input-container class="input-container input-override">
-                                    <input required type="number" aria-label="field for the stream minimum value" name="minimum" ng-model="stream.min_value" />
-                                </md-input-container>
-                            </md-list-item>
-                            <md-divider></md-divider>
-                            <md-list-item>
-                                <h5>Maximum Value:</h5><span flex></span>
-                                <md-input-container class="input-container input-override">
-                                    <input required type="number" aria-label="field for strem maximum value" name="maximum" ng-model="stream.max_value" />
-                                </md-input-container>
-                            </md-list-item>
-                            <md-divider></md-divider>
-                            <md-list-item>
-                                <h5>Sensor Name:</h5> <span flex></span>
-                                <h5>{{stream.sensor}}</h5>
-                            </md-list-item>
-                            <md-divider></md-divider>
+<div ng-if="displayInfo">
+    <div flex layout="column">
+        <md-card stream-card>
+            <!--Encases entire layout in material card container-->
+            <md-toolbar class="card-header md-primary">
+                <h3>Stream Information</h3>
+                <!--"toolbar" used as card header-->
+            </md-toolbar>
+            <md-content class="card-content md">
+                <!-- under header, define text content defined as medium -->
+                <md-list class="list-content">
+                    <div class="row">
+                        <div ng-if="!editing">
+                            <md-list class="stream-list">
+                                <md-list-item>
+                                    <h5>ID:</h5> <span flex></span>
+                                    <h5>{{stream.id}}</h5>
+                                </md-list-item>
+                                <md-divider></md-divider>
+                                <md-list-item>
+                                    <h5>Name:</h5> <span flex></span>
+                                    <h5>{{stream.name}}</h5>
+                                </md-list-item>
+                                <md-divider></md-divider>
+                                <md-list-item>
+                                    <h5>Description:</h5> <span flex></span>
+                                    <h5>{{stream.description}}</h5>
+                                </md-list-item>
+                                <md-divider></md-divider>
+                                <md-list-item>
+                                    <h5>Minimum Value:</h5> <span flex></span>
+                                    <h5>{{stream.min_value}}</h5>
+                                </md-list-item>
+                                <md-divider></md-divider>
+                                <md-list-item>
+                                    <h5>Maximum Value:</h5> <span flex></span>
+                                    <h5>{{stream.max_value}}</h5>
+                                </md-list-item>
+                                <md-divider></md-divider>
+                                <md-list-item>
+                                    <h5>Sensor Name:</h5> <span flex></span>
+                                    <h5>{{stream.sensor}}</h5>
+                                </md-list-item>
+                                <md-divider></md-divider>
+                                <md-list-item ng-repeat="path in stream.paths">
+                                    <h5>Paths:</h5> <span flex></span>
+                                    <h5>{{path.url}}</h5>
+                                </md-list-item>
+                                <md-divider></md-divider>
+                            </md-list>
+                            <md-button class="primary-button md-raised md-primary md-ink-ripple" ng-click="EditFields()">
+                                <span class="ng-scope" /> Edit
+                                <div class="md-ripple-container"></div>
+                            </md-button>
+                        </div>
+                        <div ng-if="editing">
+                            <md-list class="stream-list">
+                                <md-list-item>
+                                    <h5>ID:</h5> <span flex></span>
+                                    <h5>{{stream.id}}</h5>
+                                </md-list-item>
+                                <md-divider></md-divider>
+                                <md-list-item>
+                                    <h5>Name:</h5> <span flex></span>
+                                    <md-input-container class="input-container input-override">
+                                        <input aria-label="name field for stream name" name="name" ng-model="stream.name" />
+                                    </md-input-container>
+                                </md-list-item>
+                                <md-divider></md-divider>
+                                <md-list-item>
+                                    <h5>Description:</h5> <span flex></span>
+                                    <md-input-container class="input-container input-override">
+                                        <input aria-label="field for stream description" name="description" ng-model="stream.description" />
+                                    </md-input-container>
+                                </md-list-item>
+                                <md-divider></md-divider>
+                                <md-list-item>
+                                    <h5>Minimum Value:</h5> <span flex></span>
+                                    <md-input-container class="input-container input-override">
+                                        <input required type="number" aria-label="field for the stream minimum value" name="minimum" ng-model="stream.min_value" />
+                                    </md-input-container>
+                                </md-list-item>
+                                <md-divider></md-divider>
+                                <md-list-item>
+                                    <h5>Maximum Value:</h5><span flex></span>
+                                    <md-input-container class="input-container input-override">
+                                        <input required type="number" aria-label="field for strem maximum value" name="maximum" ng-model="stream.max_value" />
+                                    </md-input-container>
+                                </md-list-item>
+                                <md-divider></md-divider>
+                                <md-list-item>
+                                    <h5>Sensor Name:</h5> <span flex></span>
+                                    <h5>{{stream.sensor}}</h5>
+                                </md-list-item>
+                                <md-divider></md-divider>
 
-                            <md-list-item>
-                                <h5>Paths:</h5> <span flex></span>
-                                <md-list>
-                                    <md-list-item ng-repeat="path in stream.paths">
-                                        <md-input-container class="input-container input-override">
-                                            <input aria-label="field for stream path value" name="path" ng-model="path.url" />
-                                        </md-input-container>
-                                    </md-list-item>
-                                </md-list>
-                            </md-list-item>
-                            <md-list-item>
-                                <span flex></span>
-                                <md-button class="primary-button md-primary md-ink-ripple" ng-click="AddPath()">
-                                    <span /> Add Path
-                                    <div class="md-ripple-container"></div>
-                                </md-button>
-                            </md-list-item>
+                                <md-list-item>
+                                    <h5>Paths:</h5> <span flex></span>
+                                    <md-list>
+                                        <md-list-item ng-repeat="path in stream.paths">
+                                            <md-input-container class="input-container input-override">
+                                                <input aria-label="field for stream path value" name="path" ng-model="path.url" />
+                                            </md-input-container>
+                                        </md-list-item>
+                                    </md-list>
+                                </md-list-item>
+                                <md-list-item>
+                                    <span flex></span>
+                                    <md-button class="primary-button md-primary md-ink-ripple" ng-click="AddPath()">
+                                        <span /> Add Path
+                                        <div class="md-ripple-container"></div>
+                                    </md-button>
+                                </md-list-item>
 
-                            <md-divider></md-divider>
-                        </md-list>
-                        <md-button class="primary-button md-raised md-primary md-ink-ripple" ng-click="SaveFields()">
-                            <span /> Save
-                            <div class="md-ripple-container"></div>
-                        </md-button>
-                        <md-button class="secondary-button" ng-click="CancelFields()">
-                            <span /> Cancel
-                            <div class="md-ripple-container"></div>
-                        </md-button>
+                                <md-divider></md-divider>
+                            </md-list>
+                            <md-button class="primary-button md-raised md-primary md-ink-ripple" ng-click="SaveFields()">
+                                <span /> Save
+                                <div class="md-ripple-container"></div>
+                            </md-button>
+                            <md-button class="secondary-button" ng-click="CancelFields()">
+                                <span /> Cancel
+                                <div class="md-ripple-container"></div>
+                            </md-button>
+                        </div>
                     </div>
-                </div>
-            </md-list>
-        </md-content>
-    </md-card>
+                </md-list>
+            </md-content>
+        </md-card>
+    </div>
 </div>
-
-<!-- </div> -->

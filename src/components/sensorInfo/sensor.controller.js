@@ -21,6 +21,8 @@ export default class sensorController { // ', ['frapontillo.bootstrap-switch',])
             }
             this.LoadSensor(nv.sensor);
         });
+
+        $scope.displayInfo = $location.search().datastream !== undefined;
     }
 
     $onInit() {
