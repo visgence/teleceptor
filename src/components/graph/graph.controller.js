@@ -23,15 +23,14 @@ export default class graphController {
             $scope.title = nv.name;
             this.getData();
         });
+
+        if ($location.search().datastream === undefined) {
+            $scope.title = 'Please select a datastream.';
+            $('#graph-container').css('height', 0);
+        }
     }
 
     getData() {
-        const datastream = this.$location.search().datastream;
-        if (datastream === undefined) {
-            $('#graph-message').toggleClass('graph-message-display');
-            $('#graph-message').html('<h3>Please select a stream.</h3>');
-            return;
-        }
 
         const url = 'readings/?' + location.href.split('?')[1];
         this.apiService.get(url)
@@ -75,6 +74,8 @@ export default class graphController {
 
         let min = data.readings[0][1];
         let max = data.readings[0][1];
+        let oldest = data.readings[0][0];
+        let latest = data.readings[0][0];
         let j = 0;
         for (j = 0; j < data.readings.length; j++) {
             if (min > data.readings[j][1]) {
@@ -83,17 +84,29 @@ export default class graphController {
             if (max < data.readings[j][1]) {
                 max = data.readings[j][1];
             }
+            if (oldest < data.readings[j][0]) {
+                oldest = data.readings[j][0];
+            }
+            if (latest > data.readings[j][0]) {
+                latest = data.readings[j][0];
+            }
         }
+
         let start = new Date().getTime() - 60 * 60 * 6 * 1000;
         let end = new Date().getTime();
-
-        console.log(start, end);
 
         if (this.$location.search().start !== undefined) {
             start = parseInt(this.$location.search().start * 1000);
         }
         if (this.$location.search().end !== undefined) {
             end = parseInt(this.$location.search().end * 1000);
+        }
+
+        if (latest * 1000 < start || oldest * 1000 > end) {
+            $('#graph-message').toggleClass('alert-danger');
+            $('#graph-message').toggleClass('graph-message-display');
+            $('#graph-message').html('<h3>Not enough points were returned.</h3>');
+            return;
         }
 
         const unitSize = ' ' + this.FormatText(max).length;

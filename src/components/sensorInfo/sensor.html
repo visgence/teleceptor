@@ -1,196 +1,198 @@
-<div class="sensor-card">
-    <md-card sensor-card>
-        <md-toolbar class="card-header md-primary">
-            <h3>Sensor Information</h3>
-        </md-toolbar>
-        <md-content class="card-content md">
-            <md-tabs md-dynamic-height md-border-bottom class="ng-isolate-scope md-dynamic height">
-                <md-tab id="config-tab" aria-controls="Config">
-                    <md-tab-label>Config</md-tab-label>
-                    <md-tab-body class="sensor-tab-content">
+<div ng-if="displayInfo">
+    <div class="sensor-card">
+        <md-card sensor-card>
+            <md-toolbar class="card-header md-primary">
+                <h3>Sensor Information</h3>
+            </md-toolbar>
+            <md-content class="card-content md">
+                <md-tabs md-dynamic-height md-border-bottom class="ng-isolate-scope md-dynamic height">
+                    <md-tab id="config-tab" aria-controls="Config">
+                        <md-tab-label>Config</md-tab-label>
+                        <md-tab-body class="sensor-tab-content">
+                            <!-- Tab content -->
+                            <div ng-if="!editing">
+                                <md-list class="list-content">
+                                    <md-list-item class="list-entry">
+                                        <h5>UUID:</h5> <span flex></span>
+                                        <h5>{{sensor.uuid}}</h5>
+                                    </md-list-item>
+                                    <md-divider></md-divider>
+                                    <md-list-item>
+                                        <h5>Model:</h5> <span flex></span>
+                                        <h5>{{sensor.model}}</h5>
+                                    </md-list-item>
+                                    <md-divider></md-divider>
+                                    <md-list-item>
+                                        <h5>Name:</h5> <span flex></span>
+                                        <h5>{{sensor.name}}</h5>
+                                    </md-list-item>
+                                    <md-divider></md-divider>
+                                    <md-list-item>
+                                        <h5>Description:</h5> <span flex></span>
+                                        <h5>{{sensor.description}}</h5>
+                                    </md-list-item>
+                                    <md-divider></md-divider>
+                                    <md-list-item>
+                                        <h5>Units:</h5> <span flex></span>
+                                        <h5>{{sensor.units}}</h5>
+                                    </md-list-item>
+                                    <md-divider></md-divider>
+                                    <md-list-item>
+                                        <h5>Last Calibration:</h5> <span flex></span>
+                                        <h5>{{sensor.last_calibration.timestamp}}</h5>
+                                    </md-list-item>
+                                    <md-divider></md-divider>
+                                    <md-list-item>
+                                        <h5>Calibration:</h5> <span flex></span>
+                                        <h5>{{sensor.last_calibration.coefficients}}</h5>
+                                    </md-list-item>
+                                    <md-divider></md-divider>
+                                    <div class="edit-button">
+                                        <md-button class="primary-button md-button md-raised md-primary md-ink-ripple" ng-click="EditFields(title)">
+                                            <span class="ng-span" /> Edit
+                                            <div class="md-ripple-container"></div>
+                                        </md-button>
+                                    </div>
+                                </md-list>
+                            </div>
+                            <div ng-if="editing">
+                                <md-list class="list-content">
+                                    <md-list-item class="list-entry">
+                                        <h5>UUID:</h5> <span flex></span>
+                                        <h5>{{sensor.uuid}}</h5>
+                                    </md-list-item>
+                                    <md-divider></md-divider>
+                                    <md-list-item>
+                                        <h5>Model:</h5> <span flex></span>
+                                        <h5>{{sensor.model}}</h5>
+                                    </md-list-item>
+                                    <md-divider></md-divider>
+                                    <md-list-item>
+                                        <h5>Name:</h5> <span flex></span>
+                                        <h5>{{sensor.name}}</h5>
+                                    </md-list-item>
+                                    <md-divider></md-divider>
+                                    <md-list-item>
+                                        <h5>Description:</h5> <span flex></span>
+                                        <md-input-container class="input-container input-override">
+                                            <input aria-label="description field for the sensor" name="description" ng-model="sensor.description" />
+                                        </md-input-container>
+                                    </md-list-item>
+                                    <md-divider></md-divider>
+                                    <md-list-item>
+                                        <h5>Units:</h5> <span flex></span>
+                                        <md-input-container class="input-container input-override">
+                                            <input aria-label="units fielf for the sensor" name="units" ng-model="sensor.units" />
+                                        </md-input-container>
+                                    </md-list-item>
+                                    <md-divider></md-divider>
+                                    <md-list-item>
+                                        <h5>Last Calibration:</h5> <span flex></span>
+                                        <h5>{{sensor.last_calibration.timestamp}}</h5>
+                                    </md-list-item>
+                                    <md-divider></md-divider>
+                                    <md-list-item>
+                                        <h5>Calibration:</h5> <span flex></span>
+                                        <md-input-container class="input-container input-override">
+                                            <input aria-label="Coeffecients for senor calibration" required name="last_calibration_coefficients" ng-model="sensor.last_calibration.coefficients" />
+                                        </md-input-container>
+                                    </md-list-item>
+                                    <md-divider></md-divider>
+                                </md-list>
+
+                                <md-button class="primary-button md-raised md-primary md-ink-ripple" ng-click="SaveFields()">
+                                    <span class="ng-scope" /> Save
+                                    <div class="md-ripple-container"></div>
+                                </md-button>
+
+                                <md-button class="secondary-button" ng-click="CancelFields()">
+                                    <span class="ng-scope" /> Cancel
+                                    <div class="md-ripple-container"></div>
+                                </md-button>
+                            </div>
+                        </md-tab-body>
+                    </md-tab>
+                    <!-- End of config tab content -->
+
+                    <md-tab id="entry-tab" aria-controls="Entry">
+                        <md-tab-label>Entry</md-tab-label>
+                        <md-tab-body class="sensor-tab-content">
+                            <md-list>
+                                <md-list-item>
+                                    <h5>New Data:</h5> <span flex></span>
+                                    <md-input-container class="input-container">
+                                        <input aria-label="Field for entry of data" name="manual-entry" ng-model="EntryValue" />
+                                    </md-input-container>
+                                </md-list-item>
+                                <md-divider></md-divider>
+                                <md-button class="primary-button md-raised md-primary md-ink-ripple" ng-click="EntrySend()">
+                                    <span class="ng-scope" /> Send
+                                    <div class="md-ripple-container"></div>
+                                </md-button>
+                            </md-list>
+
+                        </md-tab-body>
+                    </md-tab>
+                    <!-- End of entry tab -->
+
+                    <md-tab id="export-tab" aria-controls="Export">
+                        <md-tab-label>Export</md-tab-label>
                         <!-- Tab content -->
-                        <div ng-if="!editing">
-                            <md-list class="list-content">
-                                <md-list-item class="list-entry">
-                                    <h5>UUID:</h5> <span flex></span>
-                                    <h5>{{sensor.uuid}}</h5>
-                                </md-list-item>
-                                <md-divider></md-divider>
+                        <md-tab-body class="sensor-tab-content">
+                            <md-list>
                                 <md-list-item>
-                                    <h5>Model:</h5> <span flex></span>
-                                    <h5>{{sensor.model}}</h5>
-                                </md-list-item>
-                                <md-divider></md-divider>
-                                <md-list-item>
-                                    <h5>Name:</h5> <span flex></span>
-                                    <h5>{{sensor.name}}</h5>
-                                </md-list-item>
-                                <md-divider></md-divider>
-                                <md-list-item>
-                                    <h5>Description:</h5> <span flex></span>
-                                    <h5>{{sensor.description}}</h5>
-                                </md-list-item>
-                                <md-divider></md-divider>
-                                <md-list-item>
-                                    <h5>Units:</h5> <span flex></span>
-                                    <h5>{{sensor.units}}</h5>
-                                </md-list-item>
-                                <md-divider></md-divider>
-                                <md-list-item>
-                                    <h5>Last Calibration:</h5> <span flex></span>
-                                    <h5>{{sensor.last_calibration.timestamp}}</h5>
-                                </md-list-item>
-                                <md-divider></md-divider>
-                                <md-list-item>
-                                    <h5>Calibration:</h5> <span flex></span>
-                                    <h5>{{sensor.last_calibration.coefficients}}</h5>
-                                </md-list-item>
-                                <md-divider></md-divider>
-                                <div class="edit-button">
-                                    <md-button class="primary-button md-button md-raised md-primary md-ink-ripple" ng-click="EditFields(title)">
-                                        <span class="ng-span" /> Edit
+                                    <h5>Export Data</h5> <span flex></span>
+                                    <md-button class="primary-button md-raised md-primary md-ink-ripple" ng-click="ExportData('ElasticSearch')">
+                                        <span class="ng-scope" /> Elastic Search
                                         <div class="md-ripple-container"></div>
                                     </md-button>
+                                    <md-button class="primary-button md-raised md-primary md-ink-ripple" ng-click="ExportData('SQL')">
+                                        <span class="ng-scope" /> SQL
+                                        <div class="md-ripple-container"></div>
+                                    </md-button>
+                                </md-list-item>
+                            </md-list>
+                        </md-tab-body>
+                    </md-tab>
+                    <!-- End of Export tab -->
+
+                    <md-tab id="command-tab" aria-controls="Command">
+                        <md-tab-label>Command</md-tab-label>
+                        <md-tab-body class="sensor-tab-content">
+                            <!-- Tab content -->
+                            <md-list>
+                                <md-list-item>
+                                    <h5>{{sensor.name}}</h5> <span flex></span>
+                                    <md-switch ng-disabled="{ isActive }" ng-true="CommandSwitch()" aria-label="Command switch" ng-model="disabledModel">
+                                    </md-switch>
+
+                                </md-list-item>
+                                <md-divider></md-divider>
+                            </md-list>
+                        </md-tab-body>
+                    </md-tab>
+                    <!-- End of Command Tab -->
+
+                    <md-tab id="metadata-tab" aria-controls="Metadata">
+                        <md-tab-label>Metadata</md-tab-label>
+                        <md-tab-body class="sensor-tab-content">
+                            <!-- Tab content -->
+                            <md-list>
+                                <div ng-repeat="(key, val) in sensor.meta_data">
+                                    <md-list-item>
+
+                                        <h5>{{key}}</h5> <span flex></span>
+                                        <h5>{{val}}</h5>
+
+                                    </md-list-item>
+                                    <md-divider></md-divider>
                                 </div>
                             </md-list>
-                        </div>
-                        <div ng-if="editing">
-                            <md-list class="list-content">
-                                <md-list-item class="list-entry">
-                                    <h5>UUID:</h5> <span flex></span>
-                                    <h5>{{sensor.uuid}}</h5>
-                                </md-list-item>
-                                <md-divider></md-divider>
-                                <md-list-item>
-                                    <h5>Model:</h5> <span flex></span>
-                                    <h5>{{sensor.model}}</h5>
-                                </md-list-item>
-                                <md-divider></md-divider>
-                                <md-list-item>
-                                    <h5>Name:</h5> <span flex></span>
-                                    <h5>{{sensor.name}}</h5>
-                                </md-list-item>
-                                <md-divider></md-divider>
-                                <md-list-item>
-                                    <h5>Description:</h5> <span flex></span>
-                                    <md-input-container class="input-container input-override">
-                                        <input aria-label="description field for the sensor" name="description" ng-model="sensor.description" />
-                                    </md-input-container>
-                                </md-list-item>
-                                <md-divider></md-divider>
-                                <md-list-item>
-                                    <h5>Units:</h5> <span flex></span>
-                                    <md-input-container class="input-container input-override">
-                                        <input aria-label="units fielf for the sensor" name="units" ng-model="sensor.units" />
-                                    </md-input-container>
-                                </md-list-item>
-                                <md-divider></md-divider>
-                                <md-list-item>
-                                    <h5>Last Calibration:</h5> <span flex></span>
-                                    <h5>{{sensor.last_calibration.timestamp}}</h5>
-                                </md-list-item>
-                                <md-divider></md-divider>
-                                <md-list-item>
-                                    <h5>Calibration:</h5> <span flex></span>
-                                    <md-input-container class="input-container input-override">
-                                        <input aria-label="Coeffecients for senor calibration" required name="last_calibration_coefficients" ng-model="sensor.last_calibration.coefficients" />
-                                    </md-input-container>
-                                </md-list-item>
-                                <md-divider></md-divider>
-                            </md-list>
-
-                            <md-button class="primary-button md-raised md-primary md-ink-ripple" ng-click="SaveFields()">
-                                <span class="ng-scope" /> Save
-                                <div class="md-ripple-container"></div>
-                            </md-button>
-
-                            <md-button class = "secondary-button" ng-click="CancelFields()">
-                                <span class="ng-scope" /> Cancel
-                                <div class="md-ripple-container"></div>
-                            </md-button>
-                        </div>
-                    </md-tab-body>
-                </md-tab>
-                <!-- End of config tab content -->
-
-                <md-tab id="entry-tab" aria-controls="Entry">
-                    <md-tab-label>Entry</md-tab-label>
-                    <md-tab-body class="sensor-tab-content">
-                        <md-list>
-                            <md-list-item>
-                                <h5>New Data:</h5> <span flex></span>
-                                <md-input-container class="input-container">
-                                    <input aria-label="Field for entry of data" name="manual-entry" ng-model="EntryValue"/>
-                                </md-input-container>
-                            </md-list-item>
-                            <md-divider></md-divider>
-                            <md-button class="primary-button md-raised md-primary md-ink-ripple" ng-click="EntrySend()">
-                                <span class="ng-scope" /> Send
-                                <div class="md-ripple-container"></div>
-                            </md-button>
-                        </md-list>
-
-                    </md-tab-body>
-                </md-tab>
-                <!-- End of entry tab -->
-
-                <md-tab id="export-tab" aria-controls="Export">
-                    <md-tab-label>Export</md-tab-label>
-                    <!-- Tab content -->
-                    <md-tab-body class="sensor-tab-content">
-                        <md-list>
-                            <md-list-item>
-                                <h5>Export Data</h5> <span flex></span>
-                                <md-button class="primary-button md-raised md-primary md-ink-ripple" ng-click="ExportData('ElasticSearch')">
-                                    <span class="ng-scope" /> Elastic Search
-                                    <div class="md-ripple-container"></div>
-                                </md-button>
-                                <md-button class="primary-button md-raised md-primary md-ink-ripple" ng-click="ExportData('SQL')">
-                                    <span class="ng-scope" /> SQL
-                                    <div class="md-ripple-container"></div>
-                                </md-button>
-                            </md-list-item>
-                        </md-list>
-                    </md-tab-body>
-                </md-tab>
-                <!-- End of Export tab -->
-
-                <md-tab id="command-tab" aria-controls="Command">
-                    <md-tab-label>Command</md-tab-label>
-                    <md-tab-body class="sensor-tab-content">
-                        <!-- Tab content -->
-                        <md-list>
-                            <md-list-item>
-                                <h5>{{sensor.name}}</h5> <span flex></span>
-                                <md-switch ng-disabled="{ isActive }" ng-true = "CommandSwitch()" aria-label="Command switch" ng-model="disabledModel">
-                                </md-switch>
-
-                            </md-list-item>
-                            <md-divider></md-divider>
-                        </md-list>
-                    </md-tab-body>
-                </md-tab>
-                <!-- End of Command Tab -->
-
-                <md-tab id="metadata-tab" aria-controls="Metadata">
-                    <md-tab-label>Metadata</md-tab-label>
-                    <md-tab-body class="sensor-tab-content">
-                        <!-- Tab content -->
-                        <md-list>
-                            <div ng-repeat="(key, val) in sensor.meta_data">
-                            <md-list-item>
-
-                                    <h5>{{key}}</h5> <span flex></span>
-                                    <h5>{{val}}</h5>
-
-                            </md-list-item>
-                            <md-divider></md-divider>
-                        </div>
-                        </md-list>
-                    </md-tab-body>
-                </md-tab>
-                <!-- End of Metadata tab -->
-            </md-tabs>
-        </md-content>
-    </md-card>
+                        </md-tab-body>
+                    </md-tab>
+                    <!-- End of Metadata tab -->
+                </md-tabs>
+            </md-content>
+        </md-card>
+    </div>
 </div>

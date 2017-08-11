@@ -10,6 +10,8 @@ export default class streamController {
         this.infoService = infoService;
         this.$mdDialog = $mdDialog;
         this.$mdToast = $mdToast;
+
+        $scope.displayInfo = $location.search().datastream !== undefined;
     }
 
     $onInit() {
