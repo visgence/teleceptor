@@ -25,6 +25,9 @@ done
 
 
 docker run -t -i -P \
+    --privileged \
+    -e "container=docker" \
+    -v /sys/fs/cgroup:/sys/fs/cgroup \
     --rm=true \
     --name $CONTAINERNAME \
     --link tele_postgres:pg \
