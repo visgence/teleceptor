@@ -1,16 +1,15 @@
 
-$shadow-color: rgba(0, 0, 0, .12);
+$shadow-color: rgba(0, 0, 0, .1);
 
-// sass-lint:disable no-important class-name-format
+// class-name-format: The name of the library uses this class name
+// sass-lint:disable class-name-format
 .ADMdtp-box {
-    box-shadow: 1px 4px 12px $shadow-color, -1px 4px 12px $shadow-color !important;
+    box-shadow: 1px 4px 6px $shadow-color, -1px 4px 6px $shadow-color;
 }
-// sass-lint:enable no-important class-name-format
+// sass-lint:enable class-name-format
 
 .button-container {
-    display: inline-block;
-    // float: right;
-    margin-top: 10px;
+    margin: 10px 10px 0;
 }
 
 .quick-time-container {

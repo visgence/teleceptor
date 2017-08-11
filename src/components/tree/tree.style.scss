@@ -9,18 +9,10 @@
     white-space: nowrap;
 }
 
-.list-group-item {
-    &.node-my-tree {
-
-        &.node-selected {
-            background-color: $grey !important;
-            color: $dark-grey !important;
-        }
-    }
-
-    &.list-group-item {
-
-        background-color: $white !important;
-    }
-
+// important-use: bootstrap treeview inlines its styles rather than have them in classes.
+// sass-lint:disable no-important
+.node-selected {
+    background-color: $grey !important;
+    color: $dark-grey !important;
 }
+// sass-lint:enable no-important

@@ -24,12 +24,16 @@ md-toolbar {
         background-color: $primary;
         border-top-left-radius: 4px;
         border-top-right-radius: 4px;
-        padding-left: 15px;
+        min-height: 50px;
+    }
+
+    h3 {
+        margin: 15px;
     }
 }
 
-// Extra pad for cards, could be an override for md-content?
-md-content{
+// Card content override.
+md-content {
     padding: 10px 15px;
 }
 
