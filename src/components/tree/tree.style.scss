@@ -9,7 +9,6 @@
     white-space: nowrap;
 }
 
-// sass-lint:disable no-important
 .list-group-item {
     &.node-my-tree {
 
@@ -20,17 +19,8 @@
     }
 
     &.list-group-item {
-        
+
         background-color: $white !important;
     }
 
-}
-
-// sass-lint:enable no-important
-.tree-card-content {
-    background-color: $white;
-    border: 4px;
-    min-height: 135px;
-    overflow: hidden;
-    padding: 10px 15px;
 }
