@@ -3,22 +3,21 @@
 #Check if host is osx
 if echo $TELEOSTYPE | grep -q 'darwin'
 then
-    adduser tele
+    adduser teleceptor
 else
-    groupadd -g $TELEGID telegroup
-    adduser --uid $TELEUID --quiet --gecos "" --disabled-password --gid $TELEGID tele
+    groupadd -g $TELEGID teleceptor
+    adduser -u $TELEUID -g $TELEGID teleceptor
 fi
 
-chown tele /home/tele
-echo 'pg:5432:tele:tele:password' > /home/tele/.pgpass
-chown tele:tele /home/tele/.pgpass
-chmod 600 /home/tele/.pgpass
+chown teleceptor:teleceptor /home/teleceptor
+echo 'pg:5432:tele:tele:password' > /home/teleceptor/.pgpass
+chown teleceptor:teleceptor /home/teleceptor/.pgpass
+chmod 600 /home/teleceptor/.pgpass
 
-cp /home/tele/teleceptor/apache/teleceptor.conf /etc/httpd/conf.d/teleceptor.conf
-cp /home/tele/teleceptor/apache/teleceptor.service /etc/systemd/system/teleceptor.service
+cp /home/teleceptor/teleceptor/apache/teleceptor.conf /etc/httpd/conf.d/teleceptor.conf
 
 if [ "$1" == "unittest" ]; then
-    su tele -c /home/tele/teleceptor/unittest.sh
+    su teleceptor -c /home/tele/teleceptor/unittest.sh
 else
     sudo su
 fi
