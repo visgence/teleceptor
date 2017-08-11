@@ -1,37 +1,29 @@
-FROM debian:wheezy
+FROM centos:7
+MAINTAINER Visgence Inc <info@visgence.com>
+
+RUN yum install -y epel-release
+# bzip2 required by phantomjs
+# git required by bower, bower required by bootstrap-treeview.
+RUN yum install -y screen vim wget bzip2 git sudo cron sqlite3 ca-certificates python-sqlite postgresql python-devel postgresql-devel curl make automake gcc gcc-c++ && yum clean all
+
+RUN yum install -y python-setuptools && yum clean all
+RUN easy_install pip
+
+ADD requirements.txt .
+RUN pip install -r requirements.txt
+
+#Install node from package
+RUN wget https://nodejs.org/download/release/v6.10.2/node-v6.10.2-linux-x64.tar.gz
+RUN tar --strip-components 1 -xzvf node-v* -C /usr/local
+
+# bower needs to be able to be run by root.
+RUN npm install -g bower
+RUN touch /root/.bowerrc
+RUN echo "{ \"allow_root\": true}" >> /root/.bowerrc
 
 
-# Environment variables
-ENV DEBIAN_FRONTEND noninteractive
-#Base Debian Install
-RUN apt-get update && apt-get -y upgrade && apt-get clean
-RUN apt-get -y install --no-install-recommends bash sudo cron vim git python2.7 python-pip sqlite3 ca-certificates  python-sqlite && apt-get clean
-
-#Postgres
-RUN apt-get -y install make automake gcc build-essential && apt-get clean
-RUN apt-get -y install postgresql && apt-get clean
-RUN apt-get -y install python-dev && apt-get clean
-RUN apt-get -y install libpq-dev && apt-get clean
-
-#pip dependicies
-RUN pip install sqlalchemy cherrypy requests pySerial pyelasticsearch psycopg2 delorean
-
-RUN apt-get -y install vim curl && apt-get clean
-#Install teleceptor software as teleceptor user
-VOLUME ['/home/tele/teleceptor']
-WORKDIR /home/tele/teleceptor
-
-#RUN adduser --disabled-password --gecos "" teleceptor
-#USER teleceptor
-#WORKDIR /home/teleceptor/
-#RUN git clone https://github.com/visgence/teleceptor.git
-#RUN mkdir -p /home/teleceptor/.config/teleceptor/
-#VOLUME /home/teleceptor/.config/teleceptor/
-
-#WORKDIR /
-#USER root
-
+VOLUME ["/home/tele"]
+WORKDIR /home/tele
 
 
 EXPOSE 8000
-

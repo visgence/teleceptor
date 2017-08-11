@@ -120,7 +120,6 @@ export default class treeController {
     }
 
     RenderTree(data) {
-        console.log('start');
         $('#my-tree').treeview({
             data: data,
             showBorder: false,
