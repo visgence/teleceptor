@@ -17,7 +17,7 @@ import json
 from teleceptor import WEBROOT, PORT, SUPRESS_SERVER_OUTPUT
 from teleceptor.auth import AuthController, require
 from teleceptor.api import ResourceApi
-from .version import __version__
+from teleceptor.version import __version__
 
 PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.append(PATH)
@@ -89,5 +89,5 @@ def runserver(config):
 if __name__ == "__main__":
     runserver(get_cp_config())
 else:
-    cherrypy.config.update({'environment': 'embedded'})
+    #cherrypy.config.update({'environment': 'embedded'})
     application = cherrypy.Application(Root(), script_name=None, config=get_cp_config())
