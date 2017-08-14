@@ -400,7 +400,8 @@ def _updateCalibration(sensor, coefficients, timestamp, session):
                 if Cal.coefficients != coefficients:
                     logging.debug("Coefficients are different, updating...")
 
-                    Cal = Calibration(coefficients=str(coefficients), timestamp=timestamp, sensor_id=sensor['uuid'])
+                    assert isinstance(coefficients, list)
+                    Cal = Calibration(coefficients=json.dumps(coefficients), timestamp=timestamp, sensor_id=sensor['uuid'])
                     session.add(Cal)
                     session.commit()
                     logging.debug("Added new calibration to database.")
@@ -409,7 +410,7 @@ def _updateCalibration(sensor, coefficients, timestamp, session):
         except (NoResultFound, KeyError) as e:
             logging.debug("No calibration found for sensor %s. Creating new calibration...", str(sensor))
             logging.debug(e)
-            Cal = Calibration(coefficients=coefficients, timestamp=timestamp, sensor_id=sensor['uuid'])
+            Cal = Calibration(coefficients=json.dumps(coefficients), timestamp=timestamp, sensor_id=sensor['uuid'])
             session.add(Cal)
             session.commit()
             logging.debug("Created new calibration.")
@@ -419,7 +420,7 @@ def _updateCalibration(sensor, coefficients, timestamp, session):
             # sensor thinks the calibration it has belongs to it, but it doesn't (may belong to another sensor). Make a new calibration.
             logging.error("Calibration has different sensor foreign key %s than input sensor uuid %s", Cal.sensor_id, sensor['uuid'])
 
-            Cal = Calibration(coefficients=coefficients, timestamp=timestamp, sensor_id=sensor['uuid'])
+            Cal = Calibration(coefficients=json.dumps(coefficients), timestamp=timestamp, sensor_id=sensor['uuid'])
             session.add(Cal)
             session.commit()
             logging.debug("Created new Calibration for input sensor.")
