@@ -25,7 +25,7 @@ export default class graphController {
                 return;
             }
             $scope.title = nv.name;
-            this.getData();
+            this.getData(nv);
         });
 
         // If no datastream is selected, warn user.
@@ -36,7 +36,7 @@ export default class graphController {
     }
 
     // Makes a call to the readings api endpoint to get graph data.
-    getData() {
+    getData(sensorInfo) {
         const url = 'readings/?' + location.href.split('?')[1];
         this.apiService.get(url)
             .then((success) => {
@@ -44,8 +44,19 @@ export default class graphController {
                     $('#graph-message').toggleClass('graph-message-display');
                     $('#graph-message').html('<h3>No data could be found.</h3>');
                 } else {
-                    this.drawGraph(success.data);
-                    this.infoService.setReadings(success.data);
+                    // Scale all of the readings by their coefficients and translate unix time to milliseconds
+                    let coefs = sensorInfo.last_calibration.coefficients;
+                    if (coefs.constructor !== Array) {
+                        coefs = coefs.split(',');
+                    }
+                    const readings = [];
+                    success.data.readings.forEach((reading) => {
+                        const newReading = [parseFloat(reading[0]) * 1000, parseFloat(reading[1]) * parseFloat(coefs[0]) + parseFloat(coefs[1])];
+                        readings.push(newReading);
+                    });
+
+                    this.drawGraph(readings);
+                    this.infoService.setReadings(readings);
                 }
             })
             .catch((error) => {
@@ -55,52 +66,40 @@ export default class graphController {
     }
 
     // D3 drawing.
-    drawGraph(data) {
+    drawGraph(readings) {
+        console.log('gio')
         // If no data points were returned, warn the user and quit.
-        if (data.readings.length === 0) {
+        if (readings.length === 0) {
             $('#graph-message').toggleClass('alert-danger');
             $('#graph-message').toggleClass('graph-message-display');
             $('#graph-message').html('<h3>Not enough points were returned.</h3>');
             return;
         }
+        console.log('meh')
         let width = $('#graph-container')[0].clientWidth;
         let height = 350;
 
         // Make sure the previous graph is deleted.
         $('#graph-container').empty();
 
-        // Scale all of the readings by their coefficients and translate unix time to milliseconds
-        let coefs = this.infoService.getSensor().last_calibration.coefficients;
-        if (coefs.constructor !== Array) {
-            coefs = coefs.replace(/[^0-9\.\-\,]/g, '').split(',');
-        } else {
-	    coefs = coefs.toString().replace(/[^0-9\.\-\,]/g, '').split(',');
-	}
-        const scaledReadings = [];
-        data.readings.forEach((reading) => {
-            const newReading = [parseFloat(reading[0]) * 1000, parseFloat(reading[1]) * parseFloat(coefs[0]) + parseFloat(coefs[1])];
-scaledReadings.push(newReading);
-        });
-        data.readings = scaledReadings;
-
         // Find the limits of the graph.
-        let min = data.readings[0][1];
-        let max = data.readings[0][1];
-        let oldest = data.readings[0][0];
-        let latest = data.readings[0][0];
+        let min = readings[0][1];
+        let max = readings[0][1];
+        let oldest = readings[0][0];
+        let latest = readings[0][0];
         let j = 0;
-        for (j = 0; j < data.readings.length; j++) {
-            if (min > data.readings[j][1]) {
-                min = data.readings[j][1];
+        for (j = 0; j < readings.length; j++) {
+            if (min > readings[j][1]) {
+                min = readings[j][1];
             }
-            if (max < data.readings[j][1]) {
-                max = data.readings[j][1];
+            if (max < readings[j][1]) {
+                max = readings[j][1];
             }
-            if (oldest < data.readings[j][0]) {
-                oldest = data.readings[j][0];
+            if (oldest < readings[j][0]) {
+                oldest = readings[j][0];
             }
-            if (latest > data.readings[j][0]) {
-                latest = data.readings[j][0];
+            if (latest > readings[j][0]) {
+                latest = readings[j][0];
             }
         }
 
@@ -232,11 +231,11 @@ scaledReadings.push(newReading);
 
         // Generate an array of differences between two sequential dates.
         const medianTimes = [];
-        let lastPoint = (data.readings[0][0]);
+        let lastPoint = (readings[0][0]);
 
-        for (j = 0; j < data.readings.length; j++) {
-            medianTimes.push((data.readings[j][0] - lastPoint) * 0.0001);
-            lastPoint = data.readings[j][0];
+        for (j = 0; j < readings.length; j++) {
+            medianTimes.push((readings[j][0] - lastPoint) * 0.0001);
+            lastPoint = readings[j][0];
         }
         // Sort the array and take the median difference.
         medianTimes.sort();
@@ -247,7 +246,7 @@ scaledReadings.push(newReading);
         const lineFunction = d3.line()
             .defined((d) => {
                 // If there are less than three points, we draw the connections always.
-                if (data.readings.length < 3) {
+                if (readings.length < 3) {
                     return true;
                 }
                 // If the point falls outside of graph time range, we don't draw it.
@@ -283,7 +282,7 @@ scaledReadings.push(newReading);
                 return yScale(d[1]);
             });
         newChart.append('path')
-            .attr('d', lineFunction(data.readings))
+            .attr('d', lineFunction(readings))
             .attr('stroke', '#FFB90F')
             .attr('stroke-width', 2)
             .attr('fill', 'none');
@@ -335,7 +334,7 @@ scaledReadings.push(newReading);
             .attr('class', 'myselection');
 
         const myData = [];
-        data.readings.forEach((reading) => {
+        readings.forEach((reading) => {
             myData.push(new Date(reading[0]).getTime());
         });
 
@@ -348,8 +347,8 @@ scaledReadings.push(newReading);
                 const x0 = xScale.invert(d3.event.x).getTime();
 
                 i = d3.bisect(myData, x0);
-                const d0 = data.readings[i - 1];
-                const d1 = data.readings[i];
+                const d0 = readings[i - 1];
+                const d1 = readings[i];
                 if (d1 === undefined) {
                     return;
                 }
@@ -399,8 +398,8 @@ scaledReadings.push(newReading);
             .on('mousemove', () => {
                 const x0 = xScale.invert(d3.event.offsetX - margin.left).getTime();
                 const i = d3.bisect(myData, x0);
-                const d0 = data.readings[i - 1];
-                const d1 = data.readings[i];
+                const d0 = readings[i - 1];
+                const d1 = readings[i];
                 let d = 0;
                 if (d0 === undefined && d1 === undefined) {
                     return;
@@ -436,8 +435,8 @@ scaledReadings.push(newReading);
 
                 const x0 = xScale.invert(d3.event.offsetX - margin.left).getTime();
                 const i = d3.bisect(myData, x0);
-                const d0 = data.readings[i - 1];
-                const d1 = data.readings[i];
+                const d0 = readings[i - 1];
+                const d1 = readings[i];
                 if (d1 === undefined) {
                     return;
                 }
