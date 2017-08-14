@@ -12,8 +12,8 @@ function ShowError($mdDialog, error) {
         $mdDialog.alert()
             .parent(angular.element(document.querySelector('#popupContainer')))
             .clickOutsideToClose(true)
-            .title('Error Saving Fields')
-            .textContent('Error: ' + error)
+            .title('Error')
+            .textContent(error)
             .ariaLabel('Alert Dialog Demo')
             .ok('Close'),
     );

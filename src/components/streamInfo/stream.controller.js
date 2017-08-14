@@ -88,6 +88,10 @@ export default class streamController {
         }
         this.apiService.get('datastreams/' + curStream)
             .then((success) => {
+                if (success.data.error !== undefined) {
+                    ShowError(this.$mdDialog, success.data.error);
+                    return;
+                }
                 const dataToDisplay = {};
                 const stream = success.data.stream;
                 Object.keys(stream).forEach((key) => {

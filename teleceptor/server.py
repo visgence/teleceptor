@@ -89,5 +89,5 @@ def runserver(config):
 if __name__ == "__main__":
     runserver(get_cp_config())
 else:
-    #cherrypy.config.update({'environment': 'embedded'})
+    # cherrypy.config.update({'environment': 'embedded'})
     application = cherrypy.Application(Root(), script_name=None, config=get_cp_config())
