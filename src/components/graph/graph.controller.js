@@ -16,6 +16,7 @@ export default class graphController {
             }
         });
 
+        // Wait until sensor info is loaded to get reading data.
         this.$scope.$watch(() => this.infoService.getSensor(), (nv, ov) => {
             if (nv === undefined) {
                 return;
@@ -24,6 +25,7 @@ export default class graphController {
             this.getData();
         });
 
+        // If no datastream is selected, warn user.
         if ($location.search().datastream === undefined) {
             $scope.title = 'Please select a datastream.';
             $('#graph-container').css('height', 0);
@@ -31,7 +33,6 @@ export default class graphController {
     }
 
     getData() {
-
         const url = 'readings/?' + location.href.split('?')[1];
         this.apiService.get(url)
             .then((success) => {
@@ -50,7 +51,7 @@ export default class graphController {
     }
 
     drawGraph(data) {
-        if (data.readings.length < 5) {
+        if (data.readings.length === 0) {
             $('#graph-message').toggleClass('alert-danger');
             $('#graph-message').toggleClass('graph-message-display');
             $('#graph-message').html('<h3>Not enough points were returned.</h3>');
@@ -142,7 +143,7 @@ export default class graphController {
 
         const yScale = d3.scaleLinear()
             .domain([
-                min,
+                min - (max - min) * 0.1,
                 max + (max - min) * 0.1,
             ])
             .rangeRound([
