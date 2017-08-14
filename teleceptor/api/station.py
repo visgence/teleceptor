@@ -273,7 +273,7 @@ def update_sensor_data(sensor_data, session):
 
     logging.debug("Got sensor %s", str(sensor))
     logging.debug("Updating calibration...")
-    sensor_info = Sensors.updateCalibration(sensor, json.dumps(str(coefficients)), sensor_data['timestamp'], session=session)
+    sensor_info = Sensors.updateCalibration(sensor, coefficients, sensor_data['timestamp'], session=session)
     logging.debug("Updated calibration")
 
     return sensor_info
