@@ -181,6 +181,18 @@ export default class graphController {
             return Ticks;
         }
 
+        // Create the bottom X axis.
+        const xAxis = d3.axisBottom(xScale)
+            .tickSizeInner(-height + margin.bottom)
+            .tickSizeOuter(0)
+            .tickPadding(10)
+            .ticks(12);
+
+        newChart.append('g')
+            .attr('class', 'chart-axis')
+            .attr('transform', 'translate(0,' + height + ')')
+            .call(xAxis);
+
         // Create the left Y axis.
         const yAxis = d3.axisLeft(yScale)
             .tickSizeInner(-width)
@@ -193,20 +205,6 @@ export default class graphController {
         newChart.append('g')
             .attr('class', 'chart-axis')
             .call(yAxis);
-
-
-        // Create the bottom X axis.
-        const xAxis = d3.axisBottom(xScale)
-            .tickSizeInner(-height + margin.bottom)
-            .tickSizeOuter(0)
-            .tickPadding(10)
-            .ticks(12);
-
-        newChart.append('g')
-            .attr('class', 'chart-axisChartAxis-Shape')
-            .attr('transform', 'translate(0,' + height + ')')
-            .call(xAxis);
-
 
         // Create the top X axis.
         const xAxisTop = d3.axisBottom(xScale)
@@ -269,7 +267,6 @@ export default class graphController {
                     return false;
                 }
                 last = d[0];
-
                 return true;
             })
             // Find x position of a point.
