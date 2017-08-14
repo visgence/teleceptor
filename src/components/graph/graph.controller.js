@@ -214,11 +214,13 @@ export default class graphController {
         }
         meanTimes.sort();
         const meanTime = meanTimes[parseInt(meanTimes.length / 2)];
-        let last = 0;
+        let last = data.readings[data.readings.length - 1][0];
 
         const lineFunction = d3.line()
             .defined((d) => {
-                d[0] = parseInt(d[0]);
+                if (data.readings.length < 3) {
+                    return true;
+                }
                 if (d[0] < start / 1000 || d[0] > end / 1000) {
                     return false;
                 }
