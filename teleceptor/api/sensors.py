@@ -376,7 +376,7 @@ def _updateSensor(data, session):
 
 def _updateCalibration(sensor, coefficients, timestamp, session):
     updateNeeded = False
-    # logging.debug("Trying to update sensor %s with coefficiencts %s with new coefficients %s", str(sensor['uuid']), str(sensor['last_calibration']['coefficients']), str(coefficients))
+    logging.debug("Trying to update sensor %s with coefficiencts %s with new coefficients %s", str(sensor['uuid']), str(sensor['last_calibration']['coefficients']), str(coefficients))
 
     if 'last_calibration' not in sensor or 'id' not in sensor['last_calibration'] or sensor['last_calibration']['id'] is None:
         # sensor doesn't have a calibration id, so we need to make a new calibration
@@ -400,7 +400,7 @@ def _updateCalibration(sensor, coefficients, timestamp, session):
                 if Cal.coefficients != coefficients:
                     logging.debug("Coefficients are different, updating...")
 
-                    Cal = Calibration(coefficients=coefficients, timestamp=timestamp, sensor_id=sensor['uuid'])
+                    Cal = Calibration(coefficients=str(coefficients), timestamp=timestamp, sensor_id=sensor['uuid'])
                     session.add(Cal)
                     session.commit()
                     logging.debug("Added new calibration to database.")

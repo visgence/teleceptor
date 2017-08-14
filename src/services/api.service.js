@@ -33,9 +33,10 @@ export default class apiService {
                 const cleanCoefficients = [];
                 coefficients.forEach((coef) => {
                     // only allow 0-9, -, .
-                    cleanCoefficients.push(coef.toString().replace(/[^0-9\-\.]/g, ''));
+                    cleanCoefficients.push(parseFloat(coef.toString().replace(/[^0-9\-\.]/g, '')));
                 });
-                data[key].coefficients = cleanCoefficients.toString();
+                console.log(cleanCoefficients);
+                data[key].coefficients = cleanCoefficients;
             }
         });
         return data;
