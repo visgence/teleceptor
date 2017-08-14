@@ -47,7 +47,9 @@ export default class graphController {
                     // Scale all of the readings by their coefficients and translate unix time to milliseconds
                     let coefs = sensorInfo.last_calibration.coefficients;
                     if (coefs.constructor !== Array) {
-                        coefs = coefs.split(',');
+                        coefs = coefs.replace(/[^0-9\.\-\,]/g, '').split(',');
+                    } else {
+                        coefs = coefs.toString().replace(/[^0-9\.\-\,]/g, '').split(',');
                     }
                     const readings = [];
                     success.data.readings.forEach((reading) => {
@@ -67,7 +69,6 @@ export default class graphController {
 
     // D3 drawing.
     drawGraph(readings) {
-        console.log('gio')
         // If no data points were returned, warn the user and quit.
         if (readings.length === 0) {
             $('#graph-message').toggleClass('alert-danger');
@@ -75,7 +76,6 @@ export default class graphController {
             $('#graph-message').html('<h3>Not enough points were returned.</h3>');
             return;
         }
-        console.log('meh')
         let width = $('#graph-container')[0].clientWidth;
         let height = 350;
 
