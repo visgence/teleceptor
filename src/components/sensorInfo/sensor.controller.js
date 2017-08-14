@@ -35,6 +35,7 @@ export default class sensorController { // ', ['frapontillo.bootstrap-switch',])
         this.$scope.isSelected = 'yep'; // For the bootstrap switch in command.
         this.$scope.isActive = 'false';
         this.$scope.ShowInfo = false;
+        this.$scope.sensorLoaded = false;
 
         this.$scope.ChangeTab = (event, tab) => {
             this.$scope.tab = tab;
@@ -188,7 +189,6 @@ export default class sensorController { // ', ['frapontillo.bootstrap-switch',])
             .then((success) => {
                 this.$scope.sensor = success.data.sensor;
                 this.infoService.setSensor(success.data.sensor);
-                console.log('Called API from sensor controller');
                 this.$scope.ShowInfo = true;
 
                 if (success.data.sensor_type === 'output') {
