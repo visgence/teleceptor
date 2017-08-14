@@ -72,12 +72,14 @@ export default class graphController {
         // Scale all of the readings by their coefficients and translate unix time to milliseconds
         let coefs = this.infoService.getSensor().last_calibration.coefficients;
         if (coefs.constructor !== Array) {
-            coefs = coefs.split(',');
-        }
+            coefs = coefs.replace(/[^0-9\.\-\,]/g, '').split(',');
+        } else {
+	    coefs = coefs.toString().replace(/[^0-9\.\-\,]/g, '').split(',');
+	}
         const scaledReadings = [];
         data.readings.forEach((reading) => {
-            const newReading = [reading[0] * 1000, reading[1] * parseFloat(coefs[0]) + parseFloat(coefs[1])];
-            scaledReadings.push(newReading);
+            const newReading = [parseFloat(reading[0]) * 1000, parseFloat(reading[1]) * parseFloat(coefs[0]) + parseFloat(coefs[1])];
+scaledReadings.push(newReading);
         });
         data.readings = scaledReadings;
 
