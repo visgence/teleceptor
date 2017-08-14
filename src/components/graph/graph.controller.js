@@ -48,7 +48,11 @@ export default class graphController {
                     const coefs = sensorInfo.last_calibration.coefficients;
                     const readings = [];
                     success.data.readings.forEach((reading) => {
-                        const newReading = [parseFloat(reading[0]) * 1000, parseFloat(reading[1]) * parseFloat(coefs[0]) + parseFloat(coefs[1])];
+                        let scaled_reading = 0;
+                        for (let i = 0; i < coefs.length; i ++) {
+                            scaled_reading += (Math.pow(reading[1], coefs.length - i - 1) * coefs[i]);
+                        }
+                        const newReading = [parseFloat(reading[0]) * 1000, scaled_reading];
                         readings.push(newReading);
                     });
 

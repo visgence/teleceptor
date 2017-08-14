@@ -35,7 +35,6 @@ export default class apiService {
                     // only allow 0-9, -, .
                     cleanCoefficients.push(parseFloat(coef.toString().replace(/[^0-9\-\.]/g, '')));
                 });
-                console.log(cleanCoefficients);
                 data[key].coefficients = cleanCoefficients;
             }
         });

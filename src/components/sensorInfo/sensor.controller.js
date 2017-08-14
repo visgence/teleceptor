@@ -100,7 +100,17 @@ export default class sensorController { // ', ['frapontillo.bootstrap-switch',])
                     updateData[key] = this.$scope.sensor[key];
                 }
             });
+            if (updateData.last_calibration.coefficients === undefined) {
+                ShowError(this.$mdDialog, 'Coefficients should be a comma sperated array of length greater than 0.');
+                return;
+            }
             if (updateData.last_calibration.coefficients !== this.$scope.previous_coefficients) {
+                const coefs = updateData.last_calibration.coefficients.split(',');
+                if (coefs.length < 1) {
+                    ShowError(this.$mdDialog, 'Coefficients should be a comma sperated array of length greater than 0.');
+                    return;
+                }
+                updateData.last_calibration.coefficients = coefs;
                 updateData.last_calibration.timestamp = Date.now() / 1000;
             }
 
@@ -187,7 +197,6 @@ export default class sensorController { // ', ['frapontillo.bootstrap-switch',])
         this.apiService.get('sensors/' + sensor)
             .then((success) => {
                 this.$scope.sensor = success.data.sensor;
-                console.log(this.$scope)
                 this.infoService.setSensor(success.data.sensor);
                 this.$scope.ShowInfo = true;
 
@@ -214,7 +223,6 @@ export default class sensorController { // ', ['frapontillo.bootstrap-switch',])
         const coefficients = sensorInfo.last_calibration.coefficients.split(',');
         let i;
         for (i = 0; i < readings.length; i++) {
-            console.log('Readings' + readings[i][1]);
             scaledReadings.push(readings[i][1] * parseFloat(coefficients[0]) + parseFloat(coefficients[1]));
         }
 
