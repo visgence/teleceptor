@@ -16,6 +16,9 @@ export default class sensorController { // ', ['frapontillo.bootstrap-switch',])
             if (nv === undefined) {
                 return;
             }
+            if (nv === ov) {
+                return;
+            }
             if (nv.sensor === undefined) {
                 return;
             }
@@ -185,6 +188,7 @@ export default class sensorController { // ', ['frapontillo.bootstrap-switch',])
             .then((success) => {
                 this.$scope.sensor = success.data.sensor;
                 this.infoService.setSensor(success.data.sensor);
+                console.log('Called API from sensor controller');
                 this.$scope.ShowInfo = true;
 
                 if (success.data.sensor_type === 'output') {

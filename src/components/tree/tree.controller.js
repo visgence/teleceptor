@@ -18,6 +18,7 @@ export default class treeController {
 
         this.LoadData();
 
+
         this.$scope.searchInput = () => {
             this.$scope.treeLoaded = false;
             const data = {

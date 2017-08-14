@@ -20,6 +20,9 @@ export default class graphController {
             if (nv === undefined) {
                 return;
             }
+            if (nv === ov) {
+                return;
+            }
             $scope.title = nv.name;
             this.getData();
         });
