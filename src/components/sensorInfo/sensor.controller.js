@@ -89,6 +89,7 @@ export default class sensorController { // ', ['frapontillo.bootstrap-switch',])
             const updateData = {};
             const url = 'sensors';
             const editableFields = ['last_calibration', 'units', 'description', 'uuid'];
+            console.log(this.$scope.sensor)
 
             Object.keys(this.$scope.sensor).forEach((key) => {
                 if (!(editableFields.includes(key))) {
@@ -101,6 +102,7 @@ export default class sensorController { // ', ['frapontillo.bootstrap-switch',])
                 }
             });
             if (updateData.last_calibration.coefficients === undefined) {
+                console.log('asdf');
                 ShowError(this.$mdDialog, 'Coefficients should be a comma sperated array of length greater than 0.');
                 return;
             }

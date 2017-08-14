@@ -109,6 +109,14 @@ export default class graphController {
             max = max > 0 ? max + offset : max - offset;
         }
 
+        const stream = this.infoService.getStream();
+        if (stream.min_value !== null) {
+            min = stream.min_value;
+        }
+        if (stream.max_value !== null) {
+            max = stream.max_value;
+        }
+
         // Set graph time range.
         let start = new Date().getTime() - 60 * 60 * 6 * 1000;
         let end = new Date().getTime();
@@ -254,7 +262,7 @@ export default class graphController {
                 }
                 // If a point falls outside of y axis range, we don't draw it and give a warning.
                 if (d[1] > max || d[1] < min) {
-                    scope.newGraph.warning = 'Warning: Some data points are not shown in graph and may be causing line breaks.';
+                    // this.$scope.newGraph.warning = 'Warning: Some data points are not shown in graph and may be causing line breaks.';
                     return false;
                 }
 
