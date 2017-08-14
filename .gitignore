@@ -55,6 +55,7 @@ target/
 #NPM
 node_modules/
 webpack-stats.json
+npm-debug.log.*
 
 config/config.json
 database/

@@ -68,5 +68,6 @@
 
     "postinstall": "npm --prefix ./node_modules/node-sass/ run install"
   },
-  "version": "1.8.0"
+  "version": "1.8.0",
+  "date":"test"
 }
