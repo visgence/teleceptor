@@ -214,6 +214,7 @@ export default class sensorController { // ', ['frapontillo.bootstrap-switch',])
         const coefficients = sensorInfo.last_calibration.coefficients.split(',');
         let i;
         for (i = 0; i < readings.length; i++) {
+            console.log('Readings' + readings[i][1]);
             scaledReadings.push(readings[i][1] * parseFloat(coefficients[0]) + parseFloat(coefficients[1]));
         }
 

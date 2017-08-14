@@ -1,5 +1,7 @@
 @import '../constants';
 
+
+//Color Of graph lines, text
 .tick {
     line {
         stroke: $grey;
@@ -10,14 +12,17 @@
     }
 }
 
+//size of graph window
 .graph-container {
     height: 350px;
 }
 
+//disable graph message
 .graph-message {
     display: none;
 }
 
+//graph title
 .graph-message-display {
     background-color: $light-yellow;
     color: $dark-grey;

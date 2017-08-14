@@ -5,6 +5,7 @@ export default class graphController {
     }
 
     $onInit() {
+
         this.$scope.versionNumber = window.version;
     }
 }

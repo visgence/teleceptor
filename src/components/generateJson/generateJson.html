@@ -7,6 +7,7 @@
                 <h3>Generate JSON</h3>
                 <!--"toolbar" used as card header-->
             </md-toolbar>
+            <!-- input containers bound to this.$scope variables -->
             <md-content class="card-content md" layout="column">
                 <md-input-container class="input-container">
                     <label>UUID</label>
@@ -39,7 +40,7 @@
 
     <!-- second column -->
     <div flex="33" layout="column">
-        <!-- repeat cards in collumn for every item in the inputItems object array -->
+        <!-- repeat cards in collumn for every item in the inputItems object array, added after add input is pressed-->
         <div ng-repeat="item in inputItems">
             <md-card sensor-card md-theme>
                 <md-toolbar class="card-header md-primary">
@@ -81,7 +82,7 @@
 
     <!-- third column -->
     <div flex="33" layout="column">
-        <!-- ng-repeat for every item in outputItem object array -->
+        <!-- ng-repeat for every item in outputItem object array, added after add input is pressed-->
         <div ng-repeat="item in outputItems">
             <md-card sensor-card md-theme>
                 <md-toolbar class="card-header md-primary">
