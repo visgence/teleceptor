@@ -93,6 +93,12 @@ export default class graphController {
             }
         }
 
+        if (min === max) {
+            const offset = min * 0.01;
+            min = min > 0 ? min - offset : min + offset;
+            max = max > 0 ? max + offset : max - offset;
+        }
+
         let start = new Date().getTime() - 60 * 60 * 6 * 1000;
         let end = new Date().getTime();
 
@@ -235,6 +241,7 @@ export default class graphController {
                     return false;
                 }
                 last = d[0];
+
                 return true;
             })
             .x((d) => {
@@ -380,9 +387,11 @@ export default class graphController {
                         d = d0;
                     }
                 }
+                console.log(d[1], min, max)
                 if (d[1] < min || d[1] > max) {
                     return;
                 }
+
                 circleElements[0].attr('transform', 'translate(' + xScale(d[0] * 1000) + ',' + yScale(d[1]) + ')');
                 yLine.attr('transform', 'translate(' + xScale(d[0] * 1000) + ',' + 0 + ')');
                 timeText.text(new Date(d[0] * 1000) + ' | ' + this.FormatText(d[1]));
