@@ -70,9 +70,10 @@ export default class streamController {
             const url = 'datastreams/' + updateData.id;
             this.apiService.put(url, updateData)
                 .then((success) => {
+                    console.log(success);
+                    this.infoService.setStream(success.data.stream);
                     ShowSuccess(this.$mdToast);
                     this.$scope.editing = false;
-                    // location.reload();
                 })
                 .catch((error) => {
                     ShowError(this.$mdDialog, error);

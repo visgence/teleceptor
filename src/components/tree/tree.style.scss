@@ -9,6 +9,10 @@
     white-space: nowrap;
 }
 
+.tree-card-content {
+    overflow: visible;
+}
+
 // important-use: bootstrap treeview inlines its styles rather than have them in classes.
 // sass-lint:disable no-important
 .node-selected {

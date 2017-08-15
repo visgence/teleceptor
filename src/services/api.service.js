@@ -1,3 +1,5 @@
+import {ShowError} from '../utilites/dialogs.utils';
+
 export default class apiService {
     constructor($http, $interval, $mdDialog, $mdToast) {
         'ngInject';
@@ -18,6 +20,9 @@ export default class apiService {
     put(endpoint, data) {
         if (endpoint.startsWith('sensors')) {
             data = this.CleanSensorData(data);
+            if (data.error !== undefined) {
+                return;
+            }
         }
         return this.$http.put('/api/' + endpoint, data);
     }
@@ -25,17 +30,18 @@ export default class apiService {
     CleanSensorData(data) {
         Object.keys(data).forEach((key) => {
             if (key === 'last_calibration') {
-
-                let coefficients = data[key].coefficients;
-                if (coefficients.constructor !== Array) {
-                    coefficients = coefficients.split(',');
+                try {
+                    const jsonArray = JSON.parse('{"array": ' + data[key].coefficients + '}');
+                    jsonArray.array.forEach((entry) => {
+                        if (isNaN(entry)) {
+                            throw 'Calibration must contain only numbers.';
+                        }
+                    });
+                } catch (error) {
+                    ShowError(this.$mdDialog, error.error || 'Calibration is not correctly formatted json.');
+                    data['error'] = true;
                 }
-                const cleanCoefficients = [];
-                coefficients.forEach((coef) => {
-                    // only allow 0-9, -, .
-                    cleanCoefficients.push(parseFloat(coef.toString().replace(/[^0-9\-\.]/g, '')));
-                });
-                data[key].coefficients = cleanCoefficients;
+
             }
         });
         return data;

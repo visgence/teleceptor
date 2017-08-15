@@ -89,7 +89,6 @@ export default class sensorController { // ', ['frapontillo.bootstrap-switch',])
             const updateData = {};
             const url = 'sensors';
             const editableFields = ['last_calibration', 'units', 'description', 'uuid'];
-            console.log(this.$scope.sensor)
 
             Object.keys(this.$scope.sensor).forEach((key) => {
                 if (!(editableFields.includes(key))) {
@@ -101,29 +100,19 @@ export default class sensorController { // ', ['frapontillo.bootstrap-switch',])
                     updateData[key] = this.$scope.sensor[key];
                 }
             });
-            if (updateData.last_calibration.coefficients === undefined) {
-                console.log('asdf');
-                ShowError(this.$mdDialog, 'Coefficients should be a comma sperated array of length greater than 0.');
-                return;
+            try {
+                this.apiService.put(url, updateData)
+                    .then((success) => {
+                        ShowSuccess(this.$mdToast);
+                        this.infoService.setSensor(success.data.sensor);
+                        this.$scope.editing = false;
+                    })
+                    .catch((error) => {
+                        ShowError(this.$mdDialog, error);
+                    });
+            } catch (error) {
+                console.error('Error saving sensor fields');
             }
-            if (updateData.last_calibration.coefficients !== this.$scope.previous_coefficients) {
-                const coefs = updateData.last_calibration.coefficients.split(',');
-                if (coefs.length < 1) {
-                    ShowError(this.$mdDialog, 'Coefficients should be a comma sperated array of length greater than 0.');
-                    return;
-                }
-                updateData.last_calibration.coefficients = coefs;
-                updateData.last_calibration.timestamp = Date.now() / 1000;
-            }
-
-            this.apiService.put(url, updateData)
-                .then((success) => {
-                    ShowSuccess(this.$mdToast);
-                    this.$scope.editing = false;
-                })
-                .catch((error) => {
-                    ShowError(this.$mdDialog, error);
-                });
         };
 
         this.$scope.CommandSwitch = () => {
