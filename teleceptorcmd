@@ -13,6 +13,7 @@ import shutil
 import platform
 import json
 import requests
+from os import fdopen, remove
 from subprocess import call
 from sqlalchemy import create_engine
 from sqlalchemy.engine.url import URL
@@ -248,6 +249,31 @@ def shell(*args):
     IPython.embed()
 
 
+def minorVersion(*args):
+    print "Current version: {}".format(teleceptor.__version__)
+    version = teleceptor.__version__.split('.')
+    version[2] = str(int(version[2]) + 1)
+    version = ".".join(version)
+    saveVersion(version)
+
+
+def majorVersion(*args):
+    print "Current version: {}".format(teleceptor.__version__)
+    version = teleceptor.__version__.split('.')
+    version[1] = str(int(version[1]) + 1)
+    version[2] = "0"
+    version = ".".join(version)
+    saveVersion(version)
+
+
+def saveVersion(version):
+    print "New version is: {}".format(version)
+    with fdopen('teleceptor/version.py', 'w') as versionFile:
+        for line in versionFile:
+            print line
+        data['VERSION']
+
+
 if __name__ == "__main__":
     cmds = {
         'runserver': [runserver, "Start the server"],
@@ -261,10 +287,13 @@ if __name__ == "__main__":
         'loadfixtures': [loadfixtures, "Load test database data"],
         'version': [displayVersion, "Display version"],
         'shell': [shell, "Ipython shell"],
-        'apitest': [apiTest, "Run tests against the api."]
+        'apitest': [apiTest, "Run tests against the api."],
+        'minorversion': [minorVersion, "Increment the minor version number"],
+        'majorversion': [majorVersion, "Increment the major version number"]
     }
 
     args = sys.argv
+    print args
     if len(args) > 1 and args[1].lower() in cmds:
 
         if len(args) > 2 and args[2] == "-d":
