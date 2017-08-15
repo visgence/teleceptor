@@ -2,7 +2,7 @@
     <div class="sensor-card" ng-hide = "sensorLoaded">
         <md-card sensor-card>
             <md-toolbar class="card-header md-primary">
-                <h3>Sensor Information</h3>
+                <h4>Sensor Information</h4>
             </md-toolbar>
             <md-content class="card-content md">
                 <md-tabs md-dynamic-height md-border-bottom class="ng-isolate-scope md-dynamic height">
@@ -39,7 +39,7 @@
                                     <md-divider></md-divider>
                                     <md-list-item>
                                         <h5>Last Calibration:</h5> <span flex></span>
-                                        <h5>{{sensor.last_calibration.timestamp}}</h5>
+                                        <h5>{{$parent.Date}}</h5>
                                     </md-list-item>
                                     <md-divider></md-divider>
                                     <md-list-item>
@@ -82,19 +82,20 @@
                                     <md-list-item>
                                         <h5>Units:</h5> <span flex></span>
                                         <md-input-container class="input-container input-override">
-                                            <input aria-label="units fielf for the sensor" name="units" ng-model="sensor.units" />
+                                            <input aria-label="units field for the sensor" name="units" ng-model="sensor.units" />
                                         </md-input-container>
                                     </md-list-item>
                                     <md-divider></md-divider>
                                     <md-list-item>
                                         <h5>Last Calibration:</h5> <span flex></span>
-                                        <h5>{{sensor.last_calibration.timestamp}}</h5>
+                                        <!-- <h5>{{$parent.Date}}</h5> -->
+
                                     </md-list-item>
                                     <md-divider></md-divider>
                                     <md-list-item>
                                         <h5>Calibration:</h5> <span flex></span>
                                         <md-input-container class="input-container input-override">
-                                            <input aria-label="Coeffecients for senor calibration" name="last_calibration_coefficients" ng-model="sensor.last_calibration.coefficients"/>
+                                            <input aria-label="Coeffecients for sensor calibration" name="last_calibration_coefficients" ng-model="sensor.last_calibration.coefficients" />
                                         </md-input-container>
                                     </md-list-item>
                                     <md-divider></md-divider>
@@ -121,7 +122,7 @@
                                 <md-list-item>
                                     <h5>New Data:</h5> <span flex></span>
                                     <md-input-container class="input-container">
-                                        <input aria-label="Field for entry of data" name="manual-entry" ng-model="EntryValue" />
+                                        <input aria-label="Field for entry of data" name="manual-entry" ng-model="$parent.EntryValue" />
                                     </md-input-container>
                                 </md-list-item>
                                 <md-divider></md-divider>

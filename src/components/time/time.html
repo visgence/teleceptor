@@ -1,17 +1,19 @@
 <md-card class="time-card">
     <md-toolbar class="card-header md-primary">
-        <h3>Time</h3>
+        <h4>Time</h4>
     </md-toolbar>
     <md-content class="card-content">
 
         <div class="quick-time-container">
+            <div align = "center">
             <md-tabs md-stretch-tabs="never" md-selected="tabSelection">
-                <md-tab label="Custom"></md-tab>
-                <md-tab label="Hour" md-on-select="ChangeQuickTime(2)"></md-tab>
-                <md-tab label="Day" md-on-select="ChangeQuickTime(3)"></md-tab>
-                <md-tab label="Week" md-on-select="ChangeQuickTime(4)"></md-tab>
+                <!-- <md-tab label="Custom"></md-tab> -->
+                <md-tab label="Hour"  ng-click = "ChangeQuickTime(1)"></md-tab>
+                <md-tab label="Day" ng-click = "ChangeQuickTime(2)" ></md-tab>
+                <md-tab label="Week" ng-click = "ChangeQuickTime(3)"></md-tab>
             </md-tabs>
         </div>
+    </div>
 
         Start time
         <adm-dtp ng-model="startDate" options="{default: {startDate}}"></adm-dtp>

@@ -59,9 +59,20 @@ export default class streamController {
                         }
                         updateData.paths.push(j.url);
                     });
+                } else if (key === 'min_value' || key === 'max_value') {
+                    if (isNaN(this.$scope.stream[key])) {
+                        ShowError(this.$mdDialog, 'Min and Max values must be a number');
+                        hasErrors = true;
+                        return;
+                    }
+
+                    updateData[key] = this.$scope.stream[key];
+
                 } else {
+
                     updateData[key] = this.$scope.stream[key];
                 }
+
             });
 
             if (hasErrors) {
@@ -70,7 +81,6 @@ export default class streamController {
             const url = 'datastreams/' + updateData.id;
             this.apiService.put(url, updateData)
                 .then((success) => {
-                    console.log(success);
                     this.infoService.setStream(success.data.stream);
                     ShowSuccess(this.$mdToast);
                     this.$scope.editing = false;

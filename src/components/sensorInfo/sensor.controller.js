@@ -36,6 +36,7 @@ export default class sensorController { // ', ['frapontillo.bootstrap-switch',])
         this.$scope.ShowInfo = false;
         this.$scope.sensorLoaded = false;
 
+
         this.$scope.ChangeTab = (event, tab) => {
             this.$scope.tab = tab;
             $('.nav-tabs li').removeClass('active');
@@ -105,6 +106,7 @@ export default class sensorController { // ', ['frapontillo.bootstrap-switch',])
                     .then((success) => {
                         ShowSuccess(this.$mdToast);
                         this.infoService.setSensor(success.data.sensor);
+                        this.$scope.sensor = this.infoService.getSensor();
                         this.$scope.editing = false;
                     })
                     .catch((error) => {
@@ -155,6 +157,11 @@ export default class sensorController { // ', ['frapontillo.bootstrap-switch',])
                 meta_data: {},
             };
 
+            if (isNaN(newValue)) {
+                ShowError(this.$mdDialog, 'New data must be a number');
+                return;
+            }
+
             const payload = [{
                 info: {
                     uuid: '',
@@ -190,6 +197,8 @@ export default class sensorController { // ', ['frapontillo.bootstrap-switch',])
                 this.$scope.sensor = success.data.sensor;
                 this.infoService.setSensor(success.data.sensor);
                 this.$scope.ShowInfo = true;
+                this.$scope.Date = new Date(this.$scope.sensor.last_calibration.timestamp * 1000);
+                this.$scope.Date = this.$scope.Date.toDateString() + ', ' + this.$scope.Date.getHours() + ':' + this.$scope.Date.getMinutes();
 
                 if (success.data.sensor_type === 'output') {
                     this.$scope.isActive = true;

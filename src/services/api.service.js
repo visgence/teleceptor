@@ -37,6 +37,8 @@ export default class apiService {
                             throw 'Calibration must contain only numbers.';
                         }
                     });
+                    data[key].coefficients = jsonArray.array;
+                    delete data[key].timestamp
                 } catch (error) {
                     ShowError(this.$mdDialog, error.error || 'Calibration is not correctly formatted json.');
                     data['error'] = true;
