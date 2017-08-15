@@ -38,7 +38,7 @@ export default class apiService {
                         }
                     });
                     data[key].coefficients = jsonArray.array;
-                    data[key].timestamp = new Date().getTime();
+                    delete data[key].timestamp
                 } catch (error) {
                     ShowError(this.$mdDialog, error.error || 'Calibration is not correctly formatted json.');
                     data['error'] = true;
