@@ -16,6 +16,7 @@ export default class infoService {
 
     // Set by sensor info.
     setSensor(sensor) {
+        sensor.last_calibration.coefficients = JSON.stringify(sensor.last_calibration.coefficients);
         this.sensor = sensor;
     }
 

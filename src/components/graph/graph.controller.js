@@ -45,7 +45,7 @@ export default class graphController {
                     $('#graph-message').html('<h3>No data could be found.</h3>');
                 } else {
                     // Scale all of the readings by their coefficients and translate unix time to milliseconds
-                    const coefs = sensorInfo.last_calibration.coefficients;
+                    const coefs = JSON.parse(sensorInfo.last_calibration.coefficients);
                     const readings = [];
                     success.data.readings.forEach((reading) => {
                         let scaled_reading = 0;

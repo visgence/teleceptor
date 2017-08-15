@@ -106,6 +106,7 @@ export default class sensorController { // ', ['frapontillo.bootstrap-switch',])
                     .then((success) => {
                         ShowSuccess(this.$mdToast);
                         this.infoService.setSensor(success.data.sensor);
+                        this.$scope.sensor = this.infoService.getSensor();
                         this.$scope.editing = false;
                     })
                     .catch((error) => {
@@ -193,7 +194,6 @@ export default class sensorController { // ', ['frapontillo.bootstrap-switch',])
     LoadSensor(sensor) {
         this.apiService.get('sensors/' + sensor)
             .then((success) => {
-                success.data.sensor.last_calibration.coefficients = JSON.stringify(success.data.sensor.last_calibration.coefficients);
                 this.$scope.sensor = success.data.sensor;
                 this.infoService.setSensor(success.data.sensor);
                 this.$scope.ShowInfo = true;
