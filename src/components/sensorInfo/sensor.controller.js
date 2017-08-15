@@ -36,6 +36,7 @@ export default class sensorController { // ', ['frapontillo.bootstrap-switch',])
         this.$scope.ShowInfo = false;
         this.$scope.sensorLoaded = false;
 
+
         this.$scope.ChangeTab = (event, tab) => {
             this.$scope.tab = tab;
             $('.nav-tabs li').removeClass('active');
@@ -155,6 +156,11 @@ export default class sensorController { // ', ['frapontillo.bootstrap-switch',])
                 meta_data: {},
             };
 
+            if (isNaN(newValue)) {
+                ShowError(this.$mdDialog, 'New data must be a number');
+                return;
+            }
+
             const payload = [{
                 info: {
                     uuid: '',
@@ -187,6 +193,7 @@ export default class sensorController { // ', ['frapontillo.bootstrap-switch',])
     LoadSensor(sensor) {
         this.apiService.get('sensors/' + sensor)
             .then((success) => {
+                success.data.sensor.last_calibration.coefficients = JSON.stringify(success.data.sensor.last_calibration.coefficients);
                 this.$scope.sensor = success.data.sensor;
                 this.infoService.setSensor(success.data.sensor);
                 this.$scope.ShowInfo = true;
