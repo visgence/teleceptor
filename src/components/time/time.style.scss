@@ -16,3 +16,11 @@ $shadow-color: rgba(0, 0, 0, .1);
     display: inline-block;
     width: 100%;
 }
+
+md-progress-circular{
+    &.auto-refresh-progress
+    {
+        margin-left: 10px;
+        margin-top:  16px;
+    }
+}

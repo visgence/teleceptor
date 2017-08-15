@@ -1,12 +1,14 @@
 export default class timeController {
 
-    constructor($scope, $location, $timeout) {
+    constructor($scope, $location, $timeout, $interval) {
         'ngInject';
 
         this.$scope = $scope;
         this.$location = $location;
         this.$timeout = $timeout;
         this.$scope.internalSelect = true;
+        this.interval = $interval
+        this.$scope.refreshEnabled = false;
     }
 
     $onInit() {
@@ -23,6 +25,15 @@ export default class timeController {
             this.$scope.endDate = new Date(currentTime * 1000);
         }
 
+        // if (this.$scope.refreshEnables = true) {
+        //     $interval(() => {
+        //
+        //             this.$location.search('start', this.$location.search().start + 1000)
+        //             this.$location.search('end', this.$location.search().end + 1000)
+        //
+        //     }, 1000);
+
+        }
         // Initialize quick time tabs
         const startTime = this.$location.search().start;
         const endTime = this.$location.search().end;
