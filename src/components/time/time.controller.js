@@ -29,11 +29,11 @@ export default class timeController {
         this.$scope.tabSelection = 0;
         if (currentTime - endTime < 100 || endTime === undefined) {
             if (currentTime - startTime < 60 * 60 + 100 && currentTime - startTime > 60 * 60 - 100) {
-                this.$scope.tabSelection = 1;
+                this.$scope.tabSelection = 0;
             } else if (currentTime - startTime < 24 * 60 * 60 + 100 && currentTime - startTime > 24 * 60 * 60 - 100) {
-                this.$scope.tabSelection = 2;
+                this.$scope.tabSelection = 1;
             } else if (currentTime - startTime < 7 * 24 * 60 * 60 + 100 && currentTime - startTime > 7 * 24 * 60 * 60 - 100) {
-                this.$scope.tabSelection = 3;
+                this.$scope.tabSelection = 2;
             }
         }
 
@@ -64,13 +64,13 @@ export default class timeController {
             let startTime;
             const endTime = parseInt(new Date().getTime());
             switch (tab) {
-                case 2:
+                case 1:
                     startTime = parseInt(new Date().getTime()) - 1000 * 60 * 60;
                     break;
-                case 3:
+                case 2:
                     startTime = parseInt(new Date().getTime()) - 1000 * 60 * 60 * 24;
                     break;
-                case 4:
+                case 3:
                     startTime = parseInt(new Date().getTime()) - 1000 * 60 * 60 * 24 * 7;
                     break;
             }
