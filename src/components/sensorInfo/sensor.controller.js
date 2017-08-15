@@ -197,6 +197,8 @@ export default class sensorController { // ', ['frapontillo.bootstrap-switch',])
                 this.$scope.sensor = success.data.sensor;
                 this.infoService.setSensor(success.data.sensor);
                 this.$scope.ShowInfo = true;
+                this.$scope.Date = new Date(this.$scope.sensor.last_calibration.timestamp * 1000);
+                this.$scope.Date = this.$scope.Date.toDateString() + ', ' + this.$scope.Date.getHours() + ':' + this.$scope.Date.getMinutes();
 
                 if (success.data.sensor_type === 'output') {
                     this.$scope.isActive = true;
