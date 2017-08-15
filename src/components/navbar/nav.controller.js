@@ -1,5 +1,3 @@
-import packageJSON from '../../../package';
-
 export default class graphController {
     constructor($scope) {
         'ngInject';
@@ -7,7 +5,8 @@ export default class graphController {
     }
 
     $onInit() {
-        this.$scope.versionNumber = packageJSON.version;
-        this.$scope.buildDate = packageJSON.date;
+        this.$scope.versionNumber = window.version;
+        const versionDate = window.buildDate;
+        this.$scope.buildDate = new Date(versionDate * 1000).toDateString();
     }
 }
