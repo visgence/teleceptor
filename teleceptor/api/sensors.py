@@ -397,7 +397,7 @@ def _updateCalibration(sensor, coefficients, timestamp, session):
                 logging.debug("Comparing coefficients.")
 
                 # check if coefficients are different
-                if "{}".format(Cal.coefficients) == "{}".format(coefficients):
+                if "{}".format(Cal.coefficients) != "{}".format(coefficients):
                     logging.debug("Coefficients are different, updating...")
 
                     assert isinstance(coefficients, list)
