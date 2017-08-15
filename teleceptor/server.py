@@ -17,7 +17,7 @@ import json
 from teleceptor import WEBROOT, PORT, SUPRESS_SERVER_OUTPUT
 from teleceptor.auth import AuthController, require
 from teleceptor.api import ResourceApi
-from teleceptor.version import __version__
+from teleceptor.version import __version__, __buildDate__
 
 PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.append(PATH)
@@ -37,7 +37,8 @@ class Root(object):
         context = {
             "src": src['chunks']['app'][0]['name'],
             "vendor": vendor['chunks']['vendor'][0]['name'],
-            "version": __version__
+            "version": __version__,
+            "buildDate": __buildDate__
         }
         t = env.get_template("index.html")
         return t.render(context)

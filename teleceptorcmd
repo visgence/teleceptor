@@ -12,6 +12,7 @@ import atexit
 import shutil
 import platform
 import json
+import time
 import requests
 from os import fdopen, remove
 from subprocess import call
@@ -267,11 +268,27 @@ def majorVersion(*args):
 
 
 def saveVersion(version):
+    newTime = time.time()
     print "New version is: {}".format(version)
-    with fdopen('teleceptor/version.py', 'w') as versionFile:
+    newFile = ""
+    with open('teleceptor/version.py', 'r') as versionFile:
         for line in versionFile:
-            print line
-        data['VERSION']
+            if line.startswith("__version__"):
+                line = "__version__ = '{}'\n".format(version)
+            if line.startswith("__buildDate__"):
+                line = "__buildDate__ = {}\n".format(newTime)
+            newFile += line
+    f = open('teleceptor/version.py', 'w+')
+    for i in newFile:
+        f.write(i)
+    f.close()
+    with open('package.json') as package:
+        data = json.load(package)
+        data['version'] = version
+        data['buildDate'] = newTime
+    os.remove('package.json')
+    with open('package.json', 'w') as package:
+        json.dump(data, package, indent=2, sort_keys=True)
 
 
 if __name__ == "__main__":
