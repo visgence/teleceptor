@@ -13,39 +13,32 @@ export default class timeController {
 
     $onInit() {
         const currentTime = new Date().getTime() / 1000;
+        let startTime;
+        let endTime;
         // Initialize date time pickers
         if (this.$location.search().start !== undefined) {
             this.$scope.startDate = new Date(this.$location.search().start * 1000);
+            startTime = this.$location.search().start;
         } else {
             this.$scope.startDate = new Date((currentTime - 60 * 60 * 6) * 1000);
+            startTime = this.$location.search().start - 60 * 60 * 6 * 1000;
         }
         if (this.$location.search().end !== undefined) {
             this.$scope.endDate = new Date(this.$location.search().end * 1000);
+            endTime = this.$location.search().end;
         } else {
             this.$scope.endDate = new Date(currentTime * 1000);
+            endTime = currentTime;
         }
 
-        // // if (this.$scope.refreshEnables = true) {
-        // //     $interval(() => {
-        // //
-        // //             this.$location.search('start', this.$location.search().start + 1000)
-        // //             this.$location.search('end', this.$location.search().end + 1000)
-        // //
-        // //     }, 1000);
-        //
-        // }
-        // Initialize quick time tabs
-        const startTime = this.$location.search().start;
-        const endTime = this.$location.search().end;
-        this.$scope.tabSelection = 0;
-        if (currentTime - endTime < 100 || endTime === undefined) {
-            if (currentTime - startTime < 60 * 60 + 100 && currentTime - startTime > 60 * 60 - 100) {
-                this.$scope.tabSelection = 0;
-            } else if (currentTime - startTime < 24 * 60 * 60 + 100 && currentTime - startTime > 24 * 60 * 60 - 100) {
-                this.$scope.tabSelection = 1;
-            } else if (currentTime - startTime < 7 * 24 * 60 * 60 + 100 && currentTime - startTime > 7 * 24 * 60 * 60 - 100) {
-                this.$scope.tabSelection = 2;
-            }
+        // Check if tab is in selection
+        // 1: custom, 2: hour, 3: day, 4: week
+        const currentTab = this.$location.search().tab;
+        if (currentTab !== undefined) {
+            endTime = currentTime;
+            this.ChangeTab(currentTab);
+        } else {
+            this.$scope.tabSelection = 0;
         }
 
         this.$scope.SubmitDates = () => {
@@ -67,26 +60,9 @@ export default class timeController {
             }
         };
 
-        // 1: custom, 2: hour, 3: day, 4: week
+        // 0: custom, 1: hour, 2: day, 3: week
         this.$scope.ChangeQuickTime = (tab) => {
-            if (this.$scope.internalSelect) {
-                return;
-            }
-            let startTime;
-            const endTime = parseInt(new Date().getTime());
-            switch (tab) {
-                case 1:
-                    startTime = parseInt(new Date().getTime()) - 1000 * 60 * 60;
-                    break;
-                case 2:
-                    startTime = parseInt(new Date().getTime()) - 1000 * 60 * 60 * 24;
-                    break;
-                case 3:
-                    startTime = parseInt(new Date().getTime()) - 1000 * 60 * 60 * 24 * 7;
-                    break;
-            }
-            this.$location.search('start', parseInt(startTime / 1000));
-            this.$location.search('end', parseInt(endTime / 1000));
+            this.ChangeTab(tab);
         };
 
         this.$scope.ResetDates = () => {
@@ -101,5 +77,39 @@ export default class timeController {
         this.$timeout(() => {
             this.$scope.internalSelect = false;
         }, 500);
+
+        // if (this.$scope.refreshEnables = true) {
+        //     $interval(() => {
+        //
+        //             this.$location.search('start', this.$location.search().start + 1000)
+        //             this.$location.search('end', this.$location.search().end + 1000)
+        //
+        //     }, 1000);
+        //
+        // }
+        // Initialize quick time tabs
+    }
+
+    ChangeTab(tab) {
+        tab = parseInt(tab);
+        this.$scope.tabSelection = tab;
+        const endTime = parseInt(new Date().getTime());
+        let startTime;
+        switch (tab) {
+            case 1:
+                startTime = parseInt(new Date().getTime()) - 1000 * 60 * 60;
+                break;
+            case 2:
+                startTime = parseInt(new Date().getTime()) - 1000 * 60 * 60 * 24;
+                break;
+            case 3:
+                startTime = parseInt(new Date().getTime()) - 1000 * 60 * 60 * 24 * 7;
+                break;
+            default:
+                console.log('big err');
+        }
+        this.$location.search('tab', tab === 0 ? null : tab);
+        this.$location.search('start', parseInt(startTime / 1000));
+        this.$location.search('end', parseInt(endTime / 1000));
     }
 }
