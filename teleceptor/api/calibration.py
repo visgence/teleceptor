@@ -2,6 +2,8 @@
 import cherrypy
 import json
 import logging
+from sqlalchemy import desc
+
 
 # Local Imports
 from teleceptor.models import Calibration
@@ -30,7 +32,7 @@ class Calibrations:
                 logging.debug('Found sensor id: %s', str(filter_arguments['sensor_id']))
                 q = q.filter_by(sensor_id=filter_arguments['sensor_id'])
 
-            q = q.order_by(Calibration.timestamp)
+            q = q.order_by(desc(Calibration.timestamp))
 
             logging.debug('Making query: %s', str(q))
             try:

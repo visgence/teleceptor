@@ -23,6 +23,7 @@ export default class sensorController { // ', ['frapontillo.bootstrap-switch',])
                 return;
             }
             this.LoadSensor(nv.sensor);
+            this.LoadCalibrations(nv.sensor);
         });
 
         $scope.displayInfo = $location.search().datastream !== undefined;
@@ -30,7 +31,7 @@ export default class sensorController { // ', ['frapontillo.bootstrap-switch',])
 
     $onInit() {
         // tabs:
-        // config, entry, export, command, metatdata
+        // config, entry, export, command, metatdata, calibrations
         this.$scope.tab = 'config';
         this.$scope.isActive = 'false';
         this.$scope.ShowInfo = false;
@@ -108,6 +109,7 @@ export default class sensorController { // ', ['frapontillo.bootstrap-switch',])
                         this.infoService.setSensor(success.data.sensor);
                         this.$scope.sensor = this.infoService.getSensor();
                         this.$scope.editing = false;
+                        this.LoadCalibrations(this.$scope.sensor.uuid);
                     })
                     .catch((error) => {
                         ShowError(this.$mdDialog, error);
@@ -209,7 +211,22 @@ export default class sensorController { // ', ['frapontillo.bootstrap-switch',])
                 $('#sensor-card').css('visibility', 'visible');
             })
             .catch((error) => {
-                ShowError(error);
+                ShowError(this.$mdDialog, error);
+            });
+    }
+
+    // This needs to wait for stream info to be set, then make request by sensor uuid
+    LoadCalibrations(sensor) {
+        this.apiService.get('calibrations?sensor_id=' + sensor)
+            .then((success) => {
+                this.$scope.calibrations = {};
+                success.data.calibrations.forEach((calibration) => {
+                    this.$scope.calibrations[new Date(calibration.timestamp * 1000)] = calibration.coefficients;
+                });
+            })
+            .catch((error) => {
+                console.log(error);
+                ShowError(this.$mdDialog, error);
             });
     }
 
