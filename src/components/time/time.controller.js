@@ -6,10 +6,10 @@ export default class timeController {
         this.$scope = $scope;
         this.$location = $location;
         this.$timeout = $timeout;
-        this.$scope.refreshEnabled = false
+        this.$scope.refreshDisabled = true;
         this.$interval = $interval;
         // global (to the controller) variable to hold the amount of time for refreshes.
-        this.refreshIntervalTime = 5000;
+        this.refreshIntervalTime = 1000 * 60;
     }
 
     $onInit() {
@@ -75,7 +75,7 @@ export default class timeController {
         };
 
         this.$scope.ToggleRefresh = () => {
-            if (this.$location.search().refresh === undefined) {
+            if (window.refreshInterval === undefined) {
                 this.SetRefreshInterval();
             } else {
                 this.CancelRefreshInterval();
@@ -86,13 +86,20 @@ export default class timeController {
 
     SetRefreshInterval() {
         this.$timeout(() => {
+            this.$scope.refreshTime = 0;
             window.refreshInterval = this.RefreshInterval();
+            window.refreshTimer = this.RefreshTimer();
+            this.$scope.refreshDisabled = false;
         });
     }
 
     CancelRefreshInterval() {
         this.$location.search('refresh', null);
         this.$interval.cancel(window.refreshInterval);
+        this.$interval.cancel(window.refreshTimer);
+        window.refreshInterval = undefined;
+        console.log('off');
+        this.$scope.refreshDisabled = true;
     }
 
     RefreshInterval() {
@@ -111,6 +118,12 @@ export default class timeController {
                 this.$location.search('end', new Date().getTime());
             }
         }, this.refreshIntervalTime);
+    }
+
+    RefreshTimer() {
+        return this.$interval(() => {
+            this.$scope.refreshTime += 0.1;
+        }, this.refreshIntervalTime / 1000);
     }
 
     ChangeTab(tab) {
