@@ -15,6 +15,7 @@ export default class treeController {
         this.$scope.searchFilter = 'Stream';
         this.$scope.Matches = true;
         this.$scope.isEmpty = false;
+        this.$scope.noStreams = true;
 
         this.LoadData();
 
@@ -49,6 +50,9 @@ export default class treeController {
                 const pathsArray = this.GeneratePathArray(success.data);
                 const treeStructure = this.MakeTreeStructure(pathsArray);
                 this.RenderTree(treeStructure);
+                if ((success.data.datastreams).length !== 0) {
+                    this.$scope.noStreams = false;
+                }
             })
             .catch((error) => {
                 console.log(error);
