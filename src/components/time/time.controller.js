@@ -6,54 +6,54 @@ export default class timeController {
         this.$scope = $scope;
         this.$location = $location;
         this.$timeout = $timeout;
-        this.$scope.internalSelect = true;
-        // this.interval = $interval
-        this.$scope.refreshEnabled = false;
+        this.$scope.refreshEnabled = false
+        this.$interval = $interval;
+        // global (to the controller) variable to hold the amount of time for refreshes.
+        this.refreshIntervalTime = 5000;
     }
 
     $onInit() {
         const currentTime = new Date().getTime() / 1000;
-        let startTime;
-        let endTime;
         // Initialize date time pickers
         if (this.$location.search().start !== undefined) {
             this.$scope.startDate = new Date(this.$location.search().start * 1000);
-            startTime = this.$location.search().start;
         } else {
             this.$scope.startDate = new Date((currentTime - 60 * 60 * 6) * 1000);
-            startTime = this.$location.search().start - 60 * 60 * 6 * 1000;
         }
         if (this.$location.search().end !== undefined) {
             this.$scope.endDate = new Date(this.$location.search().end * 1000);
-            endTime = this.$location.search().end;
         } else {
             this.$scope.endDate = new Date(currentTime * 1000);
-            endTime = currentTime;
         }
 
         // Check if tab is in selection
         // 1: custom, 2: hour, 3: day, 4: week
         const currentTab = this.$location.search().tab;
         if (currentTab !== undefined) {
-            endTime = currentTime;
             this.ChangeTab(currentTab);
         } else {
             this.$scope.tabSelection = 0;
         }
 
+        // Initialize auto refresh
+        if (window.refreshInterval === undefined && this.$location.search().refresh !== undefined) {
+            this.SetRefreshInterval();
+        }
+
         this.$scope.SubmitDates = () => {
-            let startTime = this.$scope.startDate;
-            let endTime = this.$scope.endDate;
+            const startTime = this.$scope.startDate;
+            const endTime = this.$scope.endDate;
+
+            this.$scope.tabSelection = 0;
+            this.$location.search('tab', null);
 
             if (startTime !== undefined && startTime.toString().length !== 0) {
-                startTime = new Date(startTime);
                 this.$location.search('start', startTime.getTime() / 1000);
             } else {
                 this.$location.search('start', null);
             }
 
             if (endTime !== undefined && endTime.toString().length !== 0) {
-                endTime = new Date(endTime);
                 this.$location.search('end', endTime.getTime() / 1000);
             } else {
                 this.$location.search('end', null);
@@ -74,20 +74,43 @@ export default class timeController {
             });
         };
 
-        this.$timeout(() => {
-            this.$scope.internalSelect = false;
-        }, 500);
+        this.$scope.ToggleRefresh = () => {
+            if (this.$location.search().refresh === undefined) {
+                this.SetRefreshInterval();
+            } else {
+                this.CancelRefreshInterval();
+            }
+        };
 
-        // if (this.$scope.refreshEnables = true) {
-        //     $interval(() => {
-        //
-        //             this.$location.search('start', this.$location.search().start + 1000)
-        //             this.$location.search('end', this.$location.search().end + 1000)
-        //
-        //     }, 1000);
-        //
-        // }
-        // Initialize quick time tabs
+    }
+
+    SetRefreshInterval() {
+        this.$timeout(() => {
+            window.refreshInterval = this.RefreshInterval();
+        });
+    }
+
+    CancelRefreshInterval() {
+        this.$location.search('refresh', null);
+        this.$interval.cancel(window.refreshInterval);
+    }
+
+    RefreshInterval() {
+        return this.$interval(() => {
+            this.$location.search('refresh', true);
+            if (this.$location.search().tab !== undefined) {
+                // If we're using a tab, the ChangeTab method can handle all the url updates.
+                this.ChangeTab(this.$location.search().tab);
+            } else if (this.$location.search().start !== undefined) {
+                // if start and end times are defined, just add interval time to them.
+                this.$location.search('start', this.$location.search().start + this.refreshTime);
+                this.$location.search('end', this.$location.search().end + this.refreshTime);
+            } else {
+                // If nothing is defined, define new start/end paramaters to start updating.
+                this.$location.search('start', new Date().getTime() - 60 * 60 * 6 * 1000);
+                this.$location.search('end', new Date().getTime());
+            }
+        }, this.refreshIntervalTime);
     }
 
     ChangeTab(tab) {
