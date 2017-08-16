@@ -37,7 +37,15 @@ export default class graphController {
 
     // Makes a call to the readings api endpoint to get graph data.
     getData(sensorInfo) {
-        const url = 'readings/?' + location.href.split('?')[1];
+        const urlArgs = location.href.split('?')[1].split('&');
+        let url = 'readings/?';
+        urlArgs.forEach((arg) => {
+            if (arg.startsWith('start') || arg.startsWith('end') || arg.startsWith('datastream')) {
+                url += arg + '&';
+            }
+        });
+        url = url.substring(0, url.length - 1);
+
         this.apiService.get(url)
             .then((success) => {
                 if (success.data.error !== undefined) {
