@@ -14,6 +14,7 @@ from readings import SensorReadings
 from station import Station
 from messages import Messages
 from grafana import GrafanaApi
+from calibration import Calibrations
 
 
 class SysData:
@@ -35,3 +36,4 @@ class ResourceApi:
     station = Station()
     messages = Messages()
     grafana = GrafanaApi()
+    calibrations = Calibrations()

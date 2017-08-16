@@ -329,6 +329,15 @@ class Calibration(Base):
     user = Column(Text)
     coefficients = Column(Text, nullable=False)
 
+    def getCoefficients(self):
+        coefs = json.loads(self.coefficients)
+        assert type(coefs) == list
+        return coefs
+
+    def setCoefficients(self, coefs):
+        assert type(coefs) == list or type(coefs) == tuple
+        self.coefficients = json.dumps(coefs)
+
     def toDict(self):
         return {
             'id': self.id,
