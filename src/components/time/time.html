@@ -1,6 +1,7 @@
+
 <md-card class="time-card">
     <md-toolbar class="card-header md-primary">
-        <h4>Time</h4>
+        <h4>Time {{refreshTime}}</h4>
     </md-toolbar>
     <md-content class="card-content">
 
@@ -14,8 +15,11 @@
             </md-tabs>
 
             <div class="switch-progress-container" layout="row">
-                <md-switch ng-click="ToggleRefresh()">Auto-Refresh</md-switch>
-                <md-progress-circular ng-disabled="refreshDisabled" class="auto-refresh-progress" md-mode="determinate" value="{{refreshTime}}" md-diameter="30px"></md-progress-circular>
+                <md-switch  ng-click="ToggleRefresh()">Auto-Refresh</md-switch>
+                <div ng-if="refreshEnabled == true">
+                    <md-progress-circular class="auto-refresh-progress" md-mode="determinate" value="{{refreshTime}}" md-diameter="30px"></md-progress-circular>
+
+                </div>
             </div>
         </div>
 
