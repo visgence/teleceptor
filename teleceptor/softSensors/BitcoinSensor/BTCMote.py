@@ -6,7 +6,7 @@ import logging
 
 import teleceptor
 
-queryrate = 60
+queryrate = 10
 blockchainURL = "http://blockchain.info/ticker"
 teleceptorURL = "http://localhost:"+str(teleceptor.PORT)+"/api/station/"
 caltime = time.time()

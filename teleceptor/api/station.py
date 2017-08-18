@@ -38,6 +38,7 @@
 # System Imports
 import cherrypy
 import logging
+import time
 from sqlalchemy.orm.exc import NoResultFound
 try:
     import simplejson as json
@@ -260,12 +261,15 @@ def update_sensor_data(sensor_data, session):
 
     sensor = sensors.getSensor(uuid, session=session)
     coefficients = [1, 0]
+    timestamp = 0
     if 'last_calibration' not in sensor:
         if 'scale' in sensor_data:
             coefficients = sensor_data['scale']
+            timestamp = time.time()
     else:
         if 'calibration_timestamp' not in sensor_data or 'scale' not in sensor_data:
             coefficients = sensor['last_calibration']['coefficients']
+
         elif sensor_data['calibration_timestamp'] < sensor['last_calibration']['timestamp']:
             coefficients = sensor['last_calibration']['coefficients']
         else:
@@ -273,7 +277,8 @@ def update_sensor_data(sensor_data, session):
 
     logging.debug("Got sensor %s", str(sensor))
     logging.debug("Updating calibration...")
-    sensor_info = Sensors.updateCalibration(sensor, coefficients, sensor_data['timestamp'], session=session)
+
+    sensor_info = Sensors.updateCalibration(sensor, coefficients, timestamp, session=session)
     logging.debug("Updated calibration")
 
     return sensor_info
