@@ -33,14 +33,15 @@ export default class apiService {
                 try {
                     const jsonArray = JSON.parse('{"array": ' + data[key].coefficients + '}');
                     jsonArray.array.forEach((entry) => {
-                        if (isNaN(entry)) {
+                        if (isNaN(entry) || entry.constructor === Array) {
                             throw 'Calibration must contain only numbers.';
                         }
                     });
                     data[key].coefficients = jsonArray.array;
                     delete data[key].timestamp;
                 } catch (error) {
-                    ShowError(this.$mdDialog, error.error || 'Calibration is not correctly formatted json.');
+                    console.log(error);
+                    ShowError(this.$mdDialog, error || 'Calibration is not correctly formatted json.');
                     data['error'] = true;
                 }
 
