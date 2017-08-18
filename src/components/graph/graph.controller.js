@@ -1,13 +1,16 @@
 import * as d3 from 'd3';
+import {ShowError} from '../../utilites/dialogs.utils';
 
 export default class graphController {
-    constructor(infoService, apiService, $location, $scope, $timeout, $window) {
+    constructor(infoService, apiService, $location, $scope, $timeout, $window, $mdDialog, $mdToast) {
         'ngInject';
         this.$location = $location;
         this.$scope = $scope;
         this.$timeout = $timeout;
         this.infoService = infoService;
         this.apiService = apiService;
+        this.$mdDialog = $mdDialog;
+        this.$mdToast = $mdToast;
 
         // watch window resize
         angular.element($window).bind('resize', () => {
@@ -18,10 +21,7 @@ export default class graphController {
 
         // Wait until sensor info is loaded to get reading data.
         this.$scope.$watch(() => this.infoService.getSensor(), (nv, ov) => {
-            if (nv === undefined) {
-                return;
-            }
-            if (nv === ov) {
+            if (nv === undefined || nv === ov) {
                 return;
             }
             $scope.title = nv.name;
@@ -69,6 +69,7 @@ export default class graphController {
                 }
             })
             .catch((error) => {
+                ShowError(this.$mdDialog, error);
                 console.log('error');
                 console.log(error);
             });
@@ -110,19 +111,19 @@ export default class graphController {
             }
         }
 
-        // Add Y-axis padding if min = max.
-        if (min === max) {
-            const offset = min * 0.01;
-            min = min > 0 ? min - offset : min + offset;
-            max = max > 0 ? max + offset : max - offset;
-        }
-
         const stream = this.infoService.getStream();
         if (stream.min_value !== null) {
             min = stream.min_value;
         }
         if (stream.max_value !== null) {
             max = stream.max_value;
+        }
+
+        // Add Y-axis padding if min = max.
+        if (min === max) {
+            const offset = min * 0.01;
+            min = min > 0 ? min - offset : min + offset;
+            max = max > 0 ? max + offset : max - offset;
         }
 
         // Set graph time range.
@@ -166,7 +167,6 @@ export default class graphController {
             .append('g')
             .attr('transform', 'translate(' + margin.left + ',' + 0 + ')')
             .classed('svg-content-responsive', true);
-        this.chart = newChart;
 
         // Calculate where in screen position X should a point be.
         const xScale = d3.scaleTime()
@@ -226,18 +226,14 @@ export default class graphController {
             .call(yAxis);
 
         // Create the top X axis.
-        const xAxisTop = d3.axisBottom(xScale)
-            .ticks(0);
-
+        const xAxisTop = d3.axisBottom(xScale).ticks(0);
         newChart.append('g')
             .attr('class', 'chart-axis')
             .attr('transform', 'translate(0, ' + margin.bottom + ')')
             .call(xAxisTop);
 
         // Create the right Y axis.
-        const yAxisRight = d3.axisLeft(yScale)
-            .ticks(0);
-
+        const yAxisRight = d3.axisLeft(yScale).ticks(0);
         newChart.append('g')
             .attr('class', 'chart-axis')
             .attr('transform', 'translate(' + width + ', 0)')
@@ -270,7 +266,7 @@ export default class graphController {
                 }
                 // If a point falls outside of y axis range, we don't draw it and give a warning.
                 if (d[1] > max || d[1] < min) {
-                    // this.$scope.newGraph.warning = 'Warning: Some data points are not shown in graph and may be causing line breaks.';
+                    ShowSuccess($mdToast, 'Warning: Some data points are not shown in graph and may be causing line breaks.');
                     return false;
                 }
 
@@ -298,55 +294,44 @@ export default class graphController {
             });
         newChart.append('path')
             .attr('d', lineFunction(readings))
-            .attr('stroke', '#FFB90F')
-            .attr('stroke-width', 2)
-            .attr('fill', 'none');
-
+            .attr('class', 'graph-line');
 
         // Create a container to store all the tool tip components.
         const tooltip = newChart.append('g')
-            .style('display', 'none');
+            .attr('class', 'tooltip');
 
         // Create a point on the line where the mouse is over.
         const toolTipCircle = tooltip.append('circle')
-            .attr('class', 'tooltip-circle')
-            .style('fill', 'none')
-            .style('stroke', 'blue')
+            .attr('class', 'tooltip circle')
             .attr('r', 4);
 
         // Add text to display the current value.
         const toolTipText = tooltip.append('text')
+            .attr('class', 'tooltip text')
             .attr('width', 100 * 2)
-            .attr('height', 100 * 0.4)
-            .attr('fill', 'black');
+            .attr('height', 100 * 0.4);
 
         // Y-axis line for tooltip
-        const yLine = tooltip.append('g')
-            .append('line')
-            .attr('class', 'tooltip-line')
-            .style('stroke', 'blue')
-            .style('stroke-dasharray', '3,3')
-            .style('opacity', 0.5)
+        const yLine = tooltip.append('g').append('line')
+            .attr('class', 'tooltip line')
             .attr('y1', margin.bottom)
             .attr('y2', height);
 
         // Add the full date and value of the hovered over point.
         const timeText = tooltip.append('text')
+            .attr('class', 'tooltip text')
             .attr('x', 0)
             .attr('y', margin.bottom - 5)
             .attr('width', 100)
-            .attr('height', 100 * 0.4)
-            .attr('fill', 'black');
+            .attr('height', 100 * 0.4);
 
         // Selection box
         const selectionBox = newChart.append('rect')
-            .attr('fill', 'none')
-            .attr('opacity', 0.5)
             .attr('x', 0)
             .attr('y', margin.bottom)
             .attr('width', 14)
             .attr('height', height - margin.bottom)
-            .attr('class', 'myselection');
+            .attr('class', 'selection-box');
 
         const myData = [];
         readings.forEach((reading) => {
@@ -404,7 +389,7 @@ export default class graphController {
             .style('pointer-events', 'all')
             // Show tools tips on mouse over the graph.
             .on('mouseover', () => {
-                tooltip.style('display', null);
+                tooltip.style('display', 'inline');
             })
             // Hide tool tips if mouse is not over the graph.
             .on('mouseout', () => {
@@ -438,7 +423,6 @@ export default class graphController {
                 toolTipCircle.attr('transform', 'translate(' + xScale(d[0]) + ',' + yScale(d[1]) + ')');
                 yLine.attr('transform', 'translate(' + xScale(d[0]) + ',' + 0 + ')');
                 timeText.text(new Date(d[0]) + ' | ' + this.FormatText(d[1]));
-
                 toolTipText
                     .text(this.FormatText(d[1]))
                     .attr('transform', 'translate(' + (xScale(d[0]) + 10) + ',' + (yScale(d[1]) - 10) + ')');
@@ -446,7 +430,7 @@ export default class graphController {
             })
             // Log the start position of a drag.
             .on('mousedown', () => {
-                selectionBox.attr('fill', '#b7ff64');
+                selectionBox.style('fill', '#b7ff64');
                 dragStart = d3.event.offsetX - margin.left;
 
                 const x0 = xScale.invert(d3.event.offsetX - margin.left).getTime();
