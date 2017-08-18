@@ -31,7 +31,15 @@
         </ng-show>
 
         <ng-hide ng-hide="Matches">
-        <md-list-item><h4>No Matches<ng-show ng-show="isEmpty">, Empty Search Field</ng-show></h4></md-list-item>
-    </ng-hide>
+            <ng-hide ng-hide = "noStreams">
+            <md-list-item>
+                <h4>No Matches<ng-show ng-show="isEmpty">, Empty Search Field</ng-show></h4></md-list-item>
+        </ng-hide>
+    </ng-hide> 
+
+        <ng-show ng-show = "noStreams">
+            <h4>No Streams Found</h4>
+        </ng-show>
+
     </md-content>
 </md-card>

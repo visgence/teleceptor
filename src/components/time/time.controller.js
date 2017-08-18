@@ -26,6 +26,7 @@ export default class timeController {
             this.$scope.endDate = new Date(this.$location.search().end * 1000);
         } else {
             this.$scope.endDate = new Date(currentTime * 1000);
+
         }
 
         // Check if tab is in selection
@@ -39,12 +40,10 @@ export default class timeController {
 
         // Initialize auto refresh
         if (window.refreshInterval === undefined && this.$location.search().refresh !== undefined) {
-            console.log('set')
             this.SetRefreshInterval();
             this.$scope.refreshEnabled = true;
         }
         if (window.refreshInterval !== undefined) {
-            console.log('met')
             this.$scope.refreshEnabled = true;
         }
 
@@ -62,6 +61,7 @@ export default class timeController {
         };
 
         this.$scope.SubmitDates = () => {
+
             const startTime = this.$scope.startDate;
             const endTime = this.$scope.endDate;
 
@@ -69,13 +69,13 @@ export default class timeController {
             this.$location.search('tab', null);
 
             if (startTime !== undefined && startTime.toString().length !== 0) {
-                this.$location.search('start', startTime.getTime() / 1000);
+                this.$location.search('start', new Date(startTime).getTime() / 1000);
             } else {
                 this.$location.search('start', null);
             }
 
             if (endTime !== undefined && endTime.toString().length !== 0) {
-                this.$location.search('end', endTime.getTime() / 1000);
+                this.$location.search('end', new Date(endTime).getTime() / 1000);
             } else {
                 this.$location.search('end', null);
             }
@@ -132,13 +132,6 @@ export default class timeController {
                 });
             });
         }, this.refreshIntervalTime);
-    }
-
-    RefreshTimer() {
-        console.log('asdf')
-        return this.$interval(() => {
-            this.$scope.refreshTime += 1;
-        }, this.refreshIntervalTime / 100);
     }
 
     ChangeTab(tab) {

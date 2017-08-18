@@ -393,6 +393,7 @@ export default class graphController {
                 this.$scope.$apply(() => {
                     this.$location.search('start', parseInt(start / 1000));
                     this.$location.search('end', parseInt(end / 1000));
+                    this.$location.search('tab', null);
                 });
             });
         // Creates an invisible rectangle over the graph to capture all mouse events.
