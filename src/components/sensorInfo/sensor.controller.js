@@ -1,6 +1,6 @@
 import {ShowSuccess, ShowError} from '../../utilites/dialogs.utils';
 
-export default class sensorController { // ', ['frapontillo.bootstrap-switch',])
+export default class sensorController {
 
     constructor(infoService, apiService, $scope, $location, $mdToast, $mdDialog) {
         'ngInject';
@@ -13,10 +13,7 @@ export default class sensorController { // ', ['frapontillo.bootstrap-switch',])
         this.$mdDialog = $mdDialog;
 
         this.$scope.$watch(() => this.infoService.getStream(), (nv, ov) => {
-            if (nv === undefined) {
-                return;
-            }
-            if (nv === ov) {
+            if (nv === undefined || nv === ov) {
                 return;
             }
             if (nv.sensor === undefined) {
@@ -36,7 +33,6 @@ export default class sensorController { // ', ['frapontillo.bootstrap-switch',])
         this.$scope.isActive = 'false';
         this.$scope.ShowInfo = false;
         this.$scope.sensorLoaded = false;
-
 
         this.$scope.ChangeTab = (event, tab) => {
             this.$scope.tab = tab;
@@ -115,7 +111,7 @@ export default class sensorController { // ', ['frapontillo.bootstrap-switch',])
                         ShowError(this.$mdDialog, error);
                     });
             } catch (error) {
-                console.error('Error saving sensor fields');
+                ShowError(this.$mdDialog, error);
             }
         };
 
@@ -186,10 +182,23 @@ export default class sensorController { // ', ['frapontillo.bootstrap-switch',])
                 });
         };
 
-        // CONVERT TO SCOPE
-        $('#sendCommand').on('click', () => {
-            this.sendCommand();
-        });
+        // Untested
+        this.$scope.sendCommand = () => {
+            const sensorInfo = infoService.getSensor();
+            // post new value to commands api
+            const payload = {
+                message: this.$scope.commandSwitch.value,
+                duration: 60000,
+                sensor_id: sensorInfo.uuid,
+            };
+            apiService.post('messages/', payload)
+                .then((success) => {
+                    ShowSuccess(this.$mdToast);
+                })
+                .catch((error) => {
+                    ShowError(this.$mdDialog, error);
+                });
+        };
     }
 
     // This needs to wait for stream info to be set, then make request by sensor uuid
@@ -205,8 +214,10 @@ export default class sensorController { // ', ['frapontillo.bootstrap-switch',])
                 if (success.data.sensor_type === 'output') {
                     this.$scope.isActive = true;
                     // We need to set the preliminary state
+                    this.$scope.commandSwitch = true || false;
                 } else {
                     this.$scope.isActive = false;
+                    this.$scope.commandSwitch = false;
                 }
                 $('#sensor-card').css('visibility', 'visible');
             })
@@ -248,8 +259,7 @@ export default class sensorController { // ', ['frapontillo.bootstrap-switch',])
         const rowDelim = '\r\n';
 
         // build csv string
-        let csv = '';
-        csv += 'timestamp' + colDelim + 'UUID' + colDelim + 'value' + colDelim + 'scaled value' + colDelim + 'units' + rowDelim;
+        let csv = 'timestamp' + colDelim + 'UUID' + colDelim + 'value' + colDelim + 'scaled value' + colDelim + 'units' + rowDelim;
         for (i = 0; i < readings.length; i++) {
             csv += readings[i][0] +
                 colDelim + sensorInfo.uuid +
@@ -274,23 +284,5 @@ export default class sensorController { // ', ['frapontillo.bootstrap-switch',])
         link.download = downloadFilename;
         link.href = 'data:application/csv;charset=utf-8,' + encodeURIComponent(csv);
         link.click();
-    }
-
-    // UNTESTED
-    sendCommand() {
-        const sensorInfo = infoService.getSensor();
-        // p ost new value to commands api
-        const payload = {
-            message: angular.element('#bs-switch')[0].value,
-            duration: 60000,
-            sensor_id: sensorInfo.uuid,
-        };
-        apiService.post('messages/', payload)
-            .then((success) => {
-                ShowSuccess(this.$mdToast);
-            })
-            .catch((error) => {
-                ShowError(this.$mdDialog, error);
-            });
     }
 }
