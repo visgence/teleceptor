@@ -1,4 +1,7 @@
-import {ShowSuccess, ShowError} from '../../utilites/dialogs.utils';
+import {
+    ShowSuccess,
+    ShowError,
+} from '../../utilites/dialogs.utils';
 
 export default class sensorController {
 
@@ -243,15 +246,21 @@ export default class sensorController {
 
     exportData(readings) {
         const sensorInfo = this.$scope.sensor;
-        if (readings === null) {
+        if (readings === null || readings.length === 0) {
             readings = this.infoService.getReadings();
         }
 
         const scaledReadings = [];
-        const coefficients = sensorInfo.last_calibration.coefficients.split(',');
+
+        const coefficients = sensorInfo.last_calibration.coefficients.replace(/\[/g, '').replace(/\]/g, '').split(',');
+
+
         let i;
+        let units;
+
         for (i = 0; i < readings.length; i++) {
-            scaledReadings.push(readings[i][1] * parseFloat(coefficients[0]) + parseFloat(coefficients[1]));
+            scaledReadings.push(readings[i][1] * (parseFloat(coefficients[0])) + parseFloat(coefficients[1]));
+
         }
 
         // actual delimiter characters for CSV format
@@ -259,13 +268,20 @@ export default class sensorController {
         const rowDelim = '\r\n';
 
         // build csv string
+        if (sensorInfo.units === null) {
+            units = 'none';
+        } else {
+            units = sensorInfo.units;
+        }
+
         let csv = 'timestamp' + colDelim + 'UUID' + colDelim + 'value' + colDelim + 'scaled value' + colDelim + 'units' + rowDelim;
+
         for (i = 0; i < readings.length; i++) {
             csv += readings[i][0] +
                 colDelim + sensorInfo.uuid +
                 colDelim + readings[i][1] +
                 colDelim + scaledReadings[i] +
-                colDelim + sensorInfo.units +
+                colDelim + units +
                 rowDelim;
         }
         // Data URI
