@@ -262,10 +262,9 @@ def update_sensor_data(sensor_data, session):
     sensor = sensors.getSensor(uuid, session=session)
     coefficients = [1, 0]
     timestamp = 0
-    if 'last_calibration' not in sensor:
-        if 'scale' in sensor_data:
-            coefficients = sensor_data['scale']
-            timestamp = time.time()
+    if 'scale' in sensor_data and 'calibration_timestamp' in sensor_data:
+        coefficients = sensor_data['scale']
+        timestamp = sensor_data['calibration_timestamp']
     else:
         if 'calibration_timestamp' not in sensor_data or 'scale' not in sensor_data:
             coefficients = sensor['last_calibration']['coefficients']
