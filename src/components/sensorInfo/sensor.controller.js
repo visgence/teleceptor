@@ -246,7 +246,7 @@ export default class sensorController {
 
     exportData(readings) {
         const sensorInfo = this.$scope.sensor;
-        if (readings === null) {
+        if (readings === null || readings.length === 0) {
             readings = this.infoService.getReadings();
         }
 
@@ -257,8 +257,6 @@ export default class sensorController {
 
         let i;
         let units;
-
-        // console.log(readings);
 
         for (i = 0; i < readings.length; i++) {
             scaledReadings.push(readings[i][1] * (parseFloat(coefficients[0])) + parseFloat(coefficients[1]));
@@ -277,6 +275,7 @@ export default class sensorController {
         }
 
         let csv = 'timestamp' + colDelim + 'UUID' + colDelim + 'value' + colDelim + 'scaled value' + colDelim + 'units' + rowDelim;
+
         for (i = 0; i < readings.length; i++) {
             csv += readings[i][0] +
                 colDelim + sensorInfo.uuid +
