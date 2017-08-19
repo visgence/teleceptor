@@ -65,14 +65,10 @@ export default class streamController {
                         hasErrors = true;
                         return;
                     }
-
                     updateData[key] = this.$scope.stream[key];
-
                 } else {
-
                     updateData[key] = this.$scope.stream[key];
                 }
-
             });
 
             if (hasErrors) {
@@ -107,7 +103,7 @@ export default class streamController {
                 const stream = success.data.stream;
                 Object.keys(stream).forEach((key) => {
                     if (stream[key] === null) {
-                        dataToDisplay[key] = '-';
+                        dataToDisplay[key] = '';
                     } else if (key === 'paths') {
                         dataToDisplay.paths = [];
                         stream[key].forEach((path) => {
