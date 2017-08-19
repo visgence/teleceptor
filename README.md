@@ -16,20 +16,28 @@ Database support:
 
 # Getting Started
 ## Dependencies
-  * pip
-  * node
-  * npm
+  * pip 9.0.1
+  * node 6.10.2
+  * npm 3.10.10
 
 
-## Setting Up Teleceptor
+## Setting up Teleceptor backend
 1. git clone https://github.com/visgence/teleceptor.git
 2. pip install -r requirements.txt
 3. To install a local config customizable first run ```./teleceptorcmd copyconfig``` app will print path
 4. In your config, you can set your Postgres and ElasticSearch settings.
 5. In the Teleceptor folder, run command ```./teleceptorcmd setup``` and wait until _Done!_ is printed.
-6. Run command ```./teleceptorcmd runserver 0.0.0.0:8000```. You will now be running Teleceptor at http://localhost:8000/
+6. Run command ```./teleceptorcmd runserver 0.0.0.0:8000```.
 7. To load test data, run ```./teleceptorcmd loadfixtures```.
 8. Set up desired sensors and start collecting data.(_See below for setting up sensors_)
+
+## Setting up Teleceptor frontend
+1. Run command ```npm install```
+### For development
+2. Run command ```npm run start```. This will build the project, sets webpack to watch files, and runs the server at localhost:8000
+### For production
+2. Run command ```npm run buildProduction```. This only builds the project and runs the optimization plugins for webpack.
+3. Run command ```./teleceptorcmd runserver [ip:port]```. Runs the server at ip and port if given, default is 0.0.0.0:8000
 
 ## Example Data
 The ```./teleceptorcmd loadfixtures``` command will run a program that will create two datastreams and fill them with an hours worth of data in the form of a sine curve.
@@ -39,7 +47,7 @@ The ```./teleceptorcmd btcmote``` command will run a program that requests data 
 
 
 # Sensor Firmware
-Sensor firmware can be found in the [firmware](https://github.com/visgence/teleceptor/tree/master/firmware) folder. Download the appropriate firmware for your type of sensor, and then upload it to your sensor.
+Sensor firmware can be found in the [firmware](https://github.com/visgence/teleceptor/tree/master/SensorExamples) folder. Download the appropriate firmware for your type of sensor, and then upload it to your sensor.
 
 ## Setting Up Sensors
 
@@ -47,7 +55,7 @@ Sensor firmware can be found in the [firmware](https://github.com/visgence/telec
 1. Plug in your sensor through a USB port.
 * Make sure you have the most current firmware for your sensor.
 2. Run command ```./teleceptorcmd serialPoller PathOfSensor```. This will begin to look for sensors via USB ports.
-Note: To find the name of your sensor, in a terminal window, type ```ls /dev/```. This will give you a list of all sensors currently connected.
+Note: To find the name of your sensor, in a terminal window, type ```ls /dev/tty*```. This will give you a list of all sensors currently connected.
 
 
 # Teleceptor Front-End Usage
@@ -104,12 +112,6 @@ In the teleceptor/api folder, you will find a more detailed guide on how the api
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-
-
-
-
-
 Notes:
 we don't run webpack using the '-p' flag in production because this auto sets uglyifly to use mangle which breaks angular.
-instead we define the production environment ourselves and run uglyifly ourselves.
-Note: apparently there is a way to write angular modules in such a way that mangle can be run.
+Instead we define the production environment ourselves and run uglyifly ourselves.
