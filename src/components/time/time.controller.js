@@ -1,17 +1,11 @@
 export default class timeController {
 
-    constructor($scope, $location, $timeout, $interval) {
+    constructor($scope, $location, $timeout) {
         'ngInject';
 
         this.$scope = $scope;
         this.$location = $location;
         this.$timeout = $timeout;
-        this.$scope.refreshEnabled = false;
-        this.$scope.refreshTime = 5;
-
-        this.$interval = $interval;
-        // global (to the controller) variable to hold the amount of time for refreshes.
-        this.refreshIntervalTime = 1000 * 3;
     }
 
     $onInit() {
@@ -37,28 +31,6 @@ export default class timeController {
         } else {
             this.$scope.tabSelection = 0;
         }
-
-        // Initialize auto refresh
-        if (window.refreshInterval === undefined && this.$location.search().refresh !== undefined) {
-            this.SetRefreshInterval();
-            this.$scope.refreshEnabled = true;
-        }
-        if (window.refreshInterval !== undefined) {
-            this.$scope.refreshEnabled = true;
-        }
-
-        this.$scope.ToggleRefresh = () => {
-            this.$scope.refreshTime = 0;
-
-            // this.$scope.refreshTime = 0;
-            if (window.refreshInterval === undefined) {
-                this.$scope.refreshEnabled = true;
-                this.SetRefreshInterval();
-            } else {
-                this.$scope.refreshEnabled = false;
-                this.CancelRefreshInterval();
-            }
-        };
 
         this.$scope.SubmitDates = () => {
 
@@ -94,44 +66,6 @@ export default class timeController {
                 });
             });
         };
-    }
-
-    SetRefreshInterval() {
-        window.refreshInterval = this.RefreshInterval();
-        window.refreshTimer = this.RefreshTimer();
-    }
-
-    CancelRefreshInterval() {
-        this.$interval.cancel(window.refreshInterval);
-        this.$interval.cancel(window.refreshTimer);
-        window.refreshInterval = undefined;
-        window.refreshTimer = undefined;
-    }
-
-    RefreshInterval() {
-        return this.$interval(() => {
-            let newStart;
-            let newEnd;
-            if (this.$location.search().tab !== undefined) {
-                // If we're using a tab, the ChangeTab method can handle all the url updates.
-                this.ChangeTab(this.$location.search().tab);
-            } else if (this.$location.search().start !== undefined) {
-                // if start and end times are defined, just add interval time to them.
-                newStart = parseInt(this.$location.search().start) + this.refreshIntervalTime;
-                newEnd = parseInt(this.$location.search().end) + this.refreshIntervalTime;
-            } else {
-                // If nothing is defined, define new start/end paramaters to start updating.
-                newStart = new Date().getTime() - 60 * 60 * 6 * 1000;
-                newEnd = new Date().getTime();
-            }
-            this.$timeout(() => {
-                this.$scope.$apply(() => {
-                    this.$location.search('start', newStart);
-                    this.$location.search('end', newEnd);
-                    this.$location.search('refresh', true);
-                });
-            });
-        }, this.refreshIntervalTime);
     }
 
     ChangeTab(tab) {
