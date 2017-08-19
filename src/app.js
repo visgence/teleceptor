@@ -1,6 +1,5 @@
 import angular from 'angular';
 import angularRoute from 'angular-route'; // eslint-disable-line
-import './pages/base.style.scss';
 import 'angular-material'; // eslint-disable-line
 import graphcomponent from './components/graph/graph.component';
 import treecomponent from './components/tree/tree.component';
@@ -13,13 +12,13 @@ import apiService from './services/api.service';
 import infoService from './services/info.service';
 import basePage from './pages/base.html';
 import GenerateJson from './pages/generateJson.html';
+import './pages/base.style.scss';
 
 require ('./../node_modules/angular-material/angular-material.min.css');
 require('./../node_modules/adm-dtp/dist/ADM-dateTimePicker.min.js');
 require('./../node_modules/adm-dtp/dist/ADM-dateTimePicker.min.css');
 
 require('./../node_modules/jstree/dist/jstree.min.js');
-require('./../node_modules/jstree/dist/themes/default/style.min.css');
 
 angular.module('teleceptor', ['ngRoute', 'ngMaterial', 'ADM-dateTimePicker'])
     .component('graphcomponent', graphcomponent)

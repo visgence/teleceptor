@@ -14,11 +14,11 @@ module.exports = {
             'bootstrap',
             'jquery',
             'angular-material',
+            './node_modules/jstree/dist/jstree.min.js',
             './node_modules/angular-material/angular-material.min.css',
             './node_modules/bootstrap/dist/css/bootstrap.min.css',
             './node_modules/adm-dtp/dist/ADM-dateTimePicker.min.css',
             './node_modules/adm-dtp/dist/ADM-dateTimePicker.min.js',
-            './node_modules/bootstrap-treeview/dist/bootstrap-treeview.min.js'
         ],
     },
     output: {
@@ -64,7 +64,7 @@ module.exports = {
         }],
     },
     plugins: [
-        // new BundleAnalyzerPlugin(),
+        new BundleAnalyzerPlugin(),
         new BundleTracker({
             filename: './webpack-stats.json',
         }),

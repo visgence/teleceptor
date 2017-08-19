@@ -1,8 +1,4 @@
-import {
-    ShowError
-} from '../../utilites/dialogs.utils';
-
-require('./../../../node_modules/bootstrap-treeview/dist/bootstrap-treeview.min.js');
+import {ShowError} from '../../utilites/dialogs.utils';
 
 export default class treeController {
     constructor(apiService, $scope, $location, $mdDialog, $timeout) {
@@ -26,31 +22,33 @@ export default class treeController {
         this.LoadData();
 
         this.$scope.searchInput = () => {
-            $('#tree-view').empty();
             this.$scope.treeLoaded = false;
             const data = {
                 word: this.$scope.searchWords,
                 filter: this.$scope.searchFilter,
             };
+            let url = 'datastreams/';
             if (data.word !== '') {
-                this.apiService.get('datastreams/?word=' + data.word + '&filter=' + data.filter)
-                    .then((success) => {
-                        const pathsArray = this.GeneratePathArray(success.data);
-                        const treeStructure = this.MakeTreeStructure(pathsArray);
-                        $('#tree-view').jstree().destroy();
-                        this.RenderTree(treeStructure);
-                        this.$scope.isEmpty = false;
-                    })
-                    .catch((error) => {
-                        ShowError(this.$mdDialog, error);
-                        console.error('Error');
-                        console.log(error);
-                    });
-            } else {
-                this.$scope.isEmpty = true;
+                url += '?word=' + data.word + '&filter=' + data.filter;
             }
+
+            this.apiService.get(url)
+                .then((success) => {
+                    const pathsArray = this.GeneratePathArray(success.data);
+                    const treeStructure = this.MakeTreeStructure(pathsArray);
+                    $('#tree-view').jstree();
+                    $('#tree-view').jstree().destroy();
+                    this.RenderTree(treeStructure);
+                    this.$scope.isEmpty = false;
+                })
+                .catch((error) => {
+                    ShowError(this.$mdDialog, error);
+                    console.error('Error');
+                    console.log(error);
+                });
         };
-    }
+    };
+
 
     LoadData() {
         this.apiService.get('datastreams')

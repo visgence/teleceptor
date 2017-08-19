@@ -14,7 +14,7 @@
 }
 
 // sass-lint:disable no-important
-.jstree-default{
+.jstree-default {
     .jstree-wholerow-clicked {
         background: $grey !important;
         color: $dark-grey !important;
@@ -28,8 +28,8 @@
 
 .jstree-node {
     .jstree-leaf {
+        background-color: $dark-grey;
         margin-bottom: 5px;
         margin-top: 10px;
-        background-color: $dark-grey;
     }
 }
