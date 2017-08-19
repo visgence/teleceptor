@@ -1,9 +1,13 @@
 <md-card>
-  <md-toolbar class="card-header md-primary">
-    <h4 id="chart-title">{{title}}</h4>
-  </md-toolbar>
+    <md-toolbar class="card-header md-primary">
+        <h4 id="chart-title">{{title}}</h4>
+    </md-toolbar>
 
-  <div class="graph-message" id="graph-message"></div>
+    <div class="graph-message" id="graph-message"></div>
 
-  <div id="graph-container" class="graph-container"/>
+    <div id="graph-container" class="graph-container">
+        <div layout="row" layout-sm="column" layout-align="space-around">
+            <md-progress-circular md-mode="indeterminate" class="progress-indicator"></md-progress-circular>
+        </div>
+    </div>
 </md-card>
