@@ -63,14 +63,13 @@ export default class graphController {
                         const newReading = [parseFloat(reading[0]) * 1000, scaled_reading];
                         readings.push(newReading);
                     });
-
                     this.drawGraph(readings);
                     this.infoService.setReadings(readings);
                 }
             })
             .catch((error) => {
                 ShowError(this.$mdDialog, error);
-                console.log('error');
+                console.error('Error');
                 console.log(error);
             });
     }
@@ -135,15 +134,6 @@ export default class graphController {
         }
         if (this.$location.search().end !== undefined) {
             end = parseInt(this.$location.search().end * 1000);
-        }
-
-        // Make sure all points returned are within the calculated time range
-        // Note: This should never occur, left in as a sanity check.
-        if (latest < start || oldest > end) {
-            $('#graph-message').toggleClass('alert-danger');
-            $('#graph-message').toggleClass('graph-message-display');
-            $('#graph-message').html('<h3>Not enough points were returned.</h3>');
-            return;
         }
 
         // Used to calculate the left margin.
@@ -245,7 +235,7 @@ export default class graphController {
         let lastPoint = (readings[0][0]);
 
         for (j = 0; j < readings.length; j++) {
-            medianTimes.push((readings[j][0] - lastPoint) * 0.0001);
+            medianTimes.push(readings[j][0] - lastPoint);
             lastPoint = readings[j][0];
         }
         // Sort the array and take the median difference.
@@ -276,8 +266,8 @@ export default class graphController {
                 }
 
                 // If too much time has elapsed between this point and the last, we create a break.
-                const val = (d[0] - last) * 0.0001;
-                if (val > medianTime * 1.5 || val < medianTime * 0.5) {
+                const val = d[0] - last;
+                if (val > medianTime * 2) {
                     last = d[0];
                     return false;
                 }
