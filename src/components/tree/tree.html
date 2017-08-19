@@ -24,20 +24,9 @@
             <input type="text" class="form-control" ng-model="searchWords" ng-change="searchInput()" aria-label="..." placeholder="Search..." />
         </div>
 
+        <div id="tree-view" class="tree-view"></div>
 
-         <div id="tree-view" class="tree-view"></div>
-
-
-
-
-        <ng-hide ng-hide="Matches">
-            <ng-hide ng-hide = "noStreams">
-            <md-list-item>
-                <h4>No Matches<ng-show ng-show="isEmpty">, Empty Search Field</ng-show></h4></md-list-item>
-        </ng-hide>
-    </ng-hide>
-
-        <ng-show ng-show = "noStreams">
+        <ng-show ng-show="noStreams">
             <h4>No Streams Found</h4>
         </ng-show>
 

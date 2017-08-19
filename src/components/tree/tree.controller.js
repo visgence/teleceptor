@@ -1,20 +1,21 @@
-import {ShowError} from '../../utilites/dialogs.utils';
+import {
+    ShowError
+} from '../../utilites/dialogs.utils';
 
 require('./../../../node_modules/bootstrap-treeview/dist/bootstrap-treeview.min.js');
 
 export default class treeController {
-    constructor(apiService, $scope, $location, $mdDialog) {
+    constructor(apiService, $scope, $location, $mdDialog, $timeout) {
         'ngInject';
 
         this.$scope = $scope;
         this.$location = $location;
         this.$mdDialog = $mdDialog;
         this.apiService = apiService;
+        this.$timeout = $timeout;
     }
 
     $onInit() {
-
-
 
         this.$scope.treeLoaded = false;
         this.$scope.searchFilter = 'Stream';
@@ -25,6 +26,7 @@ export default class treeController {
         this.LoadData();
 
         this.$scope.searchInput = () => {
+            $('#tree-view').empty();
             this.$scope.treeLoaded = false;
             const data = {
                 word: this.$scope.searchWords,
@@ -35,6 +37,7 @@ export default class treeController {
                     .then((success) => {
                         const pathsArray = this.GeneratePathArray(success.data);
                         const treeStructure = this.MakeTreeStructure(pathsArray);
+                        $('#tree-view').jstree().destroy();
                         this.RenderTree(treeStructure);
                         this.$scope.isEmpty = false;
                     })
@@ -80,6 +83,7 @@ export default class treeController {
     MakeTreeStructure(pathsArr) {
         let nodeArray = [];
         this.$scope.nodeCount = 0;
+        this.currentSelection = parseInt(this.$location.search().datastream);
         pathsArr.forEach((path) => {
             const pathArray = path[0].split('/');
             if (pathArray[0] === '') {
@@ -96,6 +100,12 @@ export default class treeController {
             nodeArray.push({
                 text: pathArray[0],
                 sensor: sensorId,
+                state: {
+                    opened: streamId === this.currentSelection,
+                    disabled: false,
+                    selected: streamId === this.currentSelection,
+                },
+                id: streamId,
                 icon: 'glyphicon glyphicon-minus',
             });
             return nodeArray;
@@ -126,55 +136,29 @@ export default class treeController {
     }
 
     RenderTree(data) {
-
-
-        $('#tree-view').jstree({
-            core: {
-                data: data,
-            },
-            multiple: false,
-            // TODO: There is a drag and drop plugin, could be useful for paths setup
-            plugins: ['wholerow', 'changed']
-        });
-
-
-
-        if (this.$scope.nodeCount > 20) {
-            $('#my-tree').treeview('collapseAll', {
-                silent: true,
-            });
-        }
-
-        if (this.$scope.nodeCount === 0) {
-            this.$scope.Matches = false;
-        } else {
-            this.$scope.Matches = true;
-        }
-
-        $('#my-tree').on('nodeSelected', (event, data) => {
-            if (this.$scope.treeLoaded === false) {
-                return;
-            }
-            this.$scope.$apply(() => {
-                this.$location.search('datastream', data.id);
-            });
-        });
-
-        const curStream = parseInt(this.$location.search().datastream);
-        if (!isNaN(curStream)) {
-            $('#my-tree').treeview('getEnabled', 1).forEach((node) => {
-                if (node.id === curStream) {
-                    $('#my-tree').treeview('revealNode', node.nodeId);
-                    $('#my-tree').treeview('selectNode', node.nodeId);
-                }
-            });
-        }
-
         if (data.length === 0) {
-            $('#graph-message').toggleClass('alert-danger');
-            $('#graph-message').html('There are currently no streams available.');
+            this.$scope.noStreams = true;
+            return;
         }
+        this.$scope.noStreams = false;
 
+        $('#tree-view')
+            .on('select_node.jstree', (event, node) => {
+                if (node.node.original.id === undefined) {
+                    return;
+                }
+                this.$scope.$apply(() => {
+                    this.$location.search('datastream', node.node.original.id);
+                });
+            })
+            .jstree({
+                core: {
+                    data: data,
+                },
+                multiple: false,
+                // TODO: There is a drag and drop plugin, could be useful for paths setup
+                plugins: ['wholerow', 'changed'],
+            });
         this.$scope.treeLoaded = true;
     }
 }

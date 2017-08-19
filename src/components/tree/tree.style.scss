@@ -13,11 +13,12 @@
     overflow: visible;
 }
 
-// important-use: bootstrap treeview inlines its styles rather than have them in classes.
 // sass-lint:disable no-important
-.node-selected {
-    background-color: $grey !important;
-    color: $dark-grey !important;
+.jstree-default{
+    .jstree-wholerow-clicked {
+        background: $grey !important;
+        color: $dark-grey !important;
+    }
 }
 // sass-lint:enable no-important
 
@@ -29,5 +30,6 @@
     .jstree-leaf {
         margin-bottom: 5px;
         margin-top: 10px;
+        background-color: $dark-grey;
     }
 }
