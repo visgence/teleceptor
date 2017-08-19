@@ -53,7 +53,7 @@ module.exports = {
                 loader: 'sass-loader',
             }],
         }, {
-            test: /\.png$/,
+            test: /\.png$|\?|\.gif($|\?)/,
             loader: 'url-loader?publicPath=/static/dist/&limit=100000',
         }, {
             test: /\.jpg$/,

@@ -14,6 +14,8 @@ export default class treeController {
 
     $onInit() {
 
+
+
         this.$scope.treeLoaded = false;
         this.$scope.searchFilter = 'Stream';
         this.$scope.Matches = true;
@@ -93,10 +95,8 @@ export default class treeController {
         if (pathArray.length === 1) {
             nodeArray.push({
                 text: pathArray[0],
-                selectable: true,
-                color: '#333',
-                id: streamId,
                 sensor: sensorId,
+                icon: 'glyphicon glyphicon-minus',
             });
             return nodeArray;
         }
@@ -104,11 +104,11 @@ export default class treeController {
         for (let i = 0; i < nodeArray.length; i++) {
             if (pathArray[0] === nodeArray[i].text) {
                 pathArray.shift();
-                if (nodeArray[i].nodes === undefined) {
-                    nodeArray[i].nodes = [];
+                if (nodeArray[i].children === undefined) {
+                    nodeArray[i].children = [];
                 }
 
-                nodeArray[i].nodes = this.InsertNode(pathArray, streamId, sensorId, nodeArray[i].nodes);
+                nodeArray[i].children = this.InsertNode(pathArray, streamId, sensorId, nodeArray[i].children);
                 nodeFound = true;
             }
         }
@@ -117,9 +117,8 @@ export default class treeController {
             name = pathArray.shift();
             nodeArray.push({
                 text: name,
-                selectable: false,
-                color: '#333',
-                nodes: this.InsertNode(pathArray, streamId, sensorId, []),
+                icon: 'glyphicon glyphicon-folder-close glyphs',
+                children: this.InsertNode(pathArray, streamId, sensorId, []),
             });
             return nodeArray;
         }
@@ -127,14 +126,18 @@ export default class treeController {
     }
 
     RenderTree(data) {
-        $('#my-tree').treeview({
-            data: data,
-            showBorder: false,
-            color: '#333',
-            expandIcon: 'glyphicon glyphicon-folder-close glyphs',
-            emptyIcon: 'glyphicon glyphicon-minus',
-            collapseIcon: 'glyphicon glyphicon-folder-open glyphs',
+
+
+        $('#tree-view').jstree({
+            core: {
+                data: data,
+            },
+            multiple: false,
+            // TODO: There is a drag and drop plugin, could be useful for paths setup
+            plugins: ['wholerow', 'changed']
         });
+
+
 
         if (this.$scope.nodeCount > 20) {
             $('#my-tree').treeview('collapseAll', {

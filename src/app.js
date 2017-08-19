@@ -18,6 +18,9 @@ require ('./../node_modules/angular-material/angular-material.min.css');
 require('./../node_modules/adm-dtp/dist/ADM-dateTimePicker.min.js');
 require('./../node_modules/adm-dtp/dist/ADM-dateTimePicker.min.css');
 
+require('./../node_modules/jstree/dist/jstree.min.js');
+require('./../node_modules/jstree/dist/themes/default/style.min.css');
+
 angular.module('teleceptor', ['ngRoute', 'ngMaterial', 'ADM-dateTimePicker'])
     .component('graphcomponent', graphcomponent)
     .component('timecomponent', timecomponent)

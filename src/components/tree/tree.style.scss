@@ -20,3 +20,14 @@
     color: $dark-grey !important;
 }
 // sass-lint:enable no-important
+
+.tree-view {
+    margin-top: 10px;
+}
+
+.jstree-node {
+    .jstree-leaf {
+        margin-bottom: 5px;
+        margin-top: 10px;
+    }
+}
