@@ -1,13 +1,15 @@
+import {ShowError} from '../../utilites/dialogs.utils';
+
 require('./../../../node_modules/bootstrap-treeview/dist/bootstrap-treeview.min.js');
 
 export default class treeController {
-    constructor(apiService, $scope, $location) {
+    constructor(apiService, $scope, $location, $mdDialog) {
         'ngInject';
 
         this.$scope = $scope;
         this.$location = $location;
+        this.$mdDialog = $mdDialog;
         this.apiService = apiService;
-
     }
 
     $onInit() {
@@ -19,7 +21,6 @@ export default class treeController {
         this.$scope.noStreams = true;
 
         this.LoadData();
-
 
         this.$scope.searchInput = () => {
             this.$scope.treeLoaded = false;
@@ -36,7 +37,8 @@ export default class treeController {
                         this.$scope.isEmpty = false;
                     })
                     .catch((error) => {
-                        console.log('error');
+                        ShowError(this.$mdDialog, error);
+                        console.error('Error');
                         console.log(error);
                     });
             } else {
@@ -56,9 +58,9 @@ export default class treeController {
                 }
             })
             .catch((error) => {
+                ShowError(this.$mdDialog, error);
+                console.error('Error');
                 console.log(error);
-                $('#tree-message').toggleClass('alert-danger');
-                $('#tree-message').html('Something went wrong getting data from the server, check the console for details.');
             });
     }
 
@@ -72,7 +74,6 @@ export default class treeController {
         });
         return pathArr;
     }
-
 
     MakeTreeStructure(pathsArr) {
         let nodeArray = [];
@@ -154,7 +155,6 @@ export default class treeController {
             this.$scope.$apply(() => {
                 this.$location.search('datastream', data.id);
             });
-
         });
 
         const curStream = parseInt(this.$location.search().datastream);
@@ -171,9 +171,7 @@ export default class treeController {
             $('#graph-message').toggleClass('alert-danger');
             $('#graph-message').html('There are currently no streams available.');
         }
-        // Currently just used to stop a digest cycle for selected nodes,
-        // This is also the point at which all other graphs can be loaded.
-        // TODO: make this a function that spawns the other widgets.
+
         this.$scope.treeLoaded = true;
     }
 }

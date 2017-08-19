@@ -403,8 +403,6 @@ def _updateCalibration(sensor, coefficients, timestamp, session):
                 assert type(coefficients) == list
 
                 # check if coefficients are different
-                print type(Cal.getCoefficients())
-                print type(coefficients)
                 if Cal.getCoefficients() != coefficients:
                     logging.debug("Coefficients are different, updating...")
 
