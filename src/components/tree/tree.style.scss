@@ -10,7 +10,8 @@
 }
 
 .tree-card-content {
-    overflow: visible;
+    overflow-x: scroll;
+    overflow-y: visible;
 }
 
 // sass-lint:disable no-important
