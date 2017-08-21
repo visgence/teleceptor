@@ -36,6 +36,6 @@ docker run -t -i -P \
     -e TELEGID="$TELEGID" \
     -e TELEOSTYPE=$OSTYPE \
     -v $TELE:/home/teleceptor/teleceptor \
-    -p $HOSTPORT:80 \
+    -p $HOSTPORT:$HOSTPORT \
     teleceptor/app \
     /home/teleceptor/teleceptor/entrypoint.sh

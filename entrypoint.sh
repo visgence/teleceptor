@@ -19,5 +19,5 @@ cp /home/teleceptor/teleceptor/apache/teleceptor.conf /etc/httpd/conf.d/telecept
 if [ "$1" == "unittest" ]; then
     su teleceptor -c /home/tele/teleceptor/unittest.sh
 else
-    sudo su
+    sudo su - teleceptor
 fi
