@@ -1,11 +1,12 @@
 export default class timeController {
 
-    constructor($scope, $location, $timeout) {
+    constructor($scope, $location, $timeout, $interval) {
         'ngInject';
 
         this.$scope = $scope;
         this.$location = $location;
         this.$timeout = $timeout;
+        this.$interval = $interval;
     }
 
     $onInit() {
@@ -67,8 +68,8 @@ export default class timeController {
 
         this.$scope.ToggleRefresh = () => {
             if (this.$scope.refresher === undefined) {
-                this.$scope.refreshDuration = 1000 * 5;
-                this.$location.search('refresh', 1000 * 5);
+                this.$scope.refreshDuration = 5;
+                this.$location.search('refresh', 5);
             } else {
                 this.$location.search('refresh', null);
             }
@@ -77,7 +78,8 @@ export default class timeController {
         if (this.$location.search().refresh !== undefined) {
             this.$scope.refreshDuration = this.$location.search().refresh;
             this.$scope.refreshEnabled = true;
-            this.SetRefresh(this.$location.search().refresh);
+            this.$scope.refreshProgress = 0;
+            this.UpdateRefresh();
         } else {
             this.$scope.refreshEnabled = false;
         }
@@ -106,16 +108,23 @@ export default class timeController {
         this.$location.search('end', parseInt(endTime / 1000));
     }
 
-    SetRefresh() {
-        this.$scope.refresher = this.$timeout(() => {
-            if (this.$location.search().refresh === undefined) {
-                return;
+    UpdateRefresh() {
+        if (this.$location.search().refresh === undefined) {
+            return;
+        }
+        this.$timeout(() => {
+            this.$scope.refreshProgress += 1;
+            if (this.$scope.refreshProgress > 100) {
+                const newStart = (parseInt(this.$location.search().start) + this.$scope.refreshDuration);
+                const newEnd = (parseInt(this.$location.search().end) + this.$scope.refreshDuration);
+                this.$location.search('start', newStart);
+                this.$location.search('end', newEnd);
+                this.$location.search('refresh', '' + this.$scope.refreshDuration);
+            } else {
+                this.UpdateRefresh();
             }
-            const newStart = (parseInt(this.$location.search().start) + this.$scope.refreshDuration / 1000);
-            const newEnd = (parseInt(this.$location.search().end) + this.$scope.refreshDuration / 1000);
-            this.$location.search('start', newStart);
-            this.$location.search('end', newEnd);
-            this.$location.search('refresh', '' + this.$scope.refreshDuration);
-        }, this.$scope.refreshDuration);
+            // we take duration, multiply it by 1000 to turn seconds into milliseconds
+            // then divide by 100 to get percent of circle completed.
+        }, this.$scope.refreshDuration * 10);
     }
 }

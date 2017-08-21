@@ -19,20 +19,20 @@ $shadow-color: rgba(0, 0, 0, .1);
 }
 
 .refresh-container {
-    margin-top: 15px;
     margin-bottom: 10px;
+    margin-top: 15px;
 }
 
 md-checkbox {
     .md-label {
-        top:10px;
+        top: 6px;
     }
 }
 
 .refresh-duration {
-    width: 40%;
     margin-left: 10px;
     margin-right: 10px;
+    width: 40%;
 }
 
 md-progress-circular {

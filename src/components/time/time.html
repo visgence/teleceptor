@@ -33,16 +33,18 @@
         </div>
 
         <div class="refresh-container" layout="row">
-            <md-checkbox ng-checked="refresher" ng-click="ToggleRefresh()">
+            <md-checkbox ng-checked="refreshEnabled" ng-click="ToggleRefresh()">
                 Auto-refresh
             </md-checkbox>
 
             <md-input-container ng-show="refreshEnabled" class="input-override refresh-duration">
-                <label>Duration</label>
-                <input ng-model="refreshDuration">
+                <label>
+                    Duration
+                </label>
+                <input ng-model="refreshDuration" />
             </md-input-container>
 
-            <md-progress-circular md-mode="determinate" value="80" md-diameter="35px" ng-show="refreshEnabled"></md-progress-circular>
+            <md-progress-circular md-mode="determinate" value="{{refreshProgress}}" md-diameter="35px" ng-show="refreshEnabled"></md-progress-circular>
         </div>
 
     </md-content>
