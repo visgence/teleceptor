@@ -249,7 +249,7 @@ class SensorReadings:
 
         query = session.query(SensorReading)
         end = time()
-        start = end - 60 * 60 * 6
+        start = end - 60 * 60 * 24
         uuid = '1'
         points = None
         source = None

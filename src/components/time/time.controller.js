@@ -14,13 +14,12 @@ export default class timeController {
         if (this.$location.search().start !== undefined) {
             this.$scope.startDate = new Date(this.$location.search().start * 1000);
         } else {
-            this.$scope.startDate = new Date((currentTime - 60 * 60 * 6) * 1000);
+            this.$scope.startDate = new Date((currentTime - 60 * 60 * 24) * 1000);
         }
         if (this.$location.search().end !== undefined) {
             this.$scope.endDate = new Date(this.$location.search().end * 1000);
         } else {
             this.$scope.endDate = new Date(currentTime * 1000);
-
         }
 
         // Check if tab is in selection
@@ -29,7 +28,8 @@ export default class timeController {
         if (currentTab !== undefined) {
             this.ChangeTab(currentTab);
         } else {
-            this.$scope.tabSelection = 0;
+            this.$scope.tabSelection = 2;
+            this.ChangeTab(2);
         }
 
         this.$scope.SubmitDates = () => {
