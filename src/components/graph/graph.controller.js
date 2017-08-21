@@ -11,6 +11,7 @@ export default class graphController {
         this.apiService = apiService;
         this.$mdDialog = $mdDialog;
         this.$mdToast = $mdToast;
+        this.$scope.noStreams = false;
 
         // watch window resize
         angular.element($window).bind('resize', () => {
@@ -21,7 +22,10 @@ export default class graphController {
 
         // Wait until sensor info is loaded to get reading data.
         this.$scope.$watch(() => this.infoService.getSensor(), (nv, ov) => {
-            if (nv === undefined || nv === ov) {
+            if (nv === undefined) {
+                this.$scope.noStreams = true;
+                return;
+            } else if (nv === ov) {
                 return;
             }
             $scope.title = nv.name;
@@ -31,6 +35,7 @@ export default class graphController {
         // If no datastream is selected, warn user.
         if ($location.search().datastream === undefined) {
             $scope.title = 'Please select a datastream.';
+
             $('#graph-container').css('height', 0);
         }
     }
