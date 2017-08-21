@@ -22,7 +22,10 @@ export default class graphController {
 
         // Wait until sensor info is loaded to get reading data.
         this.$scope.$watch(() => this.infoService.getSensor(), (nv, ov) => {
-            if (nv === undefined || nv === ov) {
+            if (nv === undefined) {
+                this.$scope.noStreams = true;
+                return;
+            } else if (nv === ov) {
                 return;
             }
             $scope.title = nv.name;
@@ -32,7 +35,7 @@ export default class graphController {
         // If no datastream is selected, warn user.
         if ($location.search().datastream === undefined) {
             $scope.title = 'Please select a datastream.';
-            this.$scope.noStreams = true;
+
             $('#graph-container').css('height', 0);
         }
     }
