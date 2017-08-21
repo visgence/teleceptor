@@ -83,6 +83,7 @@ export default class sensorController {
                 })
                 .catch((error) => {
                     ShowError(this.$mdDialog, error);
+                    console.error(error);
                 });
         };
 
@@ -111,9 +112,11 @@ export default class sensorController {
                         this.LoadCalibrations(this.$scope.sensor.uuid);
                     })
                     .catch((error) => {
+                        console.error(error);
                         ShowError(this.$mdDialog, error);
                     });
             } catch (error) {
+                console.error('error');
                 ShowError(this.$mdDialog, error);
             }
         };
@@ -133,14 +136,19 @@ export default class sensorController {
             }
             const readingsUrl = 'readings?datastream=' +
                 this.infoService.getStream().id +
-                '&start=' + parseInt(start / 1000) +
-                '&end=' + parseInt(end / 1000) +
+                '&start=' + parseInt(start) +
+                '&end=' + parseInt(end) +
                 '&source=' + source;
             this.apiService.get(readingsUrl)
                 .then((success) => {
-                    this.exportData(success.data.readings);
+                    if (success.data.error !== undefined) {
+                        ShowError(this.$mdDialog, 'No readings could be found in current time range.');
+                    } else {
+                        this.exportData(success.data.readings);
+                    }
                 })
                 .catch((error) => {
+                    console.error('error');
                     ShowError(this.$mdDialog, error);
                 });
         };
@@ -159,6 +167,7 @@ export default class sensorController {
             };
 
             if (isNaN(newValue)) {
+                console.error('error');
                 ShowError(this.$mdDialog, 'New data must be a number');
                 return;
             }
@@ -181,6 +190,7 @@ export default class sensorController {
                     ShowSuccess(this.$mdToast, 'Point has been entered.');
                 })
                 .catch((error) => {
+                    console.error('error');
                     ShowError(this.$mdDialog, error);
                 });
         };
@@ -199,6 +209,7 @@ export default class sensorController {
                     ShowSuccess(this.$mdToast);
                 })
                 .catch((error) => {
+                    console.error('error');
                     ShowError(this.$mdDialog, error);
                 });
         };
@@ -225,6 +236,7 @@ export default class sensorController {
                 $('#sensor-card').css('visibility', 'visible');
             })
             .catch((error) => {
+                console.error('error');
                 ShowError(this.$mdDialog, error);
             });
     }
@@ -239,7 +251,7 @@ export default class sensorController {
                 });
             })
             .catch((error) => {
-                console.log(error);
+                console.error(error);
                 ShowError(this.$mdDialog, error);
             });
     }
@@ -251,16 +263,13 @@ export default class sensorController {
         }
 
         const scaledReadings = [];
-
         const coefficients = sensorInfo.last_calibration.coefficients.replace(/\[/g, '').replace(/\]/g, '').split(',');
-
 
         let i;
         let units;
 
         for (i = 0; i < readings.length; i++) {
             scaledReadings.push(readings[i][1] * (parseFloat(coefficients[0])) + parseFloat(coefficients[1]));
-
         }
 
         // actual delimiter characters for CSV format
