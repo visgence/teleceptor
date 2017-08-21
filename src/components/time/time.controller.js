@@ -67,9 +67,9 @@ export default class timeController {
         };
 
         this.$scope.ToggleRefresh = () => {
-            if (this.$scope.refresher === undefined) {
-                this.$scope.refreshDuration = 5;
-                this.$location.search('refresh', 5);
+            if (this.$location.search().refresh === undefined) {
+                this.$scope.refreshDuration = 60;
+                this.$location.search('refresh', 60);
             } else {
                 this.$location.search('refresh', null);
             }
@@ -115,8 +115,9 @@ export default class timeController {
         this.$timeout(() => {
             this.$scope.refreshProgress += 1;
             if (this.$scope.refreshProgress > 100) {
-                const newStart = (parseInt(this.$location.search().start) + this.$scope.refreshDuration);
-                const newEnd = (parseInt(this.$location.search().end) + this.$scope.refreshDuration);
+                const newStart = parseInt(this.$location.search().start) + parseInt(this.$scope.refreshDuration);
+                const newEnd = parseInt(this.$location.search().end) + parseInt(this.$scope.refreshDuration);
+
                 this.$location.search('start', newStart);
                 this.$location.search('end', newEnd);
                 this.$location.search('refresh', '' + this.$scope.refreshDuration);
