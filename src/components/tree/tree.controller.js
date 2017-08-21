@@ -104,7 +104,7 @@ export default class treeController {
                     selected: streamId === this.currentSelection,
                 },
                 id: streamId,
-                icon: 'glyphicon glyphicon-minus',
+                icon: 'fa fa-minus',
             });
             return nodeArray;
         }
@@ -125,7 +125,7 @@ export default class treeController {
             name = pathArray.shift();
             nodeArray.push({
                 text: name,
-                icon: 'glyphicon glyphicon-folder-close glyphs',
+                icon: 'fa fa-folder',
                 children: this.InsertNode(pathArray, streamId, sensorId, []),
             });
             return nodeArray;

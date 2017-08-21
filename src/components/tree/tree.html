@@ -5,8 +5,8 @@
     <div class="alert hidden" id="tree-message"> </div>
     <md-content class="tree-card-content">
 
-
-        <md-menu-bar>
+        <div layout-gt-sm="row">
+        <md-menu-bar >
             <md-menu>
                 <button ng-click="$mdMenu.open()">
                       {{searchFilter}}
@@ -36,6 +36,8 @@
         <md-input-container>
        <input ng-model="searchWords" ng-change="searchInput()" placeholder="Search..." />
      </md-input-container>
+ </div>
+ <div layout-gt-sm="row">
 
 
 
@@ -43,9 +45,11 @@
 
         <div id="tree-view" class="tree-view"></div>
 
+
         <ng-show ng-show="noStreams">
             <h4>No Streams Found</h4>
         </ng-show>
+        </div>
 
     </md-content>
 </md-card>
