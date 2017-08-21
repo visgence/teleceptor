@@ -9,9 +9,7 @@
     "angular-aria": "1.6.6",
     "angular-material": "1.1.4",
     "angular-route": "1.6.6",
-    "bootstrap": "3.3.7",
     "d3": "4.10.0",
-    "font-awesome": "4.7.0",
     "jquery": "2.2.4",
     "jstree": "3.3.4"
   },

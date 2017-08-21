@@ -16,7 +16,6 @@ module.exports = {
             './node_modules/angular-material/angular-material.min.css',
             './node_modules/adm-dtp/dist/ADM-dateTimePicker.min.css',
             './node_modules/adm-dtp/dist/ADM-dateTimePicker.min.js',
-            './node_modules/font-awesome/css/font-awesome.min.css'
         ],
     },
     output: {

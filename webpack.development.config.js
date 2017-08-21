@@ -14,10 +14,10 @@ module.exports = {
             'jquery',
             'angular-material',
             './node_modules/jstree/dist/jstree.min.js',
+            './node_modules/jstree/dist/themes/default/style.min.js',
             './node_modules/angular-material/angular-material.min.css',
             './node_modules/adm-dtp/dist/ADM-dateTimePicker.min.css',
             './node_modules/adm-dtp/dist/ADM-dateTimePicker.min.js',
-            './node_modules/font-awesome/css/font-awesome.min.css'
         ],
     },
     output: {
