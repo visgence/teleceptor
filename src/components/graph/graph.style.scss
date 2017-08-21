@@ -40,6 +40,11 @@
 }
 
 // GRAPH STYLE
+.axis-label {
+        text-anchor: middle;
+        font-family: "Helvetica Neue";
+}
+
 .graph-line {
     fill: none;
     stroke: $dark-yellow;

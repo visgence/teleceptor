@@ -141,14 +141,14 @@ export default class graphController {
             end = parseInt(this.$location.search().end * 1000);
         }
 
-        // Used to calculate the left margin.
-        const unitSize = ' ' + this.FormatText(max).length;
+        const unitSize = this.getUnitSize(max)
 
+        // Define graph box margin
         const margin = {
             top: 20,
             right: 10,
             bottom: 20,
-            left: 10 + (unitSize * 7),
+            left: 80,
         };
         width = width - margin.left - margin.right;
         height = height - margin.top - margin.bottom;
@@ -213,8 +213,24 @@ export default class graphController {
             .tickSizeOuter(-10)
             .tickValues(getTic())
             .tickFormat((d) => {
-                return this.FormatText(d);
+                return this.FormatText(d, unitSize);
             });
+
+        // Add text to display the y-axis label.
+        const sensor = this.infoService.getSensor();
+        console.log(sensor);
+        console.log(unitSize)
+        let text = (sensor.units === null || sensor.units === undefined) ? '' : sensor.units;
+        console.log(text)
+        console.log(this.getUnitText(unitSize))
+        text += this.getUnitText(unitSize);
+        console.log(text);
+        newChart.append('text')
+            .attr('width', 100 * 2)
+            .attr('height', 100 * 0.4)
+            .attr('transform', 'translate(' + (-margin.left + 20) + ',' + height / 2 + ') rotate(270)')
+            .attr('class', 'axis-label')
+            .text(text);
 
         newChart.append('g')
             .attr('class', 'chart-axis')
@@ -442,51 +458,64 @@ export default class graphController {
             .call(drag);
     };
 
-    // Formats text for units display
-    FormatText(d) {
+    getUnitSize(d) {
         let count = 0;
-        while (Math.abs(d) >= 1000) {
-            d /= 1000;
+        while (Math.abs(d) >= 100) {
+            d /= 100;
             count++;
         }
         while (Math.abs(d) < 1 && d !== 0) {
-            d *= 1000;
+            d *= 100;
             count--;
         }
-        const f = d3.format('.2f');
-        let suffix;
-        switch (count) {
-            case -1:
-                suffix = 'm';
-                break;
-            case -2:
-                suffix = 'u';
+        return count;
+    }
+
+    getUnitText(d) {
+        switch (d) {
+            case -4:
+                return ' (in billionths)';
                 break;
             case -3:
-                suffix = 'p';
+                return ' (in millionths)';
+                break;
+            case -2:
+                return ' (in thousandths)';
+                break;
+            case -1:
+                return ' (in hundredths)';
+                break;
+            case 0:
+                return '';
                 break;
             case 1:
-                suffix = 'K';
+                return ' (in hundreds)';
                 break;
             case 2:
-                suffix = 'M';
+                return ' (in thousands)';
                 break;
             case 3:
-                suffix = 'G';
+                return ' (in millions)';
+                break;
+            case 4:
+                return ' (in billionths)';
                 break;
             default:
-                suffix = '';
+                return ' (in 10^' + d + ')';
         }
-        let formattedText = f(d) + suffix + ' ';
+    }
 
-        const info = this.infoService.getSensor();
-        if (info !== undefined && info.units !== null) {
-            if (info.units === '$') {
-                formattedText = '$' + formattedText;
-            } else {
-                formattedText = formattedText + info.units;
-            }
+    // Formats text for units display
+    FormatText(d, size) {
+        while (size > 0) {
+            d /= 100;
+            size--;
         }
-        return formattedText;
+        while (size < 0) {
+            d *= 100;
+            size++;
+        }
+        const f = d3.format('.2f');
+        return f(d);
     }
 }
