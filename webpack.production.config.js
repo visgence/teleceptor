@@ -10,14 +10,13 @@ module.exports = {
             'angular',
             'angular-route',
             'd3',
-            'bootstrap',
             'jquery',
             'angular-material',
             './node_modules/jstree/dist/jstree.min.js',
             './node_modules/angular-material/angular-material.min.css',
-            './node_modules/bootstrap/dist/css/bootstrap.min.css',
             './node_modules/adm-dtp/dist/ADM-dateTimePicker.min.css',
             './node_modules/adm-dtp/dist/ADM-dateTimePicker.min.js',
+            './node_modules/font-awesome/css/font-awesome.min.css'
         ],
     },
     output: {
@@ -39,9 +38,6 @@ module.exports = {
         }, {
             test: /\.css$/,
             loader: 'style-loader!css-loader',
-        }, {
-            test: /bootstrap\/dist\/js\/umd\//,
-            loader: 'imports?jQuery=jquery',
         }, {
             test: /\.scss$/,
             use: [{
