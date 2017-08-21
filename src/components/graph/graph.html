@@ -7,7 +7,9 @@
 
     <div id="graph-container" class="graph-container">
         <div layout="row" layout-sm="column" layout-align="space-around">
-            <md-progress-circular md-mode="indeterminate" class="progress-indicator"></md-progress-circular>
+            <ng-hide ng-hide="noStreams">
+                <md-progress-circular md-mode="indeterminate" class="progress-indicator"></md-progress-circular>
+            </ng-hide>
         </div>
     </div>
 </md-card>

@@ -11,6 +11,7 @@ export default class graphController {
         this.apiService = apiService;
         this.$mdDialog = $mdDialog;
         this.$mdToast = $mdToast;
+        this.$scope.noStreams = false;
 
         // watch window resize
         angular.element($window).bind('resize', () => {
@@ -31,6 +32,7 @@ export default class graphController {
         // If no datastream is selected, warn user.
         if ($location.search().datastream === undefined) {
             $scope.title = 'Please select a datastream.';
+            this.$scope.noStreams = true;
             $('#graph-container').css('height', 0);
         }
     }
