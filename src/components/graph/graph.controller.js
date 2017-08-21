@@ -141,14 +141,14 @@ export default class graphController {
             end = parseInt(this.$location.search().end * 1000);
         }
 
-        const unitSize = this.getUnitSize(max)
+        const unitSize = this.getUnitSize(max);
 
         // Define graph box margin
         const margin = {
             top: 20,
             right: 10,
             bottom: 20,
-            left: 80,
+            left: 60,
         };
         width = width - margin.left - margin.right;
         height = height - margin.top - margin.bottom;
@@ -218,13 +218,8 @@ export default class graphController {
 
         // Add text to display the y-axis label.
         const sensor = this.infoService.getSensor();
-        console.log(sensor);
-        console.log(unitSize)
-        let text = (sensor.units === null || sensor.units === undefined) ? '' : sensor.units;
-        console.log(text)
-        console.log(this.getUnitText(unitSize))
+        let text = (sensor.units === null || sensor.units === undefined) ? 'units undefined' : sensor.units;
         text += this.getUnitText(unitSize);
-        console.log(text);
         newChart.append('text')
             .attr('width', 100 * 2)
             .attr('height', 100 * 0.4)
@@ -389,7 +384,7 @@ export default class graphController {
                 this.$scope.$apply(() => {
                     this.$location.search('start', parseInt(start / 1000));
                     this.$location.search('end', parseInt(end / 1000));
-                    this.$location.search('tab', null);
+                    this.$location.search('tab', 0);
                 });
             });
         // Creates an invisible rectangle over the graph to capture all mouse events.

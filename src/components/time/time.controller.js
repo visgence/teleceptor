@@ -25,9 +25,7 @@ export default class timeController {
         // Check if tab is in selection
         // 1: custom, 2: hour, 3: day, 4: week
         const currentTab = this.$location.search().tab;
-        if (currentTab !== undefined) {
-            this.ChangeTab(currentTab);
-        } else {
+        if (currentTab === undefined) {
             this.$scope.tabSelection = 2;
             this.ChangeTab(2);
         }
@@ -38,7 +36,7 @@ export default class timeController {
             const endTime = this.$scope.endDate;
 
             this.$scope.tabSelection = 0;
-            this.$location.search('tab', null);
+            this.$location.search('tab', 0);
 
             if (startTime !== undefined && startTime.toString().length !== 0) {
                 this.$location.search('start', new Date(startTime).getTime() / 1000);
