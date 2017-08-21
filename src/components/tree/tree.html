@@ -4,25 +4,42 @@
     </md-toolbar>
     <div class="alert hidden" id="tree-message"> </div>
     <md-content class="tree-card-content">
-        <div class="input-group">
-            <div class="input-group-btn">
-                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                      {{searchFilter}}<span class="caret"></span>
+
+
+        <md-menu-bar>
+            <md-menu>
+                <button ng-click="$mdMenu.open()">
+                      {{searchFilter}}
                     </button>
-                <ul class="dropdown-menu">
-                    <li>
-                        <div class="dropdown-btn" ng-click="searchFilter = 'Stream'">Stream</div>
-                    </li>
-                    <li>
-                        <div class="dropdown-btn" ng-click="searchFilter = 'Sensor'">Sensor</div>
-                    </li>
-                    <li>
-                        <div class="dropdown-btn" ng-click="searchFilter = 'Folder'">Folder</div>
-                    </li>
-                </ul>
-            </div>
-            <input type="text" class="form-control" ng-model="searchWords" ng-change="searchInput()" aria-label="..." placeholder="Search..." />
-        </div>
+                <md-menu-content>
+                    <md-menu-item>
+                        <md-button ng-click="searchFilter='Stream'">
+                            Stream
+                        </md-button>
+                    </md-menu-item>
+
+                    <md-menu-item>
+                        <md-button ng-click="searchFilter='Sensor'">
+                            Sensor
+                        </md-button>
+                    </md-menu-item>
+                    <md-menu-divider></md-menu-divider>
+                    <md-menu-item>
+                        <md-button ng-click="searchFilter='Folder'">
+                            Folder
+                        </md-button>
+                    </md-menu-item>
+                </md-menu-content>
+            </md-menu>
+        </md-menu-bar>
+
+        <md-input-container>
+       <input ng-model="searchWords" ng-change="searchInput()" placeholder="Search..." />
+     </md-input-container>
+
+
+
+
 
         <div id="tree-view" class="tree-view"></div>
 
