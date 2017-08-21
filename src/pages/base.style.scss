@@ -62,6 +62,12 @@ md-input-container {
     }
 }
 
+md-checkbox {
+    margin-bottom: 0;
+    margin-top: 10px;
+    vertical-align: middle;
+}
+
 //Toast override.
 md-toast {
     &.md-center {

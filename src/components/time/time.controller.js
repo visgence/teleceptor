@@ -6,12 +6,6 @@ export default class timeController {
         this.$scope = $scope;
         this.$location = $location;
         this.$timeout = $timeout;
-
-        if ($location.search().refresh !== undefined) {
-            this.SetRefresh($location.search().refresh);
-        } else {
-            $scope.refreshEnabled = false;
-        }
     }
 
     $onInit() {
@@ -72,7 +66,20 @@ export default class timeController {
         };
 
         this.$scope.ToggleRefresh = () => {
-            this.$location.search('refresh', 1000 * 5)
+            if (this.$scope.refresher === undefined) {
+                this.$scope.refreshDuration = 1000 * 5;
+                this.$location.search('refresh', 1000 * 5);
+            } else {
+                this.$location.search('refresh', null);
+            }
+        };
+
+        if (this.$location.search().refresh !== undefined) {
+            this.$scope.refreshDuration = this.$location.search().refresh;
+            this.$scope.refreshEnabled = true;
+            this.SetRefresh(this.$location.search().refresh);
+        } else {
+            this.$scope.refreshEnabled = false;
         }
     }
 
@@ -99,17 +106,16 @@ export default class timeController {
         this.$location.search('end', parseInt(endTime / 1000));
     }
 
-    SetRefresh(duration) {
-        console.log(duration);
-        if (duration === null) {
-            duration = 1000;
-        }
+    SetRefresh() {
         this.$scope.refresher = this.$timeout(() => {
-            const newStart = parseInt(this.$location.search().start) + duration;
-            const newEnd = parseInt(this.$location.search().end) + duration;
+            if (this.$location.search().refresh === undefined) {
+                return;
+            }
+            const newStart = (parseInt(this.$location.search().start) + this.$scope.refreshDuration / 1000);
+            const newEnd = (parseInt(this.$location.search().end) + this.$scope.refreshDuration / 1000);
             this.$location.search('start', newStart);
             this.$location.search('end', newEnd);
-            this.$location.search('refresh', duration);
-        }, duration);
+            this.$location.search('refresh', '' + this.$scope.refreshDuration);
+        }, this.$scope.refreshDuration);
     }
 }

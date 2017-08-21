@@ -14,7 +14,25 @@ $shadow-color: rgba(0, 0, 0, .1);
 
 .quick-time-container {
     display: inline-block;
+    margin-bottom: 20px;
     width: 100%;
+}
+
+.refresh-container {
+    margin-top: 15px;
+    margin-bottom: 10px;
+}
+
+md-checkbox {
+    .md-label {
+        top:10px;
+    }
+}
+
+.refresh-duration {
+    width: 40%;
+    margin-left: 10px;
+    margin-right: 10px;
 }
 
 md-progress-circular {
