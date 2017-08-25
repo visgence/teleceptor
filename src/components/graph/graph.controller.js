@@ -29,6 +29,7 @@ export default class graphController {
                 return;
             }
             $scope.title = nv.name;
+            this.$scope.noStreams = true;
             this.getData(nv);
         });
 

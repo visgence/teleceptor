@@ -29,6 +29,8 @@ export default class timeController {
         if (currentTab === undefined) {
             this.$scope.tabSelection = 2;
             this.ChangeTab(2);
+        } else {
+            this.$scope.tabSelection = parseInt(currentTab);
         }
 
         this.$scope.SubmitDates = () => {
@@ -36,7 +38,7 @@ export default class timeController {
             const startTime = this.$scope.startDate;
             const endTime = this.$scope.endDate;
 
-            this.$scope.tabSelection = 0;
+            // this.$scope.tabSelection = 0;
             this.$location.search('tab', 0);
 
             if (startTime !== undefined && startTime.toString().length !== 0) {
