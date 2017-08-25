@@ -55,6 +55,7 @@ Authors: Victor Szczepanski
 import cherrypy
 import json
 from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.sql.expression import bindparam
 import re
 import logging
 
@@ -157,7 +158,21 @@ class DataStreams:
                     data['error'] = "Invalid url parameters"
                 else:
                     logging.debug("Parameters are valid.")
-                    datastreams = s.query(DataStream).filter_by(**inputs).all()
+                    pathFilter = None
+                    if 'filter' in inputs:
+                        pathFilter = inputs['filter']
+                        pathFilterWord = inputs['word']
+                        del inputs['filter']
+                        del inputs['word']
+                    datastreams = s.query(DataStream).filter_by(**inputs)
+                    if pathFilter is not None:
+                        if pathFilter == "Stream":
+                            datastreams = datastreams.filter(DataStream.name.like('{}%'.format(pathFilterWord)))
+                        if pathFilter == "Sensor":
+                            datastreams = datastreams.filter(DataStream.sensor.like('{}%'.format(pathFilterWord)))
+                        if pathFilter == "Folder":
+                            datastreams = datastreams.join(Path).filter(Path.path.like('/{}%'.format(pathFilterWord)))
+                    datastreams = datastreams.all()
                     data['datastreams'] = [i.toDict() for i in datastreams]
         cherrypy.response.status = statusCode
         return json.dumps(data, indent=4)
@@ -306,7 +321,7 @@ def deleteDatastream(session, datastream_id):
 
     .. seealso::
         `models.DataStream`
-        `datastreams.DELETE`
+        `datastreams.DELETE
     """
 
     try:
@@ -326,6 +341,7 @@ def deleteDatastream(session, datastream_id):
 
 def _updateStream(data, session):
     stream = session.query(DataStream).filter_by(id=data['id']).one()
+    print stream.toDict()
     for key, value in data.iteritems():
         if key == "id":
             continue
@@ -340,7 +356,7 @@ def _updateStream(data, session):
                 session.add(Path(datastream_id=data['id'], path=j))
             session.commit()
             continue
-        if key != 'uuid':
+        if key != 'uuid' or key != 'id':
             if key == "minimum value":
                 if len(value) > 0:
                     value = float(value)
@@ -366,14 +382,16 @@ def _updateStream(data, session):
 
 def clean_inputs(inputs):
     """
-    Checks that the supplied inputs only contains valid parameters for filtering Datadatastreams.
+    Checks that the supplied inputs only contains valid parameters for filtering Datastreams.
 
     :returns:
         Dictionary with valid parameters taken from provided inputs.
     """
 
     validInputs = {
-        'sensor': '^[a-zA-Z0-9_.]+$'
+        'sensor': '^[a-zA-Z0-9_.]+$',
+        'filter': '^[a-zA-Z0-9_.-]+$',
+        'word': '^[a-zA-Z0-9_.-/]+$'
     }
     valueConversions = {
         'null': None

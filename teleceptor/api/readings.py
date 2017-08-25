@@ -249,7 +249,7 @@ class SensorReadings:
 
         query = session.query(SensorReading)
         end = time()
-        start = end - 25200
+        start = end - 60 * 60 * 24
         uuid = '1'
         points = None
         source = None
@@ -258,10 +258,10 @@ class SensorReadings:
         for key, value in paramsCopy.iteritems():
             if key in self.validFilterArgs:
                 if key == "start":
-                    start = value
+                    start = int(value)
                     query = query.filter(SensorReading.timestamp >= value)
                 elif key == "end":
-                    end = value
+                    end = int(value)
                     query = query.filter(SensorReading.timestamp <= value)
                 elif key == "datastream":
                     uuid = value

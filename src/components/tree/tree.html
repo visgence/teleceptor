@@ -1,0 +1,48 @@
+<md-card class="tree-card" flex>
+    <md-toolbar class="card-header md-primary">
+        <h4 class>Search</h4>
+    </md-toolbar>
+    <div class="alert hidden" id="tree-message"> </div>
+    <md-content class="tree-card-content">
+
+        <div layout-gt-sm="row">
+            <md-menu-bar>
+                <md-menu>
+                    <button ng-click="$mdMenu.open()">
+                      {{searchFilter}}
+                    </button>
+                    <md-menu-content>
+                        <md-menu-item>
+                            <md-button ng-click="searchFilter='Stream'">
+                                Stream
+                            </md-button>
+                        </md-menu-item>
+
+                        <md-menu-item>
+                            <md-button ng-click="searchFilter='Sensor'">
+                                Sensor
+                            </md-button>
+                        </md-menu-item>
+                        <md-menu-divider></md-menu-divider>
+                        <md-menu-item>
+                            <md-button ng-click="searchFilter='Folder'">
+                                Folder
+                            </md-button>
+                        </md-menu-item>
+                    </md-menu-content>
+                </md-menu>
+            </md-menu-bar>
+
+            <md-input-container>
+                <input ng-model="searchWords" ng-change="searchInput()" placeholder="Search..." />
+            </md-input-container>
+        </div>
+
+        <div layout-gt-sm="row">
+            <div id="tree-view" class="tree-view"></div>
+            <ng-show ng-show="noStreams">
+                <h4>No Streams Found</h4>
+            </ng-show>
+        </div>
+    </md-content>
+</md-card>

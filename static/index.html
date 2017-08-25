@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Teleceptor is an open-source data logger and feature-rich dashboard." />
+    <meta name="author" content="Visgence Inc." />
+    <base href="/" />
+    <title>Teleceptor</title>
+    <script src="/dist/{{vendor}}"></script>
+    <script src="/dist/{{src}}"></script>
+    <script type="text/javascript">
+        var version = "{{version | safe  }}"
+        var buildDate = "{{buildDate | safe  }}"
+    </script>
+</head>
+
+<body ng-app="teleceptor">
+    <div ng-view />
+</body>
+
+</html>

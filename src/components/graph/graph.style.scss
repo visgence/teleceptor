@@ -1,0 +1,80 @@
+@import '../constants';
+
+//size of graph window
+.graph-container {
+    height: 350px;
+}
+
+//disable graph message
+.graph-message {
+    display: none;
+}
+
+//graph title
+.graph-message-display {
+    background-color: $light-yellow;
+    color: $dark-grey;
+    display: block;
+
+    h3 {
+        margin: 0;
+        padding: 20px;
+    }
+    margin: 0;
+}
+
+//Color Of graph lines, text
+.tick {
+    line {
+        stroke: $grey;
+    }
+
+    text {
+        fill: $dark-grey;
+    }
+}
+
+// Center the progress idicator vertically
+.progress-indicator {
+    top: 125px;
+}
+
+// GRAPH STYLE
+.axis-label {
+    font-family: 'Helvetica Neue';
+    text-anchor: middle;
+}
+
+.graph-line {
+    fill: none;
+    stroke: $dark-yellow;
+    stroke-width: 2;
+}
+
+.tooltip {
+    display: none;
+    opacity: 1;
+
+    .circle {
+        display: block;
+        fill: none;
+        stroke: $primary;
+    }
+
+    .line {
+        display: block;
+        opacity: .5;
+        stroke: $primary;
+        stroke-dasharray: 3.3;
+    }
+
+    .text {
+        display: block;
+        fill: $black;
+    }
+}
+
+.selection-box {
+    fill: none;
+    opacity: .5;
+}

@@ -65,7 +65,7 @@ def main():
     while now >= lastWeek:
         jsonExample[0]["readings"].append(["in1", 400 * math.sin(0.1 * counter), now])
         jsonExample[0]["readings"].append(["in2", 600 * math.sin(0.1 * counter), now])
-        now -= 60
+        now -= 10
         counter += 1
 
     requests.post(serverURL, data=json.dumps(jsonExample))

@@ -1,0 +1,50 @@
+<md-card class="time-card">
+    <md-toolbar class="card-header md-primary">
+        <h4>Time</h4>
+    </md-toolbar>
+    <md-content class="card-content">
+
+        <div class="quick-time-container">
+            <md-tabs md-stretch-tabs="never" md-selected="tabSelection">
+                <md-tab label="Custom"></md-tab>
+                <md-tab label="Hour" ng-click="ChangeQuickTime(1)"></md-tab>
+                <md-tab label="Day" ng-click="ChangeQuickTime(2)"></md-tab>
+                <md-tab label="Week" ng-click="ChangeQuickTime(3)"></md-tab>
+            </md-tabs>
+        </div>
+
+        Start time
+        <adm-dtp ng-model="startDate" options="{default: {startDate}}"></adm-dtp>
+
+        End time
+        <adm-dtp ng-model="endDate"></adm-dtp>
+
+        <div class="button-container">
+            <md-button class="md-raised" ng-click="ResetDates()">
+                <span class="ng-scope" /> Clear
+                <div class="md-ripple-container"></div>
+            </md-button>
+
+            <md-button class="primary-button md-raised md-primary" ng-click="SubmitDates()">
+                <span class="ng-scope" /> Submit
+                <div class="md-ripple-container"></div>
+            </md-button>
+        </div>
+
+        <div class="refresh-container" layout="row">
+            <md-checkbox ng-checked="refreshEnabled" ng-click="ToggleRefresh()">
+                Auto-refresh
+            </md-checkbox>
+
+            <md-input-container ng-show="refreshEnabled" class="input-override refresh-duration">
+                <label>
+                    Duration
+                </label>
+                <input ng-model="refreshDuration" />
+            </md-input-container>
+
+            <md-progress-circular md-mode="determinate" value="{{refreshProgress}}" md-diameter="35px" ng-show="refreshEnabled"></md-progress-circular>
+        </div>
+
+    </md-content>
+</md-card>

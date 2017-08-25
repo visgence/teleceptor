@@ -53,8 +53,9 @@ target/
 *.DS_Store
 
 #NPM
-bower_components/
 node_modules/
+webpack-stats.json
+npm-debug.log.*
 
 config/config.json
 database/

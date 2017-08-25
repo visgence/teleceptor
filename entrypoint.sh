@@ -1,19 +1,23 @@
 #!/bin/bash
-#environment variables NETREGUID, NETREGGID
+#environment variables TELEUID, TELEGID
 #Check if host is osx
 if echo $TELEOSTYPE | grep -q 'darwin'
 then
-    adduser tele
+    adduser teleceptor
 else
-    groupadd -g $TELEGID telegroup
-    adduser --uid $TELEUID --quiet --gecos "" --disabled-password --gid $TELEGID tele
+    groupadd -g $TELEGID teleceptor
+    adduser -u $TELEUID -g $TELEGID teleceptor
 fi
 
-chown tele /home/tele
+chown teleceptor:teleceptor /home/teleceptor
+echo 'pg:5432:tele:tele:password' > /home/teleceptor/.pgpass
+chown teleceptor:teleceptor /home/teleceptor/.pgpass
+chmod 600 /home/teleceptor/.pgpass
+
+cp /home/teleceptor/teleceptor/apache/teleceptor.conf /etc/httpd/conf.d/teleceptor.conf
 
 if [ "$1" == "unittest" ]; then
-    su tele -c /home/tele/teleceptor/unittest.sh
+    su teleceptor -c /home/tele/teleceptor/unittest.sh
 else
-    su tele
+    sudo su - teleceptor
 fi
-

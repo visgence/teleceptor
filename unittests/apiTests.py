@@ -738,7 +738,7 @@ def AddSensorWithCalibration(app):
         'uuid': "sensor_test_1",
         'last_calibration': {
             'timestamp': time.time(),
-            'coefficients': "[10,10]"
+            'coefficients': [10, 10]
         }
     })
     failures = doSensorPost(sensor)
@@ -748,7 +748,7 @@ def AddSensorWithCalibration(app):
             'TestName': "AddSensorWithCalibration",
             'ErrorGiven': "query was None."
         })
-    elif str(test.toDict()['last_calibration']['coefficients']) != "[10, 10]":
+    elif str(test.toDict()['last_calibration']['coefficients']) != json.dumps([10, 10]):
         failures.append({
             'TestName': "AddSensorWithCalibration",
             'ErrorGiven': "coefficients wern't recorded properly."
@@ -786,7 +786,7 @@ def UpdateNewCalibration(app):
         'uuid': "sensor_test_0",
         'last_calibration': {
             'timestamp': time.time(),
-            'coefficients': "[7,7]"
+            'coefficients': [7, 7]
         }
     })
 
@@ -798,7 +798,7 @@ def UpdateNewCalibration(app):
             'TestName': "UpdateNewCalibration",
             'ErrorGiven': "Sensor doesn't exit when it should from test #1"
         })
-    elif test.toDict()['last_calibration']['coefficients'] != "[7,7]":
+    elif test.toDict()['last_calibration']['coefficients'] != [7, 7]:
         failures.append({
             'TestName': "UpdateNewCalibration",
             'ErrorGiven': "coefficients wern't overwritten when they should have been."
@@ -812,7 +812,7 @@ def UpdateOldCalibration(app):
         'uuid': "sensor_test_0",
         'calibration': {
             'timestamp': time.time()-10000,
-            'coefficients': "(3,3)"
+            'coefficients': (3, 3)
         }
     })
     failures = doSensorPost(sensor)
@@ -822,7 +822,7 @@ def UpdateOldCalibration(app):
             'TestName': "UpdateOldCalibration",
             'ErrorGiven': "Sensor doesn't exit when it should from test #1"
         })
-    elif test.toDict()['last_calibration']['coefficients'] == "[3, 3]":
+    elif test.toDict()['last_calibration']['coefficients'] == [3, 3]:
         failures.append({
             'TestName': "UpdateOldCalibration",
             'ErrorGiven': "coefficients were overwritten when they shouldn't have been."
@@ -1041,6 +1041,7 @@ def AddReadings(app):
 
 def ChangeNewCalibration(app):
     # Should update the calibration on one sensor.
+    print "\nstart\n"
     sensor = json.dumps([{
         'info': {
             'uuid': "station_test_0",
@@ -1048,7 +1049,7 @@ def ChangeNewCalibration(app):
                 'name': "test_sensor",
                 'sensor_type': "float",
                 'timestamp': time.time(),
-                'scale': "[{}, {}]".format(10, 10),
+                'scale': [10, 10],
                 'calibration_timestamp': time.time(),
                 'meta_data': {}
             }]
@@ -1058,7 +1059,8 @@ def ChangeNewCalibration(app):
     failures = doStationPost(sensor)
     try:
         test = session.query(Sensor).filter_by(uuid='station_test_0test_sensor').first()
-        if test.toDict()['last_calibration']['coefficients'] != "[10, 10]":
+
+        if test.toDict()['last_calibration']['coefficients'] != [10, 10]:
             failures.append({
                 'TestName': "ChangeNewCalibration",
                 'ErrorGiven': "Coefficients have not been updated."
@@ -1080,7 +1082,7 @@ def ChangeOldCalibration(app):
                 'name': "test_sensor",
                 'sensor_type': "float",
                 'timestamp': time.time(),
-                'scale': "[{}, {}]".format(5, 5),
+                'scale': [5, 5],
                 'calibration_timestamp': time.time()-100000,
                 'meta_data': {}
             }]
@@ -1090,7 +1092,7 @@ def ChangeOldCalibration(app):
     failures = doStationPost(sensor)
     try:
         test = session.query(Sensor).filter_by(uuid='station_test_0test_sensor').first()
-        if str(test.toDict()['last_calibration']['coefficients']) != "[10, 10]":
+        if test.toDict()['last_calibration']['coefficients'] != [10, 10]:
             failures.append({
                 'TestName': "ChangeOldCalibration",
                 'ErrorGiven': "Coefficients were changed when they shouldn't have been."
@@ -1123,7 +1125,7 @@ def ChangeNothing(app):
     failures = doStationPost(sensor)
     try:
         test = session.query(Sensor).filter_by(uuid='station_test_0test_sensor').first()
-        if str(test.toDict()['last_calibration']['coefficients']) != "[10, 10]":
+        if test.toDict()['last_calibration']['coefficients'] != [10, 10]:
             failures.append({
                 'TestName': "ChangeNothing",
                 'ErrorGiven': "Coefficients were changed when they shouldn't have been."
@@ -1149,7 +1151,7 @@ def ChangeNoTimestamp(app):
                 'sensor_type': "float",
                 'timestamp': time.time(),
                 'meta_data': {},
-                'scale': "[{}, {}]".format(7, 7),
+                'scale': [7, 7],
             }]
         },
         'readings': []
@@ -1157,7 +1159,7 @@ def ChangeNoTimestamp(app):
     failures = doStationPost(sensor)
     try:
         test = session.query(Sensor).filter_by(uuid='station_test_0test_sensor').first()
-        if str(test.toDict()['last_calibration']['coefficients']) != "[10, 10]":
+        if test.toDict()['last_calibration']['coefficients'] != [10, 10]:
             failures.append({
                 'TestName': "ChangeNoTimestamp",
                 'ErrorGiven': "Coefficients were changed when they shouldn't have been."
@@ -1234,9 +1236,9 @@ if __name__ == '__main__':
     with sessionScope() as newSession:
         session = newSession
         failures = failures + TestStation(app)
-        failures = failures + TestSensor(app)
-        failures = failures + TestDatastream(app)
-        failures = failures + TestReading(app)
+        # failures = failures + TestSensor(app)
+        # failures = failures + TestDatastream(app)
+        # failures = failures + TestReading(app)
     if len(failures) != 0:
         logging.error("\n\nYou've had {} tests fail:\n".format(len(failures)))
         for i in failures:
