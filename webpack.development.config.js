@@ -60,7 +60,7 @@ module.exports = {
         }],
     },
     plugins: [
-        new BundleAnalyzerPlugin(),
+        // new BundleAnalyzerPlugin(),
         new BundleTracker({
             filename: './webpack-stats.json',
         }),

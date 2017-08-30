@@ -28,7 +28,6 @@ export default class graphController {
             } else if (nv === ov) {
                 return;
             }
-            $scope.title = nv.name;
             this.$scope.noStreams = true;
             this.getData(nv);
         });
@@ -82,6 +81,8 @@ export default class graphController {
 
     // D3 drawing.
     drawGraph(readings) {
+        const stream = this.infoService.getStream();
+        this.$scope.title = stream.name;
         // If no data points were returned, warn the user and quit.
         if (readings.length === 0) {
             $('#graph-message').toggleClass('alert-danger');
@@ -116,7 +117,6 @@ export default class graphController {
             }
         }
 
-        const stream = this.infoService.getStream();
         if (stream.min_value !== null) {
             min = stream.min_value;
         }
