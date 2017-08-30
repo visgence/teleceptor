@@ -27,7 +27,7 @@ import time
 import sys
 
 
-def run_check(datastream_id, teleceptorURI, useSQL, minutes, sensor_uuid=None):
+def run_check(datastream_id, teleceptorURI, useSQL, minutes, sensor_uuid=None, min=None, max=None):
     """
     Test if datastream `datastream_id` has data within the last `minutes` minutes from now.
 
@@ -99,7 +99,13 @@ def run_check(datastream_id, teleceptorURI, useSQL, minutes, sensor_uuid=None):
         return_code = 3
         return return_code
 
-    print("OK - datastream {} has {} datapoints in the last {} minutes.".format(datastream_id, len(response.json()['readings']), minutes))
+    readings = response.json()['readings']
+    if (min is not None) and (max is not None):
+        if readings[-1][1] >= min and readings[-1][1] <= max:
+            print("CRITICAL datastream {} of value {} falls between {} and {}".format(datastream_id, readings[-1][1], min, max))
+            return 2
+
+    print("OK - datastream {} has {} datapoints in the last {} minutes.".format(datastream_id, len(readings), minutes))
     return return_code
 
 
@@ -116,6 +122,8 @@ if __name__ == "__main__":
         default=False)
     parser.add_argument('-m', '--minutes', type=float, help='The number of minutes in the past from now to request data for.', default=30.0)
     parser.add_argument('--uuid', type=str, help='The uuid of the sensor. If present, overrides the --id, if --id is present.')
+    parser.add_argument('--min', type=float, help='Alert if value is greater or equal')
+    parser.add_argument('--max', type=float, help='Alert if value is less than or equal to max')
     args = parser.parse_args()
 
-    sys.exit(run_check(args.id, args.teleceptorURI, args.useSQL, args.minutes, args.uuid))
+    sys.exit(run_check(args.id, args.teleceptorURI, args.useSQL, args.minutes, args.uuid, args.min, args.max))
