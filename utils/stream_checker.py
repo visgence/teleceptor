@@ -27,7 +27,7 @@ import time
 import sys
 
 
-def run_check(datastream_id, teleceptorURI, useSQL, minutes, sensor_uuid=None, min=None, max=None):
+def run_check(datastream_id, teleceptorURI, useSQL, minutes, sensor_uuid=None, min=None, max=None, envelope='inside'):
     """
     Test if datastream `datastream_id` has data within the last `minutes` minutes from now.
 
@@ -57,7 +57,7 @@ def run_check(datastream_id, teleceptorURI, useSQL, minutes, sensor_uuid=None, m
             sensors_request_url = teleceptorURI + 'api/datastreams/'
             request_data = {'sensor': sensor_uuid}
             response = requests.get(sensors_request_url, params=request_data)
-
+            print response.json()
             datastream_id = response.json()['datastreams'][0]['id']
         except requests.exceptions.ConnectionError:
             print("CRITICAL - Could not connect to teleceptor at URI {}".format(teleceptorURI))
@@ -100,10 +100,23 @@ def run_check(datastream_id, teleceptorURI, useSQL, minutes, sensor_uuid=None, m
         return return_code
 
     readings = response.json()['readings']
+
+    # check alert envelope
+    # TODO: check the average, not just the latest reading
     if (min is not None) and (max is not None):
-        if readings[-1][1] >= min and readings[-1][1] <= max:
-            print("CRITICAL datastream {} of value {} falls between {} and {}".format(datastream_id, readings[-1][1], min, max))
-            return 2
+        if envelope == 'inside':
+            if readings[-1][1] >= min and readings[-1][1] <= max:
+                print("CRITICAL datastream {} of value {} falls between {} and {}".format(datastream_id, readings[-1][1], min, max))
+                return 2
+
+        if envelope == 'outside':
+            if readings[-1][1] < min and readings[-1][1] > max:
+                print("CRITICAL datastream {} of value {} falls outside {} and {}".format(datastream_id, readings[-1][1], min, max))
+                return 2
+
+        else:
+            print "unknown enveleope value {}".format(envelope)
+            return 3
 
     print("OK - datastream {} has {} datapoints in the last {} minutes.".format(datastream_id, len(readings), minutes))
     return return_code
@@ -120,10 +133,16 @@ if __name__ == "__main__":
         '-sql', '--useSQL', action='store_true',
         help='True to request SQL data. False to request Elasticsearch data.',
         default=False)
-    parser.add_argument('-m', '--minutes', type=float, help='The number of minutes in the past from now to request data for.', default=30.0)
-    parser.add_argument('--uuid', type=str, help='The uuid of the sensor. If present, overrides the --id, if --id is present.')
-    parser.add_argument('--min', type=float, help='Alert if value is greater or equal')
-    parser.add_argument('--max', type=float, help='Alert if value is less than or equal to max')
-    args = parser.parse_args()
+    parser.add_argument('-m', '--minutes', type=float,
+                                           help='The number of minutes in the past from now to request data for.',
+                                           default=30.0)
 
-    sys.exit(run_check(args.id, args.teleceptorURI, args.useSQL, args.minutes, args.uuid, args.min, args.max))
+    parser.add_argument('--uuid', type=str, help='The uuid of the sensor. If present, overrides the --id, if --id is present.')
+    parser.add_argument('--min', type=float, help='Min value of the alert envelope')
+    parser.add_argument('--max', type=float, help='Max value of the alert envelope')
+    parser.add_argument('--envelope', type=str,
+                                      help='Alert if value is [inside|outside] of alert envelope. Default "inside"',
+                                      default='inside')
+
+    args = parser.parse_args()
+    sys.exit(run_check(args.id, args.teleceptorURI, args.useSQL, args.minutes, args.uuid, args.min, args.max, args.envelope))
