@@ -133,16 +133,12 @@ if __name__ == "__main__":
         '-sql', '--useSQL', action='store_true',
         help='True to request SQL data. False to request Elasticsearch data.',
         default=False)
-    parser.add_argument('-m', '--minutes', type=float,
-                                           help='The number of minutes in the past from now to request data for.',
-                                           default=30.0)
+    parser.add_argument('-m', '--minutes', type=float, help='The number of minutes in the past from now to request data for.', default=30.0)
 
     parser.add_argument('--uuid', type=str, help='The uuid of the sensor. If present, overrides the --id, if --id is present.')
     parser.add_argument('--min', type=float, help='Min value of the alert envelope')
     parser.add_argument('--max', type=float, help='Max value of the alert envelope')
-    parser.add_argument('--envelope', type=str,
-                                      help='Alert if value is [inside|outside] of alert envelope. Default "inside"',
-                                      default='inside')
+    parser.add_argument('--envelope', type=str, help='Alert if value is [inside|outside] of alert envelope. Default "inside"', default='inside')
 
     args = parser.parse_args()
     sys.exit(run_check(args.id, args.teleceptorURI, args.useSQL, args.minutes, args.uuid, args.min, args.max, args.envelope))
