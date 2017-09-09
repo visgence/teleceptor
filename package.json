@@ -47,7 +47,7 @@
   "scripts": {
     "setup": "npm run installDependencies && npm run installGitHooks && npm run checkOutdated && npm run setupTeleceptor",
     "installDependencies": "pip install -r requirements.txt && npm install",
-    "installGitHooks": "printf '%s#!/bin/bash %s\n %s\necho \"running linter\" %s\nnpm run lint' > .git/hooks/pre-commit",
+    "installGitHooks": "printf '%s#!/bin/bash %s\n %s\necho \"running linter\" %s\nnpm run lint' > .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit",
     "postinstall": "npm --prefix ./node_modules/node-sass/ run install",
     "checkOutdated": "npm outdated && pip list --outdated",
     "setupTeleceptor": "./teleceptorcmd setup",
@@ -59,7 +59,7 @@
     "htmllint": "./node_modules/.bin/htmlhint --config .htmlhintrc src",
     "incmajorversion": "python versionControl.py -major",
     "incminorversion": "python versionControl.py -minor",
-    "lint": "npm run htmllint & npm run scsslint & npm run eslint & npm run pythonlint",
+    "lint": "npm run htmllint && npm run scsslint && npm run eslint && npm run pythonlint",
     "postinstall": "npm --prefix ./node_modules/node-sass/ run install",
     "pythonlint": "pep8 --exclude='*node_modules*' . --max-line-length=200",
     "scsslint": "./node_modules/.bin/sass-lint src '**/*.scss' -v -q",
