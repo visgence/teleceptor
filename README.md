@@ -23,18 +23,19 @@ Database support:
 
 ## Setting up Teleceptor backend
 1. git clone https://github.com/visgence/teleceptor.git
-2. pip install -r requirements.txt
+2. run ```npm setup```
 3. To install a local config customizable first run ```./teleceptorcmd copyconfig``` app will print path
 4. In your config, you can set your Postgres and ElasticSearch settings.
-5. In the Teleceptor folder, run command ```./teleceptorcmd setup``` and wait until _Done!_ is printed.
-6. Run command ```./teleceptorcmd runserver 0.0.0.0:8000```.
-7. To load test data, run ```./teleceptorcmd loadfixtures```.
-8. Set up desired sensors and start collecting data.(_See below for setting up sensors_)
+5. Run command ```./teleceptorcmd runserver 0.0.0.0:8000```.
+6. To load test data, run ```./teleceptorcmd loadfixtures```.
+7. Set up desired sensors and start collecting data.(_See below for setting up sensors_)
 
 ## Setting up Teleceptor frontend
 1. Run command ```npm install```
+
 ### For development
 2. Run command ```npm run start```. This will build the project, sets webpack to watch files, and runs the server at localhost:8000
+
 ### For production
 2. Run command ```npm run buildProduction```. This only builds the project and runs the optimization plugins for webpack.
 3. Run command ```./teleceptorcmd runserver [ip:port]```. Runs the server at ip and port if given, default is 0.0.0.0:8000
