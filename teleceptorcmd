@@ -229,12 +229,6 @@ def setup(*args):
         r = requests.put(teleceptor.ELASTICSEARCH_URI+'/_template/teleceptor', json=conf)
         print r
 
-    print "running node commands"
-
-    try:
-        call('npm install', cwd=WEBROOT, shell=True)
-    except Exception, e:
-        print "An error occured trying to install node modules. Please make sure that NodeJs and npm are installed."
     print "Run teleceptorcmd loadfixtures for example data"
 
 
