@@ -62,14 +62,14 @@ Note: To find the name of your sensor, in a terminal window, type ```ls /dev/tty
 # Teleceptor Front-End Usage
 * To view sensor data that has been collected, click on a sensor stream under the _Stream Select_ tab.
 * To look at a certain time period of data, select a range under the _Time Controls_ tab.
-  * :star: Specific data can also be viewed by passing the mouse on the graph to observe data points and the time it was collected.
-  * :star2: By clicking and dragging on a certain part of the graph, you can zoom-in on points.
+  * Specific data can also be viewed by hovering the mouse on the graph to observe data points and the time it was collected.
+  * By clicking and dragging on a certain part of the graph, you can zoom-in on points.
 * Some information about the sensor is editable and will change the graph accordingly such as _Units_ or _Calibration_.
   * Be sure to save after editing so the configuration information to be available later.
   * _Metadata_ cannot be changed. However, you can change it in the firmware and then re-upload the firmware to the sensor. (_See Teleceptor Concepts_)
 * If you download updates from Teleceptor but and are not sure if the webpage is up-to-date as well, clear your web browser's cache:
   * **Chrome:** Right-click in a blank spot on the page -> Inspect element -> Settings (gear symbol) -> Disable cache (while DevTools is open) -> Refresh the page
- * **Mozilla Firefox**: _ctrl+Shift+R_ will reload the page without cache and/or _ctrl+Shift+Delete_ -> Details -> Cache checkbox -> Clear Now
+  * **Mozilla Firefox**: _ctrl+Shift+R_ will reload the page without cache and/or _ctrl+Shift+Delete_ -> Details -> Cache checkbox -> Clear Now
 
 
 ## Setting up an mFi
@@ -96,7 +96,7 @@ Datastreams are automatically created when a Sensor posts to the Teleceptor stat
 ## Sensor Reading
 The raw value coming from a sensor attached to a timestamp of when the reading occurred and the data stream that it is connected to.
 
-In the teleceptor/api folder, you will find a more detailed guide on how the api works.
+In the teleceptor/api folder, you will find a more detailed guide on how the [api](https://github.com/visgence/teleceptor/tree/dev/teleceptor/api) works.
 
 ## License
 #### 2014 Visgence Inc.

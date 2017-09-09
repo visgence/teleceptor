@@ -10,7 +10,7 @@ Handles incoming data from a basestation by updating (or creating) sensor inform
 #### Params:
 A JSON array formatted string stored in the data section of the HTTP POST request.
 It is not optional, but some elements can be omitted. The JSON object should be a list, even if there is only one element in it.
-The full format is listed in the TeleceptorStandardFormat ReadMe.
+The full format is listed in the [TeleceptorStandardFormat ReadMe](TeleceptorStandardFormat.md).
 
 #### Returns:
 A JSON object with either a key 'error' or 'newValues'. In the case of 'error', the value is an error string.
@@ -25,7 +25,7 @@ The receiving function must determine how to handle the messages (e.g. to consid
 #### teleceptorurl/api/datastreams/
 
 Obtain a list of all available Datastreams .
-Returns:
+#### Returns:
 A JSON object with either a key 'error' or 'datastreams'.
 In the case of 'error', the value is an error string.
 In the case of 'datastreams', the value is a list of all datastreams.
@@ -33,7 +33,7 @@ In the case of 'datastreams', the value is a list of all datastreams.
 #### teleceptorurl/api/datastreams/?sensor=value1&sensor=value2&...
 
 Obtain a list of all available datastreams filtered by sensor uuid arguments.
-Returns:
+#### Returns:
 A JSON object with either a key 'error' or 'datastreams'.
 In the case of 'error', the value is an error string.
 In the case of 'datastream', the value is a list of selected datastreams.
@@ -129,7 +129,7 @@ A JSON object with an 'error' key if an error occurred or 'readings' key of time
 
 Adds (a) reading(s) to a stream.
 
-#### Param:
+#### Params:
 Expects a json object with key 'readings' which is an array of tuples (datastreamid, value, timestamp)
 
 
