@@ -119,9 +119,12 @@ export default class timeController {
             if (this.$scope.refreshProgress > 100) {
                 const newStart = parseInt(this.$location.search().start) + parseInt(this.$scope.refreshDuration);
                 const newEnd = parseInt(this.$location.search().end) + parseInt(this.$scope.refreshDuration);
-
-                this.$location.search('start', newStart);
-                this.$location.search('end', newEnd);
+                if (! isNaN(newStart)) {
+                    this.$location.search('start', newStart);
+                }
+                if (! isNaN(newEnd)) {
+                    this.$location.search('end', newEnd);
+                }
                 this.$location.search('refresh', `${this.$scope.refreshDuration}`);
             } else {
                 this.updateRefresh();
