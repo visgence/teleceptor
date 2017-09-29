@@ -1,5 +1,5 @@
 import * as d3 from 'd3';
-import {showError} from '../../utilites/dialogs.utils';
+import {showError, showSuccess} from '../../utilites/dialogs.utils';
 
 export default class graphController {
     constructor(infoService, apiService, $location, $scope, $timeout, $window, $mdDialog, $mdToast) {
@@ -44,6 +44,16 @@ export default class graphController {
     getData(sensorInfo) {
         const urlArgs = location.href.split('?')[1].split('&');
         let url = 'readings/?';
+        let hasDates = false;
+        urlArgs.forEach((arg) => {
+            if (arg.startsWith('start')) {
+                hasDates = true;
+            }
+        });
+        if (! hasDates) {
+            urlArgs.push(`start=${parseInt((new Date().getTime() / 1000) - 60 * 60 * 24)}`);
+            urlArgs.push(`end=${parseInt(new Date().getTime() / 1000)}`);
+        }
         urlArgs.forEach((arg) => {
             if (arg.startsWith('start') || arg.startsWith('end') || arg.startsWith('datastream')) {
                 url += `${arg}&`;
@@ -131,7 +141,7 @@ export default class graphController {
         }
 
         // Set graph time range.
-        let start = new Date().getTime() - 60 * 60 * 6 * 1000;
+        let start = new Date().getTime() - 60 * 60 * 24 * 1000;
         let end = new Date().getTime();
 
         if (this.$location.search().start !== undefined) {
@@ -248,7 +258,7 @@ export default class graphController {
 
         // Generate an array of differences between two sequential dates.
         const medianTimes = [];
-        let lastPoint = (readings[0][0]);
+        let lastPoint = readings[0][0];
 
         for (let index = 0; index < readings.length; index++) {
             medianTimes.push(readings[index][0] - lastPoint);
@@ -257,8 +267,9 @@ export default class graphController {
         // Sort the array and take the median difference.
         medianTimes.sort();
         const medianTime = medianTimes[parseInt(medianTimes.length / 2)];
-        let last;
 
+        let last = readings[0][0];
+        let hasHiddenPoints = false;
         // The function used to generate the connections between points.
         const lineFunction = d3.line()
             .defined((point) => {
@@ -272,7 +283,7 @@ export default class graphController {
                 }
                 // If a point falls outside of y axis range, we don't draw it and give a warning.
                 if (point[1] > max || point[1] < min) {
-                    showSuccess($mdToast, 'Warning: Some data points are not shown in graph and may be causing line breaks.');
+                    hasHiddenPoints = true;
                     return false;
                 }
 
@@ -288,6 +299,7 @@ export default class graphController {
                     return false;
                 }
                 last = point[0];
+
                 return true;
             })
             // Find x position of a point.
@@ -302,6 +314,9 @@ export default class graphController {
         newChart.append('path')
             .attr('d', lineFunction(readings))
             .attr('class', 'graph-line');
+        if (hasHiddenPoints) {
+            showSuccess(this.$mdToast, 'Warning: Some data points are not shown in graph and may be causing line breaks.');
+        }
 
         // Create a container to store all the tool tip components.
         const tooltip = newChart.append('g')

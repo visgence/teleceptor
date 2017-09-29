@@ -32,7 +32,7 @@ export default class apiService {
         Object.keys(data).forEach((key) => {
             if (key === 'last_calibration') {
                 try {
-                    const jsonArray = JSON.parse(`{"array${data[key].coefficients}}": `);
+                    const jsonArray = JSON.parse(`{"array":${data[key].coefficients}}`);
                     jsonArray.array.forEach((entry) => {
                         if (isNaN(entry) || entry.constructor === Array) {
                             throw 'Calibration must contain only numbers.';
