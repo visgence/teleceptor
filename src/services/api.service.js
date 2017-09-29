@@ -1,4 +1,4 @@
-import {ShowError} from '../utilites/dialogs.utils';
+import {showError} from '../utilites/dialogs.utils';
 
 export default class apiService {
     constructor($http, $interval, $mdDialog, $mdToast) {
@@ -12,26 +12,27 @@ export default class apiService {
     }
 
     get(endpoint) {
-        return this.$http.get('/api/' + endpoint);
+        return this.$http.get(`/api/${endpoint}`);
     }
     post(endpoint, data) {
-        return this.$http.post('/api/' + endpoint, data);
+        return this.$http.post(`/api/${endpoint}`, data);
     }
     put(endpoint, data) {
+        let cleanedData = data;
         if (endpoint.startsWith('sensors')) {
-            data = this.CleanSensorData(data);
+            cleanedData = this.cleanSensorData(data);
             if (data.error !== undefined) {
                 return;
             }
         }
-        return this.$http.put('/api/' + endpoint, data);
+        return this.$http.put(`/api/${endpoint}`, cleanedData);
     }
 
-    CleanSensorData(data) {
+    cleanSensorData(data) {
         Object.keys(data).forEach((key) => {
             if (key === 'last_calibration') {
                 try {
-                    const jsonArray = JSON.parse('{"array": ' + data[key].coefficients + '}');
+                    const jsonArray = JSON.parse(`{"array":${data[key].coefficients}}`);
                     jsonArray.array.forEach((entry) => {
                         if (isNaN(entry) || entry.constructor === Array) {
                             throw 'Calibration must contain only numbers.';
@@ -41,8 +42,8 @@ export default class apiService {
                     delete data[key].timestamp;
                 } catch (error) {
                     console.log(error);
-                    ShowError(this.$mdDialog, error || 'Calibration is not correctly formatted json.');
-                    data['error'] = true;
+                    showError(this.$mdDialog, error || 'Calibration is not correctly formatted json.');
+                    data.error = true;
                 }
 
             }

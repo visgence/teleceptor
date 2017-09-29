@@ -1,5 +1,4 @@
 export default class infoService {
-    // No constructor needed.
 
     // Set by stream info.
     setStream(stream) {

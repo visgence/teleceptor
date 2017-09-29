@@ -1,4 +1,4 @@
-import {ShowSuccess, ShowError} from '../../utilites/dialogs.utils';
+import {showSuccess, showError} from '../../utilites/dialogs.utils';
 
 export default class streamController {
 
@@ -31,7 +31,7 @@ export default class streamController {
 
         this.$scope.AddPath = () => {
             this.$scope.stream.paths.push({
-                url: '/new_path_' + this.$scope.stream.paths.length,
+                url: `/new_path_${this.$scope.stream.paths.length}`,
             });
         };
 
@@ -43,25 +43,25 @@ export default class streamController {
                     updateData[key] = null;
                 } else if (key === 'paths') {
                     updateData.paths = [];
-                    this.$scope.stream[key].forEach((j) => {
-                        if (j.url === '') {
+                    this.$scope.stream[key].forEach((path) => {
+                        if (path.url === '') {
                             return;
                         }
-                        if (!j.url.startsWith('/')) {
-                            ShowError(this.$mdDialog, 'Paths must begin with a "/".');
+                        if (!path.url.startsWith('/')) {
+                            showError(this.$mdDialog, 'Paths must begin with a "/".');
                             hasErrors = true;
                             return;
                         }
-                        if (j.url.includes(' ')) {
-                            ShowError(this.$mdDialog, 'Paths cannot have any spaces.');
+                        if (path.url.includes(' ')) {
+                            showError(this.$mdDialog, 'Paths cannot have any spaces.');
                             hasErrors = true;
                             return;
                         }
-                        updateData.paths.push(j.url);
+                        updateData.paths.push(path.url);
                     });
                 } else if (key === 'min_value' || key === 'max_value') {
                     if (isNaN(this.$scope.stream[key])) {
-                        ShowError(this.$mdDialog, 'Min and Max values must be a number');
+                        showError(this.$mdDialog, 'Min and Max values must be a number');
                         hasErrors = true;
                         return;
                     }
@@ -74,29 +74,29 @@ export default class streamController {
             if (hasErrors) {
                 return;
             }
-            const url = 'datastreams/' + updateData.id;
+            const url = `datastreams/${updateData.id}`;
             this.apiService.put(url, updateData)
                 .then((success) => {
                     this.infoService.setStream(success.data.stream);
-                    ShowSuccess(this.$mdToast);
+                    showSuccess(this.$mdToast);
                     this.$scope.editing = false;
                 })
                 .catch((error) => {
-                    ShowError(this.$mdDialog, error);
+                    showError(this.$mdDialog, error);
                 });
         };
-        this.LoadStream();
+        this.loadStream();
     }
 
-    LoadStream() {
+    loadStream() {
         const curStream = this.$location.search().datastream;
         if (curStream === undefined) {
             return;
         }
-        this.apiService.get('datastreams/' + curStream)
+        this.apiService.get(`datastreams/${curStream}`)
             .then((success) => {
                 if (success.data.error !== undefined) {
-                    ShowError(this.$mdDialog, success.data.error);
+                    showError(this.$mdDialog, success.data.error);
                     return;
                 }
                 const dataToDisplay = {};
@@ -121,7 +121,7 @@ export default class streamController {
                 $('#stream-card').css('visibility', 'visible');
             })
             .catch((error) => {
-                ShowError(this.$mdDialog, error);
+                showError(this.$mdDialog, error);
             });
     }
 }

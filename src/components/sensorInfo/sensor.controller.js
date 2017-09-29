@@ -1,6 +1,6 @@
 import {
-    ShowSuccess,
-    ShowError,
+    showSuccess,
+    showError,
 } from '../../utilites/dialogs.utils';
 
 export default class sensorController {
@@ -22,8 +22,8 @@ export default class sensorController {
             if (nv.sensor === undefined) {
                 return;
             }
-            this.LoadSensor(nv.sensor);
-            this.LoadCalibrations(nv.sensor);
+            this.loadSensor(nv.sensor);
+            this.loadCalibrations(nv.sensor);
         });
 
         $scope.displayInfo = $location.search().datastream !== undefined;
@@ -45,7 +45,7 @@ export default class sensorController {
 
         this.$scope.EditFields = () => {
             this.$scope.editing = true;
-            this.$scope.previous_coefficients = this.$scope.sensor.last_calibration.coefficients;
+            this.$scope.previous_coefficients = this.$scope.sensor.last_calibration.coefficients; // eslint-disable-line
         };
 
         this.$scope.CancelFields = () => {
@@ -60,9 +60,9 @@ export default class sensorController {
 
             const sensorReading = {
                 name: id,
-                sensor_type: sensorInfo.sensor_type,
+                sensor_type: sensorInfo.sensor_type, // eslint-disable-line
                 timestamp: time,
-                meta_data: {},
+                meta_data: {}, // eslint-disable-line
             };
 
             const payload = [{
@@ -79,10 +79,10 @@ export default class sensorController {
             }];
             this.apiService.post('station', payload)
                 .then((success) => {
-                    ShowSuccess(this.$mdToast);
+                    showSuccess(this.$mdToast);
                 })
                 .catch((error) => {
-                    ShowError(this.$mdDialog, error);
+                    showError(this.$mdDialog, error);
                     console.error(error);
                 });
         };
@@ -105,19 +105,19 @@ export default class sensorController {
             try {
                 this.apiService.put(url, updateData)
                     .then((success) => {
-                        ShowSuccess(this.$mdToast);
+                        showSuccess(this.$mdToast);
                         this.infoService.setSensor(success.data.sensor);
                         this.$scope.sensor = this.infoService.getSensor();
                         this.$scope.editing = false;
-                        this.LoadCalibrations(this.$scope.sensor.uuid);
+                        this.loadCalibrations(this.$scope.sensor.uuid);
                     })
                     .catch((error) => {
                         console.error(error);
-                        ShowError(this.$mdDialog, error);
+                        showError(this.$mdDialog, error);
                     });
             } catch (error) {
                 console.error('error');
-                ShowError(this.$mdDialog, error);
+                showError(this.$mdDialog, error);
             }
         };
 
@@ -128,28 +128,25 @@ export default class sensorController {
         this.$scope.ExportData = (source) => {
             let start = this.$location.search().start;
             if (start === undefined) {
-                start = new Date().getTime() - 24 * 60 * 60 * 1000;
+                start = parseInt(new Date().getTime() - 24 * 60 * 60 * 1000);
             }
             let end = this.$location.search().end;
             if (end === undefined) {
-                end = new Date().getTime();
+                parseInt(end = new Date().getTime());
             }
-            const readingsUrl = 'readings?datastream=' +
-                this.infoService.getStream().id +
-                '&start=' + parseInt(start) +
-                '&end=' + parseInt(end) +
-                '&source=' + source;
+            const streamId = this.infoService.getStream().id;
+            const readingsUrl = `readings?datastream=${streamId}&start=${start}&end=${end}&source=${source}`;
             this.apiService.get(readingsUrl)
                 .then((success) => {
                     if (success.data.error !== undefined) {
-                        ShowError(this.$mdDialog, 'No readings could be found in current time range.');
+                        showError(this.$mdDialog, 'No readings could be found in current time range.');
                     } else {
                         this.exportData(success.data.readings);
                     }
                 })
                 .catch((error) => {
                     console.error('error');
-                    ShowError(this.$mdDialog, error);
+                    showError(this.$mdDialog, error);
                 });
         };
 
@@ -161,14 +158,14 @@ export default class sensorController {
 
             const sensorReading = {
                 name: id,
-                sensor_type: sensorInfo.sensor_type,
+                sensor_type: sensorInfo.sensor_type, // eslint-disable-line
                 timestamp: time,
-                meta_data: {},
+                meta_data: {}, // eslint-disable-line
             };
 
             if (isNaN(newValue)) {
                 console.error('error');
-                ShowError(this.$mdDialog, 'New data must be a number');
+                showError(this.$mdDialog, 'New data must be a number');
                 return;
             }
 
@@ -187,11 +184,11 @@ export default class sensorController {
 
             this.apiService.post('station', payload)
                 .then((success) => {
-                    ShowSuccess(this.$mdToast, 'Point has been entered.');
+                    showSuccess(this.$mdToast, 'Point has been entered.');
                 })
                 .catch((error) => {
                     console.error('error');
-                    ShowError(this.$mdDialog, error);
+                    showError(this.$mdDialog, error);
                 });
         };
 
@@ -202,28 +199,28 @@ export default class sensorController {
             const payload = {
                 message: this.$scope.commandSwitch.value,
                 duration: 60000,
-                sensor_id: sensorInfo.uuid,
+                sensor_id: sensorInfo.uuid, // eslint-disable-line
             };
             apiService.post('messages/', payload)
                 .then((success) => {
-                    ShowSuccess(this.$mdToast);
+                    showSuccess(this.$mdToast);
                 })
                 .catch((error) => {
                     console.error('error');
-                    ShowError(this.$mdDialog, error);
+                    showError(this.$mdDialog, error);
                 });
         };
     }
 
     // This needs to wait for stream info to be set, then make request by sensor uuid
-    LoadSensor(sensor) {
-        this.apiService.get('sensors/' + sensor)
+    loadSensor(sensor) {
+        this.apiService.get(`sensors/${sensor}`)
             .then((success) => {
                 this.$scope.sensor = success.data.sensor;
                 this.infoService.setSensor(success.data.sensor);
                 this.$scope.ShowInfo = true;
                 this.$scope.Date = new Date(this.$scope.sensor.last_calibration.timestamp * 1000);
-                this.$scope.Date = this.$scope.Date.toDateString() + ', ' + this.$scope.Date.getHours() + ':' + this.$scope.Date.getMinutes();
+                this.$scope.Date = `${this.$scope.Date.toDateString()}, ${this.$scope.Date.getHours()}:${this.$scope.Date.getMinutes()}`;
 
                 if (success.data.sensor_type === 'output') {
                     this.$scope.isActive = true;
@@ -237,13 +234,13 @@ export default class sensorController {
             })
             .catch((error) => {
                 console.error('error');
-                ShowError(this.$mdDialog, error);
+                showError(this.$mdDialog, error);
             });
     }
 
     // This needs to wait for stream info to be set, then make request by sensor uuid
-    LoadCalibrations(sensor) {
-        this.apiService.get('calibrations?sensor_id=' + sensor)
+    loadCalibrations(sensor) {
+        this.apiService.get(`calibrations?sensor_id=${sensor}`)
             .then((success) => {
                 this.$scope.calibrations = {};
                 success.data.calibrations.forEach((calibration) => {
@@ -252,24 +249,28 @@ export default class sensorController {
             })
             .catch((error) => {
                 console.error(error);
-                ShowError(this.$mdDialog, error);
+                showError(this.$mdDialog, error);
             });
     }
 
-    exportData(readings) {
+    exportData(data) {
+        let readings = data;
         const sensorInfo = this.$scope.sensor;
         if (readings === null || readings.length === 0) {
             readings = this.infoService.getReadings();
         }
 
         const scaledReadings = [];
-        const coefficients = sensorInfo.last_calibration.coefficients.replace(/\[/g, '').replace(/\]/g, '').split(',');
+        const coefficients = sensorInfo.last_calibration.coefficients
+            .replace(/\[/g, '')
+            .replace(/\]/g, '')
+            .split(',');
 
-        let i;
+        let index;
         let units;
 
-        for (i = 0; i < readings.length; i++) {
-            scaledReadings.push(readings[i][1] * (parseFloat(coefficients[0])) + parseFloat(coefficients[1]));
+        for (index = 0; index < readings.length; index++) {
+            scaledReadings.push(readings[index][1] * (parseFloat(coefficients[0])) + parseFloat(coefficients[1]));
         }
 
         // actual delimiter characters for CSV format
@@ -283,31 +284,25 @@ export default class sensorController {
             units = sensorInfo.units;
         }
 
-        let csv = 'timestamp' + colDelim + 'UUID' + colDelim + 'value' + colDelim + 'scaled value' + colDelim + 'units' + rowDelim;
+        let csv = `timestamp${colDelim}UUID${colDelim}value${colDelim}scaled value${colDelim}units${rowDelim}`;
 
-        for (i = 0; i < readings.length; i++) {
-            csv += readings[i][0] +
+        for (index = 0; index < readings.length; index++) {
+            csv += readings[index][0] +
                 colDelim + sensorInfo.uuid +
-                colDelim + readings[i][1] +
-                colDelim + scaledReadings[i] +
+                colDelim + readings[index][1] +
+                colDelim + scaledReadings[index] +
                 colDelim + units +
                 rowDelim;
         }
         // Data URI
         const today = new Date();
 
-        const downloadFilename = sensorInfo.uuid + '_' +
-            today.getMonth() +
-            1 + '-' +
-            today.getDate() + '-' +
-            today.getFullYear() + '_' +
-            today.getHours() + ':' +
-            today.getMinutes() + '.csv';
+        const downloadFilename = `${sensorInfo.uuid}_${today.getMonth()}-${today.getDate()}-${today.getFullYear()}_${today.getHours()}:${today.getMinutes()}.csv`;
 
         // actually download
         const link = document.createElement('a');
         link.download = downloadFilename;
-        link.href = 'data:application/csv;charset=utf-8,' + encodeURIComponent(csv);
+        link.href = `data:application/csv;charset=utf-8,${encodeURIComponent(csv)}`;
         link.click();
     }
 }
