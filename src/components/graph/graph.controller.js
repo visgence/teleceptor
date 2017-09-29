@@ -1,5 +1,5 @@
 import * as d3 from 'd3';
-import {ShowError} from '../../utilites/dialogs.utils';
+import {showError} from '../../utilites/dialogs.utils';
 
 export default class graphController {
     constructor(infoService, apiService, $location, $scope, $timeout, $window, $mdDialog, $mdToast) {
@@ -46,7 +46,7 @@ export default class graphController {
         let url = 'readings/?';
         urlArgs.forEach((arg) => {
             if (arg.startsWith('start') || arg.startsWith('end') || arg.startsWith('datastream')) {
-                url += arg + '&';
+                url += `${arg}&`;
             }
         });
         url = url.substring(0, url.length - 1);
@@ -61,11 +61,11 @@ export default class graphController {
                     const coefs = JSON.parse(sensorInfo.last_calibration.coefficients);
                     const readings = [];
                     success.data.readings.forEach((reading) => {
-                        let scaled_reading = 0;
-                        for (let i = 0; i < coefs.length; i ++) {
-                            scaled_reading += (Math.pow(reading[1], coefs.length - i - 1) * coefs[i]);
+                        let scaledReading = 0;
+                        for (let index = 0; index < coefs.length; index ++) {
+                            scaledReading += (Math.pow(reading[1], coefs.length - index - 1) * coefs[index]);
                         }
-                        const newReading = [parseFloat(reading[0]) * 1000, scaled_reading];
+                        const newReading = [parseFloat(reading[0]) * 1000, scaledReading];
                         readings.push(newReading);
                     });
                     this.drawGraph(readings);
@@ -73,7 +73,7 @@ export default class graphController {
                 }
             })
             .catch((error) => {
-                ShowError(this.$mdDialog, error);
+                showError(this.$mdDialog, error);
                 console.error('Error');
                 console.log(error);
             });
@@ -101,19 +101,18 @@ export default class graphController {
         let max = readings[0][1];
         let oldest = readings[0][0];
         let latest = readings[0][0];
-        let j = 0;
-        for (j = 0; j < readings.length; j++) {
-            if (min > readings[j][1]) {
-                min = readings[j][1];
+        for (let index = 0; index < readings.length; index++) {
+            if (min > readings[index][1]) {
+                min = readings[index][1];
             }
-            if (max < readings[j][1]) {
-                max = readings[j][1];
+            if (max < readings[index][1]) {
+                max = readings[index][1];
             }
-            if (oldest < readings[j][0]) {
-                oldest = readings[j][0];
+            if (oldest < readings[index][0]) {
+                oldest = readings[index][0];
             }
-            if (latest > readings[j][0]) {
-                latest = readings[j][0];
+            if (latest > readings[index][0]) {
+                latest = readings[index][0];
             }
         }
 
@@ -161,7 +160,7 @@ export default class graphController {
             .attr('width', width + margin.left + margin.right)
             .attr('height', height + margin.top + margin.bottom)
             .append('g')
-            .attr('transform', 'translate(' + margin.left + ',' + 0 + ')')
+            .attr('transform', `translate(${margin.left}, 0)`)
             .classed('svg-content-responsive', true);
 
         // Calculate where in screen position X should a point be.
@@ -190,8 +189,8 @@ export default class graphController {
         function getTic() {
             const Ticks = [];
             const ratio = (max - min) / 6;
-            for (let i = 0; i < 7; i++) {
-                Ticks.push(min + (ratio * i));
+            for (let index = 0; index < 7; index++) {
+                Ticks.push(min + (ratio * index));
             }
             return Ticks;
         }
@@ -205,7 +204,7 @@ export default class graphController {
 
         newChart.append('g')
             .attr('class', 'chart-axis')
-            .attr('transform', 'translate(0,' + height + ')')
+            .attr('transform', `translate(0, ${height})`)
             .call(xAxis);
 
         // Create the left Y axis.
@@ -213,18 +212,18 @@ export default class graphController {
             .tickSizeInner(-width)
             .tickSizeOuter(-10)
             .tickValues(getTic())
-            .tickFormat((d) => {
-                return this.FormatText(d, unitSize);
-            });
+            .tickFormat((value) => this.formatText(value, unitSize));
 
         // Add text to display the y-axis label.
         const sensor = this.infoService.getSensor();
         let text = (sensor.units === null || sensor.units === undefined) ? 'units undefined' : sensor.units;
         text += this.getUnitText(unitSize);
+        const transX = -margin.left + 20;
+        const transY = height / 2;
         newChart.append('text')
             .attr('width', 100 * 2)
             .attr('height', 100 * 0.4)
-            .attr('transform', 'translate(' + (-margin.left + 20) + ',' + height / 2 + ') rotate(270)')
+            .attr('transform', `translate(${transX},${transY}) rotate(270)`)
             .attr('class', 'axis-label')
             .text(text);
 
@@ -236,14 +235,14 @@ export default class graphController {
         const xAxisTop = d3.axisBottom(xScale).ticks(0);
         newChart.append('g')
             .attr('class', 'chart-axis')
-            .attr('transform', 'translate(0, ' + margin.bottom + ')')
+            .attr('transform', `translate(0, ${margin.bottom})`)
             .call(xAxisTop);
 
         // Create the right Y axis.
         const yAxisRight = d3.axisLeft(yScale).ticks(0);
         newChart.append('g')
             .attr('class', 'chart-axis')
-            .attr('transform', 'translate(' + width + ', 0)')
+            .attr('transform', `translate(${width}, 0)`)
             .call(yAxisRight);
 
 
@@ -251,9 +250,9 @@ export default class graphController {
         const medianTimes = [];
         let lastPoint = (readings[0][0]);
 
-        for (j = 0; j < readings.length; j++) {
-            medianTimes.push(readings[j][0] - lastPoint);
-            lastPoint = readings[j][0];
+        for (let index = 0; index < readings.length; index++) {
+            medianTimes.push(readings[index][0] - lastPoint);
+            lastPoint = readings[index][0];
         }
         // Sort the array and take the median difference.
         medianTimes.sort();
@@ -262,43 +261,44 @@ export default class graphController {
 
         // The function used to generate the connections between points.
         const lineFunction = d3.line()
-            .defined((d) => {
+            .defined((point) => {
                 // If there are less than three points, we draw the connections always.
                 if (readings.length < 3) {
                     return true;
                 }
                 // If the point falls outside of graph time range, we don't draw it.
-                if (d[0] < start || d[0] > end) {
+                if (point[0] < start || point[0] > end) {
                     return false;
                 }
                 // If a point falls outside of y axis range, we don't draw it and give a warning.
-                if (d[1] > max || d[1] < min) {
-                    ShowSuccess($mdToast, 'Warning: Some data points are not shown in graph and may be causing line breaks.');
+                if (point[1] > max || point[1] < min) {
+                    showSuccess($mdToast, 'Warning: Some data points are not shown in graph and may be causing line breaks.');
                     return false;
                 }
 
                 if (last === null) {
-                    last = d[0];
+                    last = point[0];
                     return true;
                 }
 
                 // If too much time has elapsed between this point and the last, we create a break.
-                const val = d[0] - last;
+                const val = point[0] - last;
                 if (val > medianTime * 2) {
-                    last = d[0];
+                    last = point[0];
                     return false;
                 }
-                last = d[0];
+                last = point[0];
                 return true;
             })
             // Find x position of a point.
-            .x((d) => {
-                return isNaN(xScale(d[0])) ? 0 : xScale(d[0]);
+            .x((point) => {
+                if (isNaN(xScale(point[0]))) {
+                    return 0;
+                }
+                return xScale(point[0]);
             })
             // Find y position of a point.
-            .y((d) => {
-                return yScale(d[1]);
-            });
+            .y((point) => yScale(point[1]));
         newChart.append('path')
             .attr('d', lineFunction(readings))
             .attr('class', 'graph-line');
@@ -350,21 +350,21 @@ export default class graphController {
         let dragStartPos = 0;
         let dragEnd = 0;
         const drag = d3.drag()
-            .on('drag', (d, i) => {
+            .on('drag', () => {
                 const x0 = xScale.invert(d3.event.x).getTime();
 
-                i = d3.bisect(myData, x0);
-                const d0 = readings[i - 1];
-                const d1 = readings[i];
+                const bisection = d3.bisect(myData, x0);
+                const d0 = readings[bisection - 1];
+                const d1 = readings[bisection];
                 if (d1 === undefined) {
                     return;
                 }
-                d = x0 - d0[0] > d1[0] - x0 ? d1 : d0;
-                if (xScale(d[0]) > dragStartPos) {
-                    selectionBox.attr('width', (xScale(d[0]) - dragStartPos));
+                const d2 = x0 - d0[0] > d1[0] - x0 ? d1 : d0;
+                if (xScale(d2[0]) > dragStartPos) {
+                    selectionBox.attr('width', (xScale(d2[0]) - dragStartPos));
                 } else {
-                    selectionBox.attr('width', (dragStartPos - xScale(d[0])));
-                    selectionBox.attr('transform', 'translate(' + xScale(d[0]) + ',0)');
+                    selectionBox.attr('width', (dragStartPos - xScale(d2[0])));
+                    selectionBox.attr('transform', `translate(${xScale(d2[0])},0)`);
                 }
             })
             .on('end', () => {
@@ -405,34 +405,34 @@ export default class graphController {
             // Any change in the mouse position over the graph, update the tool tips.
             .on('mousemove', () => {
                 const x0 = xScale.invert(d3.event.offsetX - margin.left).getTime();
-                const i = d3.bisect(myData, x0);
-                const d0 = readings[i - 1];
-                const d1 = readings[i];
-                let d = 0;
+                const bisection = d3.bisect(myData, x0);
+                const d0 = readings[bisection - 1];
+                const d1 = readings[bisection];
+                let d2 = 0;
                 if (d0 === undefined && d1 === undefined) {
                     return;
                 }
                 if (d0 === undefined) {
-                    d = d1;
+                    d2 = d1;
                 } else if (d1 === undefined) {
-                    d = d0;
+                    d2 = d0;
                 } else {
                     if (x0 - d0[0] > d1[0] - x0) {
-                        d = d1;
+                        d2 = d1;
                     } else {
-                        d = d0;
+                        d2 = d0;
                     }
                 }
-                if (d[1] < min || d[1] > max) {
+                if (d2[1] < min || d2[1] > max) {
                     return;
                 }
 
-                toolTipCircle.attr('transform', 'translate(' + xScale(d[0]) + ',' + yScale(d[1]) + ')');
-                yLine.attr('transform', 'translate(' + xScale(d[0]) + ',' + 0 + ')');
-                timeText.text(new Date(d[0]) + ' | ' + this.FormatText(d[1]));
+                toolTipCircle.attr('transform', `translate(${xScale(d2[0])},${yScale(d2[1])})`);
+                yLine.attr('transform', `translate(${xScale(d2[0])},0)`);
+                timeText.text(`${new Date(d2[0])} | ${this.formatText(d2[1])}`);
                 toolTipText
-                    .text(this.FormatText(d[1]))
-                    .attr('transform', 'translate(' + (xScale(d[0]) + 10) + ',' + (yScale(d[1]) - 10) + ')');
+                    .text(this.formatText(d2[1]))
+                    .attr('transform', `translate(${xScale(d2[0]) + 10},${yScale(d2[1]) - 10})`);
 
             })
             // Log the start position of a drag.
@@ -441,77 +441,71 @@ export default class graphController {
                 dragStart = d3.event.offsetX - margin.left;
 
                 const x0 = xScale.invert(d3.event.offsetX - margin.left).getTime();
-                const i = d3.bisect(myData, x0);
-                const d0 = readings[i - 1];
-                const d1 = readings[i];
+                const bisection = d3.bisect(myData, x0);
+                const d0 = readings[bisection - 1];
+                const d1 = readings[bisection];
                 if (d1 === undefined) {
                     return;
                 }
-                const d = x0 - d0[0] > d1[0] - x0 ? d1 : d0;
-                selectionBox.attr('transform', 'translate(' + xScale(d[0]) + ',0)');
-                dragStartPos = xScale(d[0]);
+                const d2 = x0 - d0[0] > d1[0] - x0 ? d1 : d0;
+                selectionBox.attr('transform', `translate(${xScale(d2[0])},0)`);
+                dragStartPos = xScale(d2[0]);
             })
             .call(drag);
-    };
+    }
 
-    getUnitSize(d) {
+    getUnitSize(text) {
         let count = 0;
-        while (Math.abs(d) >= 100) {
-            d /= 100;
+        let number = text;
+        while (Math.abs(number) >= 100) {
+            number /= 100;
             count++;
         }
-        while (Math.abs(d) < 1 && d !== 0) {
-            d *= 100;
+        while (Math.abs(number) < 1 && number !== 0) {
+            number *= 100;
             count--;
         }
         return count;
     }
 
-    getUnitText(d) {
-        switch (d) {
+    getUnitText(text) {
+        switch (text) {
             case -4:
                 return ' (in billionths)';
-                break;
             case -3:
                 return ' (in millionths)';
-                break;
             case -2:
                 return ' (in thousandths)';
-                break;
             case -1:
                 return ' (in hundredths)';
-                break;
             case 0:
                 return '';
-                break;
             case 1:
                 return ' (in hundreds)';
-                break;
             case 2:
                 return ' (in thousands)';
-                break;
             case 3:
                 return ' (in millions)';
-                break;
             case 4:
                 return ' (in billionths)';
-                break;
             default:
-                return ' (in 10^' + d + ')';
+                return ` (in 10^${text})`;
         }
     }
 
     // Formats text for units display
-    FormatText(d, size) {
+    formatText(initialString, initialSize) {
+        let string = initialString;
+        let size = initialSize;
         while (size > 0) {
-            d /= 100;
+            string /= 100;
             size--;
         }
         while (size < 0) {
-            d *= 100;
+            string *= 100;
             size++;
         }
-        const f = d3.format('.2f');
-        return f(d);
+        const format = d3.format('.2f');
+        return format(string);
     }
 }

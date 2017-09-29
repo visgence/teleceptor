@@ -45,7 +45,7 @@ export default class sensorController {
 
         this.$scope.EditFields = () => {
             this.$scope.editing = true;
-            this.$scope.previous_coefficients = this.$scope.sensor.last_calibration.coefficients;
+            this.$scope.previous_coefficients = this.$scope.sensor.last_calibration.coefficients; // eslint-disable-line
         };
 
         this.$scope.CancelFields = () => {
@@ -60,9 +60,9 @@ export default class sensorController {
 
             const sensorReading = {
                 name: id,
-                sensor_type: sensorInfo.sensor_type,
+                sensor_type: sensorInfo.sensor_type, // eslint-disable-line
                 timestamp: time,
-                meta_data: {},
+                meta_data: {}, // eslint-disable-line
             };
 
             const payload = [{
@@ -158,9 +158,9 @@ export default class sensorController {
 
             const sensorReading = {
                 name: id,
-                sensor_type: sensorInfo.sensor_type,
+                sensor_type: sensorInfo.sensor_type, // eslint-disable-line
                 timestamp: time,
-                meta_data: {},
+                meta_data: {}, // eslint-disable-line
             };
 
             if (isNaN(newValue)) {
@@ -199,7 +199,7 @@ export default class sensorController {
             const payload = {
                 message: this.$scope.commandSwitch.value,
                 duration: 60000,
-                sensor_id: sensorInfo.uuid,
+                sensor_id: sensorInfo.uuid, // eslint-disable-line
             };
             apiService.post('messages/', payload)
                 .then((success) => {

@@ -66,6 +66,11 @@
     "import/order": ["error", {"newlines-between": "never"}],
     "import/newline-after-import": "error",
 
+    "no-extra-semi": "error",
+    "no-global-assign": "error",
+    "no-unreachable": "error",
+
+
     "no-new-object": "error",
     "object-shorthand": "error",
     "no-array-constructor": "error",

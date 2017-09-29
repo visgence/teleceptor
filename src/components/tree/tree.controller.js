@@ -48,8 +48,7 @@ export default class treeController {
                     console.log(error);
                 });
         };
-    };
-
+    }
 
     loadData() {
         this.apiService.get('datastreams')
@@ -123,7 +122,7 @@ export default class treeController {
         }
 
         if (nodeFound === false) {
-            name = pathArray.shift();
+            const name = pathArray.shift();
             nodeArray.push({
                 text: name,
                 icon: '/images/ic_folder_black_18px.svg',
