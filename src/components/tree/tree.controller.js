@@ -1,4 +1,4 @@
-import {ShowError} from '../../utilites/dialogs.utils';
+import {showError} from '../../utilites/dialogs.utils';
 
 export default class treeController {
     constructor(apiService, $scope, $location, $mdDialog, $timeout) {
@@ -19,7 +19,7 @@ export default class treeController {
         this.$scope.isEmpty = false;
         this.$scope.noStreams = true;
 
-        this.LoadData();
+        this.loadData();
 
         this.$scope.searchInput = () => {
             this.$scope.treeLoaded = false;
@@ -29,20 +29,21 @@ export default class treeController {
             };
             let url = 'datastreams/';
             if (data.word !== '') {
-                url += '?word=' + data.word + '&filter=' + data.filter;
+                url += `?word=${data.word}&filter=${data.filter}`;
             }
 
             this.apiService.get(url)
                 .then((success) => {
-                    const pathsArray = this.GeneratePathArray(success.data);
-                    const treeStructure = this.MakeTreeStructure(pathsArray);
+                    const pathsArray = this.generatePathArray(success.data);
+                    const treeStructure = this.makeTreeStructure(pathsArray);
                     $('#tree-view').jstree();
-                    $('#tree-view').jstree().destroy();
-                    this.RenderTree(treeStructure);
+                    $('#tree-view').jstree()
+                        .destroy();
+                    this.renderTree(treeStructure);
                     this.$scope.isEmpty = false;
                 })
                 .catch((error) => {
-                    ShowError(this.$mdDialog, error);
+                    showError(this.$mdDialog, error);
                     console.error('Error');
                     console.log(error);
                 });
@@ -50,35 +51,35 @@ export default class treeController {
     };
 
 
-    LoadData() {
+    loadData() {
         this.apiService.get('datastreams')
             .then((success) => {
-                const pathsArray = this.GeneratePathArray(success.data);
-                const treeStructure = this.MakeTreeStructure(pathsArray);
-                this.RenderTree(treeStructure);
+                const pathsArray = this.generatePathArray(success.data);
+                const treeStructure = this.makeTreeStructure(pathsArray);
+                this.renderTree(treeStructure);
                 if ((success.data.datastreams).length !== 0) {
                     this.$scope.noStreams = false;
                 }
             })
             .catch((error) => {
-                ShowError(this.$mdDialog, error);
+                showError(this.$mdDialog, error);
                 console.error('Error');
                 console.log(error);
             });
     }
 
     // [[path, id, name]]
-    GeneratePathArray(data) {
+    generatePathArray(data) {
         const pathArr = [];
         data.datastreams.forEach((stream) => {
             stream.paths.forEach((path) => {
-                pathArr.push([path + '/' + stream.name, stream.id, stream.name]);
+                pathArr.push([`${path}/${stream.name}`, stream.id, stream.name]);
             });
         });
         return pathArr;
     }
 
-    MakeTreeStructure(pathsArr) {
+    makeTreeStructure(pathsArr) {
         let nodeArray = [];
         this.$scope.nodeCount = 0;
         this.currentSelection = parseInt(this.$location.search().datastream);
@@ -87,12 +88,12 @@ export default class treeController {
             if (pathArray[0] === '') {
                 pathArray.shift();
             }
-            nodeArray = this.InsertNode(pathArray, path[1], path[2], nodeArray);
+            nodeArray = this.insertNode(pathArray, path[1], path[2], nodeArray);
         });
         return nodeArray;
     }
 
-    InsertNode(pathArray, streamId, sensorId, nodeArray) {
+    insertNode(pathArray, streamId, sensorId, nodeArray) {
         this.$scope.nodeCount += 1;
         if (pathArray.length === 1) {
             nodeArray.push({
@@ -109,14 +110,14 @@ export default class treeController {
             return nodeArray;
         }
         let nodeFound = false;
-        for (let i = 0; i < nodeArray.length; i++) {
-            if (pathArray[0] === nodeArray[i].text) {
+        for (let index = 0; index < nodeArray.length; index++) {
+            if (pathArray[0] === nodeArray[index].text) {
                 pathArray.shift();
-                if (nodeArray[i].children === undefined) {
-                    nodeArray[i].children = [];
+                if (nodeArray[index].children === undefined) {
+                    nodeArray[index].children = [];
                 }
 
-                nodeArray[i].children = this.InsertNode(pathArray, streamId, sensorId, nodeArray[i].children);
+                nodeArray[index].children = this.insertNode(pathArray, streamId, sensorId, nodeArray[index].children);
                 nodeFound = true;
             }
         }
@@ -126,14 +127,14 @@ export default class treeController {
             nodeArray.push({
                 text: name,
                 icon: '/images/ic_folder_black_18px.svg',
-                children: this.InsertNode(pathArray, streamId, sensorId, []),
+                children: this.insertNode(pathArray, streamId, sensorId, []),
             });
             return nodeArray;
         }
         return nodeArray;
     }
 
-    RenderTree(data) {
+    renderTree(data) {
         if (data.length === 0) {
             this.$scope.noStreams = true;
             return;
@@ -151,7 +152,7 @@ export default class treeController {
             })
             .jstree({
                 core: {
-                    data: data,
+                    data,
                 },
                 multiple: false,
                 // TODO: There is a drag and drop plugin, could be useful for paths setup

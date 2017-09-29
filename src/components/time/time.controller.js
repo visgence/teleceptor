@@ -28,7 +28,7 @@ export default class timeController {
         const currentTab = this.$location.search().tab;
         if (currentTab === undefined) {
             this.$scope.tabSelection = 2;
-            this.ChangeTab(2);
+            this.changeTab(2);
         } else {
             this.$scope.tabSelection = parseInt(currentTab);
         }
@@ -56,7 +56,7 @@ export default class timeController {
 
         // 0: custom, 1: hour, 2: day, 3: week
         this.$scope.ChangeQuickTime = (tab) => {
-            this.ChangeTab(tab);
+            this.changeTab(tab);
         };
 
         this.$scope.ResetDates = () => {
@@ -81,18 +81,18 @@ export default class timeController {
             this.$scope.refreshDuration = this.$location.search().refresh;
             this.$scope.refreshEnabled = true;
             this.$scope.refreshProgress = 0;
-            this.UpdateRefresh();
+            this.updateRefresh();
         } else {
             this.$scope.refreshEnabled = false;
         }
     }
 
-    ChangeTab(tab) {
-        tab = parseInt(tab);
-        this.$scope.tabSelection = tab;
+    changeTab(tab) {
+        const tabNumber = parseInt(tab);
+        this.$scope.tabSelection = tabNumber;
         const endTime = parseInt(new Date().getTime());
         let startTime;
-        switch (tab) {
+        switch (tabNumber) {
             case 1:
                 startTime = parseInt(new Date().getTime()) - 1000 * 60 * 60;
                 break;
@@ -105,12 +105,12 @@ export default class timeController {
             default:
                 console.log('big err');
         }
-        this.$location.search('tab', tab === 0 ? null : tab);
+        this.$location.search('tab', tabNumber === 0 ? null : tabNumber);
         this.$location.search('start', parseInt(startTime / 1000));
         this.$location.search('end', parseInt(endTime / 1000));
     }
 
-    UpdateRefresh() {
+    updateRefresh() {
         if (this.$location.search().refresh === undefined) {
             return;
         }
@@ -122,9 +122,9 @@ export default class timeController {
 
                 this.$location.search('start', newStart);
                 this.$location.search('end', newEnd);
-                this.$location.search('refresh', '' + this.$scope.refreshDuration);
+                this.$location.search('refresh', `${this.$scope.refreshDuration}`);
             } else {
-                this.UpdateRefresh();
+                this.updateRefresh();
             }
             // we take duration, multiply it by 1000 to turn seconds into milliseconds
             // then divide by 100 to get percent of circle completed.
