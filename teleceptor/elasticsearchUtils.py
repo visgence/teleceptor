@@ -86,8 +86,8 @@ def getReadings(ds, start, end, points=None):
     query = {
         "size": 0,
         "query": {
-            "filtered": {
-                "query": {
+            "bool": {
+                "must": {
                     "query_string": {
                         "analyze_wildcard": True,
                         "query": "ds:{}".format(ds)
@@ -184,7 +184,7 @@ def get_elastic(elastic_buffer, index_info=None):
 
     data = "{}\n{}\n".format(json.dumps({"index": index_info}), json.dumps(elastic_buffer))
 
-    url = ELASTICSEARCH_URI + '_msearch'
+    url = ELASTICSEARCH_URI + '/_msearch'
     headers = {'Content-Type': 'application/x-ndjson'}
 
     response = requests.post(url, data=data, headers=headers).json()
