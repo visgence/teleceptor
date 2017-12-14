@@ -16,7 +16,7 @@
     "SUPRESS_SERVER_OUTPUT": false,
     "USE_SQL_ALWAYS": true,
     "USE_ELASTICSEARCH": false,
-    "ELASTICSEARCH_URI": "http://elasticsearch:9200/",
+    "ELASTICSEARCH_URI": "http://elasticsearch:9200",
     "ELASTICSEARCH_INDEX": "teleceptor",
     "ELASTICSEARCH_DOC": "teledata",
     "USE_EMAIL": false,
