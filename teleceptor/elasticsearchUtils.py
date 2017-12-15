@@ -60,25 +60,12 @@ def getReadings(ds, start, end, points=None):
 
     res = requests.post(ELASTICSEARCH_URI + '/teleceptor-*/_field_caps', json={
         "fields": ["@timestamp"]
-                #  "min_value": {
-                #     "lte": end,
-                #     # "format": "epoch_millis"
-                #  },
-                #  "max_value": {
-                #     "gte": start,
-                #     # "format": "epoch_millis"
-                #  }
-            # }
-        # }
     })
-
 
     # Example kibana query: {"index":["teleceptor-2015.09.28","teleceptor-2015.09.29"],"search_type":"count","ignore_unavailable":True}
     # {"size":0,"query":{"filtered":{"query":{"query_string":{"analyze_wildcard":true,"query":"ds:1"}},"filter":{"bool":{"must":[{"range":{"@timestamp":{"gte":1443407578481,"lte":1443493978481,"format":"epoch_millis"}}}],"must_not":[]}}}},"aggs":{"2":{"date_histogram":{"field":"@timestamp","interval":"1m","time_zone":"America/Denver","min_doc_count":1,"extended_bounds":{"min":1443407578481,"max":1443493978481}},"aggs":{"1":{"avg":{"field":"value"}}}}}}
 
     logging.debug("res.json: {}", res.json())
-    print "json:"
-    print res.json()
     # index_query = res.json()['indices'].keys()
     #
     # if len(index_query) == 0:
@@ -182,8 +169,6 @@ def get_elastic(elastic_buffer, index_info=None):
         May want to pass in a list of indicies to search on
 
     """
-    print "here"
-    print index_info
 
     # TODO: set index dynamically
     data = "{}\n{}\n".format(json.dumps({"index": "tele*"}), json.dumps(elastic_buffer))
