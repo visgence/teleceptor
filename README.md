@@ -26,7 +26,7 @@ Database support:
 2. run ```npm run setup```
 3. To install a local config customizable first run ```./teleceptorcmd copyconfig``` app will print path
 4. In your config, you can set your Postgres and ElasticSearch settings.
-5. Run command ```./teleceptorcmd runserver 0.0.0.0:8000```.
+5. Run command ```npm run start```. This will webpack everything and start the server at localhost:80000
 6. To load test data, run ```./teleceptorcmd loadfixtures```.
 7. Set up desired sensors and start collecting data.(_See below for setting up sensors_)
 
@@ -39,7 +39,7 @@ To solve this issue, use the command ```sysctl -w vm.max_map_count=262144``` to 
 
 ### For production
 1. Run command ```npm run buildProduction```. This only builds the project and runs the optimization plugins for webpack.
-2. Run command ```./teleceptorcmd runserver [ip:port]```. Runs the server at ip and port if given, default is 0.0.0.0:8000
+2. Run command ```./teleceptorcmd runserver [ip:port]```. Runs the server at ip and port if given, default is localhost:8000
 
 For testing production configs, ```npm run startProduction``` can be used which builds everything and runs the server.
 
