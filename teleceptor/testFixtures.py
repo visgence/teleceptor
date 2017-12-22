@@ -18,6 +18,7 @@ import logging
 
 from teleceptor import USE_DEBUG
 
+
 def main():
     # Loads two sensors, two datastreams, and some readings
 
