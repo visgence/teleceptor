@@ -23,6 +23,7 @@
     "babel-preset-env": "1.6.1",
     "babel-preset-es2015": "6.24.1",
     "css-loader": "0.28.7",
+    "concurrently": "3.5.1",
     "eslint": "4.13.1",
     "eslint-plugin-import": "2.8.0",
     "exports-loader": "0.6.4",
@@ -61,8 +62,8 @@
     "scsslint": "./node_modules/.bin/sass-lint src '**/*.scss' -v -q",
     "setup": "npm run installDependencies && npm run installGitHooks && npm run checkOutdated && npm run setupTeleceptor",
     "setupTeleceptor": "./teleceptorcmd setup",
-    "start": "npm run build & ./teleceptorcmd runserver",
-    "startProduction": "npm install && npm run buildProduction & ./teleceptorcmd runserver",
+    "start": "npm run build && concurrently --kill-others './teleceptorcmd runserver'",
+    "startProduction": "npm install && concurrently --kill-others 'npm run buildProduction' './teleceptorcmd runserver",
     "watch": "webpack --watch --progress --config ./webpack.development.config.js",
     "webpack": "webpack --progress --config ./webpack.development.config.js",
     "webpackProduction": "webpack --progress --config ./webpack.production.config.js"
