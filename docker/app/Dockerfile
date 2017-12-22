@@ -13,8 +13,8 @@ ADD requirements.txt .
 RUN pip install -r requirements.txt
 
 #Install node from package
-RUN wget https://nodejs.org/download/release/v6.10.2/node-v6.10.2-linux-x64.tar.gz
-RUN tar --strip-components 1 -xzvf node-v* -C /usr/local
+RUN curl --silent --location https://rpm.nodesource.com/setup_8.x | bash -
+RUN yum install -y nodejs-8.6.0-1nodesource
 
 VOLUME ["/home/teleceptor"]
 WORKDIR /home/teleceptor
