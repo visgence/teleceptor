@@ -14,10 +14,17 @@ import json
 from time import time
 import math
 import requests
+import logging
 
+from teleceptor import USE_DEBUG
 
 def main():
     # Loads two sensors, two datastreams, and some readings
+
+    if USE_DEBUG:
+        logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s', level=logging.DEBUG)
+    else:
+        logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s', level=logging.INFO)
 
     serverURL = "http://0.0.0.0:8000/api/station"
     jsonExample = [{
@@ -68,7 +75,10 @@ def main():
         now -= 10
         counter += 1
 
-    requests.post(serverURL, data=json.dumps(jsonExample))
+    logging.debug("Sending post")
+    response = requests.post(serverURL, data=json.dumps(jsonExample))
+    logging.debug("Response:")
+    logging.debug(response)
 
 
 if __name__ == "__main__":

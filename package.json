@@ -62,8 +62,8 @@
     "scsslint": "./node_modules/.bin/sass-lint src '**/*.scss' -v -q",
     "setup": "npm run installDependencies && npm run installGitHooks && npm run checkOutdated && npm run setupTeleceptor",
     "setupTeleceptor": "./teleceptorcmd setup",
-    "start": "npm run build && concurrently --kill-others './teleceptorcmd runserver'",
-    "startProduction": "npm install && concurrently --kill-others 'npm run buildProduction' './teleceptorcmd runserver",
+    "start": "npm run build & concurrently --kill-others './teleceptorcmd runserver'",
+    "startProduction": "npm install & concurrently --kill-others 'npm run buildProduction' './teleceptorcmd runserver",
     "watch": "webpack --watch --progress --config ./webpack.development.config.js",
     "webpack": "webpack --progress --config ./webpack.development.config.js",
     "webpackProduction": "webpack --progress --config ./webpack.production.config.js"
