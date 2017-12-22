@@ -9,7 +9,7 @@
     "angular-aria": "1.6.8",
     "angular-material": "1.1.5",
     "angular-route": "1.6.8",
-    "d3": "4.10.2",
+    "d3": "4.12.0",
     "jquery": "3.2.1",
     "jstree": "3.3.4"
   },
@@ -63,7 +63,7 @@
     "setup": "npm run installDependencies && npm run installGitHooks && npm run checkOutdated && npm run setupTeleceptor",
     "setupTeleceptor": "./teleceptorcmd setup",
     "start": "npm run build & concurrently --kill-others './teleceptorcmd runserver'",
-    "startProduction": "npm install & concurrently --kill-others 'npm run buildProduction' './teleceptorcmd runserver",
+    "startProduction": "npm run buildProduction & concurrently --kill-others './teleceptorcmd runserver'",
     "watch": "webpack --watch --progress --config ./webpack.development.config.js",
     "webpack": "webpack --progress --config ./webpack.development.config.js",
     "webpackProduction": "webpack --progress --config ./webpack.production.config.js"
