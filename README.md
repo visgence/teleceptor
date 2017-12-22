@@ -21,27 +21,30 @@ Database support:
   * npm 3.10.10
 
 
-## Setting up Teleceptor backend
+## Setting up Teleceptor
 1. git clone https://github.com/visgence/teleceptor.git
-2. run ```npm setup```
+2. run ```npm run setup```
 3. To install a local config customizable first run ```./teleceptorcmd copyconfig``` app will print path
 4. In your config, you can set your Postgres and ElasticSearch settings.
-5. Run command ```./teleceptorcmd runserver 0.0.0.0:8000```.
+5. Run command ```npm run start```. This will webpack everything and start the server at localhost:80000
 6. To load test data, run ```./teleceptorcmd loadfixtures```.
 7. Set up desired sensors and start collecting data.(_See below for setting up sensors_)
 
-## Setting up Teleceptor frontend
-1. Run command ```npm install```
+#### Note:
+If using docker, on some systems the default virtual memory for docker is set too low. You will get error(76) when running ./docker/elasticsearch/run.sh
+To solve this issue, use the command ```sysctl -w vm.max_map_count=262144``` to increase memory.
 
 ### For development
-2. Run command ```npm run start```. This will build the project, sets webpack to watch files, and runs the server at localhost:8000
+1. Run command ```npm run start```. This will build the project, sets webpack to watch files, and runs the server at localhost:8000
 
 ### For production
-2. Run command ```npm run buildProduction```. This only builds the project and runs the optimization plugins for webpack.
-3. Run command ```./teleceptorcmd runserver [ip:port]```. Runs the server at ip and port if given, default is 0.0.0.0:8000
+1. Run command ```npm run buildProduction```. This only builds the project and runs the optimization plugins for webpack.
+2. Run command ```./teleceptorcmd runserver [ip:port]```. Runs the server at ip and port if given, default is localhost:8000
+
+For testing production configs, ```npm run startProduction``` can be used which builds everything and runs the server.
 
 ## Example Data
-The ```./teleceptorcmd loadfixtures``` command will run a program that will create two datastreams and fill them with an hours worth of data in the form of a sine curve.
+The ```./teleceptorcmd loadfixtures``` command will run a program that will create two datastreams and fill them with two hours worth of data in the form of a sine curve.
 
 ## Example Sensor
 The ```./teleceptorcmd btcmote``` command will run a program that requests data from http://blockchain.info/ticker and sends the data to Teleceptor.
@@ -114,5 +117,5 @@ In the teleceptor/api folder, you will find a more detailed guide on how the [ap
     along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 Notes:
-we don't run webpack using the '-p' flag in production because this auto sets uglyifly to use mangle which breaks angular.
+We don't run webpack using the '-p' flag in production because this auto sets uglyifly to use mangle which breaks angular.
 Instead we define the production environment ourselves and run uglyifly ourselves.

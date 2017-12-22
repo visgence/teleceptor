@@ -10,7 +10,7 @@ import logging
 import requests
 import json
 
-from teleceptor import ELASTICSEARCH_URI, USE_DEBUG
+from teleceptor import ELASTICSEARCH_URI, USE_DEBUG, ELASTICSEARCH_INDEX
 from teleceptor.timeAggregationUtils import getElasticSearchAggregationLevel
 
 
@@ -58,30 +58,13 @@ def getReadings(ds, start, end, points=None):
     start = int(start) * 1000
     end = int(end) * 1000
 
-    res = requests.post(ELASTICSEARCH_URI + '/teleceptor-*/_field_stats?level=indices', json={
-        "fields": ["@timestamp"],
-        "index_constraints": {
-            "@timestamp": {
-                 "min_value": {
-                    "lte": end,
-                    # "format": "epoch_millis"
-                 },
-                 "max_value": {
-                    "gte": start,
-                    # "format": "epoch_millis"
-                 }
-              }
-            }
-        })
-
     # Example kibana query: {"index":["teleceptor-2015.09.28","teleceptor-2015.09.29"],"search_type":"count","ignore_unavailable":True}
     # {"size":0,"query":{"filtered":{"query":{"query_string":{"analyze_wildcard":true,"query":"ds:1"}},"filter":{"bool":{"must":[{"range":{"@timestamp":{"gte":1443407578481,"lte":1443493978481,"format":"epoch_millis"}}}],"must_not":[]}}}},"aggs":{"2":{"date_histogram":{"field":"@timestamp","interval":"1m","time_zone":"America/Denver","min_doc_count":1,"extended_bounds":{"min":1443407578481,"max":1443493978481}},"aggs":{"1":{"avg":{"field":"value"}}}}}}
 
-    logging.debug("res.json: {}", res.json())
-    index_query = res.json()['indices'].keys()
-
-    if len(index_query) == 0:
-        raise ValueError('No indices found in range ({}, {}), {}'.format(start, end, end - start))
+    # index_query = res.json()['indices'].keys()
+    #
+    # if len(index_query) == 0:
+    #     raise ValueError('No indices found in range ({}, {}), {}'.format(start, end, end - start))
 
     query = {
         "size": 0,
@@ -164,10 +147,10 @@ def getReadings(ds, start, end, points=None):
     # logging.debug("Built query: {}".format(final_query))
     # return get_elastic(elastic_buffer=final_query)
     logging.debug("Built query: {}".format(query))
-    return get_elastic(elastic_buffer=query, index_info=index_query)
+    return get_elastic(elastic_buffer=query)
 
 
-def get_elastic(elastic_buffer, index_info=None):
+def get_elastic(elastic_buffer):
     """
     Make a query to elasticsearch with args in `elastic_buffer`.
 
@@ -182,7 +165,8 @@ def get_elastic(elastic_buffer, index_info=None):
 
     """
 
-    data = "{}\n{}\n".format(json.dumps({"index": index_info}), json.dumps(elastic_buffer))
+    # TODO: set index dynamically
+    data = "{}\n{}\n".format(json.dumps({"index": "{}-*".format(ELASTICSEARCH_INDEX)}), json.dumps(elastic_buffer))
 
     url = ELASTICSEARCH_URI + '/_msearch'
     headers = {'Content-Type': 'application/x-ndjson'}

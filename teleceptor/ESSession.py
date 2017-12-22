@@ -1,8 +1,8 @@
 import time
 import logging
-from pyelasticsearch import ElasticSearch
+import json
+import requests
 from teleceptor import ELASTICSEARCH_URI, ELASTICSEARCH_INDEX, ELASTICSEARCH_DOC, USE_DEBUG
-
 
 if USE_DEBUG:
     logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s', level=logging.DEBUG)
@@ -26,16 +26,22 @@ class ElasticSession:
         if len(self.buffer) > 0:
             logging.debug("Inserting {} to elasticsearch".format(len(self.buffer)))
 
-            es = ElasticSearch(ELASTICSEARCH_URI)
-
-            docs = []
+            data = ''
             for doc in self.buffer:
                 t = time.gmtime(int(doc['@timestamp']/1000))
                 index = ELASTICSEARCH_INDEX + "-" + str(t.tm_year).zfill(2) + "." + str(t.tm_mon).zfill(2) + "." + str(t.tm_mday).zfill(2)
-                docs.append(es.index_op(doc, index=index, doc_type=ELASTICSEARCH_DOC))
-            if len(docs) > 0:
-                try:
-                    es.bulk(docs)
-                    logging.debug("inserted %d records" % (len(docs)))
-                except Exception as e:
-                    logging.error("Insert Exception " + str(e))
+                line1 = {"index": {"_index": index, "_type": ELASTICSEARCH_DOC}}
+
+                # the + """...""" is how we can create the newline for ndjson.
+                data += json.dumps(line1) + """
+"""
+                data += json.dumps(doc) + """
+"""
+
+            try:
+                url = "{}/_bulk".format(ELASTICSEARCH_URI)
+                headers = {'Content-Type': 'application/x-ndjson'}
+                response = requests.post(url, headers=headers, data=data)
+
+            except Exception as e:
+                logging.error("Insert Exception " + str(e))
