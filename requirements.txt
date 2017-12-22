@@ -1,8 +1,8 @@
-sqlalchemy==1.0.13
-cherrypy==8.1.0
+sqlalchemy==1.1.15
+cherrypy==13.1.0
 requests==2.10.0
-psycopg2==2.6.2
-pyserial==3.2.1
+psycopg2==2.7.3.2
+pyserial==3.4
 pyelasticsearch==1.4.0
 delorean==0.6.0
-jinja2==2.8
+jinja2==2.10
