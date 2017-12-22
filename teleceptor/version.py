@@ -5,5 +5,5 @@ Authors: Evan Salazar
 
 """
 
-__version__ = '1.8.9'
-__buildDate__ = 1506722875.27
+__version__ = '1.8.10'
+__buildDate__ = 1513967944.98
