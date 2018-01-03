@@ -37,5 +37,6 @@ class ElasticSession:
                 try:
                     es.bulk(docs)
                     logging.debug("inserted %d records" % (len(docs)))
+                    self.buffer = []
                 except Exception as e:
                     logging.error("Insert Exception " + str(e))
