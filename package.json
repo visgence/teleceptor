@@ -1,6 +1,6 @@
 {
   "author": "Visgence Inc.", 
-  "buildDate": 1513967944.980627, 
+  "buildDate": 1518544177.699446, 
   "dependencies": {
     "@uirouter/angularjs": "1.0.12", 
     "adm-dtp": "1.2.0", 
@@ -68,5 +68,5 @@
     "webpack": "webpack --progress --config ./webpack.development.config.js", 
     "webpackProduction": "webpack --progress --config ./webpack.production.config.js"
   }, 
-  "version": "1.8.10"
+  "version": "1.8.11"
 }
