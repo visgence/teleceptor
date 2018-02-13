@@ -83,17 +83,11 @@ def getReadings(ds, start, end, points=None):
     if len(index_query) == 0:
         raise ValueError('No indices found in range ({}, {}), {}'.format(start, end, end - start))
 
-    print 'things:'
-    print ds
-    print start
-    print end
-    print aggregation_string
-
     query = {
         "size": 0,
         "query": {
-            "filtered": {
-                "query": {
+            "bool": {
+                "must": {
                     "query_string": {
                         "analyze_wildcard": True,
                         "query": "ds:{}".format(ds)
@@ -193,12 +187,8 @@ def get_elastic(elastic_buffer, index_info=None):
     url = ELASTICSEARCH_URI + '/_msearch'
     headers = {'Content-Type': 'application/x-ndjson'}
 
-    print "url: {}".format(url)
-    print data
     response = requests.post(url, data=data, headers=headers).json()
-    print "res here"
-    print response
-    # logging.debug("Got elasticsearch results: {}".format(response))
+    logging.debug("Got elasticsearch results: {}".format(response))
 
     return [(bucket['key']/1000, bucket['1']['value']) for bucket in response['responses'][0]['aggregations']['2']['buckets']]
 
