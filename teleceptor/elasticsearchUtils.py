@@ -51,6 +51,7 @@ def getReadings(ds, start, end, points=None):
         list[(float,float)] -- pairs of the form (timestamp, value) for all data in datastream `ds` between dates `start` and `end`.
     """
     aggregation_string = getElasticSearchAggregationLevel(int(start), int(end))
+    print '\nagg string = {}'.format(aggregation_string)
 
     logging.debug("Aggregating on every {}".format(aggregation_string))
 
@@ -165,6 +166,7 @@ def getReadings(ds, start, end, points=None):
     # return get_elastic(elastic_buffer=final_query)
     logging.debug("Built query: {}".format(query))
     result = get_elastic(elastic_buffer=query, index_info=index_query)
+    print "result query: {}".format(len(result))
     return result
 
 

@@ -7,11 +7,12 @@ Authors: Victor Szczepanski
 
 from sys import maxsize
 
-aggregation_levels = {(0, 3601): 10,                    # 0 to an hour, 10 seconds
-                      (3601, 7*24*3600): 60,            # an hour to a week, 1 minute
-                      (7*24*3600, 30*24*3600): 60*10,   # a week to 30 days, 10 minutes
-                      (30*24*3600, maxsize): 60*60      # longer than 30 days, an hour
-                      }
+aggregation_levels = {
+    (0, 3601): 10,                    # 0 to an hour, 10 seconds
+    (3601, 7*24*3600): 60,            # an hour to a week, 1 minute
+    (7*24*3600, 30*24*3600): 60*10,   # a week to 30 days, 10 minutes
+    (30*24*3600, maxsize): 60*60      # longer than 30 days, an hour
+}
 """Defines the aggregation levels used by Teleceptor.
  The form is (period_start, period_end): aggregation_value.
  So, if some value v is between period_start and period_end, aggregation_value should be used.
@@ -62,16 +63,17 @@ def getElasticSearchAggregationLevel(start, end):
 
     :returns: str -- The aggregation period in ElasticSearch format, in the lowest common division.
     """
-    aggregation_period = getAggregationLevel(start/1000, end/1000)
+    aggregation_period = getAggregationLevel(start, end)
+    aggregation_string = "10m"
     if aggregation_period < 60:
-        return "{}s".format(aggregation_period)
-    if aggregation_period < 60*60:
-        # One hour
-        return "{}m".format(aggregation_period/60.0)
-    if aggregation_period < 60*60*24:
-        # One day
-        return "{}h".format((aggregation_period/60.0)/60.0)
-    return "{}d".format(((aggregation_period/60.0)/60.0)/24.0)
+        aggregation_string = "{}s".format(int(aggregation_period))
+    elif aggregation_period<= 60 * 60:  # 3 hours
+        aggregation_string = "{}m".format(int(aggregation_period / 60.0))
+    elif aggregation_period < 60 * 60 * 24:  # One day
+        aggregation_string = "{}h".format(int((aggregation_period / 60.0) / 60.0))
+    else:
+        aggregation_string = "{}d".format(int(((aggregation_period / 60.0) / 60.0) / 24.0))
+    return aggregation_string
 
 
 if __name__ == "__main__":
