@@ -67,7 +67,7 @@ def getElasticSearchAggregationLevel(start, end):
     aggregation_string = "10m"
     if aggregation_period < 60:
         aggregation_string = "{}s".format(int(aggregation_period))
-    elif aggregation_period<= 60 * 60:  # 3 hours
+    elif aggregation_period <= 60 * 60:  # 3 hours
         aggregation_string = "{}m".format(int(aggregation_period / 60.0))
     elif aggregation_period < 60 * 60 * 24:  # One day
         aggregation_string = "{}h".format(int((aggregation_period / 60.0) / 60.0))
