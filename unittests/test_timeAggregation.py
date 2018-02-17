@@ -9,6 +9,7 @@ week = day * 7
 month = week * 4
 year = month * 12
 
+
 class sqlAggregationTests(unittest.TestCase):
     def test_to_hour(self):
         res = getAggregationLevel(0, hour - 1)
@@ -33,6 +34,7 @@ class sqlAggregationTests(unittest.TestCase):
     def test_over_year(self):
         res = getAggregationLevel(0, year + 1)
         self.assertEqual(res, day)
+
 
 class elasticAggregationTests(unittest.TestCase):
     def test_to_hour(self):
