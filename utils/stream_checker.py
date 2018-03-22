@@ -129,7 +129,7 @@ def run_check(datastream_id, teleceptorURI, useSQL, minutes, sensor_uuid=None, m
             logging.error("unknown enveleope value {}".format(envelope))
             return 3
 
-    logging.info("OK - datastream {} has {} datapoints in the last {} minutes.".format(datastream_id, len(readings), minutes))
+    logging.info("OK - datastream {} has {} datapoints in the last {} minutes. The average value was {}".format(datastream_id, len(readings), minutes, average))
     return return_code
 
 
