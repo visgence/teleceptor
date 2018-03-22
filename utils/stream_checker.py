@@ -105,16 +105,23 @@ def run_check(datastream_id, teleceptorURI, useSQL, minutes, sensor_uuid=None, m
 
     readings = response.json()['readings']
 
+    # Find average of the readings
+    average = 0
+    count = 0
+    for i in readings:
+        average += i[1]
+        count += 1
+    average /= count
+
     # check alert envelope
-    # TODO: check the average, not just the latest reading
     if (min is not None) and (max is not None):
         if envelope == 'inside':
-            if readings[-1][1] >= min and readings[-1][1] <= max:
+            if average >= min and average <= max:
                 logging.error("CRITICAL datastream {} of value {} falls between {} and {}".format(datastream_id, readings[-1][1], min, max))
                 return 2
 
         if envelope == 'outside':
-            if readings[-1][1] < min and readings[-1][1] > max:
+            if average < min and average > max:
                 logging.error("CRITICAL datastream {} of value {} falls outside {} and {}".format(datastream_id, readings[-1][1], min, max))
                 return 2
 
