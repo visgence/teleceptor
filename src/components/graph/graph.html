@@ -1,0 +1,15 @@
+<md-card>
+    <md-toolbar class="card-header md-primary">
+        <h4 id="chart-title">{{title}}</h4>
+    </md-toolbar>
+
+    <div class="graph-message" id="graph-message"></div>
+
+    <div id="graph-container" class="graph-container">
+        <div layout="row" layout-sm="column" layout-align="space-around">
+            <ng-hide ng-hide="noStreams">
+                <md-progress-circular md-mode="indeterminate" class="progress-indicator"></md-progress-circular>
+            </ng-hide>
+        </div>
+    </div>
+</md-card>

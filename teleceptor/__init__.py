@@ -12,7 +12,7 @@ import softSensors
 PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 
 # Path to WEBROOT and Template are part of application
-WEBROOT = os.path.abspath(os.path.join(PATH, 'webroot'))
+WEBROOT = os.path.abspath(os.path.join(PATH, 'static'))
 TEMPLATES = os.path.abspath(os.path.join(PATH, 'templates'))
 
 # Set config path based on system
@@ -114,9 +114,35 @@ else:
 
 if "USE_ELASTICSEARCH" in conf:
     USE_ELASTICSEARCH = conf["USE_ELASTICSEARCH"]
-    if USE_ELASTICSEARCH:
-        ELASTICSEARCH_URI = conf["ELASTICSEARCH_URI"]
-        ELASTICSEARCH_INDEX = conf["ELASTICSEARCH_INDEX"]
-        ELASTICSEARCH_DOC = conf["ELASTICSEARCH_DOC"]
+    ELASTICSEARCH_URI = conf["ELASTICSEARCH_URI"]
+    ELASTICSEARCH_INDEX = conf["ELASTICSEARCH_INDEX"]
+    ELASTICSEARCH_DOC = conf["ELASTICSEARCH_DOC"]
+
 else:
     USE_ELASTICSEARCH = False
+
+if "USE_EMAIL" in conf:
+    USE_EMAIL = conf["USE_EMAIL"]
+else:
+    USE_EMAIL = False
+
+if "EMAIL_FROM" in conf:
+    EMAIL_FROM = conf["EMAIL_FROM"]
+else:
+    EMAIL_FROM = False
+
+if "EMAIL_TO" in conf:
+    EMAIL_TO = conf["EMAIL_TO"]
+else:
+    EMAIL_TO = False
+
+if "EMAIL_PW" in conf:
+    EMAIL_PW = conf["EMAIL_PW"]
+else:
+    EMAIL_PW = False
+
+if not USE_ELASTICSEARCH and not SQLDATA:
+    raise "Either USE_ELASTICSEARCH or SQLDATA need to be set to true."
+
+if USE_SQL_ALWAYS and not SQLDATA:
+    raise "SQLDATA must be set to true if USE_SQL_ALWAYS is set to true."

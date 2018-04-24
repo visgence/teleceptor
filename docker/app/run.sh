@@ -25,6 +25,9 @@ done
 
 
 docker run -t -i -P \
+    --privileged \
+    -e "container=docker" \
+    -v /sys/fs/cgroup:/sys/fs/cgroup \
     --rm=true \
     --name $CONTAINERNAME \
     --link tele_postgres:pg \
@@ -32,7 +35,7 @@ docker run -t -i -P \
     -e TELEUID=$TELEUID \
     -e TELEGID="$TELEGID" \
     -e TELEOSTYPE=$OSTYPE \
-    -v $TELE:/home/tele/teleceptor \
-    -p $HOSTPORT:8000 \
+    -v $TELE:/home/teleceptor/teleceptor \
+    -p $HOSTPORT:$HOSTPORT \
     teleceptor/app \
-    /home/tele/teleceptor/entrypoint.sh
+    /home/teleceptor/teleceptor/entrypoint.sh

@@ -1,8 +1,8 @@
 """
 testFixtures.py
 
-Authors: Victor Szczepanski
-         Cyrille Gindreau
+Authors: Victor Szczepanski (Visgence Inc.)
+         Cyrille Gindreau (Visgence Inc.)
 
 Adds two sensors and two datastreams
 Then adds sensor readings in the form of a sine curve.
@@ -14,13 +14,19 @@ import json
 from time import time
 import math
 import requests
+import logging
+
+from teleceptor import USE_DEBUG
 
 
 def main():
-    """
-    Loads two sensors, two datastreams, and some readings
+    # Loads two sensors, two datastreams, and some readings
 
-    """
+    if USE_DEBUG:
+        logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s', level=logging.DEBUG)
+    else:
+        logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s', level=logging.INFO)
+
     serverURL = "http://0.0.0.0:8000/api/station"
     jsonExample = [{
         "info": {
@@ -67,10 +73,13 @@ def main():
     while now >= lastWeek:
         jsonExample[0]["readings"].append(["in1", 400 * math.sin(0.1 * counter), now])
         jsonExample[0]["readings"].append(["in2", 600 * math.sin(0.1 * counter), now])
-        now -= 60
+        now -= 10
         counter += 1
 
-    requests.post(serverURL, data=json.dumps(jsonExample))
+    logging.debug("Sending post")
+    response = requests.post(serverURL, data=json.dumps(jsonExample))
+    logging.debug("Response:")
+    logging.debug(response)
 
 
 if __name__ == "__main__":

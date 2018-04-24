@@ -1,0 +1,43 @@
+
+$shadow-color: rgba(0, 0, 0, .1);
+
+// class-name-format: The name of the library uses this class name
+// sass-lint:disable class-name-format
+.ADMdtp-box {
+    box-shadow: 1px 4px 6px $shadow-color, -1px 4px 6px $shadow-color;
+}
+// sass-lint:enable class-name-format
+
+.button-container {
+    margin: 10px 10px 0;
+}
+
+.quick-time-container {
+    display: inline-block;
+    margin-bottom: 20px;
+    width: 100%;
+}
+
+.refresh-container {
+    margin-bottom: 10px;
+    margin-top: 15px;
+}
+
+md-checkbox {
+    .md-label {
+        top: 6px;
+    }
+}
+
+.refresh-duration {
+    margin-left: 10px;
+    margin-right: 10px;
+    width: 40%;
+}
+
+md-progress-circular {
+    &.auto-refresh-progress {
+        margin-left: 10px;
+        margin-top:  16px;
+    }
+}

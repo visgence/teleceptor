@@ -8,13 +8,13 @@ Authors: Victor Szczepanski
 import runpy
 import sys
 import os
-import glob
 import atexit
-import argparse
 import shutil
 import platform
 import json
+import time
 import requests
+from os import fdopen, remove
 from subprocess import call
 from sqlalchemy import create_engine
 from sqlalchemy.engine.url import URL
@@ -27,7 +27,7 @@ from sqlalchemy.schema import (
     DropConstraint,
 )
 import teleceptor
-from teleceptor import models, testFixtures, server, sessionManager, USE_ELASTICSEARCH, WEBROOT, PATH
+from teleceptor import models, testFixtures, server, sessionManager, USE_ELASTICSEARCH, WEBROOT, SQLDATA, USE_SQL_ALWAYS, USEPG
 
 Stdin = '/dev/null'
 Stdout = '/dev/null'
@@ -229,12 +229,6 @@ def setup(*args):
         r = requests.put(teleceptor.ELASTICSEARCH_URI+'/_template/teleceptor', json=conf)
         print r
 
-    print "running node commands"
-
-    try:
-        call('npm install', cwd=WEBROOT, shell=True)
-    except:
-        print "An error occured trying to install node modules. Please make sure that NodeJs and npm are installed."
     print "Run teleceptorcmd loadfixtures for example data"
 
 
@@ -243,17 +237,52 @@ def loadfixtures(*args):
     testFixtures.main()
 
 
-def reset(*args):
-    rebuild(args)
-    setup(args)
-    runserver(args)
-
-
 def shell(*args):
     import IPython
     print "Starting IPython Shell"
     session = sessionManager.createSession()
     IPython.embed()
+
+
+def minorVersion(*args):
+    print "Current version: {}".format(teleceptor.__version__)
+    version = teleceptor.__version__.split('.')
+    version[2] = str(int(version[2]) + 1)
+    version = ".".join(version)
+    saveVersion(version)
+
+
+def majorVersion(*args):
+    print "Current version: {}".format(teleceptor.__version__)
+    version = teleceptor.__version__.split('.')
+    version[1] = str(int(version[1]) + 1)
+    version[2] = "0"
+    version = ".".join(version)
+    saveVersion(version)
+
+
+def saveVersion(version):
+    newTime = time.time()
+    print "New version is: {}".format(version)
+    newFile = ""
+    with open('teleceptor/version.py', 'r') as versionFile:
+        for line in versionFile:
+            if line.startswith("__version__"):
+                line = "__version__ = '{}'\n".format(version)
+            if line.startswith("__buildDate__"):
+                line = "__buildDate__ = {}\n".format(newTime)
+            newFile += line
+    f = open('teleceptor/version.py', 'w+')
+    for i in newFile:
+        f.write(i)
+    f.close()
+    with open('package.json') as package:
+        data = json.load(package)
+        data['version'] = version
+        data['buildDate'] = newTime
+    os.remove('package.json')
+    with open('package.json', 'w') as package:
+        json.dump(data, package, indent=2, sort_keys=True)
 
 
 if __name__ == "__main__":
@@ -269,11 +298,13 @@ if __name__ == "__main__":
         'loadfixtures': [loadfixtures, "Load test database data"],
         'version': [displayVersion, "Display version"],
         'shell': [shell, "Ipython shell"],
-        'reset': [reset, "Same as running 'rebuild', 'setup', 'runserver' "],
-        'apitest': [apiTest, "Run tests against the api."]
+        'apitest': [apiTest, "Run tests against the api."],
+        'minorversion': [minorVersion, "Increment the minor version number"],
+        'majorversion': [majorVersion, "Increment the major version number"]
     }
 
     args = sys.argv
+    print args
     if len(args) > 1 and args[1].lower() in cmds:
 
         if len(args) > 2 and args[2] == "-d":

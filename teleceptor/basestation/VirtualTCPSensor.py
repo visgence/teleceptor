@@ -7,6 +7,9 @@ Simulates a teleimperium-like TCP sensor.
 
 import socket
 import json
+import logging
+
+from teleceptor import USE_DEBUG
 
 TCP_IP = '127.0.0.1'
 TCP_PORT = 5005
@@ -31,17 +34,16 @@ SENSOR_READINGS = [["VirtualOut1", 3.2]]
 
 
 def parseJSON(data):
-    """
-    Parses incoming update data and tries to update any input sensors
-    given in the data.
-    """
+
+    # Parses incoming update data and tries to update any input sensors given in the data.
+
     j = json.loads(data)
     if "in" not in SENSOR_INFO:
         return
     for sensorname in j.iterkeys():
         try:
             IN_STATES["in"][sensorname] = j[sensorname]
-        except:
+        except Exception:
             pass
 
 
@@ -53,18 +55,23 @@ def main():
     waits forever for a connection.
     """
 
+    if USE_DEBUG:
+        logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s', level=logging.DEBUG)
+    else:
+        logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s', level=logging.INFO)
+
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.bind((TCP_IP, TCP_PORT))
     s.listen(1)
 
     while 1:
         (conn, addr) = s.accept()
-        print 'Connection address:', addr
+        logging.debug('Connection address:', addr)
 
         data = conn.recv(1)
         if not data:
             break
-        print "received data:", data
+        logging.debug("received data:", data)
 
         # check for command char
         if data[0] == '@':
@@ -72,11 +79,12 @@ def main():
             command = conn.recv(BUFFER_SIZE)
             try:
                 parseJSON(command)
-            except:
+            except Exception, e:
+                logging.debug(e)
                 continue
         elif data[0] == '%':
-            print "in % block. Sending:"
-            print json.dumps(SENSOR_INFO) + '\n' + json.dumps(SENSOR_READINGS)
+            logging.debug("in % block. Sending:")
+            logging.debug(json.dumps(SENSOR_INFO) + '\n' + json.dumps(SENSOR_READINGS))
 
             conn.send(json.dumps(SENSOR_INFO) + '\n')
             conn.send(json.dumps(SENSOR_READINGS) + '\n')

@@ -4,24 +4,15 @@ Authors: Victor Szczepanski
 
 
 """
-import json
-import sys
-import os
-import csv
 import time
 import math
 import logging
 import requests
-from datetime import datetime
-from pyelasticsearch import ElasticSearch
-# = "http://192.168.99.100:9200/"
-from teleceptor import ELASTICSEARCH_URI
-# = 'teleceptor'
-from teleceptor import ELASTICSEARCH_INDEX
-# = 'teledata'
-from teleceptor import ELASTICSEARCH_DOC
-from teleceptor import USE_DEBUG
+import json
+
+from teleceptor import ELASTICSEARCH_URI, USE_DEBUG
 from teleceptor.timeAggregationUtils import getElasticSearchAggregationLevel
+
 
 if USE_DEBUG:
     logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s', level=logging.DEBUG)
@@ -29,29 +20,12 @@ else:
     logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s', level=logging.INFO)
 
 
-def insert_elastic(elastic_buffer):
-
-    es = ElasticSearch(ELASTICSEARCH_URI)
-
-    docs = []
-    for doc in elastic_buffer:
-        t = time.gmtime(int(doc['@timestamp']/1000))
-        index = ELASTICSEARCH_INDEX + "-" + str(t.tm_year).zfill(2) + "." + str(t.tm_mon).zfill(2) + "." + str(t.tm_mday).zfill(2)
-        docs.append(es.index_op(doc, index=index, doc_type=ELASTICSEARCH_DOC))
-    if len(docs) > 0:
-        try:
-            es.bulk(docs)
-            logging.debug("inserted %d records" % (len(docs)))
-        except Exception as e:
-            logging.error("Insert Exception " + str(e))
-
-
-def insertReading(ds, value, timestamp=None):
+def insertReading(ds, value, session, timestamp=None):
     if timestamp is None:
         timestamp = int(time.time())
 
     data = {"@timestamp": int(timestamp*1000), "value": value, "ds": ds}
-    insert_elastic([data])
+    session.insertEsReading([data])
 
 
 def getReadings(ds, start, end, points=None):
@@ -77,8 +51,9 @@ def getReadings(ds, start, end, points=None):
         list[(float,float)] -- pairs of the form (timestamp, value) for all data in datastream `ds` between dates `start` and `end`.
     """
     aggregation_string = getElasticSearchAggregationLevel(int(start), int(end))
+    print '\nagg string = {}'.format(aggregation_string)
 
-    logging.info("Aggregating on every {}".format(aggregation_string))
+    logging.debug("Aggregating on every {}".format(aggregation_string))
 
     # need to scale incoming start and end, since elasticsearch keeps the timestamp in ms
     start = int(start) * 1000
@@ -103,6 +78,7 @@ def getReadings(ds, start, end, points=None):
     # Example kibana query: {"index":["teleceptor-2015.09.28","teleceptor-2015.09.29"],"search_type":"count","ignore_unavailable":True}
     # {"size":0,"query":{"filtered":{"query":{"query_string":{"analyze_wildcard":true,"query":"ds:1"}},"filter":{"bool":{"must":[{"range":{"@timestamp":{"gte":1443407578481,"lte":1443493978481,"format":"epoch_millis"}}}],"must_not":[]}}}},"aggs":{"2":{"date_histogram":{"field":"@timestamp","interval":"1m","time_zone":"America/Denver","min_doc_count":1,"extended_bounds":{"min":1443407578481,"max":1443493978481}},"aggs":{"1":{"avg":{"field":"value"}}}}}}
 
+    logging.debug("res.json: {}", res.json())
     index_query = res.json()['indices'].keys()
 
     if len(index_query) == 0:
@@ -111,8 +87,8 @@ def getReadings(ds, start, end, points=None):
     query = {
         "size": 0,
         "query": {
-            "filtered": {
-                "query": {
+            "bool": {
+                "must": {
                     "query_string": {
                         "analyze_wildcard": True,
                         "query": "ds:{}".format(ds)
@@ -189,12 +165,14 @@ def getReadings(ds, start, end, points=None):
     # logging.debug("Built query: {}".format(final_query))
     # return get_elastic(elastic_buffer=final_query)
     logging.debug("Built query: {}".format(query))
-    return get_elastic(elastic_buffer=query, index_info=index_query)
+    result = get_elastic(elastic_buffer=query, index_info=index_query)
+    print "result query: {}".format(len(result))
+    return result
 
 
 def get_elastic(elastic_buffer, index_info=None):
     """
-    Make a query to elasticsearch with args in `elastic_buffer`
+    Make a query to elasticsearch with args in `elastic_buffer`.
 
     :parma elastic_buffer: The query json to provide to elastic search.
     :type elastic_buffer: dictionary
@@ -206,14 +184,15 @@ def get_elastic(elastic_buffer, index_info=None):
         May want to pass in a list of indicies to search on
 
     """
-    es = ElasticSearch(ELASTICSEARCH_URI)
-    # we actually use filter instead of query, since we want exact results
-    # {'filter': elastic_buffer, '_source': ['@timestamp', 'value']})
-    result = es.search(elastic_buffer, index=index_info)
 
-    logging.debug("Got elasticsearch results: {}".format(result))
+    data = "{}\n{}\n".format(json.dumps({"index": index_info}), json.dumps(elastic_buffer))
+    url = ELASTICSEARCH_URI + '/_msearch'
+    headers = {'Content-Type': 'application/x-ndjson'}
 
-    return [(bucket['key']/1000, bucket['1']['value']) for bucket in result['aggregations']['2']['buckets']]
+    response = requests.post(url, data=data, headers=headers).json()
+    logging.debug("Got elasticsearch results: {}".format(response))
+
+    return [(bucket['key']/1000, bucket['1']['value']) for bucket in response['responses'][0]['aggregations']['2']['buckets']]
 
 
 if __name__ == "__main__":

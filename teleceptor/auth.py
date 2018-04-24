@@ -50,13 +50,13 @@ def check_auth(*args, **kwargs):
         else:
             raise cherrypy.HTTPRedirect("/auth/login")
 
+
 cherrypy.tools.auth = cherrypy.Tool('before_handler', check_auth)
 
 
 def require(*conditions):
     """
-    A decorator that appends conditions to the auth.require config
-    variable.
+    A decorator that appends conditions to the auth.require config variable.
 
     Conditions are callables that return True
     if the user fulfills the conditions they define, False otherwise
@@ -89,9 +89,9 @@ def name_is(reqd_username):
 
 
 def any_of(*conditions):
-    """
-    :returns: True if any of the conditions match
-    """
+
+    # :returns: True if any of the conditions match
+
     def check():
         for c in conditions:
             if c():
@@ -102,7 +102,7 @@ def any_of(*conditions):
 
 def all_of(*conditions):
     """
-    :returns: True if all of the conditions match
+    :returns: True if all of the conditions match.
 
     By default all conditions are required, but this might still be
     needed if you want to use it inside of an any_of(...) condition
@@ -116,14 +116,16 @@ def all_of(*conditions):
 
 
 class AuthController(object):
-    """
-    Controller to provide login and logout actions
-    """
+
+    # Controller to provide login and logout actions.
+
     def on_login(self, username):
-        """Called on successful login"""
+        # Called on successful login
+        pass
 
     def on_logout(self, username):
-        """Called on logout"""
+        # Called on logout
+        pass
 
     def loginForm(self, username, msg="Enter login information", from_page="/"):
         return serve_file(PATH + '/login.html', content_type="text/html")

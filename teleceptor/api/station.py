@@ -5,6 +5,7 @@
         Bretton Murphy (Visgence, Inc.)
         Victor Szczepanski (Visgence, Inc.)
         Jessica Greenling (Visgence, Inc.)
+        Cyrille Gindreau (Visgence, Inc.)
 
     Resource endpoint for accepting POST requests that is used as part of the RESTful api.
     Handles the delegation of tasks to other api modules. Specifically, this api should be used for posting new sensor readings with sensor readings.
@@ -36,24 +37,22 @@
 
 # System Imports
 import cherrypy
-from time import time
+import logging
+import time
 from sqlalchemy.orm.exc import NoResultFound
 try:
     import simplejson as json
 except ImportError:
     import json
 
-
-import logging
-
 # Local Imports
-from teleceptor.models import DataStream, Sensor, Message, MessageQueue, Path
+from teleceptor.models import DataStream, Path
 from teleceptor.sessionManager import sessionScope
 from teleceptor.api.sensors import Sensors
 from teleceptor.api.datastreams import DataStreams
 from teleceptor.api import readings, datastreams, sensors, messages
-from teleceptor.api.readings import SensorReadings
-from teleceptor import USE_DEBUG
+from teleceptor.ESSession import ElasticSession
+from teleceptor import USE_DEBUG, USE_ELASTICSEARCH
 
 
 class Station:
@@ -173,6 +172,10 @@ def update_motes(mote_datas, session):
     logging.debug("Updating motes %s", str(mote_datas))
     new_values = {}
     updated_sensors = []
+    es_session = None
+    if USE_ELASTICSEARCH:
+        es_session = ElasticSession()
+
     for mote in mote_datas:
         if 'info' not in mote:
             logging.error("Mote %s did not report its info", str(mote))
@@ -234,7 +237,11 @@ def update_motes(mote_datas, session):
         for reading in mote['readings']:
             reading[0] = sensor_datastream_ids[mote['info']['uuid'] + reading[0]]
 
-        readings.insertReadings(mote['readings'], session=session)
+        readings.insertReadings(mote['readings'], session=session, es_session=es_session)
+
+    if USE_ELASTICSEARCH:
+        es_session.commit()
+
     return new_values, updated_sensors
 
 
@@ -253,13 +260,15 @@ def update_sensor_data(sensor_data, session):
         sensor_data['timestamp'] = timestamp
 
     sensor = sensors.getSensor(uuid, session=session)
-    coefficients = '[1, 0]'
-    if 'last_calibration' not in sensor:
-        if 'scale' in sensor_data:
-            coefficients = sensor_data['scale']
+    coefficients = [1, 0]
+    timestamp = 0
+    if 'scale' in sensor_data and 'calibration_timestamp' in sensor_data:
+        coefficients = sensor_data['scale']
+        timestamp = sensor_data['calibration_timestamp']
     else:
         if 'calibration_timestamp' not in sensor_data or 'scale' not in sensor_data:
             coefficients = sensor['last_calibration']['coefficients']
+
         elif sensor_data['calibration_timestamp'] < sensor['last_calibration']['timestamp']:
             coefficients = sensor['last_calibration']['coefficients']
         else:
@@ -267,7 +276,8 @@ def update_sensor_data(sensor_data, session):
 
     logging.debug("Got sensor %s", str(sensor))
     logging.debug("Updating calibration...")
-    sensor_info = Sensors.updateCalibration(sensor, json.dumps(str(coefficients)), sensor_data['timestamp'], session=session)
+
+    sensor_info = Sensors.updateCalibration(sensor, coefficients, timestamp, session=session)
     logging.debug("Updated calibration")
 
     return sensor_info

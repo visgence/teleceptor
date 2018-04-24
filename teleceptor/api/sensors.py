@@ -2,6 +2,7 @@
     Authors: Bretton Murphy (Visgence, Inc.)
              Victor Szczepanski (Visgence, Inc.)
              Jessica Greenling (Visgence, Inc.)
+             Cyrille Gindreau (Visgence, Inc.)
 
     Resource endpoint for Sensors that is used as part of the RESTful api.  Handles
     the creation, updating, and retrieval of Sensors.
@@ -14,8 +15,6 @@
 # System Imports
 import cherrypy
 import json
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.exc import NoResultFound
 import time
 import logging
@@ -74,11 +73,6 @@ class Sensors:
 
     @require()
     def POST(self):
-        # What you should be doing:
-        # in post, look for a uuid.
-        # check if database has said sensor,
-        # if so, try update
-        # if not, create a new one.
 
         logging.debug("POST request to sensors.")
 
@@ -96,7 +90,6 @@ class Sensors:
 
         if 'uuid' not in data:
             return json.dumps({'error': 'A UUID is needed.'}, indent=4)
-
         sensor_data = {
             "sensor_IOtype": False,
             "name": data["uuid"],
@@ -112,12 +105,12 @@ class Sensors:
 
         with sessionScope() as session:
             try:
-                sensor_info = Sensors.updateSensor(sensor_id=data['uuid'], data=sensor_data, session=session)
+                sensor_info = Sensors.updateSensor(data=sensor_data, session=session)
             except NoResultFound:
                 # sensor_data.pop('last_calibration', None)
                 Sensors.createSensor(sensor_data, session)
             try:
-                sensor = Sensors.updateSensor(data['uuid'], data, session)
+                sensor = Sensors.updateSensor(data, session)
                 returnData['sensor'] = sensor
             except NoResultFound:
                 logging.error("Sensor with id %s doesn't exist.", str(data['uuid']))
@@ -155,9 +148,6 @@ class Sensors:
         except ValueError:
             # no json object to decode, just use an empty dictionary
             data = {}
-
-        print "we got:"
-        print data
 
         logging.debug("Request body: %s", data)
 
@@ -227,12 +217,13 @@ class Sensors:
         elif 'last_calibration' in sensor_data:
             coefs = sensor_data['last_calibration']['coefficients']
             caliTime = sensor_data['last_calibration']['timestamp']
+            sensor_data.pop('last_calibration')
         else:
             coefs = [1, 0]
+
         sensor = Sensor(**sensor_data)
-        # print sensor.toDict()
-        calib = Calibration(sensor_id=sensor.toDict()['uuid'], timestamp=caliTime, coefficients=str(coefs))
-        # print calib.toDict()
+        calib = Calibration(sensor_id=sensor.toDict()['uuid'], timestamp=caliTime)
+        calib.setCoefficients(coefs)
         sensor.last_calibration = calib
         sensor.last_calibration_id = calib.id
         logging.debug("Creating sensor %s", str(sensor))
@@ -307,7 +298,7 @@ def deleteSensor(sensor_id, session):
 
     .. seealso::
         `models.Sensor`
-        `sensors.DELETE`
+        `sensors.DELETE
     """
     logging.debug("Deleting sensor %s", sensor_id)
 
@@ -327,7 +318,7 @@ def deleteSensor(sensor_id, session):
 
 def getSensor(sensor_id, session):
     """
-    :param sensor_id: The id of the sensor to query on
+    :param sensor_id: The id of the sensor to query on.
     "param session: Optional session context. If None, this function creates its own context. Otherwise, uses this context.
 
     :returns: Dictionary -- A dictionary representing the sensor (as described in Models.Sensor) if found, else None
@@ -355,13 +346,12 @@ def _updateSensor(data, session):
     sensor = session.query(Sensor).filter_by(uuid=data['uuid']).one()
     for key, value in data.iteritems():
         logging.debug("Key: {}, Value: {}".format(key, value))
-        print("Key: {}, Value: {}".format(key, value))
         if key in blacklist:
             logging.debug("Request to updateSensor included blacklisted key %s", str(key))
             continue
         if 'last_calibration' in key:
             logging.debug("value: {} and type: {}".format(value, type(value)))
-            if type(value['coefficients']) != type(str()):
+            if isinstance(value['coefficients'], basestring):
                     value['coefficients'] = json.dumps(value['coefficients'])
 
             # if no timestamp, create timestamp
@@ -387,11 +377,12 @@ def _updateSensor(data, session):
 
 def _updateCalibration(sensor, coefficients, timestamp, session):
     updateNeeded = False
-    # logging.info("Trying to update sensor %s with coefficiencts %s with new coefficients %s", str(sensor['uuid']), str(sensor['last_calibration']['coefficients']), str(coefficients))
+    logging.debug("Trying to update sensor %s with coefficiencts %s with new coefficients %s", str(sensor['uuid']), str(sensor['last_calibration']['coefficients']), str(coefficients))
 
     if 'last_calibration' not in sensor or 'id' not in sensor['last_calibration'] or sensor['last_calibration']['id'] is None:
         # sensor doesn't have a calibration id, so we need to make a new calibration
-        Cal = Calibration(coefficients=coefficients, timestamp=timestamp, sensor_id=sensor['uuid'])
+        Cal = Calibration(timestamp=timestamp, sensor_id=sensor['uuid'])
+        Cal.setCoefficients(coefficients)
         session.add(Cal)
         session.commit()
         updateNeeded = True
@@ -407,11 +398,16 @@ def _updateCalibration(sensor, coefficients, timestamp, session):
             if currentTimestamp > oldTimestamp:
                 logging.debug("Comparing coefficients.")
 
+                if type(coefficients) == tuple:
+                    coefficients = list(coefficients)
+                assert type(coefficients) == list
+
                 # check if coefficients are different
-                if Cal.coefficients != coefficients:
+                if Cal.getCoefficients() != coefficients:
                     logging.debug("Coefficients are different, updating...")
 
-                    Cal = Calibration(coefficients=coefficients, timestamp=timestamp, sensor_id=sensor['uuid'])
+                    Cal = Calibration(timestamp=timestamp, sensor_id=sensor['uuid'])
+                    Cal.setCoefficients(coefficients)
                     session.add(Cal)
                     session.commit()
                     logging.debug("Added new calibration to database.")
@@ -419,8 +415,9 @@ def _updateCalibration(sensor, coefficients, timestamp, session):
                     updateNeeded = True
         except (NoResultFound, KeyError) as e:
             logging.debug("No calibration found for sensor %s. Creating new calibration...", str(sensor))
-
-            Cal = Calibration(coefficients=coefficients, timestamp=timestamp, sensor_id=sensor['uuid'])
+            logging.debug(e)
+            Cal = Calibration(timestamp=timestamp, sensor_id=sensor['uuid'])
+            Cal.setCoefficients(coefficients)
             session.add(Cal)
             session.commit()
             logging.debug("Created new calibration.")
@@ -430,7 +427,8 @@ def _updateCalibration(sensor, coefficients, timestamp, session):
             # sensor thinks the calibration it has belongs to it, but it doesn't (may belong to another sensor). Make a new calibration.
             logging.error("Calibration has different sensor foreign key %s than input sensor uuid %s", Cal.sensor_id, sensor['uuid'])
 
-            Cal = Calibration(coefficients=coefficients, timestamp=timestamp, sensor_id=sensor['uuid'])
+            Cal = Calibration(timestamp=timestamp, sensor_id=sensor['uuid'])
+            Cal.setCoefficients(coefficients)
             session.add(Cal)
             session.commit()
             logging.debug("Created new Calibration for input sensor.")

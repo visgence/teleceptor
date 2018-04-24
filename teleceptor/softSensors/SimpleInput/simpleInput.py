@@ -66,6 +66,7 @@ if __name__ == "__main__":
     parser.add_argument('--host', help="IP of host server.", default=None, dest='host')
 
     args = parser.parse_args()
+    si = simpleInput()
     if args.name is not None and args.value is not None and args.host is not None:
 
         data = [{
@@ -83,11 +84,9 @@ if __name__ == "__main__":
             },
             "readings": [[args.name, args.value, time.time()]]}]
 
-        si = simpleInput()
-
     else:
         while True:
-            sendData()
+            si.sendData()
 
             # sleep based on rate of query
             time.sleep(3)

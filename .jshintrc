@@ -3,7 +3,15 @@
         "$": false,
         "angular": false,
         "document": false,
-        "location": false
+        "location": false,
+        "window": false
     },
-    "strict": true
+    "strict": true,
+    "eqeqeq": true,
+    "latedef": true,
+    "shadow": "inner",
+    "trailingcomma": true,
+    "undef": true,
+    "unused": true,
+    "elision": true
 }

@@ -1,0 +1,36 @@
+@import '../constants';
+
+.dropdown-btn {
+    clear: both;
+    display: block;
+    font-weight: 400;
+    line-height: 1.42;
+    padding: 3px 20px;
+    white-space: nowrap;
+}
+
+.tree-card-content {
+    overflow-x: scroll;
+    overflow-y: visible;
+}
+
+// sass-lint:disable no-important
+.jstree-default {
+    .jstree-wholerow-clicked {
+        background: $grey !important;
+        color: $dark-grey !important;
+    }
+}
+// sass-lint:enable no-important
+
+.tree-view {
+    margin-top: 10px;
+}
+
+.jstree-node {
+    .jstree-leaf {
+        background-color: $dark-grey;
+        margin-bottom: 5px;
+        margin-top: 10px;
+    }
+}

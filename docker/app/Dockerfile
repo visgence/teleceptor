@@ -1,37 +1,22 @@
-FROM debian:wheezy
+FROM centos:7
+MAINTAINER Visgence Inc <info@visgence.com>
 
+RUN yum install -y epel-release
 
-# Environment variables
-ENV DEBIAN_FRONTEND noninteractive
-#Base Debian Install
-RUN apt-get update && apt-get -y upgrade && apt-get clean
-RUN apt-get -y install --no-install-recommends bash sudo cron vim git python2.7 python-pip sqlite3 ca-certificates  python-sqlite && apt-get clean
+RUN yum install -y screen vim sudo cron sqlite3 ca-certificates python-sqlite  && yum clean all
+RUN yum install -y postgresql python-devel postgresql-devel make automake gcc gcc-c++ && yum clean all
+RUN yum install -y mod_wsgi curl httpd wget python-setuptools && yum clean all
 
-#Postgres
-RUN apt-get -y install make automake gcc build-essential && apt-get clean
-RUN apt-get -y install postgresql && apt-get clean
-RUN apt-get -y install python-dev && apt-get clean
-RUN apt-get -y install libpq-dev && apt-get clean
+RUN easy_install pip
 
-#pip dependicies
-RUN pip install sqlalchemy cherrypy requests pySerial pyelasticsearch psycopg2
+ADD requirements.txt .
+RUN pip install -r requirements.txt
 
-RUN apt-get -y install vim curl && apt-get clean
-#Install teleceptor software as teleceptor user
-VOLUME ['/home/tele/teleceptor']
-WORKDIR /home/tele/teleceptor
+#Install node from package
+RUN curl --silent --location https://rpm.nodesource.com/setup_8.x | bash -
+RUN yum install -y nodejs-8.6.0-1nodesource
 
-#RUN adduser --disabled-password --gecos "" teleceptor
-#USER teleceptor
-#WORKDIR /home/teleceptor/
-#RUN git clone https://github.com/visgence/teleceptor.git
-#RUN mkdir -p /home/teleceptor/.config/teleceptor/
-#VOLUME /home/teleceptor/.config/teleceptor/
-
-#WORKDIR /
-#USER root
-
-
+VOLUME ["/home/teleceptor"]
+WORKDIR /home/teleceptor
 
 EXPOSE 8000
-

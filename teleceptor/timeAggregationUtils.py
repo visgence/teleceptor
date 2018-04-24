@@ -7,16 +7,24 @@ Authors: Victor Szczepanski
 
 from sys import maxsize
 
-aggregation_levels = {(0, 3600): 10,                    # 0 to an hour, 10 seconds
-                      (3600, 7*24*3600): 60,            # an hour to a week, 1 minute
-                      (7*24*3600, 30*24*3600): 60*10,   # a week to 30 days, 10 minutes
-                      (30*24*3600, maxsize): 60*60      # longer than 30 days, an hour
-                      }
 """Defines the aggregation levels used by Teleceptor.
  The form is (period_start, period_end): aggregation_value.
  So, if some value v is between period_start and period_end, aggregation_value should be used.
  Does not admit negative values or values > sys.maxsize
  """
+
+hour = 3600
+day = hour * 24
+week = day * 7
+month = week * 4
+year = month * 12
+aggregation_levels = {
+    (0, hour): 10,          # 0 to an hour       - 10 seconds
+    (hour, week): 60,       # hour to a week     - 1 minute
+    (week, month): 60*10,   # week to a month    - 10 minutes
+    (month, year): hour,    # month to a year    - an hour
+    (year, maxsize): day    # longer than a year - a day
+}
 
 
 def getAggregationLevel(start, end):
@@ -63,15 +71,16 @@ def getElasticSearchAggregationLevel(start, end):
     :returns: str -- The aggregation period in ElasticSearch format, in the lowest common division.
     """
     aggregation_period = getAggregationLevel(start, end)
+    aggregation_string = "10m"
     if aggregation_period < 60:
-        return "{}s".format(aggregation_period)
-    if aggregation_period < 60*60:
+        return "{}s".format(int(aggregation_period))
+    if aggregation_period < hour:
         # One hour
-        return "{}m".format(aggregation_period/60.0)
-    if aggregation_period < 60*60*24:
+        return "{}m".format(int(aggregation_period/60.0))
+    if aggregation_period < day:
         # One day
-        return "{}h".format((aggregation_period/60.0)/60.0)
-    return "{}d".format(((aggregation_period/60.0)/60.0)/24.0)
+        return "{}h".format(int(aggregation_period/hour))
+    return "{}d".format(int(aggregation_period/day))
 
 
 if __name__ == "__main__":
