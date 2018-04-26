@@ -65,7 +65,7 @@ class TestTeleceptor(AbstractTeleceptorTest):
                 "coefficients": [0, 1],
                 "timestamp": 1
             },
-            "sensor_IOtype":  False,
+            "sensor_IOtype": False,
             "sensor_type": "bool",
             "last_value": "last",
             "name": "v",
@@ -352,7 +352,7 @@ class TestTeleceptor(AbstractTeleceptorTest):
         initialCalibration = sensors['sensor']['last_calibration']['coefficients']
 
         # create new calibration
-        newCalibration = [i+1 for i in initialCalibration]
+        newCalibration = [i + 1 for i in initialCalibration]
 
         # post to station
         caltime = time.time()
@@ -555,7 +555,7 @@ class TestTeleceptor(AbstractTeleceptorTest):
         """
 
         # format of reading is [datastreamid, value, timestamp]
-        sampleJson = {'readings': [[1, 1, time.time()], [1, 2, time.time()-1]]}
+        sampleJson = {'readings': [[1, 1, time.time()], [1, 2, time.time() - 1]]}
         r = requests.post(URL + "api/readings/", data=json.dumps(sampleJson))
 
         self.assertTrue(r.status_code == requests.codes.ok)
@@ -574,7 +574,7 @@ class TestTeleceptor(AbstractTeleceptorTest):
         outside of its range, so the reading should fail to be inserted.
         """
         # format of reading is [datastreamid, value, timestamp]
-        sampleJson = {'readings': [[1, 1, time.time()+3000]]}
+        sampleJson = {'readings': [[1, 1, time.time() + 3000]]}
         r = requests.post(URL + "api/readings/", data=json.dumps(sampleJson))
 
         self.assertTrue(r.status_code == requests.codes.ok)

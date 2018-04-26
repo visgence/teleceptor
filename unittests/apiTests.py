@@ -122,8 +122,8 @@ def PostReadingDS(app):
             3,
             None,
             None
-            )]
-        })
+        )]
+    })
     failures = []
     try:
         response = app.post_json('/api/readings/', json.loads(reading))
@@ -146,8 +146,8 @@ def PostReadingDSVal(app):
             1,
             5,
             None
-            )]
-        })
+        )]
+    })
     failures = []
     try:
         response = app.post_json('/api/readings/', json.loads(reading))
@@ -156,7 +156,7 @@ def PostReadingDSVal(app):
                 'TestName': "PostReadingDSVal",
                 'ErrorGiven': "The reading wasn't inserted when it should of been"
             })
-    except Exception, e:
+    except Exception as e:
         failures.append({
             'TestName': "PostReadingDSVal",
             'ErrorGiven': e
@@ -170,8 +170,8 @@ def PostReadingDSValTime(app):
             1,
             10,
             100000
-            )]
-        })
+        )]
+    })
     failures = []
     try:
         response = app.post_json('/api/readings/', json.loads(reading))
@@ -181,7 +181,7 @@ def PostReadingDSValTime(app):
                 'TestName': "PostReadingDSValTime",
                 'ErrorGiven': "The reading wasn't inserted when it should of been"
             })
-    except Exception, e:
+    except Exception as e:
         failures.append({
             'TestName': "PostReadingDSValTime",
             'ErrorGiven': e
@@ -195,8 +195,8 @@ def PostReadingWrongDS(app):
             100,
             10,
             100000
-            )]
-        })
+        )]
+    })
     failures = []
     try:
         response = app.post_json('/api/readings/', json.loads(reading))
@@ -206,7 +206,7 @@ def PostReadingWrongDS(app):
                 'ErrorGiven': "The reading was inserted when it should of been."
             })
 
-    except Exception, e:
+    except Exception as e:
         failures.append({
             'TestName': "PostReadingWrongDS",
             'ErrorGiven': e
@@ -238,7 +238,7 @@ def PostMultipleReadings(app):
                 'TestName': "PostReadingWrongDS",
                 'ErrorGiven': "The reading was inserted when it should of been."
             })
-    except Exception, e:
+    except Exception as e:
         failures.append({
             'TestName': "PostReadingWrongDS",
             'ErrorGiven': e
@@ -262,7 +262,7 @@ def GetAllReadings(app):
                     'TestName': "GetAllReadings",
                     'ErrorGiven': "The amount returned isn't the same as the amount in database"
                 })
-    except Exception, e:
+    except Exception as e:
         failures.append({
             'TestName': "GetAllReadings",
             'ErrorGiven': e
@@ -273,7 +273,7 @@ def GetAllReadings(app):
 def GetReadingsWithStart(app):
     failures = []
     try:
-        response = app.get('/api/readings/?start={}'.format(int(time.time()-70*60)))
+        response = app.get('/api/readings/?start={}'.format(int(time.time() - 70 * 60)))
         if len(response.json['readings']) == 0:
             failures.append({
                 'TestName': "GetReadingsWithStart",
@@ -282,12 +282,12 @@ def GetReadingsWithStart(app):
         else:
             session.query(SensorReading)
             for i in response.json['readings']:
-                if i[0] < time.time()-70*60:
+                if i[0] < time.time() - 70 * 60:
                     failures.append({
                         'TestName': "GetReadingsWithStart",
                         'ErrorGiven': "There are dates that wern't filtered out."
                     })
-    except Exception, e:
+    except Exception as e:
         failures.append({
             'TestName': "GetReadingsWithStart",
             'ErrorGiven': e
@@ -298,7 +298,7 @@ def GetReadingsWithStart(app):
 def GetReadingsWithEnd(app):
     failures = []
     try:
-        response = app.get('/api/readings/?end={}'.format(int(time.time()-30*60)))
+        response = app.get('/api/readings/?end={}'.format(int(time.time() - 30 * 60)))
         if len(response.json['readings']) == 0:
             failures.append({
                 'TestName': "GetReadingsWithEnd",
@@ -307,12 +307,12 @@ def GetReadingsWithEnd(app):
         else:
             session.query(SensorReading)
             for i in response.json['readings']:
-                if i[0] > time.time()-30*60:
+                if i[0] > time.time() - 30 * 60:
                     failures.append({
                         'TestName': "GetReadingsWithEnd",
                         'ErrorGiven': "There are dates that wern't filtered out."
                     })
-    except Exception, e:
+    except Exception as e:
         failures.append({
             'TestName': "GetReadingsWithEnd",
             'ErrorGiven': e
@@ -323,7 +323,7 @@ def GetReadingsWithEnd(app):
 def GetReadingsWithBoth(app):
     failures = []
     try:
-        response = app.get('/api/readings/?start={}&end={}'.format(int(time.time()-70*60), int(time.time()-30*60)))
+        response = app.get('/api/readings/?start={}&end={}'.format(int(time.time() - 70 * 60), int(time.time() - 30 * 60)))
         if len(response.json['readings']) == 0:
             failures.append({
                 'TestName': "GetReadingsWithBoth",
@@ -332,12 +332,12 @@ def GetReadingsWithBoth(app):
         else:
             session.query(SensorReading)
             for i in response.json['readings']:
-                if i[0] < time.time()-70*60 or i[0] > time.time()-30*60:
+                if i[0] < time.time() - 70 * 60 or i[0] > time.time() - 30 * 60:
                     failures.append({
                         'TestName': "GetReadingsWithBoth",
                         'ErrorGiven': "There are dates that wern't filtered out."
                     })
-    except Exception, e:
+    except Exception as e:
         failures.append({
             'TestName': "GetReadingsWithBoth",
             'ErrorGiven': e
@@ -361,7 +361,7 @@ def GetReadingsForSensor(app):
                     'TestName': "GetReadingsForSensor",
                     'ErrorGiven': "The amount returned isn't the same as the amount in database"
                 })
-    except Exception, e:
+    except Exception as e:
         failures.append({
             'TestName': "GetReadingsForSensor",
             'ErrorGiven': e
@@ -372,7 +372,7 @@ def GetReadingsForSensor(app):
 def GetReadingsForSensorWithStart(app):
     failures = []
     try:
-        response = app.get('/api/readings/?datastream=1&start={}'.format(int(time.time()-70*60)))
+        response = app.get('/api/readings/?datastream=1&start={}'.format(int(time.time() - 70 * 60)))
         if len(response.json['readings']) == 0:
             failures.append({
                 'TestName': "GetReadingsForSensorWithStart",
@@ -381,12 +381,12 @@ def GetReadingsForSensorWithStart(app):
         else:
             session.query(SensorReading).filter_by(datastream=1)
             for i in response.json['readings']:
-                if i[0] < int(time.time()-70*60):
+                if i[0] < int(time.time() - 70 * 60):
                     failures.append({
                         'TestName': "GetReadingsForSensorWithStart",
                         'ErrorGiven': "There are dates that wern't filtered out."
                     })
-    except Exception, e:
+    except Exception as e:
         failures.append({
             'TestName': "GetReadingsForSensorWithStart",
             'ErrorGiven': e
@@ -397,7 +397,7 @@ def GetReadingsForSensorWithStart(app):
 def GetReadingsForSensorWithEnd(app):
     failures = []
     try:
-        response = app.get('/api/readings/?datastream=1&end={}'.format(int(time.time()-30*60)))
+        response = app.get('/api/readings/?datastream=1&end={}'.format(int(time.time() - 30 * 60)))
         if len(response.json['readings']) == 0:
             failures.append({
                 'TestName': "GetReadingsForSensorWithEnd",
@@ -406,12 +406,12 @@ def GetReadingsForSensorWithEnd(app):
         else:
             session.query(SensorReading).filter_by(datastream=1)
             for i in response.json['readings']:
-                if i[0] > int(time.time()-30*60):
+                if i[0] > int(time.time() - 30 * 60):
                     failures.append({
                         'TestName': "GetReadingsForSensorWithEnd",
                         'ErrorGiven': "There are dates that wern't filtered out."
                     })
-    except Exception, e:
+    except Exception as e:
         failures.append({
             'TestName': "GetReadingsForSensorWithEnd",
             'ErrorGiven': e
@@ -422,7 +422,7 @@ def GetReadingsForSensorWithEnd(app):
 def GetReadingsForSensorWithBoth(app):
     failures = []
     try:
-        response = app.get('/api/readings/?datastream=1&start={}&end={}'.format(int(time.time()-70*60), int(time.time()-30*60)))
+        response = app.get('/api/readings/?datastream=1&start={}&end={}'.format(int(time.time() - 70 * 60), int(time.time() - 30 * 60)))
         if len(response.json['readings']) == 0:
             failures.append({
                 'TestName': "GetReadingsForSensorWithBoth",
@@ -431,12 +431,12 @@ def GetReadingsForSensorWithBoth(app):
         else:
             session.query(SensorReading).filter_by(datastream=1)
             for i in response.json['readings']:
-                if i[0] < int(time.time()-70*60) or i[0] > int(time.time()-30*60):
+                if i[0] < int(time.time() - 70 * 60) or i[0] > int(time.time() - 30 * 60):
                     failures.append({
                         'TestName': "GetReadingsForSensorWithBoth",
                         'ErrorGiven': "There are dates that wern't filtered out."
                     })
-    except Exception, e:
+    except Exception as e:
         failures.append({
             'TestName': "GetReadingsForSensorWithBoth",
             'ErrorGiven': e
@@ -503,7 +503,7 @@ def PutNothing(app):
                 'TestName': "DataStreams PutNothing",
                 'ErrorGiven': "Did not receive error from server."
             })
-    except Exception, e:
+    except Exception as e:
         failures.append({
             'TestName': "PutNothing",
             'ErrorGiven': e
@@ -524,7 +524,7 @@ def PutStreamArgs(app):
                 'TestName': "PutStreamArgs",
                 'ErrorGiven': "streams dont' match"
             })
-    except Exception, e:
+    except Exception as e:
         failures.append({
             'TestName': "PutStreamArgs",
             'ErrorGiven': e
@@ -547,7 +547,7 @@ def PutStreamNoArgs(app):
                 'TestName': "PutStreamNoArgs",
                 'ErrorGiven': "Values were modified when they shouldn't have been."
             })
-    except Exception, e:
+    except Exception as e:
         failures.append({
             'TestName': "PutStreamNoArgs",
             'ErrorGiven': e
@@ -568,7 +568,7 @@ def PutIncorrectStream(app):
                 'TestName': "PutIncorrectStream",
                 'ErrorGiven': "Server didn't send error."
             })
-    except Exception, e:
+    except Exception as e:
         failures.append({
             'TestName': "PutIncorrectStream",
             'ErrorGiven': e
@@ -588,7 +588,7 @@ def GetAllStreams(app):
                     'ErrorGiven': "An incorrect name was found in the streams"
                 })
             j += 1
-    except Exception, e:
+    except Exception as e:
         failures.append({
             'TestName': "GetAllStreams",
             'ErrorGiven': e
@@ -605,7 +605,7 @@ def GetStreamById(app):
                 'TestName': "GetStreamById",
                 'ErrorGiven': "An stream names don't match up"
             })
-    except Exception, e:
+    except Exception as e:
         failures.append({
             'TestName': "GetStreamById",
             'ErrorGiven': e
@@ -625,7 +625,7 @@ def GetStreamBySensor(app):
                 'TestName': "GetStreamBySensor",
                 'ErrorGiven': "Response didn't return correct stream."
             })
-    except Exception, e:
+    except Exception as e:
         failures.append({
             'TestName': "GetStreamBySensor",
             'ErrorGiven': e
@@ -642,7 +642,7 @@ def GetStreamWrongId(app):
                 'TestName': "GetStreamWrongId",
                 'ErrorGiven': "Server didn't send error."
             })
-    except Exception, e:
+    except Exception as e:
         failures.append({
             'TestName': "GetStreamWrongId",
             'ErrorGiven': e
@@ -662,7 +662,7 @@ def GetStreamWrongSensor(app):
                 'TestName': "GetStreamWrongSensor",
                 'ErrorGiven': "Server responded with streams when it shouldn't of."
             })
-    except Exception, e:
+    except Exception as e:
         failures.append({
             'TestName': "GetStreamWrongSensor",
             'ErrorGiven': e
@@ -810,7 +810,7 @@ def UpdateOldCalibration(app):
     sensor = json.dumps({
         'uuid': "sensor_test_0",
         'calibration': {
-            'timestamp': time.time()-10000,
+            'timestamp': time.time() - 10000,
             'coefficients': (3, 3)
         }
     })
@@ -834,7 +834,7 @@ def GetSensor(app):
     failures = []
     try:
         info = app.get('/api/sensors/sensor_test_0').json
-    except Exception, e:
+    except Exception as e:
         failures = [{
             'TestName': "GetSensor",
             'ErrorGiven': e
@@ -858,7 +858,7 @@ def GetAllSensors(app):
     failures = []
     try:
         info = app.get('/api/sensors').json
-    except Exception, e:
+    except Exception as e:
         failures = [{
             'TestName': "GetAllSensors",
             'ErrorGiven': e
@@ -882,7 +882,7 @@ def GetIncorrectSensor(app):
     failures = []
     try:
         info = app.get('/api/sensors/fictionalSensorId').json
-    except Exception, e:
+    except Exception as e:
         failures = [{
             'TestName': "GetIncorrectSensor",
             'ErrorGiven': e
@@ -965,17 +965,17 @@ def CreateStations(app):
     failures = doStationPost(json.dumps(motes))
     for i in range(0, 10):
         try:
-            test = session.query(Sensor).filter_by(uuid=motes[i]['info']['uuid']+'test_sensor').first()
+            test = session.query(Sensor).filter_by(uuid=motes[i]['info']['uuid'] + 'test_sensor').first()
             if test is None:
                 failures.append({
                     'TestName': "CreateStations",
                     'ErrorGiven': "Query returned a None type"
-                    })
-        except Exception, e:
+                })
+        except Exception as e:
             failures.append({
                 'TestName': "CreateStations",
                 'ErrorGiven': e
-                })
+            })
     return failures
 
 
@@ -1005,42 +1005,42 @@ def AddReadings(app):
             'readings': []
         })
         for j in range(0, 100):
-            motes[i]['readings'].append(['test_sensor', math.sin(j)*100, time.time()-j*60])
+            motes[i]['readings'].append(['test_sensor', math.sin(j) * 100, time.time() - j * 60])
     failures = doStationPost(json.dumps(motes))
     for i in range(0, 10):
         try:
-            sensor = session.query(Sensor).filter_by(uuid=motes[i]['info']['uuid']+'test_sensor').first()
-        except Exception, e:
+            sensor = session.query(Sensor).filter_by(uuid=motes[i]['info']['uuid'] + 'test_sensor').first()
+        except Exception as e:
             failures.append({
                 'TestName': "AddReadings",
                 'ErrorGiven': e
-                })
+            })
         try:
             stream = session.query(DataStream).filter_by(sensor=sensor.toDict()['uuid']).first()
-        except Exception, e:
+        except Exception as e:
             failures.append({
                 'TestName': "AddReadings",
                 'ErrorGiven': e
-                })
+            })
         try:
             readings = session.query(SensorReading).filter_by(datastream=stream.toDict()['id']).all()
-        except Exception, e:
+        except Exception as e:
             failures.append({
                 'TestName': "AddReadings",
                 'ErrorGiven': e
-                })
+            })
             return failures
         if len(readings) != 100:
             failures.append({
                 'TestName': "AddReadings",
                 'ErrorGiven': "Incorrect number of readings returned, got: {}".format(len(readings))
-                })
+            })
     return failures
 
 
 def ChangeNewCalibration(app):
     # Should update the calibration on one sensor.
-    print "\nstart\n"
+    print("\nstart\n")
     sensor = json.dumps([{
         'info': {
             'uuid': "station_test_0",
@@ -1063,12 +1063,12 @@ def ChangeNewCalibration(app):
             failures.append({
                 'TestName': "ChangeNewCalibration",
                 'ErrorGiven': "Coefficients have not been updated."
-                })
-    except Exception, e:
+            })
+    except Exception as e:
         failures.append({
             'TestName': "ChangeNewCalibration",
             'ErrorGiven': e
-            })
+        })
     return failures
 
 
@@ -1082,7 +1082,7 @@ def ChangeOldCalibration(app):
                 'sensor_type': "float",
                 'timestamp': time.time(),
                 'scale': [5, 5],
-                'calibration_timestamp': time.time()-100000,
+                'calibration_timestamp': time.time() - 100000,
                 'meta_data': {}
             }]
         },
@@ -1096,7 +1096,7 @@ def ChangeOldCalibration(app):
                 'TestName': "ChangeOldCalibration",
                 'ErrorGiven': "Coefficients were changed when they shouldn't have been."
             })
-    except Exception, e:
+    except Exception as e:
         failures.append({
             'TestName': "ChangeOldCalibration",
             'ErrorGiven': e
@@ -1120,7 +1120,7 @@ def ChangeNothing(app):
             }]
         },
         'readings': []
-        }])
+    }])
     failures = doStationPost(sensor)
     try:
         test = session.query(Sensor).filter_by(uuid='station_test_0test_sensor').first()
@@ -1128,8 +1128,8 @@ def ChangeNothing(app):
             failures.append({
                 'TestName': "ChangeNothing",
                 'ErrorGiven': "Coefficients were changed when they shouldn't have been."
-                })
-    except Exception, e:
+            })
+    except Exception as e:
         failures.append({
             'TestName': "ChangeOldCalibration",
             'ErrorGiven': e
@@ -1154,7 +1154,7 @@ def ChangeNoTimestamp(app):
             }]
         },
         'readings': []
-        }])
+    }])
     failures = doStationPost(sensor)
     try:
         test = session.query(Sensor).filter_by(uuid='station_test_0test_sensor').first()
@@ -1162,8 +1162,8 @@ def ChangeNoTimestamp(app):
             failures.append({
                 'TestName': "ChangeNoTimestamp",
                 'ErrorGiven': "Coefficients were changed when they shouldn't have been."
-                })
-    except Exception, e:
+            })
+    except Exception as e:
         failures.append({
             'TestName': "ChangeOldCalibration",
             'ErrorGiven': e
@@ -1199,7 +1199,7 @@ def NoReadingId(app):
         'readings': []
     }]
     for j in range(0, 1):
-        sensor[0]['readings'].append(['test_reading', math.sin(j)*100, time.time()-j*60])
+        sensor[0]['readings'].append(['test_reading', math.sin(j) * 100, time.time() - j * 60])
     return doStationPost(json.dumps(sensor))
 
 
@@ -1208,7 +1208,7 @@ def doStationPost(data):
     try:
         app.post_json('/api/station', json.loads(data))
         return []
-    except Exception, e:
+    except Exception as e:
         return [{
             'TestName': "doStationPost: {}".format(data),
             'ErrorGiven': e

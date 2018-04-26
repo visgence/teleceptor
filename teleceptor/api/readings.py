@@ -47,13 +47,13 @@ class SensorReadings:
         logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s', level=logging.INFO)
     validFilterArgs = {
         'datastream': '^\d+$',
-        'start':      '^\d+$',
-        'end':        '^\d+$',
-        'points':     '^\d+$',
-        'source':    '^SQL|ElasticSearch$'
+        'start': '^\d+$',
+        'end': '^\d+$',
+        'points': '^\d+$',
+        'source': '^SQL|ElasticSearch$'
     }
     validOperatorArgs = {
-        'condense':    '^true|false$',
+        'condense': '^true|false$',
         'granularity': '^\d+$'
     }
 
@@ -342,7 +342,7 @@ def insertReadings(readings, session, es_session=None):
             streamId = reading[DS]
             rawVal = reading[VAL]
             timestamp = reading[TIME]
-        except Exception, e:
+        except Exception as e:
             logging.error("Error separating %s into streamId, rawVal, and timestamp.", str(reading))
             logging.debug(e)
             continue

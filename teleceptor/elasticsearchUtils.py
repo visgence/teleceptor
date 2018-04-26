@@ -24,7 +24,7 @@ def insertReading(ds, value, session, timestamp=None):
     if timestamp is None:
         timestamp = int(time.time())
 
-    data = {"@timestamp": int(timestamp*1000), "value": value, "ds": ds}
+    data = {"@timestamp": int(timestamp * 1000), "value": value, "ds": ds}
     session.insertEsReading([data])
 
 
@@ -51,7 +51,7 @@ def getReadings(ds, start, end, points=None):
         list[(float,float)] -- pairs of the form (timestamp, value) for all data in datastream `ds` between dates `start` and `end`.
     """
     aggregation_string = getElasticSearchAggregationLevel(int(start), int(end))
-    print '\nagg string = {}'.format(aggregation_string)
+    print('\nagg string = {}'.format(aggregation_string))
 
     logging.debug("Aggregating on every {}".format(aggregation_string))
 
@@ -63,17 +63,17 @@ def getReadings(ds, start, end, points=None):
         "fields": ["@timestamp"],
         "index_constraints": {
             "@timestamp": {
-                 "min_value": {
+                "min_value": {
                     "lte": end,
                     # "format": "epoch_millis"
-                 },
-                 "max_value": {
+                },
+                "max_value": {
                     "gte": start,
                     # "format": "epoch_millis"
-                 }
-              }
+                }
             }
-        })
+        }
+    })
 
     # Example kibana query: {"index":["teleceptor-2015.09.28","teleceptor-2015.09.29"],"search_type":"count","ignore_unavailable":True}
     # {"size":0,"query":{"filtered":{"query":{"query_string":{"analyze_wildcard":true,"query":"ds:1"}},"filter":{"bool":{"must":[{"range":{"@timestamp":{"gte":1443407578481,"lte":1443493978481,"format":"epoch_millis"}}}],"must_not":[]}}}},"aggs":{"2":{"date_histogram":{"field":"@timestamp","interval":"1m","time_zone":"America/Denver","min_doc_count":1,"extended_bounds":{"min":1443407578481,"max":1443493978481}},"aggs":{"1":{"avg":{"field":"value"}}}}}}
@@ -192,7 +192,7 @@ def get_elastic(elastic_buffer, index_info=None):
     response = requests.post(url, data=data, headers=headers).json()
     logging.debug("Got elasticsearch results: {}".format(response))
 
-    return [(bucket['key']/1000, bucket['1']['value']) for bucket in response['responses'][0]['aggregations']['2']['buckets']]
+    return [(bucket['key'] / 1000, bucket['1']['value']) for bucket in response['responses'][0]['aggregations']['2']['buckets']]
 
 
 if __name__ == "__main__":
@@ -201,15 +201,15 @@ if __name__ == "__main__":
     """
     days = 30
     # min
-    period = 12*60
+    period = 12 * 60
     max = 1023
 
-    start = time.time() - (days*period*2*60)
+    start = time.time() - (days * period * 2 * 60)
 
     docs = []
-    for i in range(days*period*2):
-        value = int(math.sin(i*(2.0*math.pi/period))*(max/2.0) + (max/2.0))
-        docs.append({'@timestamp': int((i*60+start)*1000), 'value': value, 'ds': 1000})
+    for i in range(days * period * 2):
+        value = int(math.sin(i * (2.0 * math.pi / period)) * (max / 2.0) + (max / 2.0))
+        docs.append({'@timestamp': int((i * 60 + start) * 1000), 'value': value, 'ds': 1000})
 
         if(i % 500 == 0):
             insert_elastic(docs)

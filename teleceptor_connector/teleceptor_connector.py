@@ -94,7 +94,7 @@ class Teleceptor(object):
             for i in range(len(scaled_readings)):
                 scaled_reading = 0
                 for index, coefficient in enumerate(scaling_function):
-                    scaled_reading += (math.pow(scaled_readings[i][1], len(scaling_function)-index-1) * coefficient)
+                    scaled_reading += (math.pow(scaled_readings[i][1], len(scaling_function) - index - 1) * coefficient)
                 scaled_readings[i][1] = scaled_reading
 
             readings.append(scaled_readings)

@@ -19,7 +19,7 @@ class ElasticSession:
         if timestamp is None:
             timestamp = int(time.time())
 
-        data = {"@timestamp": int(timestamp*1000), "value": value, "ds": ds}
+        data = {"@timestamp": int(timestamp * 1000), "value": value, "ds": ds}
         self.buffer.append(data)
 
     def commit(self):
@@ -30,7 +30,7 @@ class ElasticSession:
 
             docs = []
             for doc in self.buffer:
-                t = time.gmtime(int(doc['@timestamp']/1000))
+                t = time.gmtime(int(doc['@timestamp'] / 1000))
                 index = ELASTICSEARCH_INDEX + "-" + str(t.tm_year).zfill(2) + "." + str(t.tm_mon).zfill(2) + "." + str(t.tm_mday).zfill(2)
                 docs.append(es.index_op(doc, index=index, doc_type=ELASTICSEARCH_DOC))
             if len(docs) > 0:

@@ -61,7 +61,7 @@ class simpleInput():
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='By default acts as a sample input sensor. With arguments, can post data.')
-    parser.add_argument('--name',  help="name of sensor", default=None, dest='name')
+    parser.add_argument('--name', help="name of sensor", default=None, dest='name')
     parser.add_argument('--value', type=float, help="value to post", default=None, dest='value')
     parser.add_argument('--host', help="IP of host server.", default=None, dest='host')
 
