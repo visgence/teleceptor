@@ -1,6 +1,6 @@
 {
   "author": "Visgence Inc.",
-  "buildDate": 1521739648.570249,
+  "buildDate": 1524768088.252515,
   "dependencies": {
     "@uirouter/angularjs": "1.0.15",
     "adm-dtp": "1.2.0",
@@ -51,7 +51,7 @@
     "clean": "rm -fr static/dist/",
     "eslint": "./node_modules/.bin/eslint src",
     "htmllint": "./node_modules/.bin/htmlhint --config .htmlhintrc src",
-    "incMajor": "./teleceptorcmd majorVersion",
+    "incMajor": "./teleceptorcmd majorVersion", 
     "incMinor": "./teleceptorcmd minorVersion",
     "installGitHooks": "printf '%s#!/bin/bash %s\n %s\necho \"Running tests.\" %s\nnpm run tests' > .git/hooks/pre-push && chmod +x .git/hooks/pre-push",
     "lint": "npm run htmllint && npm run scsslint && npm run eslint && npm run pythonlint",
@@ -61,11 +61,11 @@
     "setupTeleceptor": "./teleceptorcmd setup",
     "start": "npm run build & concurrently --kill-others './teleceptorcmd runserver'",
     "startProduction": "npm run buildProduction & concurrently --kill-others './teleceptorcmd runserver'",
-    "test": "python2 unittests/unitTests.py && python2 unittests/apiTests.py",
+    "test": "python unittests/unitTests.py && python2 unittests/apiTests.py",
     "tests": "npm run test && npm run lint",
     "watch": "webpack --watch --progress --config ./webpack.development.config.js",
     "webpack": "webpack --progress --config ./webpack.development.config.js",
     "webpackProduction": "webpack --progress --config ./webpack.production.config.js"
   },
-  "version": "1.9.2"
+  "version": "1.9.3"
 }

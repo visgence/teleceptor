@@ -49,33 +49,33 @@ def runserver(*args):
 
 def btcmote(*args):
     btcmotecmd = os.path.join(teleceptor.__path__[0], 'softSensors', 'BitcoinSensor', 'BTCMote.py')
-    print btcmotecmd
+    print(btcmotecmd)
     runpy.run_path(btcmotecmd, None, '__main__')
 
 
 def apiTest(*args):
-    print "Running api test."
+    print("Running api test.")
     runpy.run_path('unittests/apiTests.py', None, '__main__')
 
 
 def poller(*args):
     pollercmd = os.path.join(teleceptor.__path__[0], 'basestation', 'poller.py')
-    print pollercmd
+    print(pollercmd)
     runpy.run_path(pollercmd, None, '__main__')
 
 
 def serialPoller(*args):
     sys.argv = ["something here "]
     if len(args[0]) is not 1:
-        print "Please enter the name of the USB device you are trying to connect to. Read the documentation to find out how to find your device name."
+        print("Please enter the name of the USB device you are trying to connect to. Read the documentation to find out how to find your device name.")
     serialpollercmd = os.path.join(teleceptor.__path__[0], 'basestation', 'serialPoller.py')
-    print serialpollercmd
+    print(serialpollercmd)
     runpy.run_path(serialpollercmd, {"DEVICENAME": args[0]}, '__main__')
 
 
 def tcpPoller(*args):
     tcppollercmd = os.path.join(teleceptor.__path__[0], 'basestation', 'tcpPoller.py')
-    print tcppollercmd
+    print(tcppollercmd)
     runpy.run_path(tcppollercmd, None, '__main__')
 
 
@@ -87,7 +87,7 @@ def copyConfig(*args):
 
     # Check if file exists
     if os.path.exists(os.path.join(appdata, 'config.json')):
-        print "Config Exists at: " + str(os.path.join(appdata, 'config.json'))
+        print("Config Exists at: " + str(os.path.join(appdata, 'config.json')))
         return
 
     if not os.path.exists(appdata):
@@ -97,21 +97,21 @@ def copyConfig(*args):
     tofile = os.path.join(appdata, "config.json")
     shutil.copy2(fromfile, tofile)
 
-    print "Config installed at:" + str(tofile)
+    print("Config installed at:" + str(tofile))
 
 
 def displayVersion(*args):
-    print "teleceptor Version: " + teleceptor.__version__
+    print("teleceptor Version: " + teleceptor.__version__)
 
 
 def rebuild(*args):
 
-    print 'This command will wipe your database and start fresh.  Are you sure you want to continue?'
+    print('This command will wipe your database and start fresh.  Are you sure you want to continue?')
     user_resp = None
     user_resp = raw_input('(Y/n) ').rstrip()
     while user_resp not in ['Y', 'n']:
-        print 'Did not understand your response.  Please enter \'Y\' or \'n\'.'
-        print 'This command will wipe your database and start fresh.  Are you sure you want to continue?'
+        print('Did not understand your response.  Please enter \'Y\' or \'n\'.')
+        print('This command will wipe your database and start fresh.  Are you sure you want to continue?')
         user_resp = raw_input('(Y/n) ').rstrip()
 
     if user_resp == 'n':
@@ -124,7 +124,7 @@ def rebuild(*args):
     else:
         rebuild_sqlite()
 
-    print "Runing setup."
+    print("Runing setup.")
     setup()
 
 
@@ -135,7 +135,7 @@ def rebuild_sqlite():
     print("Deleting " + str(teleceptor.DBFILE) + " ...")
     try:
         os.remove(teleceptor.DBFILE)
-        print teleceptor.DBFILE + " deleted."
+        print(teleceptor.DBFILE + " deleted.")
     except OSError:
         print('base_station.db does not exist.  Creating new db.')
 
@@ -202,11 +202,11 @@ def rebuild_postgres():
 
 def setup(*args):
     if not teleceptor.USEPG:
-        print "Creating new base_station.db file..."
+        print("Creating new base_station.db file...")
         if not os.path.exists(os.path.dirname(teleceptor.DBFILE)):
             os.makedirs(os.path.dirname(teleceptor.DBFILE))
         open(teleceptor.DBFILE, 'a').close()
-        print teleceptor.DBFILE + " created."
+        print(teleceptor.DBFILE + " created.")
         dbURL = 'sqlite:///' + teleceptor.DBFILE
     else:
         dboptions = {}
@@ -220,32 +220,32 @@ def setup(*args):
 
     db = create_engine(dbURL)
 
-    print "Initializing database tables..."
+    print("Initializing database tables...")
     models.Base.metadata.create_all(db)
 
     if USE_ELASTICSEARCH:
         # TODO: Use index and doc from config
         conf = json.load(open(os.path.join(teleceptor.PATH, 'config', 'es_template.json')))
         r = requests.put(teleceptor.ELASTICSEARCH_URI+'/_template/teleceptor', json=conf)
-        print r
+        print(r)
 
-    print "Run teleceptorcmd loadfixtures for example data"
+    print("Run teleceptorcmd loadfixtures for example data")
 
 
 def loadfixtures(*args):
-    print "Loading fixtures..."
+    print("Loading fixtures...")
     testFixtures.main()
 
 
 def shell(*args):
     import IPython
-    print "Starting IPython Shell"
+    print("Starting IPython Shell")
     session = sessionManager.createSession()
     IPython.embed()
 
 
 def minorVersion(*args):
-    print "Current version: {}".format(teleceptor.__version__)
+    print("Current version: {}".format(teleceptor.__version__))
     version = teleceptor.__version__.split('.')
     version[2] = str(int(version[2]) + 1)
     version = ".".join(version)
@@ -253,7 +253,7 @@ def minorVersion(*args):
 
 
 def majorVersion(*args):
-    print "Current version: {}".format(teleceptor.__version__)
+    print("Current version: {}".format(teleceptor.__version__))
     version = teleceptor.__version__.split('.')
     version[1] = str(int(version[1]) + 1)
     version[2] = "0"
@@ -263,7 +263,7 @@ def majorVersion(*args):
 
 def saveVersion(version):
     newTime = time.time()
-    print "New version is: {}".format(version)
+    print("New version is: {}".format(version))
     newFile = ""
     with open('teleceptor/version.py', 'r') as versionFile:
         for line in versionFile:
@@ -304,18 +304,18 @@ if __name__ == "__main__":
     }
 
     args = sys.argv
-    print args
+    print(args)
     if len(args) > 1 and args[1].lower() in cmds:
 
         if len(args) > 2 and args[2] == "-d":
-            print "Starting process %s as daemon..." % args[1].lower()
+            print("Starting process %s as daemon..." % args[1].lower())
             pidfilename = "/tmp/teleceptor-" + args[1].lower() + '.pid'
             try:
                 pid = os.fork()
                 if pid > 0:
                     # exit first parent
                     sys.exit(0)
-            except OSError, e:
+            except OSError as e:
                 sys.stderr.write("fork #1 failed: %d (%s)\n" % (e.errno, e.strerror))
                 sys.exit(1)
 
@@ -330,11 +330,11 @@ if __name__ == "__main__":
                 if pid > 0:
                     # exit from second parent
                     sys.exit(0)
-            except OSError, e:
+            except OSError as e:
                 sys.stderr.write("fork #2 failed: %d (%s)\n" % (e.errno, e.strerror))
                 sys.exit(1)
 
-            print "pid: %s" % os.getpid()
+            print("pid: %s" % os.getpid())
             # redirect standard file descriptors
 
             sys.stdout.flush()
@@ -352,10 +352,10 @@ if __name__ == "__main__":
             file(pidfilename, 'w+').write("%s\n" % pid)
 
         cmds[args[1].lower()][0](args[2:])
-        print "Done!"
+        print("Done!")
 
     else:
-        print "Please enter a valid command"
-        print "Commands Are:"
+        print("Please enter a valid command")
+        print("Commands Are:")
         for c in sorted(cmds):
-            print "    %s : %s" % (c, cmds[c][1])
+            print("    %s : %s" % (c, cmds[c][1]))
