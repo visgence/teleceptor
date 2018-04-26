@@ -61,7 +61,7 @@
     "setupTeleceptor": "./teleceptorcmd setup",
     "start": "npm run build & concurrently --kill-others './teleceptorcmd runserver'",
     "startProduction": "npm run buildProduction & concurrently --kill-others './teleceptorcmd runserver'",
-    "test": "python2 unittests/unitTests.py",
+    "test": "python2 unittests/unitTests.py && python2 unittests/apiTests.py",
     "tests": "npm run test && npm run lint",
     "watch": "webpack --watch --progress --config ./webpack.development.config.js",
     "webpack": "webpack --progress --config ./webpack.development.config.js",

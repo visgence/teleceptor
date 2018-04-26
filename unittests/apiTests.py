@@ -1,7 +1,7 @@
 '''
 apiTests.py
 
-Cyrille Gindrea
+Cyrille Gindreau
 4/20/17
 
 This script is ment to test all functionality of Teleceptors api.
@@ -19,13 +19,12 @@ import json
 import logging
 import math
 from sqlalchemy import create_engine
+PATH = os.path.abspath(os.path.join(os.path.dirname(os.path.dirname(__file__))))
+sys.path.append(PATH)
 from teleceptor.server import application
 from teleceptor.sessionManager import sessionScope
 from teleceptor.models import Sensor, Calibration, SensorReading, DataStream
 import teleceptor
-PATH = os.path.abspath(os.path.join(os.path.dirname(os.path.dirname(__file__))))
-sys.path.append(PATH)
-
 
 session = None
 
@@ -109,7 +108,7 @@ def PostReadingNoInfo(app):
                 'TestName': "PostReadingNoInfo",
                 'ErrorGiven': "Did not receive error from server."
             })
-    except Exception, e:
+    except Exception as e:
         failures.append({
             'TestName': "PostReadingNoInfo",
             'ErrorGiven': e
@@ -133,7 +132,7 @@ def PostReadingDS(app):
                 'TestName': "PostReadingDS",
                 'ErrorGiven': "A reading was inserted when it wasn't supposed to be"
             })
-    except Exception, e:
+    except Exception as e:
         failures.append({
             'TestName': "PostReadingDS",
             'ErrorGiven': e
@@ -1236,9 +1235,9 @@ if __name__ == '__main__':
     with sessionScope() as newSession:
         session = newSession
         failures = failures + TestStation(app)
-        # failures = failures + TestSensor(app)
-        # failures = failures + TestDatastream(app)
-        # failures = failures + TestReading(app)
+        failures = failures + TestSensor(app)
+        failures = failures + TestDatastream(app)
+        failures = failures + TestReading(app)
     if len(failures) != 0:
         logging.error("\n\nYou've had {} tests fail:\n".format(len(failures)))
         for i in failures:
