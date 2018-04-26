@@ -31,8 +31,8 @@ module.exports = {
             exclude: /node_modules/,
             loader: 'babel-loader',
             options: {
-              presets: ['babel-preset-env'],
-              plugins: ['angularjs-annotate'],
+                presets: ['babel-preset-env'],
+                plugins: ['angularjs-annotate'],
             },
         }, {
             test: /\.html$/,
@@ -67,7 +67,7 @@ module.exports = {
         }),
         new webpack.ProvidePlugin({
             jQuery: 'jquery',
-            $: 'jquery',
+            $: 'jquery', // eslint-disable-line
             jquery: 'jquery',
         }),
         new webpack.LoaderOptionsPlugin({
