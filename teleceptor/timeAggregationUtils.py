@@ -21,7 +21,7 @@ year = month * 12
 aggregation_levels = {
     (0, hour): 10,          # 0 to an hour       - 10 seconds
     (hour, week): 60,       # hour to a week     - 1 minute
-    (week, month): 60*10,   # week to a month    - 10 minutes
+    (week, month): 60 * 10,   # week to a month    - 10 minutes
     (month, year): hour,    # month to a year    - an hour
     (year, maxsize): day    # longer than a year - a day
 }
@@ -76,11 +76,11 @@ def getElasticSearchAggregationLevel(start, end):
         return "{}s".format(int(aggregation_period))
     if aggregation_period < hour:
         # One hour
-        return "{}m".format(int(aggregation_period/60.0))
+        return "{}m".format(int(aggregation_period / 60.0))
     if aggregation_period < day:
         # One day
-        return "{}h".format(int(aggregation_period/hour))
-    return "{}d".format(int(aggregation_period/day))
+        return "{}h".format(int(aggregation_period / hour))
+    return "{}d".format(int(aggregation_period / day))
 
 
 if __name__ == "__main__":
@@ -88,7 +88,7 @@ if __name__ == "__main__":
     start1 = 0
     end1 = 60
     end2 = 121
-    end3 = 60*60*24 + 60
+    end3 = 60 * 60 * 24 + 60
     print("Aggregation period given start = {} and end = {}".format(start1, end1))
     print(getAggregationLevel(start1, end1))
     print("Aggregation period given start = {} and end = {}".format(start1, end2))

@@ -280,7 +280,7 @@ class DataStream(Base):
             'owner': self.owner,
             'sensor': self.sensor,
             "paths": [p.path for p in self.paths]
-            }
+        }
 
 
 class Path(Base):

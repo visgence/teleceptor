@@ -30,7 +30,7 @@ if __name__ == "__main__":
 
     print "Readings test."
 
-    url = "{}?datastream={}&start={}&end={}".format(READING_URL, 1, int(time.time() - Range*3600 - 20), int(time.time()))
+    url = "{}?datastream={}&start={}&end={}".format(READING_URL, 1, int(time.time() - Range * 3600 - 20), int(time.time()))
     print url
     start = time.time()
     response = requests.get(url).json()

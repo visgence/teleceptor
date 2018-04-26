@@ -74,6 +74,11 @@ def run_check(datastream_id, teleceptorURI, useSQL, minutes, sensor_uuid=None, m
             logging.error("CRITICAL - response for uuid did not contain appropriate data: {}".format(response.json()))
             return_code = 2
             return return_code
+        except Exception as e:
+            logging.error("UNKNOWN - Got an unexpected exception during request.")
+            logging.error(e)
+            return_code = 3
+            return return_code
 
     readings_request_url = teleceptorURI + 'api/readings/'
 

@@ -53,21 +53,21 @@ if __name__ == "__main__":
         newStream['info']['in'].append(copy.deepcopy(InSensor))
         newStream['info']['in'][i]['name'] = str(uuid.uuid4())
 
-    print timeTracker
-    for i in range(0, TIME_IN_HOURS/TIME_PER_POST):
-        print 'post {} of {}'.format(i, TIME_IN_HOURS/TIME_PER_POST)
+    print(timeTracker)
+    for i in range(0, TIME_IN_HOURS / TIME_PER_POST):
+        print('post {} of {}'.format(i, TIME_IN_HOURS / TIME_PER_POST))
         newStream['readings'] = []
         request = []
-        for k in range(0, TIME_PER_POST*60):
+        for k in range(0, TIME_PER_POST * 60):
             timeTracker -= 60
             newDate = timeTracker
             # (pi * 1/number of seconds in a period/2 * date) + 3 for offset
-            newValue = math.sin(math.pi * (1.0/(TIME_OF_PERIOD/2 * 60 * 60)) * newDate) + 3.0
+            newValue = math.sin(math.pi * (1.0 / (TIME_OF_PERIOD / 2 * 60 * 60)) * newDate) + 3.0
             for j in range(0, NUMBER_OF_STREAMS):
                 newStream['readings'].append([newStream['info']['in'][j]['name'], newValue, newDate])
                 totalPointCount += 1
         request.append(newStream)
         requests.post(TELECEPTOR_URL, data=json.dumps(request))
 
-    print "{} datapoints have been made.".format(totalPointCount)
-    print "Total running time of program was {} seconds.".format(time.time() - curTime)
+    print("{} datapoints have been made.".format(totalPointCount))
+    print("Total running time of program was {} seconds.".format(time.time() - curTime))

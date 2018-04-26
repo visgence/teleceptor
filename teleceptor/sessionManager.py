@@ -9,8 +9,17 @@ Authors: Victor Szczepanski
 import teleceptor
 from contextlib import contextmanager
 from sqlalchemy import create_engine
+import logging
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.engine.url import URL
+from teleceptor import USE_DEBUG
+
+session_maker = None
+
+if USE_DEBUG:
+    logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s', level=logging.DEBUG)
+else:
+    logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s', level=logging.INFO)
 
 if teleceptor.USEPG:
     dboptions = {}
@@ -30,12 +39,8 @@ testEngine = "sqlite:///" + teleceptor.TESTDBFILE
 @contextmanager
 def sessionScope():
     """Provide a transactional scope around a series of operations."""
-    if teleceptor.isTesting:
-        db = create_engine(testEngine)
-    else:
-        db = create_engine(engine)
-    Session = sessionmaker(bind=db)
-    session = Session()
+
+    session = createSession()
 
     try:
         yield session
@@ -47,8 +52,18 @@ def sessionScope():
         session.close()
 
 
-def createSession():
-    db = create_engine(engine)
+def create_pg_session_maker():
+    if teleceptor.isTesting:
+        db = create_engine(testEngine)
+    else:
+        db = create_engine(engine)
     Session = sessionmaker(bind=db)
-    session = Session()
-    return session
+    return Session
+
+
+def createSession():
+    global session_maker
+    if session_maker is None:
+        logging.debug("Creating new session maker.")
+        session_maker = create_pg_session_maker()
+    return session_maker()

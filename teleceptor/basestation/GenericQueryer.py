@@ -251,4 +251,4 @@ def uptime(starttime):
 
     starttime -- the start time to compare against
     """
-    return (time.time()-starttime)
+    return (time.time() - starttime)
