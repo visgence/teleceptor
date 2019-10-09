@@ -10,7 +10,7 @@
     "angular-material": "1.1.7",
     "angular-route": "1.6.9",
     "d3": "4.13.0",
-    "jquery": "3.4.0",
+    "jquery": "3.3.1",
     "jstree": "3.3.5"
   },
   "description": "Teleceptor is an open-source data logger and feature-rich dashboard.",
