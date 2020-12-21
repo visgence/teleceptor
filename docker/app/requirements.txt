@@ -1,6 +1,6 @@
 sqlalchemy==1.1.15
 cherrypy==13.1.0
-requests==2.10.0
+requests==2.20.0
 psycopg2==2.7.3.2
 pyserial==3.4
 pyelasticsearch==1.4.0
