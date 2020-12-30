@@ -43,7 +43,7 @@ def ScaleF16(val):
 def getData(IP):
     client = ModbusTcpClient(IP, port=MODBUSPORT)
     client.connect()
-    result = client.read_holding_registers(0x08, 65, unit=1)
+    result = client.read_holding_registers(0x00, 65, unit=1)
     i = 1
     reg = {}
     for r in result.registers:
