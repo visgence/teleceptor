@@ -26,7 +26,6 @@ def getData(IP):
         i = i + 1
     client.close()
 
-
     return [
         {'name': 'arrayvoltage', 'description': 'Array Voltage', 'units': 'V', 'value': reg[2], 'scale': v_scale},
         {'name': 'sweepvmp', 'description': 'Sweep Vmp', 'units': 'V', 'value': reg[33], 'scale': v_scale},
