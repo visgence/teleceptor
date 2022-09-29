@@ -9,7 +9,7 @@
     "angular-aria": "1.6.9",
     "angular-material": "1.1.7",
     "angular-route": "1.6.9",
-    "d3": "4.13.0",
+    "d3": "7.6.1",
     "jquery": "3.5.0",
     "jstree": "3.3.5"
   },
