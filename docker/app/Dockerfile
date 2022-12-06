@@ -1,5 +1,5 @@
 FROM centos:7
-MAINTAINER Visgence Inc <info@visgence.com>
+LABEL Visgence Inc <info@visgence.com>
 
 RUN yum install -y epel-release
 
@@ -7,7 +7,8 @@ RUN yum install -y screen vim sudo cron sqlite3 ca-certificates python-sqlite  &
 RUN yum install -y postgresql python-devel postgresql-devel make automake gcc gcc-c++ && yum clean all
 RUN yum install -y mod_wsgi curl httpd wget python-setuptools && yum clean all
 
-RUN easy_install pip
+RUN curl -o get-pip.py https://bootstrap.pypa.io/pip/2.7/get-pip.py
+RUN python get-pip.py
 
 ADD requirements.txt .
 RUN pip install -r requirements.txt

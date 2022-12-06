@@ -365,13 +365,13 @@ export default class graphController {
         let dragStartPos = 0;
         let dragEnd = 0;
         const drag = d3.drag()
-            .on('drag', () => {
-                const x0 = xScale.invert(d3.event.x).getTime();
+            .on('drag', (event) => {
+                const x0 = xScale.invert(event.x).getTime();
 
                 const bisection = d3.bisect(myData, x0);
                 const d0 = readings[bisection - 1];
                 const d1 = readings[bisection];
-                if (d1 === undefined) {
+                if (d1 === undefined || d0 === undefined) {
                     return;
                 }
                 const d2 = x0 - d0[0] > d1[0] - x0 ? d1 : d0;
@@ -382,8 +382,8 @@ export default class graphController {
                     selectionBox.attr('transform', `translate(${xScale(d2[0])},0)`);
                 }
             })
-            .on('end', () => {
-                dragEnd = d3.event.x;
+            .on('end', (event) => {
+                dragEnd = event.x;
                 if (Math.abs(dragStart - dragEnd) < 10) {
                     return;
                 }
@@ -418,8 +418,8 @@ export default class graphController {
                 tooltip.style('display', 'none');
             })
             // Any change in the mouse position over the graph, update the tool tips.
-            .on('mousemove', () => {
-                const x0 = xScale.invert(d3.event.offsetX - margin.left).getTime();
+            .on('mousemove', (event) => {
+                const x0 = xScale.invert(event.offsetX - margin.left).getTime();
                 const bisection = d3.bisect(myData, x0);
                 const d0 = readings[bisection - 1];
                 const d1 = readings[bisection];
@@ -451,15 +451,15 @@ export default class graphController {
 
             })
             // Log the start position of a drag.
-            .on('mousedown', () => {
+            .on('mousedown', (event) => {
                 selectionBox.style('fill', '#b7ff64');
-                dragStart = d3.event.offsetX - margin.left;
+                dragStart = event.offsetX - margin.left;
 
-                const x0 = xScale.invert(d3.event.offsetX - margin.left).getTime();
+                const x0 = xScale.invert(event.offsetX - margin.left).getTime();
                 const bisection = d3.bisect(myData, x0);
                 const d0 = readings[bisection - 1];
                 const d1 = readings[bisection];
-                if (d1 === undefined) {
+                if (d1 === undefined || d0 === undefined) {
                     return;
                 }
                 const d2 = x0 - d0[0] > d1[0] - x0 ? d1 : d0;

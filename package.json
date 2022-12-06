@@ -9,9 +9,9 @@
     "angular-aria": "1.6.9",
     "angular-material": "1.1.7",
     "angular-route": "1.6.9",
-    "d3": "4.13.0",
+    "d3": "7.6.1",
     "jquery": "3.5.0",
-    "jstree": "3.3.5"
+    "jstree": "3.3.12"
   },
   "description": "Teleceptor is an open-source data logger and feature-rich dashboard.",
   "devDependencies": {
@@ -29,7 +29,7 @@
     "extract-text-webpack-plugin": "3.0.2",
     "file-loader": "1.1.6",
     "html-loader": "0.5.5",
-    "htmlhint": "0.9.13",
+    "htmlhint": "1.1.4",
     "imports-loader": "0.7.1",
     "less": "3.0.1",
     "node-sass": "4.13.1",
