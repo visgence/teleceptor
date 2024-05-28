@@ -3,103 +3,122 @@
 Teleceptor is an open-source data logger and feature-rich dashboard.
 
 ## Features
+
 Data-sources:
-  * Serial
-  * TCP
-  * xBee
-  * Soft sensors
+
+- Serial
+- TCP
+- xBee
+- Soft sensors
 
 Database support:
-  * SQL
-  * Postgres
-  * ElasticSearch
+
+- SQL
+- Postgres
+- ElasticSearch
 
 # Getting Started
-## Dependencies
-  * pip 9.0.1
-  * node 6.10.2
-  * npm 3.10.10
 
+## Dependencies
+
+- pip 9.0.1
+- node 6.10.2
+- npm 3.10.10
 
 ## Setting up Teleceptor backend
+
 1. git clone https://github.com/visgence/teleceptor.git
-2. run ```npm setup```
-3. To install a local config customizable first run ```./teleceptorcmd copyconfig``` app will print path
-4. In your config, you can set your Postgres and ElasticSearch settings.
-5. Run command ```./teleceptorcmd runserver 0.0.0.0:8000```.
-6. To load test data, run ```./teleceptorcmd loadfixtures```.
-7. Set up desired sensors and start collecting data.(_See below for setting up sensors_)
+2. `pip install -r requirements.txt`
+3. run `npm run setupTeleceptor`
+4. To install a local config customizable first run `./teleceptorcmd copyconfig` app will print path
+5. In your config, you can set your Postgres and ElasticSearch settings.
+6. Run command `./teleceptorcmd runserver 0.0.0.0:8000`.
+7. To load test data, run `./teleceptorcmd loadfixtures`.
+8. Set up desired sensors and start collecting data.(_See below for setting up sensors_)
 
 ## Setting up Teleceptor frontend
-1. Run command ```npm install```
+
+1. Run command `npm install`
 
 ### For development
-2. Run command ```npm run start```. This will build the project, sets webpack to watch files, and runs the server at localhost:8000
+
+2. Run command `npm run start`. This will build the project, sets webpack to watch files, and runs the server at localhost:8000
 
 ### For production
-2. Run command ```npm run buildProduction```. This only builds the project and runs the optimization plugins for webpack.
-3. Run command ```./teleceptorcmd runserver [ip:port]```. Runs the server at ip and port if given, default is 0.0.0.0:8000
+
+2. Run command `npm run buildProduction`. This only builds the project and runs the optimization plugins for webpack.
+3. Run command `./teleceptorcmd runserver [ip:port]`. Runs the server at ip and port if given, default is 0.0.0.0:8000
 
 ## Example Data
-The ```./teleceptorcmd loadfixtures``` command will run a program that will create two datastreams and fill them with an hours worth of data in the form of a sine curve.
+
+The `./teleceptorcmd loadfixtures` command will run a program that will create two datastreams and fill them with an hours worth of data in the form of a sine curve.
 
 ## Example Sensor
-The ```./teleceptorcmd btcmote``` command will run a program that requests data from http://blockchain.info/ticker and sends the data to Teleceptor.
 
+The `./teleceptorcmd btcmote` command will run a program that requests data from http://blockchain.info/ticker and sends the data to Teleceptor.
 
 # Sensor Firmware
+
 Sensor firmware can be found in the [firmware](https://github.com/visgence/teleceptor/tree/master/SensorExamples) folder. Download the appropriate firmware for your type of sensor, and then upload it to your sensor.
 
 ## Setting Up Sensors
 
 #### Serial poller
-1. Plug in your sensor through a USB port.
-* Make sure you have the most current firmware for your sensor.
-2. Run command ```./teleceptorcmd serialPoller PathOfSensor```. This will begin to look for sensors via USB ports.
-Note: To find the name of your sensor, in a terminal window, type ```ls /dev/tty*```. This will give you a list of all sensors currently connected.
 
+1. Plug in your sensor through a USB port.
+
+- Make sure you have the most current firmware for your sensor.
+
+2. Run command `./teleceptorcmd serialPoller PathOfSensor`. This will begin to look for sensors via USB ports.
+   Note: To find the name of your sensor, in a terminal window, type `ls /dev/tty*`. This will give you a list of all sensors currently connected.
 
 # Teleceptor Front-End Usage
-* To view sensor data that has been collected, click on a sensor stream under the _Stream Select_ tab.
-* To look at a certain time period of data, select a range under the _Time Controls_ tab.
-  * Specific data can also be viewed by hovering the mouse on the graph to observe data points and the time it was collected.
-  * By clicking and dragging on a certain part of the graph, you can zoom-in on points.
-* Some information about the sensor is editable and will change the graph accordingly such as _Units_ or _Calibration_.
-  * Be sure to save after editing so the configuration information to be available later.
-  * _Metadata_ cannot be changed. However, you can change it in the firmware and then re-upload the firmware to the sensor. (_See Teleceptor Concepts_)
-* If you download updates from Teleceptor but and are not sure if the webpage is up-to-date as well, clear your web browser's cache:
-  * **Chrome:** Right-click in a blank spot on the page -> Inspect element -> Settings (gear symbol) -> Disable cache (while DevTools is open) -> Refresh the page
-  * **Mozilla Firefox**: _ctrl+Shift+R_ will reload the page without cache and/or _ctrl+Shift+Delete_ -> Details -> Cache checkbox -> Clear Now
 
+- To view sensor data that has been collected, click on a sensor stream under the _Stream Select_ tab.
+- To look at a certain time period of data, select a range under the _Time Controls_ tab.
+  - Specific data can also be viewed by hovering the mouse on the graph to observe data points and the time it was collected.
+  - By clicking and dragging on a certain part of the graph, you can zoom-in on points.
+- Some information about the sensor is editable and will change the graph accordingly such as _Units_ or _Calibration_.
+  - Be sure to save after editing so the configuration information to be available later.
+  - _Metadata_ cannot be changed. However, you can change it in the firmware and then re-upload the firmware to the sensor. (_See Teleceptor Concepts_)
+- If you download updates from Teleceptor but and are not sure if the webpage is up-to-date as well, clear your web browser's cache:
+  - **Chrome:** Right-click in a blank spot on the page -> Inspect element -> Settings (gear symbol) -> Disable cache (while DevTools is open) -> Refresh the page
+  - **Mozilla Firefox**: _ctrl+Shift+R_ will reload the page without cache and/or _ctrl+Shift+Delete_ -> Details -> Cache checkbox -> Clear Now
 
 ## Setting up an mFi
-* cd .ssh
-* ssh-keygen
-* cat id_rsa.pub
-* copy the key given
-* ssh to mFi
-* vim authorized_keys
-* paste key
-* chmod 600 authorized_keys
-* enter 'save' in command line
+
+- cd .ssh
+- ssh-keygen
+- cat id_rsa.pub
+- copy the key given
+- ssh to mFi
+- vim authorized_keys
+- paste key
+- chmod 600 authorized_keys
+- enter 'save' in command line
 
 # Teleceptor Concepts
 
 ## Sensor
+
 The source location that posts data to the Teleceptor station api. Base data must include the sensors uuid and the names for each input/output source.
 You can find example firmware and software in the SensorExamples folder.
 
 ## Datastream
+
 Datastreams connect sensors to readings. If a sensor should fail or need to be replaced, it's uuid will change however its stream and history should remain intact. They also serve as an organizational tool for the front end.
 Datastreams are automatically created when a Sensor posts to the Teleceptor station api.
 
 ## Sensor Reading
+
 The raw value coming from a sensor attached to a timestamp of when the reading occurred and the data stream that it is connected to.
 
 In the teleceptor/api folder, you will find a more detailed guide on how the [api](https://github.com/visgence/teleceptor/tree/dev/teleceptor/api) works.
 
 ## License
+
 #### 2014 Visgence Inc.
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or

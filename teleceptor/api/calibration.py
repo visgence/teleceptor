@@ -37,8 +37,8 @@ class Calibrations:
             logging.debug('Making query: %s', str(q))
             try:
                 data['calibrations'] = [i.toDict() for i in q]
-            except Exception, e:
+            except Exception as e:
                 logging.error(e)
                 data['error'] = e
 
-        return json.dumps(data)
+        return json.dumps(data).encode('utf-8')

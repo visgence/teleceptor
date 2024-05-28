@@ -151,7 +151,7 @@ class Station:
             data['error'] = "Bad json"
             statusCode = "400"
             cherrypy.response.status = statusCode
-            return json.dumps(data, indent=4)
+            return json.dumps(data, indent=4).encode('utf-8')
 
         with sessionScope() as session:
             try:
@@ -165,7 +165,7 @@ class Station:
 
         logging.debug("Finished POST request to delegation.")
         cherrypy.response.status = statusCode
-        return json.dumps(data, indent=4)
+        return json.dumps(data, indent=4).encode('utf-8')
 
 
 def update_motes(mote_datas, session):

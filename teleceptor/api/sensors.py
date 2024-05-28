@@ -69,7 +69,7 @@ class Sensors:
 
         cherrypy.response.status = statusCode
         logging.debug("Finished GET request to sensors.")
-        return json.dumps(data, indent=4)
+        return json.dumps(data, indent=4).encode('utf-8')
 
     @require()
     def POST(self):
@@ -84,12 +84,12 @@ class Sensors:
         except ValueError:
             # no json object to decode, just use an empty dictionary
             data = {}
-            return json.dumps({'error': 'mangled json'})
+            return json.dumps({'error': 'mangled json'}).encode('utf-8')
 
         logging.debug("Request body: %s", data)
 
         if 'uuid' not in data:
-            return json.dumps({'error': 'A UUID is needed.'}, indent=4)
+            return json.dumps({'error': 'A UUID is needed.'}, indent=4).encode('utf-8')
         sensor_data = {
             "sensor_IOtype": False,
             "name": data["uuid"],
@@ -119,7 +119,7 @@ class Sensors:
         cherrypy.response.status = statusCode
 
         logging.debug("Finished PUT request to sensors.")
-        return json.dumps(returnData, indent=4)
+        return json.dumps(returnData, indent=4).encode('utf-8')
 
     @require()
     def PUT(self):
@@ -162,7 +162,7 @@ class Sensors:
         cherrypy.response.status = statusCode
 
         logging.debug("Finished PUT request to sensors.")
-        return json.dumps(returnData, indent=4)
+        return json.dumps(returnData, indent=4).encode('utf-8')
 
     @require()
     def DELETE(self, sensor_id):
@@ -195,7 +195,7 @@ class Sensors:
 
         cherrypy.response.status = statusCode
         logging.debug("Finished DELETE request to sensors.")
-        return json.dumps(returnData, indent=4)
+        return json.dumps(returnData, indent=4).encode('utf-8')
 
     # expects sensor to be a Sensor() from model
     @staticmethod
@@ -344,14 +344,14 @@ def getAllSensors(session):
 def _updateSensor(data, session):
     blacklist = ("uuid", "message")
     sensor = session.query(Sensor).filter_by(uuid=data['uuid']).one()
-    for key, value in data.iteritems():
+    for key, value in data.items():
         logging.debug("Key: {}, Value: {}".format(key, value))
         if key in blacklist:
             logging.debug("Request to updateSensor included blacklisted key %s", str(key))
             continue
         if 'last_calibration' in key:
             logging.debug("value: {} and type: {}".format(value, type(value)))
-            if isinstance(value['coefficients'], basestring):
+            if isinstance(value['coefficients'], str):
                     value['coefficients'] = json.dumps(value['coefficients'])
 
             # if no timestamp, create timestamp

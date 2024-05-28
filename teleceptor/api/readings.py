@@ -111,7 +111,7 @@ class SensorReadings:
 
         cherrypy.response.status = status_code
         logging.debug("Finished GET request to readings.")
-        return json.dumps(data, indent=4)
+        return json.dumps(data, indent=4).encode('utf-8')
 
     def POST(self):
         """
@@ -136,7 +136,7 @@ class SensorReadings:
             logging.error("Request body is not in JSON format.")
             data['error'] = "Bad json"
             cherrypy.response.status = status_code
-            return json.dumps(data, indent=4)
+            return json.dumps(data, indent=4).encode('utf-8')
 
         logging.debug("Request body: %s", str(reading_data))
 
@@ -151,7 +151,7 @@ class SensorReadings:
             es_session.commit()
         cherrypy.response.status = status_code
         logging.debug("Finished POST request to readings.")
-        return json.dumps(data, indent=4)
+        return json.dumps(data, indent=4).encode('utf-8')
 
     def DELETE(self, datastream_id=None):
         """
@@ -179,7 +179,7 @@ class SensorReadings:
 
         cherrypy.response.status = statusCode
         logging.debug("Finished DELETE request to datastreams.")
-        return json.dumps(data, indent=4)
+        return json.dumps(data, indent=4).encode('utf-8')
 
     @staticmethod
     def condense(readings):
@@ -214,7 +214,7 @@ class SensorReadings:
         }
         safeParams = {}
         paramsCopy = params.copy()
-        for key, value in paramsCopy.iteritems():
+        for key, value in paramsCopy.items():
 
             if key in self.validFilterArgs:
                 arg = self.validFilterArgs[key]
@@ -255,7 +255,7 @@ class SensorReadings:
         source = None
 
         # Seperate out filter arguments first
-        for key, value in paramsCopy.iteritems():
+        for key, value in paramsCopy.items():
             if key in self.validFilterArgs:
                 if key == "start":
                     start = int(value)
@@ -342,7 +342,7 @@ def insertReadings(readings, session, es_session=None):
             streamId = reading[DS]
             rawVal = reading[VAL]
             timestamp = reading[TIME]
-        except Exception, e:
+        except Exception as e:
             logging.error("Error separating %s into streamId, rawVal, and timestamp.", str(reading))
             logging.debug(e)
             continue

@@ -7,8 +7,8 @@ Authors: Victor Szczepanski
 import os
 import platform
 import json
+from . import softSensors
 from .version import __version__
-import softSensors
 PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 
 # Path to WEBROOT and Template are part of application

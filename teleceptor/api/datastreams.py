@@ -175,7 +175,7 @@ class DataStreams:
                     datastreams = datastreams.all()
                     data['datastreams'] = [i.toDict() for i in datastreams]
         cherrypy.response.status = statusCode
-        return json.dumps(data, indent=4)
+        return json.dumps(data, indent=4).encode('utf-8')
 
     def POST(self, stream_id=None):
         # TODO: Implement this for datastream creation
@@ -208,7 +208,7 @@ class DataStreams:
             # no json object to decode, just use an empty dictionary
             data = {}
         if stream_id is None:
-            return json.dumps({'error': 'no id'})
+            return json.dumps({'error': 'no id'}).encode('utf-8')
 
         logging.debug("Request body: %s", data)
         data['id'] = stream_id
@@ -223,7 +223,7 @@ class DataStreams:
             cherrypy.response.status = statusCode
 
         logging.debug("Finished PUT request to datastream.")
-        return json.dumps(returnData, indent=4)
+        return json.dumps(returnData, indent=4).encode('utf-8')
 
     def DELETE(self, stream_id):
         """
@@ -260,7 +260,7 @@ class DataStreams:
                 data['error'] = "Unexpected error occurred while deleting datastream {}: {}".format(stream_id, e)
         cherrypy.response.status = statusCode
         logging.debug("Finished DELETE request to datastreams.")
-        return json.dumps(data, indent=4)
+        return json.dumps(data, indent=4).encode('utf-8')
 
     @staticmethod
     def createDatastream(session, datastream=None):
@@ -341,8 +341,8 @@ def deleteDatastream(session, datastream_id):
 
 def _updateStream(data, session):
     stream = session.query(DataStream).filter_by(id=data['id']).one()
-    print stream.toDict()
-    for key, value in data.iteritems():
+    print(stream.toDict())
+    for key, value in data.items():
         if key == "id":
             continue
         if key == "paths":
@@ -397,7 +397,7 @@ def clean_inputs(inputs):
         'null': None
     }
     safeInputs = {}
-    for key, value in inputs.iteritems():
+    for key, value in inputs.items():
         if key not in validInputs:
             return None
         if value in valueConversions:

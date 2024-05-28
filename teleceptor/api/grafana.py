@@ -12,12 +12,12 @@ import delorean
 import dateutil.parser
 
 # Local Imports
-from readings import SensorReadings
 from teleceptor.sessionManager import sessionScope
 from teleceptor import USE_DEBUG
-import sensors
-import datastreams
-from datastreams import DataStreams
+from .readings import SensorReadings
+from . import sensors
+from . import datastreams
+from .datastreams import DataStreams
 
 
 class Query():
@@ -41,7 +41,7 @@ class Query():
             logging.error("Request data is not JSON: %s", cherrypy.request.body)
             statusCode = "400"
             cherrypy.response.status = statusCode
-            return json.dumps({}, indent=4)
+            return json.dumps({}, indent=4).encode('utf-8')
 
         sr = SensorReadings()
         response = []
@@ -72,7 +72,7 @@ class Query():
 
                 response.append(newObj)
 
-        return json.dumps(response)
+        return json.dumps(response).encode('utf-8')
 
 
 class Search():
@@ -89,7 +89,7 @@ class Search():
         streams = json.loads(ds.GET())
         for i in streams['datastreams']:
             response.append({"text": i['name'], "value": i['id']})
-        return json.dumps(response)
+        return json.dumps(response).encode('utf-8')
 
 
 class GrafanaApi:

@@ -105,7 +105,7 @@ class Messages:
 
         logging.debug("Completed GET request to messages.")
         cherrypy.response.status = status_code
-        return json.dumps(data, indent=4)
+        return json.dumps(data, indent=4).encode('utf-8')
 
     @staticmethod
     def is_valid_type(message, sensor_type):
@@ -150,13 +150,13 @@ class Messages:
             return_data['error'] = "POST to messages does not contain message data"
             status_code = "400"
             cherrypy.response.status = status_code
-            return json.dumps(return_data, indent=4)
+            return json.dumps(return_data, indent=4).encode('utf-8')
         if "duration" not in data:
             logging.error("POST request to messages has no duration data.")
             return_data['error'] = "POST to messages does not contain duration data"
             status_code = "400"
             cherrypy.response.status = status_code
-            return json.dumps(return_data, indent=4)
+            return json.dumps(return_data, indent=4).encode('utf-8')
 
         with sessionScope() as session:
             try:
@@ -172,7 +172,7 @@ class Messages:
 
         logging.debug("Finished POST request to messages.")
         cherrypy.response.status = status_code
-        return json.dumps(return_data, indent=4)
+        return json.dumps(return_data, indent=4).encode('utf-8')
 
     def DELETE(self, sensor_id, message_id):
         """
@@ -206,7 +206,7 @@ class Messages:
 
         logging.debug("Finished DELETE request to messages.")
         cherrypy.response.status = status_code
-        return json.dumps(return_data, indent=4)
+        return json.dumps(return_data, indent=4).encode('utf-8')
 
     @cherrypy.expose
     def PURGE(self, sensor_id, timeout):
@@ -242,7 +242,7 @@ class Messages:
 
         logging.debug("Finished PURGE request to messages.")
         cherrypy.response.status = status_code
-        return json.dumps(return_data, indent=4)
+        return json.dumps(return_data, indent=4).encode('utf-8')
 
 
 def getMessages(sensor_id, session, by_timestamp=False, unread_only=False):

@@ -1,2 +1,2 @@
-import SimpleInput
-import BitcoinSensor
+from . import SimpleInput
+from . import BitcoinSensor

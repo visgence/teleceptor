@@ -8,13 +8,13 @@ import json
 
 # Local Imports
 from teleceptor import __version__
-from datastreams import DataStreams
-from sensors import Sensors
-from readings import SensorReadings
-from station import Station
-from messages import Messages
-from grafana import GrafanaApi
-from calibration import Calibrations
+from .datastreams import DataStreams
+from .sensors import Sensors
+from .readings import SensorReadings
+from .station import Station
+from .messages import Messages
+from .grafana import GrafanaApi
+from .calibration import Calibrations
 
 
 class SysData:
@@ -24,7 +24,7 @@ class SysData:
     def GET(self, sensor_id=None):
         cherrypy.response.headers['Content-Type'] = 'application/json'
         data = {'version': __version__}
-        return json.dumps(data, indent=4)
+        return json.dumps(data, indent=4).encode('utf-8')
 
 
 class ResourceApi:

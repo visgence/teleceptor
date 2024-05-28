@@ -1,1 +1,1 @@
-import simpleInput
+from . import simpleInput

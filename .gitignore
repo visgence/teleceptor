@@ -45,6 +45,9 @@ coverage.xml
 
 # Django stuff:
 *.log
+venv/
+.vscode
+db.sqlite3
 
 # PyBuilder
 target/

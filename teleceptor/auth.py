@@ -11,8 +11,8 @@ from cherrypy.lib.static import serve_file
 from sqlalchemy.orm.exc import NoResultFound
 
 # Local Imports
-from sessionManager import sessionScope
-from models import User
+from .sessionManager import sessionScope
+from .models import User
 
 SESSION_KEY = '_cp_username'
 PATH = os.path.abspath(os.path.dirname(__file__))
