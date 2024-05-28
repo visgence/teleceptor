@@ -87,13 +87,13 @@ class MessageQueue(models.Model):
 
     id = ULIDField(default=new_ulid, primary_key=True, editable=False)
     messages = models.ForeignKey('Message', on_delete=models.CASCADE)
-    sensor_id = models.CharField(max_length=100)
+    sensor = models.CharField(max_length=100)
 
     def to_dict(self):
         """dict"""
         data = {
             'id': self.id,
-            'sensor_id': self.sensor_id
+            'sensor_id': self.sensor.id
         }
 
         if self.messages is not None:
@@ -125,7 +125,7 @@ class Message(models.Model):
 
     id = ULIDField(default=new_ulid, primary_key=True, editable=False)
     message = models.CharField(max_length=100)
-    message_queue_id = models.ForeignKey(MessageQueue, on_delete=models.PROTECT)
+    message_queue = models.ForeignKey(MessageQueue, on_delete=models.PROTECT)
     timeout = models.FloatField(default=30000.0)
     read = models.BooleanField(default=False)
 
@@ -177,11 +177,9 @@ class Sensor(models.Model):
     units = models.CharField(max_length=100)
     model = models.CharField(max_length=100)
     description = models.CharField(max_length=100)
-    last_calibration_id = models.ForeignKey('Calibration', on_delete=models.CASCADE)
-    # last_calibration = relationship('Calibration')
-    message_queue_id = models.ForeignKey(MessageQueue, on_delete=models.CASCADE)
-    # message_queue = relationship('MessageQueue')
-    _meta_data = models.JSONField()
+    last_calibration = models.ForeignKey('Calibration', on_delete=models.CASCADE, related_name="last_calibration")
+    message_queue = models.ForeignKey(MessageQueue, on_delete=models.CASCADE, related_name='message_queue')
+    meta_data = models.JSONField()
 
     def to_dict(self):
         """dict"""
@@ -202,19 +200,19 @@ class Sensor(models.Model):
 
         return data
 
-    @property
-    def meta_data(self):
-        """meta_data"""
-        if self._meta_data == '' or self._meta_data is None:
-            return {}
-        return json.loads(self._meta_data)
+    # @property
+    # def meta_data(self):
+    #     """meta_data"""
+    #     if self._meta_data == '' or self._meta_data is None:
+    #         return {}
+    #     return json.loads(self._meta_data)
 
-    @meta_data.setter
-    def meta_data(self, data):
-        if data == '' or data is None:
-            data = {}
+    # @meta_data.setter
+    # def meta_data(self, data):
+    #     if data == '' or data is None:
+    #         data = {}
 
-        self._meta_data = json.dumps(data)
+    #     self._meta_data = json.dumps(data)
 
     # meta_data = synonym('_meta_data', descriptor=meta_data)
 
@@ -242,7 +240,7 @@ class DataStream(models.Model):
     max_value = models.FloatField()
     name = models.CharField(max_length=100)
     description = models.CharField(max_length=100)
-    # paths = relationship("Path")
+    # paths = models.ForeignKey('Path', on_delete=models.PROTECT)
 
     def to_dict(self):
         """dict"""
@@ -269,14 +267,14 @@ class Path(models.Model):
     """
 
     id = ULIDField(default=new_ulid, primary_key=True, editable=False)
-    datastream_id = models.ForeignKey(DataStream, on_delete=models.PROTECT)
+    datastream = models.ForeignKey(DataStream, on_delete=models.PROTECT)
     path = models.CharField(null=False, max_length=100)
 
     def to_dict(self):
         """dict"""
         return {
             'id': self.id,
-            'datastream_id': self.datastream_id,
+            'datastream_id': self.datastream.id,
             'path': self.path
         }
 
@@ -299,7 +297,7 @@ class Calibration(models.Model):
 
 
     id = ULIDField(default=new_ulid, primary_key=True, editable=False)
-    sensor_id = models.CharField(max_length=100)
+    sensor = models.CharField(max_length=100)
     timestamp = models.BigIntegerField()
     user = models.CharField(max_length=100)
     coefficients = models.CharField(null=False, max_length=100)
@@ -320,7 +318,7 @@ class Calibration(models.Model):
         """dict"""
         return {
             'id': self.id,
-            'sensor_id': self.sensor_id,
+            'sensor_id': self.sensor.id,
             'timestamp': self.timestamp,
             'user': self.user,
             'coefficients': json.loads(self.coefficients)
