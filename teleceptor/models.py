@@ -1,21 +1,13 @@
 """Django Models"""
 import json
-import os
-# from ulid import ULID
 import ulid
-import uuid
 from django.db import models
 from django_ulid.models import ULIDField
 from django.conf import settings
 
 def new_ulid():
     """Create New Ulid"""
-    # return ULID(os.urandom(16))
-    # return ulid.new()
-    # buf = f'uuid: {os.urandom(16)}'
-    ret = uuid.UUID(None, os.urandom(16))
-    print(ret)
-    return ret
+    return ulid.new()
 
 
 class SensorReading(models.Model):
@@ -63,8 +55,7 @@ class MessageQueue(models.Model):
         Used to identify a MessageQueue to a Sensor.
     """
 
-    # id = ULIDField(default=new_ulid, primary_key=True, editable=False)
-    id = models.UUIDField(default=new_ulid, primary_key=True, editable=False)
+    id = ULIDField(default=new_ulid, primary_key=True, editable=False)
     messages = models.ForeignKey('Message', on_delete=models.CASCADE)
     sensor = models.CharField(max_length=100)
 
@@ -102,8 +93,7 @@ class Message(models.Model):
         in some other way.
     """
 
-    id = models.UUIDField(default=new_ulid, primary_key=True, editable=False)
-    # id = ULIDField(default=new_ulid, primary_key=True, editable=False)
+    id = ULIDField(default=new_ulid, primary_key=True, editable=False)
     message = models.CharField(max_length=100)
     message_queue = models.ForeignKey(MessageQueue, on_delete=models.PROTECT)
     timeout = models.FloatField(default=30000.0)
@@ -149,8 +139,7 @@ class Sensor(models.Model):
         Any extra information about the sensor.
     """
 
-    id = models.UUIDField(default=new_ulid, primary_key=True, editable=False)
-    # uuid = ULIDField(default=new_ulid, primary_key=True, editable=False)
+    uuid = ULIDField(default=new_ulid, primary_key=True, editable=False)
     sensor_IOtype = models.BooleanField()
     sensor_type = models.CharField(default="", max_length=100)
     last_value = models.CharField(default="", max_length=100, null=True, blank=True)
@@ -198,8 +187,7 @@ class DataStream(models.Model):
         Some information that describes the datastream.  Currently unused.
     """
 
-    id = models.UUIDField(default=new_ulid, primary_key=True, editable=False)
-    # id = ULIDField(default=new_ulid, primary_key=True, editable=False)
+    id = ULIDField(default=new_ulid, primary_key=True, editable=False)
     sensor = models.OneToOneField(Sensor, on_delete=models.CASCADE)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     min_value = models.FloatField()
@@ -232,8 +220,7 @@ class Path(models.Model):
         The path String.
     """
 
-    id = models.UUIDField(default=new_ulid, primary_key=True, editable=False)
-    # id = ULIDField(default=new_ulid, primary_key=True, editable=False)
+    id = ULIDField(default=new_ulid, primary_key=True, editable=False)
     datastream = models.ForeignKey(DataStream, on_delete=models.PROTECT)
     path = models.CharField(null=False, max_length=100)
 
@@ -263,8 +250,7 @@ class Calibration(models.Model):
     """
 
 
-    id = models.UUIDField(default=new_ulid, primary_key=True, editable=False)
-    # id = ULIDField(default=new_ulid, primary_key=True, editable=False)
+    id = ULIDField(default=new_ulid, primary_key=True, editable=False)
     sensor = models.CharField(max_length=100)
     timestamp = models.BigIntegerField()
     user = models.CharField(max_length=100)
