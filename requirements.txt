@@ -11,3 +11,4 @@ pylint-django
 pyserial==3.4
 requests==2.22.0
 sqlalchemy==1.3.0
+whitenoise

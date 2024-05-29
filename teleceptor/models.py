@@ -1,43 +1,21 @@
 """Django Models"""
 import json
-from ulid import ulid
+import os
+# from ulid import ULID
+import ulid
+import uuid
 from django.db import models
 from django_ulid.models import ULIDField
+from django.conf import settings
 
 def new_ulid():
     """Create New Ulid"""
-    return ulid()
-
-
-class User(models.Model):
-    """
-    Information that identifies the user.  Currently unused.
-
-    id : int
-    email : str
-    firstname : str
-    lastname : str
-    active : bool
-    password : str
-    """
-
-    id = ULIDField(default=new_ulid, primary_key=True, editable=False)
-    email = models.CharField(null=False, max_length=100)
-    firstname = models.CharField(null=False, max_length=100)
-    lastname = models.CharField(null=False, max_length=100)
-    active = models.BooleanField(default=True)
-    password = models.CharField(null=False, max_length=100)
-
-    def __repr__(self):
-        return self.firstname + " " + self.lastname
-
-
-class Session(models.Model):
-    """Session"""
-    id = ULIDField(default=new_ulid, primary_key=True, editable=False)
-    key = models.CharField(unique=True, null=False, max_length=100)
-    expiration = models.BigIntegerField()
-    user = models.ForeignKey(User, on_delete=models.PROTECT)
+    # return ULID(os.urandom(16))
+    # return ulid.new()
+    # buf = f'uuid: {os.urandom(16)}'
+    ret = uuid.UUID(None, os.urandom(16))
+    print(ret)
+    return ret
 
 
 class SensorReading(models.Model):
@@ -85,7 +63,8 @@ class MessageQueue(models.Model):
         Used to identify a MessageQueue to a Sensor.
     """
 
-    id = ULIDField(default=new_ulid, primary_key=True, editable=False)
+    # id = ULIDField(default=new_ulid, primary_key=True, editable=False)
+    id = models.UUIDField(default=new_ulid, primary_key=True, editable=False)
     messages = models.ForeignKey('Message', on_delete=models.CASCADE)
     sensor = models.CharField(max_length=100)
 
@@ -123,7 +102,8 @@ class Message(models.Model):
         in some other way.
     """
 
-    id = ULIDField(default=new_ulid, primary_key=True, editable=False)
+    id = models.UUIDField(default=new_ulid, primary_key=True, editable=False)
+    # id = ULIDField(default=new_ulid, primary_key=True, editable=False)
     message = models.CharField(max_length=100)
     message_queue = models.ForeignKey(MessageQueue, on_delete=models.PROTECT)
     timeout = models.FloatField(default=30000.0)
@@ -169,17 +149,18 @@ class Sensor(models.Model):
         Any extra information about the sensor.
     """
 
-    uuid = ULIDField(default=new_ulid, primary_key=True, editable=False)
+    id = models.UUIDField(default=new_ulid, primary_key=True, editable=False)
+    # uuid = ULIDField(default=new_ulid, primary_key=True, editable=False)
     sensor_IOtype = models.BooleanField()
     sensor_type = models.CharField(default="", max_length=100)
-    last_value = models.CharField(default="", max_length=100)
+    last_value = models.CharField(default="", max_length=100, null=True, blank=True)
     name = models.CharField(max_length=100)
     units = models.CharField(max_length=100)
     model = models.CharField(max_length=100)
-    description = models.CharField(max_length=100)
-    last_calibration = models.ForeignKey('Calibration', on_delete=models.CASCADE, related_name="last_calibration")
-    message_queue = models.ForeignKey(MessageQueue, on_delete=models.CASCADE, related_name='message_queue')
-    meta_data = models.JSONField()
+    description = models.CharField(max_length=100, null=True, blank=True)
+    last_calibration = models.ForeignKey('Calibration', on_delete=models.CASCADE, related_name="last_calibration", null=True, blank=True)
+    message_queue = models.ForeignKey(MessageQueue, on_delete=models.CASCADE, related_name='message_queue', null=True, blank=True)
+    meta_data = models.JSONField(null=True, blank=True)
 
     def to_dict(self):
         """dict"""
@@ -200,22 +181,6 @@ class Sensor(models.Model):
 
         return data
 
-    # @property
-    # def meta_data(self):
-    #     """meta_data"""
-    #     if self._meta_data == '' or self._meta_data is None:
-    #         return {}
-    #     return json.loads(self._meta_data)
-
-    # @meta_data.setter
-    # def meta_data(self, data):
-    #     if data == '' or data is None:
-    #         data = {}
-
-    #     self._meta_data = json.dumps(data)
-
-    # meta_data = synonym('_meta_data', descriptor=meta_data)
-
 
 class DataStream(models.Model):
     """
@@ -233,14 +198,15 @@ class DataStream(models.Model):
         Some information that describes the datastream.  Currently unused.
     """
 
-    id = ULIDField(default=new_ulid, primary_key=True, editable=False)
+    id = models.UUIDField(default=new_ulid, primary_key=True, editable=False)
+    # id = ULIDField(default=new_ulid, primary_key=True, editable=False)
     sensor = models.OneToOneField(Sensor, on_delete=models.CASCADE)
-    owner = models.ForeignKey(User, on_delete=models.CASCADE)
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     min_value = models.FloatField()
     max_value = models.FloatField()
     name = models.CharField(max_length=100)
     description = models.CharField(max_length=100)
-    # paths = models.ForeignKey('Path', on_delete=models.PROTECT)
+    paths = models.ForeignKey('Path', on_delete=models.PROTECT, related_name='paths')
 
     def to_dict(self):
         """dict"""
@@ -266,7 +232,8 @@ class Path(models.Model):
         The path String.
     """
 
-    id = ULIDField(default=new_ulid, primary_key=True, editable=False)
+    id = models.UUIDField(default=new_ulid, primary_key=True, editable=False)
+    # id = ULIDField(default=new_ulid, primary_key=True, editable=False)
     datastream = models.ForeignKey(DataStream, on_delete=models.PROTECT)
     path = models.CharField(null=False, max_length=100)
 
@@ -296,7 +263,8 @@ class Calibration(models.Model):
     """
 
 
-    id = ULIDField(default=new_ulid, primary_key=True, editable=False)
+    id = models.UUIDField(default=new_ulid, primary_key=True, editable=False)
+    # id = ULIDField(default=new_ulid, primary_key=True, editable=False)
     sensor = models.CharField(max_length=100)
     timestamp = models.BigIntegerField()
     user = models.CharField(max_length=100)
