@@ -1,3 +1,4 @@
+from . import views
 """
 URL configuration for teleceptor project.
 
@@ -19,6 +20,7 @@ from django.urls import include, path
 from .api import station
 
 urlpatterns = [
+    path("", views.index, name="index"),
     path('admin/', admin.site.urls),
     path('api/station', station.Station.as_view()),
 ]

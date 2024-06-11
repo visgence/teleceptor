@@ -1,4 +1,4 @@
-import {showError} from '../../utilites/dialogs.utils';
+import { showError } from '../../utilites/dialogs.utils';
 
 export default class treeController {
     constructor(apiService, $scope, $location, $mdDialog, $timeout) {
@@ -104,7 +104,7 @@ export default class treeController {
                     selected: streamId === this.currentSelection,
                 },
                 id: streamId,
-                icon: '/images/ic_remove_black_18px.svg',
+                icon: '/static/images/ic_remove_black_18px.svg',
             });
             return nodeArray;
         }
@@ -125,7 +125,7 @@ export default class treeController {
             const name = pathArray.shift();
             nodeArray.push({
                 text: name,
-                icon: '/images/ic_folder_black_18px.svg',
+                icon: '/static/images/ic_folder_black_18px.svg',
                 children: this.insertNode(pathArray, streamId, sensorId, []),
             });
             return nodeArray;
