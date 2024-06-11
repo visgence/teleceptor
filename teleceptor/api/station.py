@@ -139,7 +139,7 @@ class Station(APIView):
             logging.error("Request data is not JSON: %s", request.data)
             data['error'] = "Bad json"
             data['statusCode'] = "400"
-            return Response(json.dumps(data, indent=4).encode('utf-8'))
+            return Response(data)
 
         try:
             new_values, sensor_info = update_motes(readingData)
@@ -149,11 +149,11 @@ class Station(APIView):
             logging.error("%s: %s", str(e.__class__), str(e))
             data['error'] = str(e)
             data['statusCode'] = "400"
-            return Response(json.dumps(data, indent=4).encode('utf-8'))
+            return Response(data)
 
         logging.debug("Finished POST request to delegation.")
         logging.debug(data)
-        return Response(json.dumps(data, indent=4).encode('utf-8'))
+        return Response(data)
 
 
 def update_motes(mote_datas):

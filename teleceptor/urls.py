@@ -17,10 +17,11 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path
-from .api import station
+from .api import station, datastreams
 
 urlpatterns = [
     path("", views.index, name="index"),
     path('admin/', admin.site.urls),
     path('api/station', station.Station.as_view()),
+    path('api/datastreams', datastreams.DataStreams.as_view()),
 ]

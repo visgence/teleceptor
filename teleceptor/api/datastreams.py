@@ -52,6 +52,8 @@ Authors: Victor Szczepanski
 """
 
 # System Imports
+import re
+from rest_framework.response import Response
 from rest_framework.views import APIView
 import logging
 import json
@@ -69,7 +71,10 @@ class DataStreams(APIView):
     else:
         logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s', level=logging.INFO)
 
-    def GET(self, stream_id=None, *args, **filter_arguments):
+    def get(self, request):
+        stream_id=None
+        args=[]
+        filter_arguments = {}
         """
         Gets a specified datastream or list of datastreams filtered by keyword arguments.
 
@@ -163,10 +168,10 @@ class DataStreams(APIView):
         #             if pathFilter == "Folder":
         #                 datastreams = datastreams.join(Path).filter(Path.path.like('/{}%'.format(pathFilterWord)))
         #         datastreams = datastreams.all()
-        #         data['datastreams'] = [i.to_dict() for i in datastreams]
+        data['datastreams'] = [i.to_dict() for i in datastreams]
 
-        # return json.dumps(data, indent=4).encode('utf-8')
-
+        return Response(data)
+        
     def POST(self, stream_id=None):
         # TODO: Implement this for datastream creation
         logging.error("POST request to datastreams. This API end point is not implemented.")
@@ -371,24 +376,24 @@ def clean_inputs(inputs):
         Dictionary with valid parameters taken from provided inputs.
     """
 
-    # validInputs = {
-    #     'sensor': '^[a-zA-Z0-9_.]+$',
-    #     'filter': '^[a-zA-Z0-9_.-]+$',
-    #     'word': '^[a-zA-Z0-9_.-/]+$'
-    # }
-    # valueConversions = {
-    #     'null': None
-    # }
-    # safeInputs = {}
-    # for key, value in inputs.items():
-    #     if key not in validInputs:
-    #         return None
-    #     if value in valueConversions:
-    #         value = valueConversions[value]
-    #     elif re.match(validInputs[key], value) is None:
-    #         return None
-    #     safeInputs[key] = value
-    # return safeInputs
+    validInputs = {
+        'sensor': '^[a-zA-Z0-9_.]+$',
+        'filter': '^[a-zA-Z0-9_.-]+$',
+        'word': '^[a-zA-Z0-9_.-/]+$'
+    }
+    valueConversions = {
+        'null': None
+    }
+    safeInputs = {}
+    for key, value in inputs.items():
+        if key not in validInputs:
+            return None
+        if value in valueConversions:
+            value = valueConversions[value]
+        elif re.match(validInputs[key], value) is None:
+            return None
+        safeInputs[key] = value
+    return safeInputs
 
 
 def get_datastream(datastream_id, session=None):

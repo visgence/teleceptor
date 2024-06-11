@@ -156,7 +156,7 @@ class Sensor(models.Model):
     def to_dict(self):
         """dict"""
         data = {
-            'uuid': self.uuid,
+            'uuid': str(self.uuid),
             'sensor_type': self.sensor_type,
             'units': self.units,
             'description': self.description,
@@ -201,14 +201,15 @@ class DataStream(models.Model):
     def to_dict(self):
         """dict"""
         return {
-            'id': self.id,
+            'id': str(self.id),
             'min_value': self.min_value,
             'max_value': self.max_value,
             'name': self.name,
             'description': self.description,
             'owner': self.owner,
-            'sensor': self.sensor,
-            "paths": [p.path for p in self.paths]
+            'sensor': self.sensor.to_dict(),
+            #"paths": [p.path.to_dict() for p in Path.objects.filter(datastream=self)]
+            "paths": []
             }
 
 
@@ -273,8 +274,8 @@ class Calibration(models.Model):
     def to_dict(self):
         """dict"""
         return {
-            'id': self.id,
-            'sensor_id': self.sensor.id,
+            'id': str(self.id),
+            #'sensor_id': self.sensor.id,
             'timestamp': self.timestamp,
             'user': self.user,
             'coefficients': json.loads(self.coefficients)
