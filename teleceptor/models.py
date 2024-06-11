@@ -5,6 +5,8 @@ from django.db import models
 from django_ulid.models import ULIDField
 from django.conf import settings
 
+SENSORWHITELIST = ["sensor_IOtype", "sensor_type", "name", "units", "model", "description", "meta_data"]
+
 def new_ulid():
     """Create New Ulid"""
     return ulid.new()
@@ -25,7 +27,7 @@ class SensorReading(models.Model):
     """
 
 
-    id = models.IntegerField(primary_key=True)
+    id = models.BigAutoField(primary_key=True)
     datastream = models.ForeignKey('DataStream', on_delete=models.PROTECT)
     sensor = models.ForeignKey('Sensor', on_delete=models.PROTECT)
     value = models.FloatField()
@@ -56,8 +58,8 @@ class MessageQueue(models.Model):
     """
 
     id = ULIDField(default=new_ulid, primary_key=True, editable=False)
-    messages = models.ForeignKey('Message', on_delete=models.CASCADE)
-    sensor = models.CharField(max_length=100)
+    # messages = models.ForeignKey('Message', on_delete=models.CASCADE)
+    sensor = models.ForeignKey('Sensor', on_delete=models.PROTECT)
 
     def to_dict(self):
         """dict"""
@@ -95,7 +97,7 @@ class Message(models.Model):
 
     id = ULIDField(default=new_ulid, primary_key=True, editable=False)
     message = models.CharField(max_length=100)
-    message_queue = models.ForeignKey(MessageQueue, on_delete=models.PROTECT)
+    message_queue = models.ForeignKey(MessageQueue, on_delete=models.PROTECT, blank=True, null=True)
     timeout = models.FloatField(default=30000.0)
     read = models.BooleanField(default=False)
 
@@ -140,7 +142,7 @@ class Sensor(models.Model):
     """
 
     uuid = ULIDField(default=new_ulid, primary_key=True, editable=False)
-    sensor_IOtype = models.BooleanField()
+    sensor_IOtype = models.BooleanField(default=False)
     sensor_type = models.CharField(default="", max_length=100)
     last_value = models.CharField(default="", max_length=100, null=True, blank=True)
     name = models.CharField(max_length=100)
@@ -166,7 +168,7 @@ class Sensor(models.Model):
         }
 
         if self.last_calibration is not None:
-            data['last_calibration'] = self.last_calibration.toDict()
+            data['last_calibration'] = self.last_calibration.to_dict()
 
         return data
 
@@ -189,12 +191,12 @@ class DataStream(models.Model):
 
     id = ULIDField(default=new_ulid, primary_key=True, editable=False)
     sensor = models.OneToOneField(Sensor, on_delete=models.CASCADE)
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    min_value = models.FloatField()
-    max_value = models.FloatField()
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, null=True, blank=True)
+    min_value = models.FloatField(null=True, blank=True)
+    max_value = models.FloatField(null=True, blank=True)
     name = models.CharField(max_length=100)
     description = models.CharField(max_length=100)
-    paths = models.ForeignKey('Path', on_delete=models.PROTECT, related_name='paths')
+    paths = models.ForeignKey('Path', on_delete=models.PROTECT, related_name='paths', null=True, blank=True)
 
     def to_dict(self):
         """dict"""

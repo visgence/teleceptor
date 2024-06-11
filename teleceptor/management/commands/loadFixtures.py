@@ -7,6 +7,7 @@ Then adds sensor readings in the form of a sine curve.
 """
 
 import sys
+import ulid
 import json
 from time import time
 import math
@@ -28,7 +29,7 @@ class Command(BaseCommand):
         serverURL = "http://0.0.0.0:3000/api/station"
         jsonExample = [{
             "info": {
-                "uuid": "mote1234",
+                "uuid": "01HZ4RQQHERMTM4JCB7H00X",
                 "name": "myfirstmote",
                 "description": "My first mote",
                 "out": [],
