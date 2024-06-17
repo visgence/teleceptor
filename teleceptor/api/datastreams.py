@@ -71,10 +71,10 @@ class DataStreams(APIView):
     else:
         logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s', level=logging.INFO)
 
-    def get(self, request):
-        stream_id=None
-        args=[]
-        filter_arguments = {}
+    def get(self, request, *args, **kwargs):
+        stream_id=kwargs.get('datastream', None)
+        filter=request.GET.get('filter', None)
+        word=request.GET.get('word', None)
         """
         Gets a specified datastream or list of datastreams filtered by keyword arguments.
 
@@ -130,55 +130,49 @@ class DataStreams(APIView):
         if stream_id is not None:
             logging.debug("Request for datastream with id %s", str(stream_id))
             try:
-                stream = DataStream.objects.filter(id=stream_id)
+                stream = DataStream.objects.get(id=stream_id)
             except Exception as e:
                 logging.error("Stream with id %s does not exist.", str(stream_id))
                 data['error'] = "Stream with id %s doesn't exist." % stream_id
             else:
-                logging.debug("Found stream with id %s: %s", str(stream_id), str(stream.to_dict()))
+                logging.debug("Found stream with id %s: %s", str(stream_id), str(stream.__dict__))
                 data['stream'] = stream.to_dict()
                 try:
                     path = Path.objects.filter(datastream_id=stream_id)
                 except Exception as e:
                     logging.error("There is no path for stream with id %s", str(stream_id))
                 else:
-                    data['path'] = []
+                    data['stream']['paths'] = []
                     for i in path:
-                        data['path'].append(i.to_dict())
+                        data['stream']['paths'].append(i.__dict__['path'])
         else:
-            logging.debug("Request for all datastreams with parameters %s", str(filter_arguments))
-            inputs = clean_inputs(filter_arguments)
-            if len(filter_arguments) > 0 and inputs is None:
-                logging.error("Provided url parameters are invalid: %s", str(filter_arguments))
-                data['error'] = "Invalid url parameters"
+            logging.debug("Parameters are valid.")
+            if filter is not None:
+                if filter == "Stream":
+                    datastreams = DataStream.objects.filter(name__contains=word)
+                if filter == "Sensor":
+                    datastreams = DataStream.objects.filter(sensor__uuid__contains=word)
+                if filter == "Folder":
+                    datastreams = DataStream.objects.filter(paths__path__contains=word)
             else:
-                logging.debug("Parameters are valid.")
-                pathFilter = None
-                if 'filter' in inputs:
-                    pathFilter = inputs['filter']
-                    pathFilterWord = inputs['word']
-                    del inputs['filter']
-                    del inputs['word']
-                datastreams = DataStream.objects.filter(**inputs)
-        #         if pathFilter is not None:
-        #             if pathFilter == "Stream":
-        #                 datastreams = datastreams.filter(DataStream.name.like('{}%'.format(pathFilterWord)))
-        #             if pathFilter == "Sensor":
-        #                 datastreams = datastreams.filter(DataStream.sensor.like('{}%'.format(pathFilterWord)))
-        #             if pathFilter == "Folder":
-        #                 datastreams = datastreams.join(Path).filter(Path.path.like('/{}%'.format(pathFilterWord)))
-        #         datastreams = datastreams.all()
-        data['datastreams'] = [i.to_dict() for i in datastreams]
+                datastreams = DataStream.objects.all()
+            datastreams = datastreams.all()
+            data['datastreams'] = [i.to_dict() for i in datastreams]
+    
+            for d in data['datastreams']:
+                d['paths'] = []
+                path = Path.objects.filter(datastream_id=d['id'])
+                for i in path:
+                    d['paths'].append(i.__dict__['path'])
 
         return Response(data)
         
-    def POST(self, stream_id=None):
+    def post(self, stream_id=None):
         # TODO: Implement this for datastream creation
         logging.error("POST request to datastreams. This API end point is not implemented.")
         pass
 
-    # @require()
-    def PUT(self, stream_id=None):
+    def put(self, stream_id=None):
         """
         Updates the stream with uuid `stream_id`.
 
@@ -218,7 +212,7 @@ class DataStreams(APIView):
         # logging.debug("Finished PUT request to datastream.")
         # return json.dumps(returnData, indent=4).encode('utf-8')
 
-    def DELETE(self, stream_id):
+    def delete(self, stream_id):
         """
         Deletes the DataStream with id `stream_id`.
 

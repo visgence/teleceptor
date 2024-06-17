@@ -14,6 +14,7 @@
 
 # System Imports
 from rest_framework.views import APIView
+from rest_framework.response import Response
 import json
 import time
 import logging
@@ -32,7 +33,7 @@ class Sensors(APIView):
     else:
         logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s', level=logging.INFO)
 
-    def GET(self, sensor_id=None):
+    def get(self, request, *args, **kwargs):
         """
         Gets a sensor's or all sensor's information.
 
@@ -45,13 +46,14 @@ class Sensors(APIView):
         .. seealso:: `models.Sensor`
         """
         logging.debug("GET request to sensors.")
+        sensor_id=kwargs.get('sensor_id', None)
         data = {}
 
         if sensor_id is not None:
             logging.debug("Getting single sensor with id %s", str(sensor_id))
             try:
                 sensor = getSensor(sensor_id)
-                data['sensor'] = sensor
+                data['sensor'] = sensor.to_dict()
             except Exception as e:
                 logging.error("Requested sensor %s does not exist.", str(sensor_id))
                 data['error'] = "Sensor with id %s doesn't exist." % sensor_id
@@ -60,10 +62,10 @@ class Sensors(APIView):
             sensors = getAllSensors()
             data['sensors'] = sensors
 
-        return json.dumps(data, indent=4).encode('utf-8')
+        return Response(data)
 
     # @require()
-    def POST(self, request):
+    def post(self, request):
         """POST"""
 
         logging.debug("POST request to sensors.")
@@ -107,7 +109,7 @@ class Sensors(APIView):
         return json.dumps(returnData, indent=4).encode('utf-8')
 
     # @require()
-    def PUT(self, request):
+    def put(self, request):
         """
         Updates the sensor with uuid `sensor_id`.
 
@@ -146,7 +148,7 @@ class Sensors(APIView):
         return json.dumps(returnData, indent=4).encode('utf-8')
 
     # @require()
-    def DELETE(self, sensor_id):
+    def delete(self, sensor_id):
         """
         Deletes the sensor with uuid `sensor_id`.
 
@@ -198,7 +200,7 @@ class Sensors(APIView):
         else:
             coefs = [1, 0]
 
-        sensor = Sensor.objects.create(uuid=sensor_data['uuid'])
+        sensor = Sensor.objects.create(**sensor_data)
         calib = Calibration.objects.create(sensor=sensor_data['uuid'], timestamp=caliTime)
         calib.setCoefficients(coefs)
         sensor.last_calibration = calib
@@ -297,8 +299,8 @@ def getSensor(sensor_id):
     :raises: NoResultFound -- If a sensor with id sensor_id was not found.
     """
 
-    logging.debug("Getting Sensor %s", str(sensor_id))
-    return Sensor.objects.filter(uuid=sensor_id)
+    # logging.debug("Getting Sensor %s", str(sensor_id))
+    return Sensor.objects.get(uuid=sensor_id)
 
 
 def getAllSensors():
@@ -307,8 +309,8 @@ def getAllSensors():
 
     :returns: Dictionary -- A list of dictionaries representing all sensors in the database.
     """
-    logging.debug("Getting all sensors.")
-    sensors = Sensor.objects.all().order_by(Sensor.name)
+    # logging.debug("Getting all sensors.")
+    sensors = Sensor.objects.all().order_by('name')
     return [s.to_dict() for s in sensors]
 
 

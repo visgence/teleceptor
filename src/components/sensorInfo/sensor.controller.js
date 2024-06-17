@@ -22,8 +22,8 @@ export default class sensorController {
             if (nv.sensor === undefined) {
                 return;
             }
-            this.loadSensor(nv.sensor);
-            this.loadCalibrations(nv.sensor);
+            this.loadSensor(nv.sensor.uuid);
+            this.loadCalibrations(nv.sensor.uuid);
         });
 
         $scope.displayInfo = $location.search().datastream !== undefined;

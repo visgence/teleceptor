@@ -18,6 +18,7 @@
 
 """
 
+from rest_framework.response import Response
 from rest_framework.views import APIView
 import logging
 import json
@@ -45,7 +46,7 @@ class SensorReadings(APIView):
         'granularity': '^\d+$'
     }
 
-    def GET(self, **kwargs):
+    def get(self, request, *args, **kwargs):
         """
         GET /api/readings/
             Obtain a list of available SensorReadings.
@@ -81,21 +82,20 @@ class SensorReadings(APIView):
         """
         logging.debug("GET request to readings.")
         data = {}
-        inputs = self.cleanInputs(kwargs)
-        logging.debug("Got clean input arguments %s", str(inputs))
-        if len(kwargs) > 0 and inputs is None:
-            logging.error("Got invalid url parameters %s", str(kwargs))
-            data['error'] = "Invalid url parameters"
-        else:
-            try:
-                data['readings'], data['source'] = self.filterReadings(inputs)
-            except ValueError as e:
-                data['error'] = str(e)
+        datastream=request.GET.get('datastream', None)
+        start=request.GET.get('start', None)
+        end=request.GET.get('end', None)
+        logging.debug("Got clean input arguments %s", str(datastream))
+        try:
+            data['readings'] = self.filterReadings(datastream, start, end)
+            data['source'] = datastream
+        except ValueError as e:
+            data['error'] = str(e)
 
         logging.debug("Finished GET request to readings.")
-        return json.dumps(data, indent=4).encode('utf-8')
+        return Response(data)
 
-    def POST(self, request):
+    def post(self, request):
         """
         Inserts the readings into the database.  Expects a json object in data section of the http request and the object must have a readings key.
 
@@ -124,7 +124,7 @@ class SensorReadings(APIView):
         logging.debug("Finished POST request to readings.")
         return json.dumps(data, indent=4).encode('utf-8')
 
-    def DELETE(self, datastream_id=None):
+    def delete(self, datastream_id=None):
         """
         Deletes all sensor readings for a given datastream.
 
@@ -198,7 +198,7 @@ class SensorReadings(APIView):
         logging.debug("Returning safe parameters: %s", str(safeParams))
         return safeParams
 
-    def filterReadings(self, params):
+    def filterReadings(self, datastream, start, end):
         """
         A filter that will give all data received from a sensor in the last hour for high resolution data.
 
@@ -207,12 +207,9 @@ class SensorReadings(APIView):
         :param params: Contains the start time, end time, and datastream.
         :type params: dictionary
         """
-        logging.debug("Filtering readings with parameters: %s", str(params))
-        filterArgs = {}
-        paramsCopy = params.copy()
+        logging.debug("Filtering readings with parameters: %s", str(datastream))
 
-        end = time()
-        readings = SensorReading.objects.filter(datastream=paramsCopy['datastream'], timestamp__gt=end).order_by('timestamp')
+        readings = SensorReading.objects.filter(datastream=str(datastream), timestamp__gt=start, timestamp__lt=end).order_by('timestamp')
 
         readings = [(reading.timestamp, reading.value) for reading in readings]
 

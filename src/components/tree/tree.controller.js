@@ -1,4 +1,4 @@
-import { showError } from '../../utilites/dialogs.utils';
+import {showError} from '../../utilites/dialogs.utils';
 
 export default class treeController {
     constructor(apiService, $scope, $location, $mdDialog, $timeout) {
@@ -47,6 +47,9 @@ export default class treeController {
                     console.error('Error');
                     console.log(error);
                 });
+        };
+        this.$scope.setFilter = (term) => {
+            this.$scope.searchFilter = term;
         };
     }
 

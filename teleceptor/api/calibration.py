@@ -1,12 +1,14 @@
 # System Imports
+from rest_framework.response import Response
+from rest_framework.views import APIView
 import logging
 
 
 # Local Imports
 from django.conf import settings
+from teleceptor.models import Calibration
 
-
-class Calibrations:
+class Calibrations(APIView):
     exposed = True
 
     if settings.DEBUG:
@@ -14,27 +16,24 @@ class Calibrations:
     else:
         logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s', level=logging.INFO)
 
-    def GET(self, calibration_id=None, * args, **filter_arguments):
+    def get(self, request, * args, **filter_arguments):
         """GET"""
         logging.debug("GET request to Calibration.")
-        # cherrypy.response.headers['Content-Type'] = 'application/json'
-        # data = {}
-        # with sessionScope() as s:
-        #     q = s.query(Calibration)
-        #     if calibration_id is not None:
-        #         logging.debug('Found calibration id: %s', str(calibration_id))
-        #         q = q.filter_by(id=calibration_id)
-        #     if 'sensor_id' in filter_arguments:
-        #         logging.debug('Found sensor id: %s', str(filter_arguments['sensor_id']))
-        #         q = q.filter_by(sensor_id=filter_arguments['sensor_id'])
+        calibration_id = request.GET.get('calibration_id', None)
+        sensor_id = request.GET.get('sensor_id', None)
+        data = {}
+        q = {}
+        if calibration_id is not None:
+            q = Calibration.objects.filter(id=calibration_id).order_by('timestamp')
+        if sensor_id is not None:
+            logging.debug('Found sensor id: %s', str(sensor_id))
+            q = Calibration.objects.filter(sensor=sensor_id).order_by('timestamp')
 
-        #     q = q.order_by(desc(Calibration.timestamp))
+        logging.debug('Making query: %s', str(q))
+        try:
+            data['calibrations'] = [i.to_dict() for i in q]
+        except Exception as e:
+            logging.error(e)
+            data['error'] = e
 
-        #     logging.debug('Making query: %s', str(q))
-        #     try:
-        #         data['calibrations'] = [i.toDict() for i in q]
-        #     except Exception as e:
-        #         logging.error(e)
-        #         data['error'] = e
-
-        # return json.dumps(data).encode('utf-8')
+        return Response(data)

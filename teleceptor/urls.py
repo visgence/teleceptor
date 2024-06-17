@@ -16,12 +16,19 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import include, path
-from .api import station, datastreams
+from django.urls import include, path, re_path
+from .api import station, datastreams, sensors, calibration, readings
 
 urlpatterns = [
     path("", views.index, name="index"),
     path('admin/', admin.site.urls),
     path('api/station', station.Station.as_view()),
-    path('api/datastreams', datastreams.DataStreams.as_view()),
+    path('api/datastreams/', datastreams.DataStreams.as_view()),
+    path('api/datastreams/<str:datastream>', datastreams.DataStreams.as_view()),
+    path('api/sensors', sensors.Sensors.as_view()),
+    path('api/sensors/<str:sensor_id>', sensors.Sensors.as_view()),
+    path('api/calibrations', calibration.Calibrations.as_view()),
+    path('api/calibrations/<str:calibration_id>', calibration.Calibrations.as_view()),
+    path('api/readings/', readings.SensorReadings.as_view()),
+    path('api/readings/<str:calibration_id>', readings.SensorReadings.as_view()),
 ]
