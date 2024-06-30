@@ -21,6 +21,7 @@ class Calibrations(APIView):
         logging.debug("GET request to Calibration.")
         calibration_id = request.GET.get('calibration_id', None)
         sensor_id = request.GET.get('sensor_id', None)
+        logging.debug(f"Calibration Sensor id {sensor_id}")
         data = {}
         q = {}
         if calibration_id is not None:

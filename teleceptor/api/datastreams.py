@@ -145,9 +145,9 @@ class DataStreams(APIView):
                 except Exception as e:
                     logging.error("There is no path for stream with id %s", str(stream_id))
                 else:
-                    data['stream']['paths'] = []
+                    data['paths'] = []
                     for i in path:
-                        data['stream']['paths'].append(i.__dict__['path'])
+                        data['paths'].append(i.to_dict())
         else:
             logging.debug("Parameters are valid.")
             if filter is not None:
@@ -162,12 +162,6 @@ class DataStreams(APIView):
             datastreams = datastreams.all()
             data['datastreams'] = [i.to_dict() for i in datastreams]
     
-            for d in data['datastreams']:
-                d['paths'] = []
-                path = Path.objects.filter(datastream_id=d['id'])
-                for i in path:
-                    d['paths'].append(i.__dict__['path'])
-
         return Response(data)
         
     def post(self, stream_id=None):
@@ -415,9 +409,10 @@ def get_datastream_by_sensorid(sensor_id, session=None):
     :raises:
         NoResultFound: If no datastream matches the datastream_id.
     """
+    logging.debug(f"Looking up datastream by sensor idL {sensor_id}")
     try:
-        stream = DataStream.objects.get(sensor=sensor_id)
-    except:
+        stream = DataStream.objects.get(sensor_id=sensor_id)
+    except ObjectDoesNotExist:
         stream = None
     return stream
 

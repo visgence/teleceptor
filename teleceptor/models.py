@@ -28,8 +28,8 @@ class SensorReading(models.Model):
 
 
     id = models.BigAutoField(primary_key=True)
-    datastream = models.ForeignKey('DataStream', on_delete=models.PROTECT)
-    sensor = models.ForeignKey('Sensor', on_delete=models.PROTECT)
+    datastream = models.ForeignKey('DataStream', on_delete=models.CASCADE)
+    sensor = models.ForeignKey('Sensor', on_delete=models.CASCADE)
     value = models.FloatField()
     timestamp = models.BigIntegerField()
 
@@ -141,7 +141,7 @@ class Sensor(models.Model):
         Any extra information about the sensor.
     """
 
-    uuid = ULIDField(default=new_ulid, primary_key=True, editable=False)
+    uuid = models.CharField(max_length=100, primary_key=True, editable=False)
     sensor_IOtype = models.BooleanField(default=False)
     sensor_type = models.CharField(default="", max_length=100)
     last_value = models.CharField(default="", max_length=100, null=True, blank=True)
@@ -196,7 +196,6 @@ class DataStream(models.Model):
     max_value = models.FloatField(null=True, blank=True)
     name = models.CharField(max_length=100)
     description = models.CharField(max_length=100)
-    paths = models.ForeignKey('Path', on_delete=models.PROTECT, related_name='paths', null=True, blank=True)
 
     def to_dict(self):
         """dict"""
@@ -209,7 +208,7 @@ class DataStream(models.Model):
             'owner': self.owner,
             'sensor': self.sensor.to_dict(),
             #"paths": [p.path.to_dict() for p in Path.objects.filter(datastream=self)]
-            "paths": []
+            "paths": [p.path for p in self.paths.all()]
             }
 
 
@@ -224,14 +223,14 @@ class Path(models.Model):
     """
 
     id = ULIDField(default=new_ulid, primary_key=True, editable=False)
-    datastream = models.ForeignKey(DataStream, on_delete=models.PROTECT)
+    datastream = models.ForeignKey(DataStream, on_delete=models.CASCADE, related_name='paths')
     path = models.CharField(null=False, max_length=100)
 
     def to_dict(self):
         """dict"""
         return {
-            'id': self.id,
-            'datastream_id': self.datastream.id,
+            'id': str(self.id),
+            'datastream_id': str(self.datastream.id),
             'path': self.path
         }
 

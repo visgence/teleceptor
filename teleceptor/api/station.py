@@ -40,6 +40,7 @@ import sys
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.conf import settings
+from django.core.exceptions import ObjectDoesNotExist
 import logging
 
 from teleceptor.models import DataStream, Path, Sensor
@@ -211,11 +212,7 @@ def update_motes(mote_datas):
                 logging.debug("No datastream. Making one for sensor %s", sensorUuid)
                 s = Sensor.objects.get(uuid=sensorUuid)
                 datastream = DataStream.objects.create(sensor=s, name=sensor['name'], description=sensor['uuid'])
-                path = Path.objects.create(datastream_id=datastream.id, path="/new_sensors")
-                if datastream.paths:
-                    datastream.paths.append(path)
-                else:
-                    datastream.paths = path
+                Path.objects.create(datastream_id=datastream.id, path="/new_sensors")
             logging.debug("Got datastream id %s", str(datastream.id))
             sensor_datastream_ids[sensorUuid] = datastream.id
 
@@ -235,9 +232,10 @@ def update_sensor_data(sensor_data):
     uuid = sensor_data['uuid']
 
     # Update sensors (and create if needed)
-    sensor_info = Sensors.updateSensor(data=sensor_data)
+    try:
+        sensor_info = Sensors.updateSensor(data=sensor_data)
 
-    if not sensor_info:
+    except ObjectDoesNotExist:
         logging.debug('failed to update. Creating')
         timestamp = sensor_data['timestamp']
         del sensor_data['timestamp']
@@ -245,7 +243,6 @@ def update_sensor_data(sensor_data):
             sensor = Sensors.createSensor(sensor_data)
         except Exception as e:
             logging.error(f'error creating sensor {e}')
-            sys.exit()
         sensor_data['timestamp'] = timestamp
     else:
         sensor = Sensor.objects.get(uuid=uuid)
