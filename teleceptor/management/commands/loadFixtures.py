@@ -29,7 +29,7 @@ class Command(BaseCommand):
         serverURL = "http://0.0.0.0:8000/api/station"
         jsonExample = [{
             "info": {
-                "uuid": "01HZ4RQQHERMTM4JCB7H00X",
+                "uuid": "mote123",
                 "name": "myfirstmote",
                 "description": "My first mote",
                 "out": [],
