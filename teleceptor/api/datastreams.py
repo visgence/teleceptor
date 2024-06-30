@@ -60,11 +60,14 @@ import json
 
 # Local Imports
 from teleceptor.models import DataStream, Path
+from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
 
 
 class DataStreams(APIView):
     exposed = True
+    permission_classes = ()
+    authentication_classes = ()
 
     if settings.DEBUG:
         logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s', level=logging.DEBUG)
@@ -172,7 +175,9 @@ class DataStreams(APIView):
         logging.error("POST request to datastreams. This API end point is not implemented.")
         pass
 
-    def put(self, stream_id=None):
+    def put(self, request, *args, **kwargs):
+        stream_id = kwargs.get('datastream', None)
+        
         """
         Updates the stream with uuid `stream_id`.
 
@@ -189,28 +194,25 @@ class DataStreams(APIView):
         """
         logging.debug("PUT request to datastreams. ")
         returnData = {}
-        # try:
-        #     data = json.loads(cherrypy.request.body.read())
-        # except ValueError:
+        data = request.data
         #     # no json object to decode, just use an empty dictionary
         #     data = {}
-        # if stream_id is None:
-        #     return json.dumps({'error': 'no id'}).encode('utf-8')
+        if stream_id is None:
+            return Response({'error': 'no id'})
 
-        # logging.debug("Request body: %s", data)
-        # data['id'] = stream_id
-        # with sessionScope() as session:
-        #     try:
-        #         stream = DataStreams.updateStream(data, session)
-        #         returnData['stream'] = stream
-        #     except NoResultFound:
-        #         logging.error("Stream with id %s doesn't exist.", str(data['id']))
-        #         returnData['error'] = "Stream with id %s doesn't exist." % data['id']
+        logging.debug("Request body: %s", data)
+        data['id'] = stream_id
+        try:
+            stream = DataStreams.updateStream(data)
+            returnData['stream'] = stream
+        except ObjectDoesNotExist:
+            logging.error("Stream with id %s doesn't exist.", str(data['id']))
+        returnData['error'] = "Stream with id %s doesn't exist." % data['id']
 
         #     cherrypy.response.status = statusCode
 
-        # logging.debug("Finished PUT request to datastream.")
-        # return json.dumps(returnData, indent=4).encode('utf-8')
+        logging.debug("Finished PUT request to datastream.")
+        return Response(returnData)
 
     def delete(self, stream_id):
         """
@@ -271,7 +273,7 @@ class DataStreams(APIView):
             logging.error("Provided datastream to createDatastream method is None.")
 
     @staticmethod
-    def updateStream(data, session):
+    def updateStream(data):
         """
         Updates stream with id `stream_id` with new key/values in `data`. Note that this function will incur a db lookup.
 
@@ -289,7 +291,7 @@ class DataStreams(APIView):
         """
 
         # logging.debug("Updating stream with id %s with data %s", str(data['id']), str(data))
-        # return _updateStream(data, session)
+        return _updateStream(data)
 
 
 def deleteDatastream(session, datastream_id):
@@ -320,46 +322,33 @@ def deleteDatastream(session, datastream_id):
         return None
 
 
-def _updateStream(data, session):
+def _updateStream(data):
     """_updateStream"""
-    # stream = session.query(DataStream).filter_by(id=data['id'])
-    # print(stream.to_dict())
-    # for key, value in data.items():
-    #     if key == "id":
-    #         continue
-    #     if key == "paths":
-    #         currentPaths = stream.to_dict()['paths']
-    #         newPaths = data[key]
-    #         toDelete = set(currentPaths) - set(newPaths)
-    #         toAdd = set(newPaths) - set(currentPaths)
-    #         for i in toDelete:
-    #             session.delete(session.query(Path).filter_by(datastream_id=data['id'], path=i)[0])
-    #         for j in toAdd:
-    #             session.add(Path(datastream_id=data['id'], path=j))
-    #         session.commit()
-    #         continue
-    #     if key != 'uuid' or key != 'id':
-    #         if key == "minimum value":
-    #             if len(value) > 0:
-    #                 value = float(value)
-    #             else:
-    #                 value = None
-    #             key = "min_value"
-    #         if key == "maximum value":
-    #             if len(value) > 0:
-    #                 value = float(value)
-    #             else:
-    #                 value = None
-    #             key = "max_value"
-    #         logging.debug("changing: {} to {}".format(key, value))
-    #         setattr(stream, key, value)
+    stream = DataStream.objects.get(id=data['id'])
+    logging.debug("Update Stream", stream.to_dict())
+    for key, value in data.items():
+        if key == "id":
+            continue
+        if key == "sensor":
+            continue
+        # if key == "paths":
+        #     currentPaths = stream.to_dict()['paths']
+        #     newPaths = data[key]
+        #     toDelete = set(currentPaths) - set(newPaths)
+        #     toAdd = set(newPaths) - set(currentPaths)
+        #     for i in toDelete:
+        #         session.delete(session.query(Path).filter_by(datastream_id=data['id'], path=i)[0])
+        #     for j in toAdd:
+        #         session.add(Path(datastream_id=data['id'], path=j))
+        #     session.commit()
+        #     continue
+        logging.debug("changing: {} to {}".format(key, value))
+        setattr(stream, key, value)
 
-    # session.add(stream)
-    # session.commit()
-
-    # logging.debug("Finished updating stream.")
-    # logging.debug("{}".format(stream.to_dict()))
-    # return stream.to_dict()
+    stream.save()
+    logging.debug("Finished updating stream.")
+    logging.debug("{}".format(stream.to_dict()))
+    return stream.to_dict()
 
 
 def clean_inputs(inputs):
