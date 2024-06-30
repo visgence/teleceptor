@@ -15,6 +15,7 @@
 # System Imports
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from django.core.exceptions import ObjectDoesNotExist
 import json
 import time
 import logging
@@ -27,6 +28,8 @@ from django.conf import settings
 
 class Sensors(APIView):
     exposed = True
+    permission_classes = ()
+    authentication_classes = ()
 
     if settings.DEBUG:
         logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s', level=logging.DEBUG)
@@ -129,7 +132,7 @@ class Sensors(APIView):
 
         returnData = {}
         try:
-            data = json.loads(request.body.read())
+            data = request.data
         except ValueError:
             # no json object to decode, just use an empty dictionary
             data = {}
@@ -139,13 +142,13 @@ class Sensors(APIView):
         try:
             sensor = Sensors.updateSensor(data)
             returnData['sensor'] = sensor
-        except Exception as e:
-            logging.error("Sensor with id %s doesn't exist.", str(data['uuid']))
-            returnData['error'] = "Sensor with id %s doesn't exist." % data['uuid']
+        except ObjectDoesNotExist as e:
+            logging.error(e)
+            returnData['error'] = "Sensor with  %s doesn't exist." % data['uuid']
 
 
         logging.debug("Finished PUT request to sensors.")
-        return json.dumps(returnData, indent=4).encode('utf-8')
+        return Response(returnData)
 
     # @require()
     def delete(self, sensor_id):
@@ -317,41 +320,36 @@ def getAllSensors():
 def _updateSensor(data):
     """_updateSensor"""
     blacklist = ("uuid", "message")
-    try:
-       sensor = Sensor.objects.get(uuid=data['uuid'])
-    except:
-        sensor = None
-    if sensor:
-        for key, value in data.items():
-            logging.debug("Key: {}, Value: {}".format(key, value))
-            if key in blacklist:
-                logging.debug("Request to updateSensor included blacklisted key %s", str(key))
-                continue
-            if 'last_calibration' in key:
-                logging.debug("value: {} and type: {}".format(value, type(value)))
-                if isinstance(value['coefficients'], str):
-                        value['coefficients'] = json.dumps(value['coefficients'])
+    sensor = Sensor.objects.get(uuid=data['uuid'])
+    for key, value in data.items():
+        logging.debug("Key: {}, Value: {}".format(key, value))
+        if key in blacklist:
+            logging.debug("Request to updateSensor included blacklisted key %s", str(key))
+            continue
+        if 'last_calibration' in key:
+            logging.debug("value: {} and type: {}".format(value, type(value)))
+            if isinstance(value['coefficients'], str):
+                    value['coefficients'] = json.dumps(value['coefficients'])
 
-                # if no timestamp, create timestamp
-                logging.debug("value: {}".format(value))
-                if 'timestamp' not in value or value['timestamp'] is None or value['timestamp'] == 0:
+            # if no timestamp, create timestamp
+            logging.debug("value: {}".format(value))
+            if 'timestamp' not in value or value['timestamp'] is None or value['timestamp'] == 0:
 
-                    logging.debug("No timestamp provided. Using current time %s", str(time.time()))
-                    value['timestamp'] = time.time()
+                logging.debug("No timestamp provided. Using current time %s", str(time.time()))
+                value['timestamp'] = time.time()
 
-                sensor = Sensors.updateCalibration(sensor.to_dict(), value['coefficients'], value['timestamp'])
-                # we want to keep using a Sensor, not the dict, so look it up
-                # TODO: This is pretty smelly, but should work for now. Maybe in the future we want updateCalibration and _updateCalibration return a Sensor, or find some other way to update it.
-                sensor = Sensor.objects.filter(uuid=data['uuid'])
-            elif 'scale' in key:
-                continue
-            elif key in models.SENSORWHITELIST:
-                setattr(sensor, key, value)
-        sensor.save()
+            sensordict = Sensors.updateCalibration(sensor, value['coefficients'], value['timestamp'])
+            # we want to keep using a Sensor, not the dict, so look it up
+            # TODO: This is pretty smelly, but should work for now. Maybe in the future we want updateCalibration and _updateCalibration return a Sensor, or find some other way to update it.
+            sensor = Sensor.objects.get(uuid=data['uuid'])
+        elif 'scale' in key:
+            continue
+        elif key in models.SENSORWHITELIST:
+            setattr(sensor, key, value)
+            sensor.save()
 
-        logging.debug("Finished updating sensor.")
-        return sensor
-    return None
+    logging.debug("Finished updating sensor.")
+    return sensor.to_dict()
 
 
 def _updateCalibration(sensor, coefficients, timestamp):
@@ -423,7 +421,7 @@ def _updateCalibration(sensor, coefficients, timestamp):
     if updateNeeded:
         logging.debug("Updating sensor with new calibration.")
 
-        sensor = Sensor.objects.filter(uuid=sensor.uuid)
+        sensor = Sensor.objects.get(uuid=sensor.uuid)
         logging.debug("Got sensor %s", str(sensor.to_dict()))
         # Gets most recent (by id) calibration
         Cal = Calibration.objects.filter(sensor=sensor.uuid).last()
