@@ -105,6 +105,13 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+LOGGING = {
+    "version": 1,
+    'disable_existing_loggers': False,
+    "root": {
+        "level": "DEBUG"
+    }
+}
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
