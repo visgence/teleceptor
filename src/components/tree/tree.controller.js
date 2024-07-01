@@ -1,4 +1,4 @@
-import {showError} from '../../utilites/dialogs.utils';
+import { showError } from '../../utilites/dialogs.utils';
 
 export default class treeController {
     constructor(apiService, $scope, $location, $mdDialog, $timeout) {
@@ -84,7 +84,7 @@ export default class treeController {
     makeTreeStructure(pathsArr) {
         let nodeArray = [];
         this.$scope.nodeCount = 0;
-        this.currentSelection = parseInt(this.$location.search().datastream);
+        this.currentSelection = this.$location.search().datastream;
         pathsArr.forEach((path) => {
             const pathArray = path[0].split('/');
             if (pathArray[0] === '') {
