@@ -1,7 +1,7 @@
 FROM ubuntu:24.04
 LABEL Visgence Inc <info@visgence.com>
 
-RUN apt-get update && apt-get install -y screen vim sudo cron sqlite3 ca-certificates net-tools
+RUN apt-get update && apt-get install -y screen vim sudo cron sqlite3 ca-certificates nginx net-tools
 RUN apt-get install -y postgresql python3-dev make automake gcc build-essential python3-pip
 RUN apt-get install -y libapache2-mod-wsgi-py3 curl apache2 wget
 
@@ -18,7 +18,12 @@ RUN useradd --uid 1000 --home /home/teleceptor --shell /bin/bash teleceptor
 VOLUME ["/home/teleceptor"]
 WORKDIR /home/teleceptor/teleceptor
 
-COPY ../../ .
+COPY . .
+
+RUN cp ./scripts/nginx.conf /etc/nginx/sites-available/default
+RUN rm /etc/nginx/sites-enabled/default
+RUN ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
+RUN cp ./scripts/gunicorn.* /etc/systemd/system/
 
 EXPOSE 8000
 

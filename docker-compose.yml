@@ -1,0 +1,39 @@
+version: "3"
+services:
+  teleceptor-postgres:
+    restart: always
+    image: postgres:12
+    ports:
+      - 5432:5432
+    env_file: .env
+    environment:
+      - POSTGRES_NAME=${POSTGRES_NAME}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - teleceptor-postgres:/var/lib/postgresql/data
+
+  teleceptor-server:
+    build:
+      dockerfile: ./Dockerfile
+    env_file: .env
+    volumes:
+      - .:/home/teleceptor/teleceptor/
+    ports:
+      - 8000:8000
+    environment:
+      - POSTGRES_NAME=${POSTGRES_NAME}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_HOST=teleceptor-postgres
+      - ALLOW_CORS=1
+      - DEV=1
+    depends_on:
+      - teleceptor-postgres
+    links:
+      - teleceptor-postgres:postgres
+
+volumes:
+  teleceptor-postgres:

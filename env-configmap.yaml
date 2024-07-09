@@ -1,0 +1,16 @@
+apiVersion: v1
+data:
+  DJANGO_SUPERUSER_EMAIL: tele@example.com
+  DJANGO_SUPERUSER_PASSWORD:
+  DJANGO_SUPERUSER_USERNAME: tele
+  POSTGRES_DB: tele
+  POSTGRES_HOST: teleceptor-postgres
+  POSTGRES_NAME: tele
+  POSTGRES_PASSWORD:
+  POSTGRES_USER: tele
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: teleceptor-postgres-env
+  name: env

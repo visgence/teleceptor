@@ -1,2 +1,2 @@
 #!/bin/bash
-docker build -t teleceptor/app --rm .
+docker build --no-cache -t teleceptor/app --rm .

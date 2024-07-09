@@ -1,0 +1,86 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.26.0 (40646f47)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: teleceptor-server
+  name: teleceptor-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: teleceptor-server
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert
+        kompose.version: 1.26.0 (40646f47)
+      creationTimestamp: null
+      labels:
+        io.kompose.service: teleceptor-server
+    spec:
+      containers:
+        - env:
+            - name: ALLOW_CORS
+              value: "1"
+            - name: DEV
+              value: "1"
+            - name: DJANGO_SUPERUSER_EMAIL
+              valueFrom:
+                configMapKeyRef:
+                  key: DJANGO_SUPERUSER_EMAIL
+                  name: env
+            - name: DJANGO_SUPERUSER_PASSWORD
+              valueFrom:
+                configMapKeyRef:
+                  key: DJANGO_SUPERUSER_PASSWORD
+                  name: env
+            - name: DJANGO_SUPERUSER_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  key: DJANGO_SUPERUSER_USERNAME
+                  name: env
+            - name: POSTGRES_DB
+              valueFrom:
+                configMapKeyRef:
+                  key: POSTGRES_DB
+                  name: env
+            - name: POSTGRES_HOST
+              valueFrom:
+                configMapKeyRef:
+                  key: POSTGRES_HOST
+                  name: env
+            - name: POSTGRES_NAME
+              valueFrom:
+                configMapKeyRef:
+                  key: POSTGRES_NAME
+                  name: env
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                configMapKeyRef:
+                  key: POSTGRES_PASSWORD
+                  name: env
+            - name: POSTGRES_USER
+              valueFrom:
+                configMapKeyRef:
+                  key: POSTGRES_USER
+                  name: env
+          image: teleceptor:local
+          name: teleceptor-server
+          ports:
+            - containerPort: 8000
+          resources: {}
+          volumeMounts:
+            - mountPath: /home/teleceptor/teleceptor/
+              name: teleceptor-server
+      restartPolicy: Always
+      volumes:
+        - name: teleceptor-server
+          persistentVolumeClaim:
+            claimName: teleceptor-server
+status: {}

@@ -1,9 +1,10 @@
 Django
 django-ulid
 djangorestframework
+gunicorn
 psycopg2-binary
 pylint
 pylint-django
 pyserial==3.4
-requests==2.22.0
+requests
 whitenoise

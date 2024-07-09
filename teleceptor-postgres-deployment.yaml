@@ -1,0 +1,84 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.26.0 (40646f47)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: teleceptor-postgres
+  name: teleceptor-postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: teleceptor-postgres
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert
+        kompose.version: 1.26.0 (40646f47)
+      creationTimestamp: null
+      labels:
+        io.kompose.service: teleceptor-postgres
+    spec:
+      containers:
+        - env:
+            - name: DJANGO_SUPERUSER_EMAIL
+              valueFrom:
+                configMapKeyRef:
+                  key: DJANGO_SUPERUSER_EMAIL
+                  name: env
+            - name: DJANGO_SUPERUSER_PASSWORD
+              valueFrom:
+                configMapKeyRef:
+                  key: DJANGO_SUPERUSER_PASSWORD
+                  name: env
+            - name: DJANGO_SUPERUSER_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  key: DJANGO_SUPERUSER_USERNAME
+                  name: env
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+            - name: POSTGRES_DB
+              valueFrom:
+                configMapKeyRef:
+                  key: POSTGRES_DB
+                  name: env
+            - name: POSTGRES_HOST
+              valueFrom:
+                configMapKeyRef:
+                  key: POSTGRES_HOST
+                  name: env
+            - name: POSTGRES_NAME
+              valueFrom:
+                configMapKeyRef:
+                  key: POSTGRES_NAME
+                  name: env
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                configMapKeyRef:
+                  key: POSTGRES_PASSWORD
+                  name: env
+            - name: POSTGRES_USER
+              valueFrom:
+                configMapKeyRef:
+                  key: POSTGRES_USER
+                  name: env
+          image: postgres:12
+          name: teleceptor-postgres
+          ports:
+            - containerPort: 5432
+          resources: {}
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: teleceptor-postgres
+      restartPolicy: Always
+      volumes:
+        - name: teleceptor-postgres
+          persistentVolumeClaim:
+            claimName: teleceptor-postgres
+status: {}

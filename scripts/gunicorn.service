@@ -1,0 +1,17 @@
+[Unit]
+Description=gunicorn daemon
+Requires=gunicorn.socket
+After=network.target
+
+[Service]
+User=teleceptor
+Group=teleceptor
+WorkingDirectory=/app/
+ExecStart=/usr/local/bin/gunicorn \
+          --access-logfile - \
+          --workers 3 \
+          --bind unix:/run/gunicorn.sock \
+          teleceptor.wsgi:application
+
+[Install]
+WantedBy=multi-user.target

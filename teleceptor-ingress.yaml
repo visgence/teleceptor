@@ -1,0 +1,11 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: teleceptor-ingress
+spec:
+  defaultBackend:
+    service:
+      name: teleceptor-server
+      port:
+        number: 8000
+  ingressClassName: nginx
