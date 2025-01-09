@@ -22,7 +22,7 @@ from .api import station, datastreams, sensors, calibration, readings
 urlpatterns = [
     path("", views.index, name="index"),
     path('admin/', admin.site.urls),
-    path('api/station', station.Station.as_view()),
+    path('api/station/', station.Station.as_view()),
     path('api/datastreams', datastreams.DataStreams.as_view()),
     path('api/datastreams/<str:datastream>', datastreams.DataStreams.as_view()),
     path('api/sensors', sensors.Sensors.as_view()),

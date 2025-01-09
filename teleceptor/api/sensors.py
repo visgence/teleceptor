@@ -348,6 +348,7 @@ def _updateSensor(data):
             setattr(sensor, key, value)
             sensor.save()
 
+    sensor.refresh_from_db()
     logging.debug("Finished updating sensor.")
     return sensor.to_dict()
 

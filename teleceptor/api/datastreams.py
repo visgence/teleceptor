@@ -201,7 +201,7 @@ class DataStreams(APIView):
             returnData['stream'] = stream
         except ObjectDoesNotExist:
             logging.error("Stream with id %s doesn't exist.", str(data['id']))
-        returnData['error'] = "Stream with id %s doesn't exist." % data['id']
+            returnData['error'] = "Stream with id %s doesn't exist." % data['id']
 
         #     cherrypy.response.status = statusCode
 
@@ -325,21 +325,24 @@ def _updateStream(data):
             continue
         if key == "sensor":
             continue
-        # if key == "paths":
-        #     currentPaths = stream.to_dict()['paths']
-        #     newPaths = data[key]
-        #     toDelete = set(currentPaths) - set(newPaths)
-        #     toAdd = set(newPaths) - set(currentPaths)
-        #     for i in toDelete:
+        if key == "paths":
+             currentPaths = stream.to_dict()['paths']
+             newPaths = data[key]
+             toDelete = set(currentPaths) - set(newPaths)
+             toAdd = set(newPaths) - set(currentPaths)
+             logging.debug(f"Paths toDelete:{toDelete} toAdd{toAdd}")
+             for i in toDelete:
+                 Path.objects.get(datastream_id=data['id'], path=i).delete()
         #         session.delete(session.query(Path).filter_by(datastream_id=data['id'], path=i)[0])
-        #     for j in toAdd:
+             for j in toAdd:
+                  Path(datastream_id=data['id'], path=j).save()
         #         session.add(Path(datastream_id=data['id'], path=j))
-        #     session.commit()
-        #     continue
+             continue
         logging.debug("changing: {} to {}".format(key, value))
         setattr(stream, key, value)
 
     stream.save()
+    stream.refresh_from_db()
     logging.debug("Finished updating stream.")
     logging.debug("{}".format(stream.to_dict()))
     return stream.to_dict()
