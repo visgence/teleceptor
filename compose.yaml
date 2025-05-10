@@ -24,6 +24,10 @@ services:
       - DJANGO_SUPERUSER_USERNAME=admin
       - DJANGO_SUPERUSER_EMAIL=admin@visgence.com
       - DJANGO_SUPERUSER_PASSWORD=admin
+      - DJANGO_PORT=8008
+      - HOSTNAME=teleceptor.visgence.com
+      - PROD=true
+      - DEBUG=false
     depends_on:
       - postgres
 volumes:

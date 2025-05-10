@@ -17,6 +17,8 @@ import os
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
+PROD =  os.environ.get('PROD', 'False').lower() == 'true'
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
@@ -24,7 +26,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-4_ak)rubitzps0e$_8&#e+vdt#^=fta3sf751$td2rjl5p%8cw'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', 'True').lower() == 'true'
+
+HOSTNAME = os.environ.get('HOSTNAME', 'localhost')
+
+if PROD:
+    USE_X_FORWARDED_HOST = True
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    CSRF_TRUSTED_ORIGINS = [f"https://{HOSTNAME}"]
+    CSRF_ALLOWED_ORIGINS = [f"https://{HOSTNAME}"]
+    CORS_ORIGINS_WHITELIST = [f"https://{HOSTNAME}"]
 
 ALLOWED_HOSTS = ['*']
 
@@ -105,11 +116,13 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+DEBUG_LEVEL = "INFO" if PROD else "DEBUG"
+
 LOGGING = {
     "version": 1,
     'disable_existing_loggers': False,
     "root": {
-        "level": "DEBUG"
+        "level": DEBUG_LEVEL
     }
 }
 
@@ -133,6 +146,8 @@ STATIC_URL = 'static/'
 STATICFILES_DIRS = [
     BASE_DIR / "static"
 ]
+
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field

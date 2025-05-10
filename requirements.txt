@@ -1,6 +1,7 @@
-Django
+Django==5.2.1
 django-ulid
 djangorestframework
+gunicorn==21.2.0
 psycopg2-binary
 pylint
 pylint-django
