@@ -1,0 +1,30 @@
+services:
+  postgres:
+    image: postgres:14
+    volumes: 
+      - pgdata:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=tele
+      - POSTGRES_USER=tele
+      - POSTGRES_PASSWORD=password
+      - PGDATA=/var/lib/postgresql/data/pgdata
+  teleceptor:
+    build:
+      context: .
+      dockerfile: ./docker/app/Dockerfile
+    command: python manage.py runserver 0.0.0.0:8008
+    ports:
+      - "8008:8008"
+    environment:
+      - DB_NAME=tele
+      - DB_USER=tele
+      - DB_PASSWORD=password
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DJANGO_SUPERUSER_USERNAME=admin
+      - DJANGO_SUPERUSER_EMAIL=admin@visgence.com
+      - DJANGO_SUPERUSER_PASSWORD=admin
+    depends_on:
+      - postgres
+volumes:
+  pgdata:

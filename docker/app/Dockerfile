@@ -1,23 +1,28 @@
-FROM centos:7
-LABEL Visgence Inc <info@visgence.com>
+FROM almalinux:9.5
+LABEL description="Visgence Inc <info@visgence.com>"
 
-RUN yum install -y epel-release
+RUN dnf install -y epel-release
+RUN dnf update -y && dnf clean all
+RUN dnf install -y make automake gcc gcc-c++ && yum clean all
+RUN dnf install -y python3 python3-devel python3-pip && yum clean all
+RUN dnf install -y postgresql-devel postgresql && yum clean all
+RUN curl -fsSL https://rpm.nodesource.com/setup_18.x | /bin/bash -
+RUN dnf install -y nodejs
 
-RUN yum install -y screen vim sudo cron sqlite3 ca-certificates python-sqlite  && yum clean all
-RUN yum install -y postgresql python-devel postgresql-devel make automake gcc gcc-c++ && yum clean all
-RUN yum install -y mod_wsgi curl httpd wget python-setuptools && yum clean all
+RUN dnf install -y screen git
 
-RUN curl -o get-pip.py https://bootstrap.pypa.io/pip/2.7/get-pip.py
-RUN python get-pip.py
+RUN adduser --uid 1000 teleceptor
 
-ADD requirements.txt .
-RUN pip install -r requirements.txt
+COPY --chown=1000:1000 . /home/teleceptor/teleceptor
 
-#Install node from package
-RUN curl --silent --location https://rpm.nodesource.com/setup_8.x | bash -
-RUN yum install -y nodejs-8.6.0-1nodesource
+USER teleceptor
+WORKDIR /home/teleceptor/teleceptor
+RUN python3 -m venv venv && \
+    source venv/bin/activate && \
+    pip install -r requirements.txt
+RUN npm install --legacy-peer-deps
+RUN npm run webpack
+ENTRYPOINT ["/home/teleceptor/teleceptor/entrypoint.sh"]
+#VOLUME ["/home/teleceptor/teleceptor"]
 
-VOLUME ["/home/teleceptor"]
-WORKDIR /home/teleceptor
-
-EXPOSE 8000
+EXPOSE 8008
