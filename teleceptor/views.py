@@ -2,9 +2,9 @@ import os
 import json
 from django.shortcuts import render
 from django.conf import settings
+from django.contrib.auth.decorators import login_required
 
-
-
+@login_required
 def index(request):
     src = json.load(open(os.path.join(settings.BASE_DIR, 'webpack-stats.json')))
     vendor = json.load(open(os.path.join(settings.BASE_DIR, 'webpack-stats.json')))

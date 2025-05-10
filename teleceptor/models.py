@@ -28,7 +28,7 @@ class SensorReading(models.Model):
 
 
     id = models.BigAutoField(primary_key=True)
-    datastream = models.ForeignKey('DataStream', on_delete=models.CASCADE)
+    datastream = models.ForeignKey('DataStream', db_index=True, on_delete=models.CASCADE)
     sensor = models.ForeignKey('Sensor', on_delete=models.CASCADE)
     value = models.FloatField()
     timestamp = models.BigIntegerField()
@@ -42,6 +42,10 @@ class SensorReading(models.Model):
             'value': self.value,
             'timestamp': self.timestamp
         }
+    class Meta:
+        indexes = [
+            models.Index(fields=["datastream", "timestamp"]),
+        ]
 
 
 class MessageQueue(models.Model):
@@ -141,9 +145,9 @@ class Sensor(models.Model):
         Any extra information about the sensor.
     """
 
-    uuid = models.CharField(max_length=100, primary_key=True, editable=False)
+    uuid = models.CharField(max_length=100, primary_key=True, editable=True)
     sensor_IOtype = models.BooleanField(default=False)
-    sensor_type = models.CharField(default="", max_length=100)
+    sensor_type = models.CharField(default="", max_length=100, blank=True)
     last_value = models.CharField(default="", max_length=100, null=True, blank=True)
     name = models.CharField(max_length=100)
     units = models.CharField(max_length=100)
@@ -255,7 +259,7 @@ class Calibration(models.Model):
     id = ULIDField(default=new_ulid, primary_key=True, editable=False)
     sensor = models.CharField(max_length=100)
     timestamp = models.BigIntegerField()
-    user = models.CharField(max_length=100)
+    user = models.CharField(default="", max_length=100, blank=True)
     coefficients = models.CharField(null=False, max_length=100)
 
     # pylint: disable=invalid-name

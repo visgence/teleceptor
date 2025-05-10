@@ -19,9 +19,12 @@ from django.contrib import admin
 from django.urls import include, path, re_path
 from .api import station, datastreams, sensors, calibration, readings
 
+
 urlpatterns = [
     path("", views.index, name="index"),
+    path("accounts/", include("django.contrib.auth.urls")),
     path('admin/', admin.site.urls),
+    path('api-auth/', include('rest_framework.urls')),
     path('api/station/', station.Station.as_view()),
     path('api/datastreams', datastreams.DataStreams.as_view()),
     path('api/datastreams/<str:datastream>', datastreams.DataStreams.as_view()),
