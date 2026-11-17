@@ -62,3 +62,6 @@ npm-debug.log.*
 
 config/config.json
 database/
+
+# Output of collectstatic
+staticfiles/

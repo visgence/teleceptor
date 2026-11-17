@@ -219,10 +219,15 @@ def update_motes(mote_datas):
         # Swap sensorname in readings with datastream id.
         logging.debug("Inserting readings...")
 
+        # Map every reading first, so an unknown sensor name inserts nothing.
+        reading_sensor_ids = []
         for reading in mote['readings']:
-            reading[0] = sensor_datastream_ids[mote['info']['uuid'] + reading[0]]
-        s = Sensor.objects.get(uuid=sensor_id)
-        readings.insertReadings(mote['readings'], s)
+            reading_sensor_id = mote['info']['uuid'] + reading[0]
+            reading[0] = sensor_datastream_ids[reading_sensor_id]
+            reading_sensor_ids.append(reading_sensor_id)
+        # Attach each reading to its own sensor, not the last one in the mote.
+        for reading, reading_sensor_id in zip(mote['readings'], reading_sensor_ids):
+            readings.insertReadings([reading], Sensor.objects.get(uuid=reading_sensor_id))
 
 
     return new_values, updated_sensors
